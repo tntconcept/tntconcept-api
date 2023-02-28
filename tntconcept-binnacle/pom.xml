@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.autentia.tnt</groupId>
+        <artifactId>tntconcept-api</artifactId>
+        <version>1.0.15-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>tntconcept-binnacle</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.autentia.tnt</groupId>
+            <artifactId>tntconcept-ddbb</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>${commons-csv.version}</version>
+        </dependency>
+
+        <!-- ====================== Micronaut general dependencies ========================== -->
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-inject</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-runtime</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.kotlin</groupId>
+            <artifactId>micronaut-kotlin-extension-functions</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micronaut.email</groupId>
+            <artifactId>micronaut-email-javamail</artifactId>
+        </dependency>
+
+        <!-- ====================== Security dependencies ========================== -->
+        <dependency>
+            <groupId>io.micronaut.security</groupId>
+            <artifactId>micronaut-security-oauth2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.security</groupId>
+            <artifactId>micronaut-security-jwt</artifactId>
+        </dependency>
+
+        <!-- ====================== Database dependencies ========================== -->
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.data</groupId>
+            <artifactId>micronaut-data-hibernate-jpa</artifactId>
+        </dependency>
+
+        <!-- ====================== Testing dependencies ========================== -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

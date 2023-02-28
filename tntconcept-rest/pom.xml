@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.autentia.tnt</groupId>
+        <artifactId>tntconcept-api</artifactId>
+        <version>1.0.15-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>tntconcept-rest</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.autentia.tnt</groupId>
+            <artifactId>tntconcept-binnacle</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-http-server-netty</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Since 3.0.0 <https://docs.micronaut.io/3.3.3/guide/index.html#breaks>
+           - For example when generating openapi file with Swagger annotations.
+           - Internally, Micronaut makes use of a third party annotation that may manifest as a warning in your project:
+           - warning: unknown enum constant When.MAYBE
+           -   reason: class file for javax.annotation.meta.When not found
+           - This warning is harmless and can be ignored.
+           - To eliminate this warning, add the following dependency to your project’s compile only classpath:
+           -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.openapi</groupId>
+            <artifactId>micronaut-openapi</artifactId>
+        </dependency>
+
+        <!-- ====================== Testing dependencies ========================== -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>application.yml</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>${jib-maven-plugin.version}</version>
+                <configuration>
+                    <skip>false</skip>
+                    <from>
+                        <image>${docker.image.from}</image>
+                    </from>
+                    <to>
+                        <image>${docker.image.to}</image>
+                        <tags>
+                            <tag>${docker.tag}</tag>
+                            <tag>latest</tag>
+                        </tags>
+                    </to>
+                    <container>
+                        <mainClass>${exec.mainClass}</mainClass>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                    </container>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

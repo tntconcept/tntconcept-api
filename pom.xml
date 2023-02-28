@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.archimedesfw.maven.micronaut</groupId>
+        <artifactId>micronaut-kotlin-parent</artifactId>
+        <version>3.7.4</version>
+    </parent>
+
+    <groupId>com.autentia.tnt</groupId>
+    <artifactId>tntconcept-api</artifactId>
+    <version>1.0.15-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>tntconcept-binnacle</module>
+        <module>tntconcept-ddbb</module>
+        <module>tntconcept-rest</module>
+    </modules>
+
+    <properties>
+        <micronaut.runtime>netty</micronaut.runtime>
+        <micronaut.test.resources.enabled>true</micronaut.test.resources.enabled>
+        <exec.mainClass>com.autentia.tnt.api.Application</exec.mainClass>
+
+        <mockito.version>4.11.0</mockito.version>
+        <mockito-kotlin.version>4.1.0</mockito-kotlin.version>
+        <commons-csv.version>1.9.0</commons-csv.version>
+        <commons-io.version>2.11.0</commons-io.version>
+        <jsoup.version>1.15.3</jsoup.version>
+        <mysql-connector-java.version>8.0.29</mysql-connector-java.version>
+
+        <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
+        <docker.image.from>gcr.io/distroless/java17-debian11</docker.image.from>
+        <docker.image.to>ghcr.io/autentia/tntconcept-api</docker.image.to>
+        <docker.tag>${project.version}</docker.tag>
+        <maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.autentia.tnt</groupId>
+                <artifactId>tntconcept-binnacle</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.autentia.tnt</groupId>
+                <artifactId>tntconcept-ddbb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.autentia.tnt</groupId>
+                <artifactId>tntconcept-rest</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <!-- We need to overwrite flyway dependency because it's newer version doesn't suppor MSQL earlier than 8.0 -->
+                <!-- https://stackoverflow.com/questions/70438180/what-is-the-last-version-of-flyway-community-edition-that-supported-mysql-5-7-->
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>7.15.0</version>
+                <scope>runtime</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- ====================== Logging dependencies ========================== -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ====================== Testing dependencies ========================== -->
+        <dependency>
+            <groupId>io.micronaut.test</groupId>
+            <artifactId>micronaut-test-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito.kotlin</groupId>
+            <artifactId>mockito-kotlin</artifactId>
+            <version>${mockito-kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+            	<plugin>
+            		<groupId>org.apache.maven.plugins</groupId>
+            		<artifactId>maven-release-plugin</artifactId>
+            		<version>${maven-release-plugin.version}</version>
+            		<configuration>
+            			<tagNameFormat>@{project.version}</tagNameFormat>
+            		</configuration>
+            	</plugin>
+
+            	<!-- Skip by default. Only set on tntconcept-rest module -->
+            	<plugin>
+            		<groupId>com.google.cloud.tools</groupId>
+            		<artifactId>jib-maven-plugin</artifactId>
+            		<version>3.3.1</version>
+            		<configuration>
+            			<skip>true</skip>
+            		</configuration>
+            	</plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <version>${kotlin.version}</version>
+                <configuration>
+                    <compilerPlugins combine.children="append">
+                        <plugin>jpa</plugin>
+                    </compilerPlugins>
+                    <pluginOptions combine.children="append">
+                        <option>all-open:annotation=javax.transaction.Transactional</option>
+                        <option>all-open:annotation=jakarta.inject.Singleton</option>
+                    </pluginOptions>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-noarg</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <name>${project.artifactId}</name>
+    <description>REST Api to access TNT Concept.</description>
+    <url>https://github.com/autentia/tntconcept-api</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:https://github.com/autentia/tntconcept-api.git</connection>
+        <developerConnection>scm:git:https://github.com/autentia/tntconcept-api.git</developerConnection>
+        <tag>main</tag>
+        <url>https://github.com/autentia/tntconcept-api</url>
+    </scm>
+
+</project>
