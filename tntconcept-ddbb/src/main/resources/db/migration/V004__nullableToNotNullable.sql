@@ -29,3 +29,23 @@ UPDATE `OrganizationISOCategory`
 ALTER TABLE `OrganizationISOCategory`
     MODIFY `description` VARCHAR(1024) NOT NULL;
 
+UPDATE `WorkingAgreement`
+    SET `description` = ""
+    WHERE `description` IS NULL;
+
+ALTER TABLE `WorkingAgreement`
+    MODIFY `description` VARCHAR(2048) NOT NULL;
+
+UPDATE `Account`
+    SET `description` = ""
+    WHERE `description` IS NULL;
+
+ALTER TABLE `Account`
+    MODIFY `description` VARCHAR(2048) NOT NULL;
+
+UPDATE `AccountEntryGroup`
+    SET `description` = ""
+    WHERE `description` IS NULL;
+
+ALTER TABLE `AccountEntryGroup`
+    MODIFY `description` VARCHAR(2048) NOT NULL;
