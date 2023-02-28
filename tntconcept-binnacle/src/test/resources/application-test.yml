@@ -3,7 +3,7 @@ datasources:
     db-type: mysql
     dialect: MYSQL
     driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
-    url: jdbc:tc:mysql:5.7://localhost:3306/tntconcept?TC_TMPFS=/var/lib/mysql:rw&TC_DAEMON=true&useSSL=false
+    url: jdbc:tc:mysql:8.0.32:///tntconcept?TC_TMPFS=/var/lib/mysql:rw&TC_DAEMON=true&TC_MY_CNF=testcontainers/mysql&useSSL=false
     username: tntconcept
     password: tntconcept
     minimumIdle: 1

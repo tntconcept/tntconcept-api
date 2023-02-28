@@ -84,7 +84,7 @@ datasources:
     db-type: mysql
     dialect: MYSQL
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${TNT_DB_HOST:localhost}:${TNT_DB_PORT:3306}/${TNT_DB_DATABASE:tntconcept}?autoReconnect=true&useSSL=false
+    url: jdbc:mysql://${TNT_DB_HOST:localhost}:${TNT_DB_PORT:3306}/${TNT_DB_DATABASE:tntconcept}?autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
     username: ${TNT_DB_USERNAME:tntconcept}
     password: ${TNT_DB_PASSWORD:tntconcept}
     minimumIdle: 1
@@ -100,7 +100,6 @@ jpa:
       hibernate:
 #        show_sql: true
 #        format_sql: true
-        dialect: "org.hibernate.dialect.MySQL5InnoDBDialect"
         physical_naming_strategy: 'org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl'
     entity-scan:
       packages: 'com.autentia.tnt.binnacle.entities'
