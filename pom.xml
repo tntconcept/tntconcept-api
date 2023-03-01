@@ -29,7 +29,7 @@
         <commons-csv.version>1.9.0</commons-csv.version>
         <commons-io.version>2.11.0</commons-io.version>
         <jsoup.version>1.15.3</jsoup.version>
-        <mysql-connector-java.version>8.0.32</mysql-connector-java.version>
+        <mysql-connector-j.version>8.0.32</mysql-connector-j.version>
 
         <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
         <docker.image.from>gcr.io/distroless/java17-debian11</docker.image.from>
