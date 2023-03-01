@@ -1161,7 +1161,6 @@ ALTER TABLE `Link`
 ALTER TABLE `Link`
     ADD `updateDate` datetime NOT NULL DEFAULT NOW();
 
-
 delimiter |
 
 CREATE TRIGGER updateAuditoryDateCountry BEFORE UPDATE ON Country
