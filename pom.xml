@@ -29,7 +29,7 @@
         <commons-csv.version>1.9.0</commons-csv.version>
         <commons-io.version>2.11.0</commons-io.version>
         <jsoup.version>1.15.3</jsoup.version>
-        <mysql-connector-java.version>8.0.29</mysql-connector-java.version>
+        <mysql-connector-java.version>8.0.32</mysql-connector-java.version>
 
         <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
         <docker.image.from>gcr.io/distroless/java17-debian11</docker.image.from>
@@ -54,15 +54,6 @@
                 <groupId>com.autentia.tnt</groupId>
                 <artifactId>tntconcept-rest</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <!-- We need to overwrite flyway dependency because it's newer version doesn't suppor MSQL earlier than 8.0 -->
-                <!-- https://stackoverflow.com/questions/70438180/what-is-the-last-version-of-flyway-community-edition-that-supported-mysql-5-7-->
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>7.15.0</version>
-                <scope>runtime</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
