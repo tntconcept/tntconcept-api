@@ -1,10 +1,10 @@
 -- Country table
 
 ALTER TABLE `Country` 
-    MODIFY `code`   smallint(6) NOT NULL,
-    MODIFY `iso3166a1`  char(2) COLLATE utf8_spanish_ci NOT NULL,
-    MODIFY `iso3166a2`  char(3) COLLATE utf8_spanish_ci NOT NULL,
-    MODIFY `name`  varchar(128) COLLATE utf8_spanish_ci NOT NULL;
+    MODIFY `code`   smallint NOT NULL,
+    MODIFY `iso3166a1`  char(2) COLLATE utf8mb4_spanish_ci NOT NULL,
+    MODIFY `iso3166a2`  char(3) COLLATE utf8mb4_spanish_ci NOT NULL,
+    MODIFY `name`  varchar(128) COLLATE utf8mb4_spanish_ci NOT NULL;
 
 -- Organization table
 
