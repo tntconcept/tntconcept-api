@@ -49,3 +49,29 @@ UPDATE `AccountEntryGroup`
 
 ALTER TABLE `AccountEntryGroup`
     MODIFY `description` VARCHAR(2048) NOT NULL;
+
+UPDATE `AccountEntryType`
+    SET `observations` = ""
+    WHERE `observations` IS NULL;
+
+ALTER TABLE `AccountEntryType`
+    MODIFY `observations` VARCHAR(1024) NOT NULL;
+
+UPDATE `AccountEntry`
+    SET `observations` = ""
+    WHERE `observations` IS NULL;
+
+ALTER TABLE `AccountEntry`
+    MODIFY `observations` VARCHAR(1024) NOT NULL;
+
+UPDATE `IVAType`
+    SET `iva` = 0
+    WHERE `iva` IS NULL;
+
+UPDATE `IVAType`
+    SET `name` = ""
+    WHERE `name` IS NULL;
+
+ALTER TABLE `IVAType`
+    MODIFY `iva` DECIMAL(4,2) NOT NULL,
+    MODIFY `name` VARCHAR(30) NOT NULL;
