@@ -15,13 +15,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.Month
 import java.util.*
@@ -88,6 +82,7 @@ internal class AnnualWorkSummaryServiceTest {
     fun `should create annual work summary`(
         testDescription: String,
         saveSummary: Boolean,
+        userHasAPreviousCalculatedWorkSummary: Boolean,
         consumedVacations: List<VacationDomain>,
     ) {
         //Given
@@ -134,18 +129,24 @@ internal class AnnualWorkSummaryServiceTest {
         doReturn(expectedSummary).whenever(annualWorkSummaryConverter)
             .toAnnualWorkSummary(year, EARNED_VACATIONS, vacationsTaken, workSummaryEntity)
 
+        doReturn(userHasAPreviousCalculatedWorkSummary).whenever(annualWorkSummaryRepository).existsById(workSummaryEntity.annualWorkSummaryId)
+
         //When
         val annualWorkSummary = annualWorkSummaryService.createAnnualWorkSummary(user, year, timeSummaryBalance)
 
         //Then
-        if (saveSummary)
-            verify(annualWorkSummaryRepository, times(1)).save(workSummaryEntity)
+        if (saveSummary) {
+            if (userHasAPreviousCalculatedWorkSummary)
+                verify(annualWorkSummaryRepository).update(workSummaryEntity)
+            else
+                verify(annualWorkSummaryRepository).save(workSummaryEntity)
+        }
         else
-            verify(annualWorkSummaryRepository, times(0)).save(any())
+            verify(annualWorkSummaryRepository, never()).save(any())
 
-        verify(vacationService, times(1)).getVacationsByChargeYear(any(), any())
-        verify(timeWorkableService, times(1)).getEarnedVacationsSinceHiringDate(any(), any())
-        verify(annualWorkSummaryConverter, times(1)).toAnnualWorkSummary(any(), any(), any(), anyOrNull())
+        verify(vacationService).getVacationsByChargeYear(any(), any())
+        verify(timeWorkableService).getEarnedVacationsSinceHiringDate(any(), any())
+        verify(annualWorkSummaryConverter).toAnnualWorkSummary(any(), any(), any(), anyOrNull())
 
         assertEquals(
             expectedSummary.copy(alerts = AnnualWorkSummaryAlertValidators.values().map { it.alert }),
@@ -171,12 +172,20 @@ internal class AnnualWorkSummaryServiceTest {
         @JvmStatic
         private fun createAnnualWorkSummaryParametersProvider() = listOf(
             Arguments.of(
-                "given save summary flag active and vacations in different states",
+                "given save summary flag active and user does not have a previous calculated work summary vacations in different states",
+                true,
+                false,
+                getVacationsWithAllStates()
+            ),
+            Arguments.of(
+                "given save summary flag active and user has a previous calculated work summary and vacations in different states",
+                true,
                 true,
                 getVacationsWithAllStates()
             ),
             Arguments.of(
                 "given save summary flag inactive and vacations in different states",
+                false,
                 false,
                 listOf<VacationDomain>(mock())
             ),

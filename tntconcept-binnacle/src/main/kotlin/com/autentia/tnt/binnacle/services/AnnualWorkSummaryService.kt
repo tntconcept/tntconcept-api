@@ -42,7 +42,11 @@ internal class AnnualWorkSummaryService(
             timeSummaryBalance.year.current.target.toBigDecimalHours(),
         )
         if (appProperties.binnacle.workSummary.persistenceEnabled) {
-            annualWorkSummaryRepository.save(workSummaryEntity)
+            if(annualWorkSummaryRepository.existsById(workSummaryEntity.annualWorkSummaryId)) {
+                annualWorkSummaryRepository.update(workSummaryEntity)
+            } else {
+                annualWorkSummaryRepository.save(workSummaryEntity)
+            }
         }
         val consumedVacations = getConsumedVacations(year, user)
         val earnedVacations = getEarnedVacations(user, year)
