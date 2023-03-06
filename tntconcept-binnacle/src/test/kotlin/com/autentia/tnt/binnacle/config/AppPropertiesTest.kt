@@ -40,7 +40,7 @@ class AppPropertiesTest {
 
         val appProperties = context.getBean(AppProperties::class.java)
 
-        assertEquals(listOf("approver@example.com"), appProperties.binnacle.workSummary.mail.to)
+        assertEquals(listOf("approver@example.com", "other@example.com"), appProperties.binnacle.workSummary.mail.to)
     }
 
 }

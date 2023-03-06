@@ -50,7 +50,7 @@ app:
     from: admin@example.com
 
   binnacle:
-    vacations-approvers: approver@example.com
+    vacations-approvers: approver@example.com,other@example.com
     not-workable-projects: 1
 
     work-summary:

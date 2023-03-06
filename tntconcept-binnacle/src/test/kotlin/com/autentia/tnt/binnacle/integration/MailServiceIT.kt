@@ -18,7 +18,7 @@ import java.io.FileWriter
 internal class MailServiceIT {
 
     private val from = "davidtestemail09@gmail.com"
-    private val to1 = listOf("david97vj@gmail.com")
+    private val to = listOf("david97vj@gmail.com")
 
     private val subject = "subject"
     private val bodyText = "bodyText"
@@ -35,7 +35,7 @@ internal class MailServiceIT {
     @Disabled("Ignored because get pending emails process does not retrieve emails")
     fun `given from, to, subject, body without attachment should send email`() {
 
-        val result = mailService.send(from, to1, subject, bodyText)
+        val result = mailService.send(from, to, subject, bodyText)
         assertTrue(result.isSuccess)
 
         /*val email = mailTestUtils.getSentEmail()
@@ -51,7 +51,7 @@ internal class MailServiceIT {
         FileWriter(file, false).use { writer -> writer.write(fileContent) }
 
         //When
-        val result = mailService.send(from, to1, subject, bodyText, file)
+        val result = mailService.send(from, to, subject, bodyText, file)
 
         //Then
         assertTrue(result.isSuccess)
