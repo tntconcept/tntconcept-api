@@ -192,7 +192,7 @@ internal class ActivityValidatorTest {
         @MethodSource("maxHoursRoleLimitProviderCreate")
         fun `throw MaxHoursPerRoleException if user reaches max hours for a role`(
             testDescription: String,
-            activitiesThisYear: List<ActivityTimeOnly>,
+            activitiesInTheYear: List<ActivityTimeOnly>,
             projectRoleLimited: ProjectRole,
             activityRequestBody: ActivityRequestBody,
             expectedRemainingHours: Double
@@ -200,7 +200,7 @@ internal class ActivityValidatorTest {
 
             doReturn(Optional.of(projectRoleLimited)).whenever(projectRoleRepository).findById(projectRoleLimited.id)
 
-            doReturn(activitiesThisYear)
+            doReturn(activitiesInTheYear)
                 .whenever(activityRepository).workedMinutesBetweenDate(firstDayOfYear, lastDayOfYear, user.id)
 
             val exception = assertThrows<MaxHoursPerRoleException> {
@@ -616,7 +616,7 @@ internal class ActivityValidatorTest {
             Project(2, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
         private val projectRole = ProjectRole(1, "vac", false, vacationProject, 0)
 
-        private val projectRoleNoLimit = ProjectRole(2, "perm", false, permisoProject, 0)
+        private val projectRoleWithoutLimit = ProjectRole(2, "perm", false, permisoProject, 0)
         private val projectRoleLimited = ProjectRole(3, "vac", false, vacationProject, (HOUR * 8))
 
         private val activityNotReachedLimitUpdate = createActivity(
@@ -642,7 +642,7 @@ internal class ActivityValidatorTest {
         val activityNoLimitTimeOnly = ActivityTimeOnly(
             yesterdayDateTime,
             (HOUR * 8),
-            projectRoleNoLimit.id
+            projectRoleWithoutLimit.id
         )
         val activityReachedLimitTodayTimeOnly = ActivityTimeOnly(
             todayDateTime,

@@ -55,7 +55,7 @@ internal class ActivityValidator(
 
     private fun getRemainingTime(projectRole: ProjectRole, activityRequest: ActivityRequestBody, user: User): Double {
         val activitiesInYear = getActivitiesInYear(LocalDate.now().year, user)
-        val pastRegisteredTime = getTotalHoursPerRoleAndActivity(activitiesInYear, activityRequest)
+        val pastRegisteredTime = getTotalHoursPerRole(activitiesInYear, activityRequest)
         var remainingTime = 0.0
         if (pastRegisteredTime < projectRole.maxAllowed) {
             remainingTime = ((projectRole.maxAllowed - pastRegisteredTime).toDouble())
@@ -71,7 +71,7 @@ internal class ActivityValidator(
         return startDate.year >= LocalDateTime.now().year - 1
     }
 
-    private fun getTotalHoursPerRoleAndActivity(
+    private fun getTotalHoursPerRole(
         activitiesInYear: List<ActivityTimeOnly>,
         activityRequest: ActivityRequestBody
     ) =
@@ -96,7 +96,7 @@ internal class ActivityValidator(
             val activitiesSinceStartOfYear = getActivitiesInYear(currentYear, user)
 
             val totalRegisteredHoursForThisRole =
-                getTotalHoursPerRoleAndActivity(activitiesSinceStartOfYear, activityRequest)
+                getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
 
             isExceedingMaxHours = (totalRegisteredHoursForThisRole + activityRequest.duration) > projectRole.maxAllowed
         }
@@ -105,7 +105,7 @@ internal class ActivityValidator(
 
     private fun isExceedingMaxHoursForRoleUpdate(
         currentActivity: Activity,
-        activityRequestUpdate: ActivityRequestBody,
+        activityRequest: ActivityRequestBody,
         projectRole: ProjectRole,
         user: User
     ): Boolean {
@@ -114,11 +114,11 @@ internal class ActivityValidator(
             val activitiesSinceStartOfYear = getActivitiesInYear(currentYear, user)
 
             val totalRegisteredHoursForThisRole =
-                getTotalHoursPerRoleAndActivity(activitiesSinceStartOfYear, activityRequestUpdate)
+                getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
 
-            if (currentActivity.duration < activityRequestUpdate.duration) {
+            if (currentActivity.duration < activityRequest.duration) {
                 isExceedingMaxHours =
-                    (totalRegisteredHoursForThisRole + ((currentActivity.duration - activityRequestUpdate.duration).absoluteValue) > projectRole.maxAllowed)
+                    (totalRegisteredHoursForThisRole + ((currentActivity.duration - activityRequest.duration).absoluteValue) > projectRole.maxAllowed)
             }
 
         }
