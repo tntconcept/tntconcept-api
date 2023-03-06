@@ -75,3 +75,41 @@ UPDATE `IVAType`
 ALTER TABLE `IVAType`
     MODIFY `iva` DECIMAL(4,2) NOT NULL,
     MODIFY `name` VARCHAR(30) NOT NULL;
+
+UPDATE `Bill`
+    SET `paymentMode` = "UNKNOWN"
+    WHERE `paymentMode` IS NULL;
+
+UPDATE `Bill`
+    SET `observations` = ""
+    WHERE `observations` IS NULL;
+
+UPDATE `Bill`
+    SET `orderNumber` = ""
+    WHERE `orderNumber` IS NULL;
+
+ALTER TABLE `Bill`
+    MODIFY `paymentMode` VARCHAR(16) NOT NULL,
+    MODIFY `observations` VARCHAR(4096) NOT NULL,
+    MODIFY `orderNumber` VARCHAR(64) NOT NULL;
+
+UPDATE `Objective`
+    SET `state` = "PENDING"
+    WHERE `state` IS NULL;
+
+ALTER TABLE `Objective`
+    MODIFY `state` VARCHAR(16) NOT NULL;
+
+UPDATE `Magazine`
+    SET `description` = ""
+    WHERE `description` IS NULL;
+
+ALTER TABLE `Magazine`
+    MODIFY `description` VARCHAR(2048) NOT NULL;
+
+UPDATE `Tutorial`
+    SET `description` = ""
+    WHERE `description` IS NULL;
+
+ALTER TABLE `Tutorial`
+    MODIFY `description` VARCHAR(2048) NOT NULL;
