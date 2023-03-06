@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.config
 
 import com.autentia.tnt.AppProperties
 import io.micronaut.context.ApplicationContext
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class AppPropertiesTest {
@@ -35,12 +35,12 @@ class AppPropertiesTest {
     }
 
     @Test
-    fun `resolve a declarative indirection variable to binnacle vacations_approver`() {
+    fun `resolve a declarative indirection variable to binnacle vacations_approvers`() {
         val context = ApplicationContext.run()
 
         val appProperties = context.getBean(AppProperties::class.java)
 
-        assertEquals("approver@example.com", appProperties.binnacle.workSummary.mail.to)
+        assertEquals(listOf("approver@example.com"), appProperties.binnacle.workSummary.mail.to)
     }
 
 }
