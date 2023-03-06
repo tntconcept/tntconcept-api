@@ -14,13 +14,20 @@ internal class MailService(
     private val emailSender: EmailSender<Any, Any>,
 ) {
 
-    fun send(from: String, to: String, subject: String, bodyText: String, attachment: File? = null): Result<String> {
+    fun send(
+        from: String,
+        to: List<String>,
+        subject: String,
+        bodyText: String,
+        attachment: File? = null
+    ): Result<String> {
 
         val email = Email.builder()
             .from(InternetAddress(from).address)
-            .to(to)
             .subject(subject)
             .body(MultipartBody(bodyText, bodyText))
+
+        to.forEach { email.to(it) }
 
         if (attachment != null) {
             email.attachment(
@@ -28,7 +35,8 @@ internal class MailService(
                     .filename("report.csv")
                     .contentType(MediaType.ALL)
                     .content(readFile(attachment.absolutePath))
-                    .build())
+                    .build()
+            )
         }
 
         return try {

@@ -40,7 +40,7 @@ internal class WorkSummaryMailServiceTest {
 
     private companion object {
         private const val FROM = "from@test.com"
-        private const val TO = "to@test.com"
+        private val TO = listOf("to@test.com")
     }
 
 }

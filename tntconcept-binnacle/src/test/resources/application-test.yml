@@ -50,7 +50,7 @@ app:
     from: admin@example.com
 
   binnacle:
-    vacations-approver: approver@example.com
+    vacations-approvers: approver@example.com
     not-workable-projects: 1
 
     work-summary:
@@ -67,5 +67,5 @@ app:
 
       mail:
         enabled: true
-        to: ${app.binnacle.vacations-approver}
+        to: ${app.binnacle.vacations-approvers}
         send-alerts-only: false

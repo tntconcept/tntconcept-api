@@ -18,9 +18,8 @@ import java.io.FileWriter
 internal class MailServiceIT {
 
     private val from = "davidtestemail09@gmail.com"
-    private val to1 = "david97vj@gmail.com"
-    private val to2 = "to-admin@gmail.com"
-    private val to = "$to1,$to2"
+    private val to1 = listOf("david97vj@gmail.com")
+
     private val subject = "subject"
     private val bodyText = "bodyText"
 
