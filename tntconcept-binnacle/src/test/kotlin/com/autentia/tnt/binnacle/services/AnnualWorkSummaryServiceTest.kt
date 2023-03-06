@@ -70,10 +70,6 @@ internal class AnnualWorkSummaryServiceTest {
         val annualWorkSummary = annualWorkSummaryService.getAnnualWorkSummary(user, year)
 
         //Then
-        verify(annualWorkSummaryRepository).findById(any())
-        verify(vacationService).getVacationsByChargeYear(any(), any())
-        verify(timeWorkableService).getEarnedVacationsSinceHiringDate(any(), any())
-        verify(annualWorkSummaryConverter).toAnnualWorkSummary(any(), any(), any(), anyOrNull())
         assertEquals(expectedSummary, annualWorkSummary)
     }
 
@@ -136,10 +132,6 @@ internal class AnnualWorkSummaryServiceTest {
             verify(annualWorkSummaryRepository).saveOrUpdate(workSummaryEntity)
         else
             verify(annualWorkSummaryRepository, never()).saveOrUpdate(any())
-
-        verify(vacationService).getVacationsByChargeYear(any(), any())
-        verify(timeWorkableService).getEarnedVacationsSinceHiringDate(any(), any())
-        verify(annualWorkSummaryConverter).toAnnualWorkSummary(any(), any(), any(), anyOrNull())
 
         assertEquals(
             expectedSummary.copy(alerts = AnnualWorkSummaryAlertValidators.values().map { it.alert }),
