@@ -113,3 +113,44 @@ UPDATE `Tutorial`
 
 ALTER TABLE `Tutorial`
     MODIFY `description` VARCHAR(2048) NOT NULL;
+
+UPDATE `Publication`
+    SET `accepted` = 0
+    WHERE `accepted` IS NULL;
+
+ALTER TABLE `Publication`
+    MODIFY `accepted` BOOLEAN NOT NULL;
+
+UPDATE `BulletinBoard`
+    SET `documentPath` = ""
+    WHERE `documentPath` IS NULL;
+
+UPDATE `BulletinBoard`
+    SET `documentContentType` = ""
+    WHERE `documentContentType` IS NULL;
+
+ALTER TABLE `BulletinBoard`
+    MODIFY `documentPath` VARCHAR(128) NOT NULL,
+    MODIFY `documentContentType` VARCHAR(128) NOT NULL;
+
+UPDATE `Book`
+    SET `author` = ""
+    WHERE `author` IS NULL;
+
+UPDATE `Book`
+    SET `ISBN` = ""
+    WHERE `ISBN` IS NULL;
+
+UPDATE `Book`
+    SET `URL` = ""
+    WHERE `URL` IS NULL;
+
+UPDATE `Book`
+    SET `price` = 0
+    WHERE `price` IS NULL;
+
+ALTER TABLE `Book`
+    MODIFY `author` VARCHAR(255) COLLATE utf8mb4_spanish_ci NOT NULL,
+    MODIFY `ISBN` VARCHAR(13) COLLATE utf8mb4_spanish_ci NOT NULL,
+    MODIFY `URL` VARCHAR(255) COLLATE utf8mb4_spanish_ci NOT NULL,
+    MODIFY `price` DECIMAL(10,2) NOT NULL;
