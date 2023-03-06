@@ -70,10 +70,10 @@ internal class AnnualWorkSummaryServiceTest {
         val annualWorkSummary = annualWorkSummaryService.getAnnualWorkSummary(user, year)
 
         //Then
-        verify(annualWorkSummaryRepository, times(1)).findById(any())
-        verify(vacationService, times(1)).getVacationsByChargeYear(any(), any())
-        verify(timeWorkableService, times(1)).getEarnedVacationsSinceHiringDate(any(), any())
-        verify(annualWorkSummaryConverter, times(1)).toAnnualWorkSummary(any(), any(), any(), anyOrNull())
+        verify(annualWorkSummaryRepository).findById(any())
+        verify(vacationService).getVacationsByChargeYear(any(), any())
+        verify(timeWorkableService).getEarnedVacationsSinceHiringDate(any(), any())
+        verify(annualWorkSummaryConverter).toAnnualWorkSummary(any(), any(), any(), anyOrNull())
         assertEquals(expectedSummary, annualWorkSummary)
     }
 
@@ -82,7 +82,6 @@ internal class AnnualWorkSummaryServiceTest {
     fun `should create annual work summary`(
         testDescription: String,
         saveSummary: Boolean,
-        userHasAPreviousCalculatedWorkSummary: Boolean,
         consumedVacations: List<VacationDomain>,
     ) {
         //Given
@@ -129,20 +128,14 @@ internal class AnnualWorkSummaryServiceTest {
         doReturn(expectedSummary).whenever(annualWorkSummaryConverter)
             .toAnnualWorkSummary(year, EARNED_VACATIONS, vacationsTaken, workSummaryEntity)
 
-        doReturn(userHasAPreviousCalculatedWorkSummary).whenever(annualWorkSummaryRepository).existsById(workSummaryEntity.annualWorkSummaryId)
-
         //When
         val annualWorkSummary = annualWorkSummaryService.createAnnualWorkSummary(user, year, timeSummaryBalance)
 
         //Then
-        if (saveSummary) {
-            if (userHasAPreviousCalculatedWorkSummary)
-                verify(annualWorkSummaryRepository).update(workSummaryEntity)
-            else
-                verify(annualWorkSummaryRepository).save(workSummaryEntity)
-        }
+        if (saveSummary)
+            verify(annualWorkSummaryRepository).saveOrUpdate(workSummaryEntity)
         else
-            verify(annualWorkSummaryRepository, never()).save(any())
+            verify(annualWorkSummaryRepository, never()).saveOrUpdate(any())
 
         verify(vacationService).getVacationsByChargeYear(any(), any())
         verify(timeWorkableService).getEarnedVacationsSinceHiringDate(any(), any())
@@ -172,20 +165,12 @@ internal class AnnualWorkSummaryServiceTest {
         @JvmStatic
         private fun createAnnualWorkSummaryParametersProvider() = listOf(
             Arguments.of(
-                "given save summary flag active and user does not have a previous calculated work summary vacations in different states",
-                true,
-                false,
-                getVacationsWithAllStates()
-            ),
-            Arguments.of(
-                "given save summary flag active and user has a previous calculated work summary and vacations in different states",
-                true,
+                "given save summary flag active and vacations in different states",
                 true,
                 getVacationsWithAllStates()
             ),
             Arguments.of(
                 "given save summary flag inactive and vacations in different states",
-                false,
                 false,
                 listOf<VacationDomain>(mock())
             ),
