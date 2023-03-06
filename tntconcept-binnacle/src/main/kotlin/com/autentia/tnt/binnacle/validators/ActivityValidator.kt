@@ -54,7 +54,7 @@ internal class ActivityValidator(
     }
 
     private fun getRemainingTime(projectRole: ProjectRole, activityRequest: ActivityRequestBody, user: User): Double {
-        val activitiesInYear = getActivitiesInYear(LocalDate.now().year, user)
+        val activitiesInYear = getActivitiesInYear(activityRequest.startDate.year, user)
         val pastRegisteredTime = getTotalHoursPerRole(activitiesInYear, activityRequest)
         var remainingTime = 0.0
         if (pastRegisteredTime < projectRole.maxAllowed) {
@@ -93,7 +93,8 @@ internal class ActivityValidator(
         user: User
     ): Boolean {
         if (projectRole.maxAllowed > 0) {
-            val activitiesSinceStartOfYear = getActivitiesInYear(currentYear, user)
+            val year = activityRequest.startDate.year
+            val activitiesSinceStartOfYear = getActivitiesInYear(year, user)
             val totalRegisteredHoursForThisRole =
                 getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
 
@@ -188,6 +189,5 @@ internal class ActivityValidator(
 
     private companion object {
         private const val DECIMAL_HOUR = 60.0
-        private val currentYear = LocalDate.now().year
     }
 }
