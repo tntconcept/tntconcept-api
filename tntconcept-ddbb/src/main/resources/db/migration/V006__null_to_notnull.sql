@@ -1,10 +1,10 @@
 -- Country table
 
 ALTER TABLE `Country` 
-    MODIFY `code`   smallint(6) NOT NULL,
-    MODIFY `iso3166a1`  char(2) COLLATE utf8_spanish_ci NOT NULL,
-    MODIFY `iso3166a2`  char(3) COLLATE utf8_spanish_ci NOT NULL,
-    MODIFY `name`  varchar(128) COLLATE utf8_spanish_ci NOT NULL;
+    MODIFY `code`   smallint NOT NULL,
+    MODIFY `iso3166a1`  char(2) COLLATE utf8mb4_spanish_ci NOT NULL,
+    MODIFY `iso3166a2`  char(3) COLLATE utf8mb4_spanish_ci NOT NULL,
+    MODIFY `name`  varchar(128) COLLATE utf8mb4_spanish_ci NOT NULL;
 
 -- Organization table
 
@@ -287,5 +287,26 @@ ALTER TABLE `User`
     MODIFY  `photo` varchar(255) NOT NULL,
     MODIFY  `contractObservations`  varchar(2048)  NOT NULL;
     
-    
+-- OfferRejectReason table
+
+UPDATE `OfferRejectReason`
+    SET `description` = ''
+    WHERE `description` IS NULL;
+
+ALTER TABLE `OfferRejectReason`
+    MODIFY `description` varchar(1024) NOT NULL;
+
+-- Offer table
+
+UPDATE `Offer`
+    SET `description` = ''
+    WHERE `description` IS NULL;
+
+UPDATE `Offer`
+    SET `observations` = ''
+    WHERE `observations` IS NULL;
+
+ALTER TABLE `Offer`
+    MODIFY `description` varchar(4096) NOT NULL,
+    MODIFY `observations` varchar(4096) NOT NULL;
 
