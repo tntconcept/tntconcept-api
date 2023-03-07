@@ -97,13 +97,15 @@ internal class ActivityValidator(
             val activitiesSinceStartOfYear = getActivitiesInYear(year, user)
             val totalRegisteredHoursForThisRole =
                 getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
+            var totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole
 
-            if (isActivityGoingToBeUpdated(currentActivity, activityRequest)) {
-                val totalRegisteredHoursAfterUpdatedActivity =
-                    totalRegisteredHoursForThisRole + ((currentActivity!!.duration - activityRequest.duration).absoluteValue)
-                return totalRegisteredHoursAfterUpdatedActivity > projectRole.maxAllowed
-            }
-            return (totalRegisteredHoursForThisRole + activityRequest.duration) > projectRole.maxAllowed
+            if(currentActivity.projectRole.id == activityRequest.projectRoleId)
+                 totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole - currentActivity.duration
+
+            val totalRegisteredHoursAfterSaveRequested = totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
+
+            return totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed
+
         }
         return false
     }
