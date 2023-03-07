@@ -154,3 +154,23 @@ ALTER TABLE `Book`
     MODIFY `ISBN` VARCHAR(13) COLLATE utf8mb4_spanish_ci NOT NULL,
     MODIFY `URL` VARCHAR(255) COLLATE utf8mb4_spanish_ci NOT NULL,
     MODIFY `price` DECIMAL(10,2) NOT NULL;
+
+UPDATE `InteractionType`
+    SET `description` = ""
+    WHERE `description` IS NULL;
+
+ALTER TABLE `InteractionType`
+    MODIFY `description` VARCHAR(1024) NOT NULL;
+
+UPDATE `Interaction`
+    SET `file` = ""
+    WHERE `file` IS NULL;
+
+UPDATE `Interaction`
+    SET `fileMime` = ""
+    WHERE `fileMime` IS NULL;
+
+ALTER TABLE `Interaction`
+    MODIFY `file` VARCHAR(400) NOT NULL,
+    MODIFY `fileMime` VARCHAR(128) NOT NULL;
+
