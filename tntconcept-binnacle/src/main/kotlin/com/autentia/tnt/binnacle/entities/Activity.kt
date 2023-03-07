@@ -57,4 +57,8 @@ data class Activity(
     var insertDate: Date? = null,
 
     var hasImage: Boolean = false
-)
+){
+    companion object {
+        fun emptyActivity(projectRole: ProjectRole) : Activity = Activity(0, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L, false)
+    }
+}

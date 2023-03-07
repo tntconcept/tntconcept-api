@@ -46,19 +46,16 @@ internal class ActivityValidator(
                 user
             ) -> throw ActivityBeforeHiringDateException()
 
-            isExceedingMaxHoursForRole(null, activityRequest, projectRoleDb, user) -> throw MaxHoursPerRoleException(
+            isExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user) -> throw MaxHoursPerRoleException(
                 projectRoleDb.maxAllowed / DECIMAL_HOUR,
-                getRemainingTime(null, projectRoleDb, activityRequest, user) / DECIMAL_HOUR
+                getRemainingTime(Activity.emptyActivity(projectRoleDb), projectRoleDb, activityRequest, user) / DECIMAL_HOUR
             )
         }
     }
 
-    private fun getRemainingTime(currentActivity: Activity?, projectRole: ProjectRole, activityRequest: ActivityRequestBody, user: User): Double {
+    private fun getRemainingTime(currentActivity: Activity, projectRole: ProjectRole, activityRequest: ActivityRequestBody, user: User): Double {
         val activitiesInYear = getActivitiesInYear(activityRequest.startDate.year, user)
-        var pastRegisteredTime = getTotalHoursPerRole(activitiesInYear, activityRequest)
-        if (currentActivity != null) {
-            pastRegisteredTime -= currentActivity.duration
-        }
+        val pastRegisteredTime = getTotalHoursPerRole(activitiesInYear, activityRequest) - currentActivity.duration
         var remainingTime = 0.0
         if (pastRegisteredTime < projectRole.maxAllowed) {
             remainingTime = ((projectRole.maxAllowed - pastRegisteredTime).toDouble())
@@ -90,7 +87,7 @@ internal class ActivityValidator(
         )
 
     private fun isExceedingMaxHoursForRole(
-        currentActivity: Activity?,
+        currentActivity: Activity,
         activityRequest: ActivityRequestBody,
         projectRole: ProjectRole,
         user: User
@@ -112,9 +109,9 @@ internal class ActivityValidator(
     }
 
     private fun isActivityGoingToBeUpdated(
-        currentActivity: Activity?,
+        currentActivity: Activity,
         activityRequest: ActivityRequestBody
-    ) = currentActivity != null && currentActivity.duration < activityRequest.duration
+    ) = currentActivity.duration > 0 && currentActivity.duration < activityRequest.duration
 
     @Transactional
     @ReadOnly
