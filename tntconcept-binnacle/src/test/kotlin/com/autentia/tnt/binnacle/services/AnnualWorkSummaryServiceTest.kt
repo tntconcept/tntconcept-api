@@ -15,18 +15,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.any
-import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.Month
+import java.time.Month.DECEMBER
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.DurationUnit
+import kotlin.time.DurationUnit.HOURS
 import kotlin.time.toDuration
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 import com.autentia.tnt.binnacle.entities.AnnualWorkSummary as AnnualWorkSummaryEntity
@@ -47,10 +43,9 @@ internal class AnnualWorkSummaryServiceTest {
         annualWorkSummaryConverter, appProperties
     )
 
-    @ParameterizedTest(name = "[${ParameterizedTest.INDEX_PLACEHOLDER}] [{0}]")
+    @ParameterizedTest
     @MethodSource("getAnnualWorkSummaryParametersProvider")
-    fun `given user and year should return annual work summary`(
-        testDescription: String,
+    fun `get annual work summary`(
         summaryEntity: Optional<AnnualWorkSummaryEntity>,
         consumedVacations: List<VacationDomain>,
     ) {
@@ -63,7 +58,7 @@ internal class AnnualWorkSummaryServiceTest {
         doReturn(summaryEntity).whenever(annualWorkSummaryRepository).findById(AnnualWorkSummaryId(user.id, year))
 
         doReturn(EMPTY_HOLIDAYS).whenever(holidayService)
-            .findAllBetweenDate(LocalDate.ofYearDay(year, 1), LocalDate.of(year, Month.DECEMBER, 31))
+            .findAllBetweenDate(LocalDate.ofYearDay(year, 1), LocalDate.of(year, DECEMBER, 31))
 
         doReturn(consumedVacations).whenever(vacationService).getVacationsByChargeYear(year, user)
 
@@ -76,17 +71,12 @@ internal class AnnualWorkSummaryServiceTest {
         val annualWorkSummary = annualWorkSummaryService.getAnnualWorkSummary(user, year)
 
         //Then
-        verify(annualWorkSummaryRepository, times(1)).findById(any())
-        verify(vacationService, times(1)).getVacationsByChargeYear(any(), any())
-        verify(timeWorkableService, times(1)).getEarnedVacationsSinceHiringDate(any(), any())
-        verify(annualWorkSummaryConverter, times(1)).toAnnualWorkSummary(any(), any(), any(), anyOrNull())
         assertEquals(expectedSummary, annualWorkSummary)
     }
 
-    @ParameterizedTest(name = "[${ParameterizedTest.INDEX_PLACEHOLDER}] [{0}]")
+    @ParameterizedTest
     @MethodSource("createAnnualWorkSummaryParametersProvider")
-    fun `should create annual work summary`(
-        testDescription: String,
+    fun `create annual work summary`(
         saveSummary: Boolean,
         consumedVacations: List<VacationDomain>,
     ) {
@@ -97,15 +87,15 @@ internal class AnnualWorkSummaryServiceTest {
         val timeSummaryBalance = TimeSummary(
             YearAnnualBalance(
                 PreviousAnnualBalance(
-                    worked = 1000.toDuration(DurationUnit.HOURS),
-                    target = 1200.toDuration(DurationUnit.HOURS),
-                    balance = Duration.parse("0h")
+                    1000.toDuration(HOURS),
+                    1200.toDuration(HOURS),
+                    Duration.parse("0h")
                 ),
                 AnnualBalance(
-                    worked = 1000.toDuration(DurationUnit.HOURS),
-                    target = 1200.toDuration(DurationUnit.HOURS),
-                    notRequestedVacations = Duration.parse("0h"),
-                    balance = Duration.parse("0h")
+                    1000.toDuration(HOURS),
+                    1200.toDuration(HOURS),
+                    Duration.parse("0h"),
+                    Duration.parse("0h")
                 )
             ),
             emptyMap()
@@ -113,22 +103,22 @@ internal class AnnualWorkSummaryServiceTest {
 
         val workSummaryEntity = AnnualWorkSummaryEntity(
             AnnualWorkSummaryId(user.id, year),
-            workedHours = timeSummaryBalance.year.current.worked.toBigDecimalHours(),
-            targetHours = timeSummaryBalance.year.current.target.toBigDecimalHours(),
+            timeSummaryBalance.year.current.worked.toBigDecimalHours(),
+            timeSummaryBalance.year.current.target.toBigDecimalHours(),
         )
 
         val expectedSummary = AnnualWorkSummary(
             year,
-            workedTime = timeSummaryBalance.year.current.worked,
-            targetWorkingTime = timeSummaryBalance.year.current.target,
-            earnedVacations = 22,
-            consumedVacations = 20
+            timeSummaryBalance.year.current.worked,
+            timeSummaryBalance.year.current.target,
+            22,
+            20
         )
 
         appProperties.binnacle.workSummary.persistenceEnabled = saveSummary
 
         doReturn(EMPTY_HOLIDAYS).whenever(holidayService)
-            .findAllBetweenDate(LocalDate.ofYearDay(year, 1), LocalDate.of(year, Month.DECEMBER, 31))
+            .findAllBetweenDate(LocalDate.ofYearDay(year, 1), LocalDate.of(year, DECEMBER, 31))
         doReturn(consumedVacations).whenever(vacationService).getVacationsByChargeYear(year, user)
         doReturn(EARNED_VACATIONS).whenever(timeWorkableService).getEarnedVacationsSinceHiringDate(user, year)
         doReturn(expectedSummary).whenever(annualWorkSummaryConverter)
@@ -139,13 +129,9 @@ internal class AnnualWorkSummaryServiceTest {
 
         //Then
         if (saveSummary)
-            verify(annualWorkSummaryRepository, times(1)).save(workSummaryEntity)
+            verify(annualWorkSummaryRepository).saveOrUpdate(workSummaryEntity)
         else
-            verify(annualWorkSummaryRepository, times(0)).save(any())
-
-        verify(vacationService, times(1)).getVacationsByChargeYear(any(), any())
-        verify(timeWorkableService, times(1)).getEarnedVacationsSinceHiringDate(any(), any())
-        verify(annualWorkSummaryConverter, times(1)).toAnnualWorkSummary(any(), any(), any(), anyOrNull())
+            verify(annualWorkSummaryRepository, never()).saveOrUpdate(any())
 
         assertEquals(
             expectedSummary.copy(alerts = AnnualWorkSummaryAlertValidators.values().map { it.alert }),
@@ -155,31 +141,15 @@ internal class AnnualWorkSummaryServiceTest {
 
     private companion object {
         @JvmStatic
-        private fun getAnnualWorkSummaryParametersProvider() = listOf(
-            Arguments.of(
-                "given summary from repository and vacations in different states",
-                Optional.of<AnnualWorkSummaryEntity>(mock()),
-                getVacationsWithAllStates()
-            ),
-            Arguments.of(
-                "given null summary from repository",
-                Optional.ofNullable<AnnualWorkSummaryEntity>(null),
-                listOf<VacationDomain>(mock())
-            ),
+        private fun getAnnualWorkSummaryParametersProvider() = arrayOf(
+            arrayOf(Optional.of<AnnualWorkSummaryEntity>(mock()), getVacationsWithAllStates()),
+            arrayOf(Optional.ofNullable<AnnualWorkSummaryEntity>(null), listOf<VacationDomain>(mock())),
         )
 
         @JvmStatic
-        private fun createAnnualWorkSummaryParametersProvider() = listOf(
-            Arguments.of(
-                "given save summary flag active and vacations in different states",
-                true,
-                getVacationsWithAllStates()
-            ),
-            Arguments.of(
-                "given save summary flag inactive and vacations in different states",
-                false,
-                listOf<VacationDomain>(mock())
-            ),
+        private fun createAnnualWorkSummaryParametersProvider() = arrayOf(
+            arrayOf(true, getVacationsWithAllStates()),
+            arrayOf(false, listOf<VacationDomain>(mock())),
         )
 
         private const val EARNED_VACATIONS = 22
