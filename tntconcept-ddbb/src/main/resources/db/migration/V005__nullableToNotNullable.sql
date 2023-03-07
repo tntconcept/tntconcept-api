@@ -174,3 +174,17 @@ ALTER TABLE `Interaction`
     MODIFY `file` VARCHAR(400) NOT NULL,
     MODIFY `fileMime` VARCHAR(128) NOT NULL;
 
+UPDATE `Setting`
+    SET `value` = ""
+    WHERE `value` IS NULL;
+
+ALTER TABLE `Setting`
+    MODIFY `value` varchar(4096) COLLATE utf8mb4_spanish_ci NOT NULL;
+
+UPDATE `Occupation`
+    SET `description` = ""
+    WHERE `description` IS NULL;
+
+ALTER TABLE `Occupation`
+    MODIFY `description` VARCHAR(1024) NOT NULL;
+
