@@ -53,9 +53,41 @@ internal class ActivityValidator(
         }
     }
 
+    private fun isExceedingMaxHoursForRole(
+        currentActivity: Activity,
+        activityRequest: ActivityRequestBody,
+        projectRole: ProjectRole,
+        user: User
+    ): Boolean {
+        if (projectRole.maxAllowed > 0) {
+            val year = activityRequest.startDate.year
+            val activitiesSinceStartOfYear = getActivitiesInYear(year, user)
+            val totalRegisteredHoursForThisRole =
+                getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
+            var totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole
+
+            if(currentActivity.projectRole.id == activityRequest.projectRoleId) {
+                totalRegisteredHoursForThisRoleAfterDiscount =
+                    totalRegisteredHoursForThisRole - currentActivity.duration
+            }
+
+            val totalRegisteredHoursAfterSaveRequested = totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
+
+            return totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed
+
+        }
+        return false
+    }
+
     private fun getRemainingTime(currentActivity: Activity, projectRole: ProjectRole, activityRequest: ActivityRequestBody, user: User): Double {
         val activitiesInYear = getActivitiesInYear(activityRequest.startDate.year, user)
-        val pastRegisteredTime = getTotalHoursPerRole(activitiesInYear, activityRequest) - currentActivity.duration
+        val totalRegisteredHoursForThisRole = getTotalHoursPerRole(activitiesInYear, activityRequest)
+
+        var pastRegisteredTime = totalRegisteredHoursForThisRole
+        if(currentActivity.projectRole.id == activityRequest.projectRoleId) {
+             pastRegisteredTime = totalRegisteredHoursForThisRole - currentActivity.duration
+        }
+
         var remainingTime = 0.0
         if (pastRegisteredTime < projectRole.maxAllowed) {
             remainingTime = ((projectRole.maxAllowed - pastRegisteredTime).toDouble())
@@ -85,35 +117,6 @@ internal class ActivityValidator(
             LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
             user.id
         )
-
-    private fun isExceedingMaxHoursForRole(
-        currentActivity: Activity,
-        activityRequest: ActivityRequestBody,
-        projectRole: ProjectRole,
-        user: User
-    ): Boolean {
-        if (projectRole.maxAllowed > 0) {
-            val year = activityRequest.startDate.year
-            val activitiesSinceStartOfYear = getActivitiesInYear(year, user)
-            val totalRegisteredHoursForThisRole =
-                getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
-            var totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole
-
-            if(currentActivity.projectRole.id == activityRequest.projectRoleId)
-                 totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole - currentActivity.duration
-
-            val totalRegisteredHoursAfterSaveRequested = totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
-
-            return totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed
-
-        }
-        return false
-    }
-
-    private fun isActivityGoingToBeUpdated(
-        currentActivity: Activity,
-        activityRequest: ActivityRequestBody
-    ) = currentActivity.duration > 0 && currentActivity.duration < activityRequest.duration
 
     @Transactional
     @ReadOnly
