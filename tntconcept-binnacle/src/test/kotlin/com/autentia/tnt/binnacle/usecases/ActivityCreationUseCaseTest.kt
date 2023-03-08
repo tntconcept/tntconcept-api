@@ -96,7 +96,9 @@ internal class ActivityCreationUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
+            null,
+            ApprovalState.NA
         )
 
         private fun generateLargeDescription(mainMessage: String): String {
@@ -115,7 +117,8 @@ internal class ActivityCreationUseCaseTest {
             duration: Int = 75,
             billable: Boolean = false,
             hasImage: Boolean = false,
-            projectRole: ProjectRole = PROJECT_ROLE
+            projectRole: ProjectRole = PROJECT_ROLE,
+            approvalState: ApprovalState = ApprovalState.NA
         ): Activity =
             Activity(
                 id = id,
@@ -125,7 +128,8 @@ internal class ActivityCreationUseCaseTest {
                 duration = duration,
                 billable = billable,
                 hasImage = hasImage,
-                projectRole = projectRole
+                projectRole = projectRole,
+                approvalState = approvalState
             )
 
         private fun createActivityResponseDTO(
@@ -138,7 +142,8 @@ internal class ActivityCreationUseCaseTest {
             hasImage: Boolean = false,
             projectRole: ProjectRoleResponseDTO = PROJECT_ROLE_RESPONSE_DTO,
             organization: OrganizationResponseDTO = ORGANIZATION_DTO,
-            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO
+            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO,
+            approvalState: ApprovalState = ApprovalState.NA
         ): ActivityResponseDTO =
             ActivityResponseDTO(
                 id,
@@ -151,6 +156,7 @@ internal class ActivityCreationUseCaseTest {
                 organization,
                 project,
                 hasImage,
+                approvalState
             )
 
     }

@@ -117,6 +117,7 @@ internal class ActivityServiceTest {
                     activityWithoutImageSaved.projectRole.project.organization,
                     activityWithoutImageSaved.projectRole.project,
                     false,
+                    activityWithoutImageSaved.approvalState
                 )
             ),
             actual
@@ -179,7 +180,9 @@ internal class ActivityServiceTest {
             "Description...",
             false,
             projectRole.id,
-            false
+            false,
+            null,
+            activityWithoutImageSaved.approvalState
         )
 
         doReturn(Optional.of(activityWithoutImageSaved))
@@ -212,7 +215,8 @@ internal class ActivityServiceTest {
             false,
             projectRole.id,
             true,
-            "Base64 format..."
+            "Base64 format...",
+            ApprovalState.PENDING
         )
 
         val oldActivity = mock(Activity::class.java)
@@ -258,7 +262,9 @@ internal class ActivityServiceTest {
             "Description...",
             false,
             projectRole.id,
-            false
+            false,
+            null,
+            ApprovalState.PENDING
         )
 
         val oldActivity = mock(Activity::class.java)
@@ -334,7 +340,9 @@ internal class ActivityServiceTest {
             "Dummy description",
             false,
             projectRole.id,
-            false
+            false,
+            null,
+            ApprovalState.PENDING
         )
 
         private val activityWithImageRequest = ActivityRequestBody(
@@ -345,7 +353,8 @@ internal class ActivityServiceTest {
             false,
             projectRole.id,
             true,
-            "Base64 format..."
+            "Base64 format...",
+            ApprovalState.PENDING
         )
     }
 

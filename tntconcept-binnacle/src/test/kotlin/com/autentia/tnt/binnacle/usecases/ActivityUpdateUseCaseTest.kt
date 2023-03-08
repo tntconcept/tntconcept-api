@@ -92,7 +92,8 @@ internal class ActivityUpdateUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
         private val todayActivity = Activity(
             1,
@@ -105,6 +106,7 @@ internal class ActivityUpdateUseCaseTest {
             null,
             null,
             false,
+            approvalState = ApprovalState.NA
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
             1,
@@ -117,6 +119,7 @@ internal class ActivityUpdateUseCaseTest {
             ORGANIZATION_DTO,
             PROJECT_RESPONSE_DTO,
             false,
+            approvalState = ApprovalState.NA
         )
         private val activityToUpdate = ActivityRequestBody(
             1L,
@@ -125,7 +128,8 @@ internal class ActivityUpdateUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
     }
 }

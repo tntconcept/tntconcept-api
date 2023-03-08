@@ -122,7 +122,7 @@ internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: Requir
     requireEvidence = requireEvidence
 )
 
-internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage: Boolean) = ActivityResponse(
+internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage: Boolean, approvalState: ApprovalState = ApprovalState.NA) = ActivityResponse(
     id = id,
     startDate = startDate,
     duration = 60,
@@ -132,10 +132,11 @@ internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage
     billable = false,
     organization = createOrganization(),
     project = createProject(),
-    hasImage = hasImage
+    hasImage = hasImage,
+    approvalState = approvalState
 )
 
-internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasImage: Boolean) = ActivityResponseDTO(
+internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasImage: Boolean, approvalState: ApprovalState = ApprovalState.NA) = ActivityResponseDTO(
     id = id,
     startDate = startDate,
     duration = 540,
@@ -145,10 +146,11 @@ internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasIm
     hasImage = hasImage,
     organization = createOrganizationResponseDTO(),
     project = createProjectResponseDTO(),
-    projectRole = createProjectRoleResponseDTO()
+    projectRole = createProjectRoleResponseDTO(),
+    approvalState = approvalState
 )
 
-internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasImage: Boolean) =
+internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasImage: Boolean, approvalState: ApprovalState = ApprovalState.NA) =
     ActivityRequestBodyDTO(
         id,
         startDate,
@@ -156,7 +158,8 @@ internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, pr
         "New activity",
         false,
         projectRoleId,
-        hasImage
+        hasImage,
+        approvalState = approvalState
     )
 
 

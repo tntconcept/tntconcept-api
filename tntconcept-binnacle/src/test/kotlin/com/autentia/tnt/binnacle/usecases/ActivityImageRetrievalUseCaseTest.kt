@@ -101,6 +101,7 @@ internal class ActivityImageRetrievalUseCaseTest {
             null,
             TODAY_DATE,
             true,
+            ApprovalState.NA
         )
 
         val activityWithoutImage = Activity(
@@ -114,6 +115,7 @@ internal class ActivityImageRetrievalUseCaseTest {
             null,
             TODAY_DATE,
             false,
+            ApprovalState.NA
         )
     }
 }

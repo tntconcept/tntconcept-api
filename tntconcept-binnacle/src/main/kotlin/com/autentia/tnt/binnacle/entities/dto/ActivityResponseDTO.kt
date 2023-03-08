@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.entities.dto
 
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import java.time.LocalDateTime
 
 data class ActivityResponseDTO(
@@ -12,5 +13,6 @@ data class ActivityResponseDTO(
         val billable: Boolean,
         val organization: OrganizationResponseDTO,
         val project: ProjectResponseDTO,
-        val hasImage: Boolean?
+        val hasImage: Boolean?,
+        val approvalState: ApprovalState
 ) {}

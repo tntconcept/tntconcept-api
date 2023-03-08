@@ -135,7 +135,8 @@ internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage
     billable = false,
     organization = createOrganization(),
     project = createProject(),
-    hasImage = hasImage
+    hasImage = hasImage,
+    approvalState = ApprovalState.PENDING
 )
 
 internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasImage: Boolean) = ActivityResponseDTO(
@@ -148,7 +149,8 @@ internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasIm
     hasImage = hasImage,
     organization = createOrganizationResponseDTO(),
     project = createProjectResponseDTO(),
-    projectRole = createProjectRoleResponseDTO()
+    projectRole = createProjectRoleResponseDTO(),
+    approvalState = ApprovalState.PENDING
 )
 
 internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasImage: Boolean) =
@@ -159,7 +161,8 @@ internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, pr
         "New activity",
         false,
         projectRoleId,
-        hasImage
+        hasImage,
+        approvalState = ApprovalState.PENDING
     )
 
 

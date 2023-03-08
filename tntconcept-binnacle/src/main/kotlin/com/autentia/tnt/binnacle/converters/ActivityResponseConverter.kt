@@ -26,7 +26,8 @@ class ActivityResponseConverter(
         project = projectResponseConverter.toProjectResponseDTO(activity.projectRole.project),
         projectRole = projectRoleResponseConverter.toProjectRoleResponseDTO(activity.projectRole),
         duration = activity.duration,
-        hasImage = activity.hasImage
+        hasImage = activity.hasImage,
+        approvalState = activity.approvalState
     )
 
     fun mapActivityToActivityResponse(activity: Activity) = ActivityResponse(
@@ -39,7 +40,8 @@ class ActivityResponseConverter(
         project = activity.projectRole.project,
         projectRole = activity.projectRole,
         duration = activity.duration,
-        hasImage = activity.hasImage
+        hasImage = activity.hasImage,
+        approvalState = activity.approvalState
     )
 
     fun toActivityResponseDTO(activityResponse: ActivityResponse) =
@@ -54,7 +56,7 @@ class ActivityResponseConverter(
             organizationResponseConverter.toOrganizationResponseDTO(activityResponse.organization),
             projectResponseConverter.toProjectResponseDTO(activityResponse.project),
             activityResponse.hasImage,
-
+            approvalState = activityResponse.approvalState
             )
 
     fun toActivity(activityResponse: ActivityResponse) =

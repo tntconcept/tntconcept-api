@@ -98,7 +98,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             "Dummy description",
             PROJECT_ROLE,
             USER.id,
-            true
+            true,
+            approvalState = ApprovalState.NA
         )
 
         val savedActivity = Activity(
@@ -108,7 +109,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             "Dummy description",
             PROJECT_ROLE,
             33L,
-            true
+            true,
+            approvalState = ApprovalState.NA
         )
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
             2L,
@@ -120,7 +122,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             true,
             ORGANIZATION_DTO,
             PROJECT_RESPONSE_DTO,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
 
     }

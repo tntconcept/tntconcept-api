@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
@@ -80,7 +81,8 @@ internal class ActivitiesBetweenDateUseCaseTest {
             true,
             ORGANIZATION,
             PROJECT,
-            false
+            false,
+            ApprovalState.PENDING
         )
 
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
@@ -93,7 +95,8 @@ internal class ActivitiesBetweenDateUseCaseTest {
             ACTIVITY_RESPONSE.billable,
             OrganizationResponseDTO(ORGANIZATION.id, ORGANIZATION.name),
             ProjectResponseDTO(PROJECT.id, PROJECT.name, PROJECT.open, PROJECT.billable),
-            ACTIVITY_RESPONSE.hasImage
+            ACTIVITY_RESPONSE.hasImage,
+            ACTIVITY_RESPONSE.approvalState
         )
 
     }

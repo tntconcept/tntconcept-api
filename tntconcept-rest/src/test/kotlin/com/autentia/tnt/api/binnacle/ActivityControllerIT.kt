@@ -1,6 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -291,7 +292,8 @@ internal class ActivityControllerIT {
             true,
             3,
             false,
-            null
+            null,
+            ApprovalState.PENDING,
         )
 
         private val ACTIVITY_POST_JSON = """
@@ -315,6 +317,7 @@ internal class ActivityControllerIT {
             OrganizationResponseDTO(6, "organization"),
             ProjectResponseDTO(5, "project", true, true),
             ACTIVITY_REQUEST_BODY_DTO.hasImage,
+            ACTIVITY_REQUEST_BODY_DTO.approvalState,
         )
 
         private val ACTIVITY_PUT_JSON = """
