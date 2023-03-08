@@ -31,7 +31,7 @@ internal class AppProperties {
     @ConfigurationProperties("binnacle")
     internal class BinnacleProperties {
         @Email
-        var vacationsApprover: String = ""
+        var vacationsApprovers: List<String> = emptyList()
 
         var notWorkableProjects: List<Int> = emptyList()
         var workSummary = WorkSummaryProperties()
@@ -57,7 +57,7 @@ internal class AppProperties {
             @ConfigurationProperties("mail")
             internal class Mail {
                 var enabled: Boolean = false
-                var to: String = ""
+                var to: List<String> = emptyList()
                 var sendAlertsOnly: Boolean = false
             }
 
