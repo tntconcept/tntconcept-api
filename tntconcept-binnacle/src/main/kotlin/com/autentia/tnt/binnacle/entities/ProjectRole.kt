@@ -26,5 +26,7 @@ data class ProjectRole(
     @JsonIgnore
     val project: Project,
 
-    val maxAllowed: Int
+    val maxAllowed: Int,
+
+    val isApprovalRequired: Boolean
 )
