@@ -150,7 +150,7 @@ internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasIm
     approvalState = approvalState
 )
 
-internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasImage: Boolean, approvalState: ApprovalState = ApprovalState.NA) =
+internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasImage: Boolean) =
     ActivityRequestBodyDTO(
         id,
         startDate,
@@ -159,7 +159,6 @@ internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, pr
         false,
         projectRoleId,
         hasImage,
-        approvalState = approvalState
     )
 
 

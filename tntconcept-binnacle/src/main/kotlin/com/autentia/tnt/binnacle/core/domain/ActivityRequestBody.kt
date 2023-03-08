@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.core.domain
 
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import java.time.LocalDateTime
 import javax.validation.constraints.Size
 
@@ -17,5 +16,4 @@ data class ActivityRequestBody(
     val projectRoleId: Long,
     val hasImage: Boolean,
     val imageFile: String? = null,
-    val approvalState: ApprovalState
 )

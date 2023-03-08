@@ -162,7 +162,6 @@ internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, pr
         false,
         projectRoleId,
         hasImage,
-        approvalState = ApprovalState.PENDING
     )
 
 

@@ -98,7 +98,6 @@ internal class ActivityCreationUseCaseTest {
             PROJECT_ROLE.id,
             false,
             null,
-            ApprovalState.NA
         )
 
         private fun generateLargeDescription(mainMessage: String): String {

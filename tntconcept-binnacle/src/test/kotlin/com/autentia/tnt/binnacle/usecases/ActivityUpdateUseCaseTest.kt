@@ -93,7 +93,6 @@ internal class ActivityUpdateUseCaseTest {
             false,
             PROJECT_ROLE.id,
             false,
-            approvalState = ApprovalState.NA
         )
         private val todayActivity = Activity(
             1,
@@ -129,7 +128,6 @@ internal class ActivityUpdateUseCaseTest {
             false,
             PROJECT_ROLE.id,
             false,
-            approvalState = ApprovalState.NA
         )
     }
 }

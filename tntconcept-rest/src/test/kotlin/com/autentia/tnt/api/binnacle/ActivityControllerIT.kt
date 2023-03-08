@@ -1,34 +1,13 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityRetrievalByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityUpdateUseCase
-import io.micronaut.http.HttpRequest.DELETE
-import io.micronaut.http.HttpRequest.GET
-import io.micronaut.http.HttpRequest.POST
-import io.micronaut.http.HttpRequest.PUT
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
+import io.micronaut.http.HttpRequest.*
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.HttpStatus.BAD_REQUEST
-import io.micronaut.http.HttpStatus.NOT_FOUND
-import io.micronaut.http.HttpStatus.OK
+import io.micronaut.http.HttpStatus.*
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
@@ -292,8 +271,6 @@ internal class ActivityControllerIT {
             true,
             3,
             false,
-            null,
-            ApprovalState.PENDING,
         )
 
         private val ACTIVITY_POST_JSON = """
@@ -317,7 +294,7 @@ internal class ActivityControllerIT {
             OrganizationResponseDTO(6, "organization"),
             ProjectResponseDTO(5, "project", true, true),
             ACTIVITY_REQUEST_BODY_DTO.hasImage,
-            ACTIVITY_REQUEST_BODY_DTO.approvalState,
+            ApprovalState.NA,
         )
 
         private val ACTIVITY_PUT_JSON = """

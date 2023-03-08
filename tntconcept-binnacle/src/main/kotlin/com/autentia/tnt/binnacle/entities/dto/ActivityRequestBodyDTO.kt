@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.entities.dto
 
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
 import javax.validation.constraints.Size
@@ -16,5 +15,4 @@ data class ActivityRequestBodyDTO(
     val projectRoleId: Long,
     val hasImage: Boolean,
     val imageFile: String? = null,
-    val approvalState: ApprovalState
 )

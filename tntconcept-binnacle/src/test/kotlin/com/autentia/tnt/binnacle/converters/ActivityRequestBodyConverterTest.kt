@@ -45,7 +45,6 @@ internal class ActivityRequestBodyConverterTest {
             1,
             false,
             null,
-            ApprovalState.NA
         )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
@@ -57,7 +56,6 @@ internal class ActivityRequestBodyConverterTest {
             ACTIVITY_REQUEST_BODY.projectRoleId,
             ACTIVITY_REQUEST_BODY.hasImage,
             ACTIVITY_REQUEST_BODY.imageFile,
-            ACTIVITY_REQUEST_BODY.approvalState
         )
 
         val DUMMY_ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
