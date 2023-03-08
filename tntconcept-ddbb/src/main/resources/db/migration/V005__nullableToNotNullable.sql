@@ -734,9 +734,18 @@ ALTER TABLE `CommissioningPaymentData`
     MODIFY COLUMN `bankAccount`     VARCHAR(50)         NOT NULL,
     MODIFY COLUMN `billNumber`      VARCHAR(50)         NOT NULL;
 
-
 -- No null values in live database
 ALTER TABLE `Link`
     MODIFY COLUMN `user`            VARCHAR(128)        NOT NULL,
     MODIFY COLUMN `link`            VARCHAR(128)        NOT NULL;
+
+
+-- CommissioningFile table
+
+UPDATE `CommissioningFile`
+SET `fileMime` = ''
+WHERE `fileMime` IS NULL;
+
+ALTER TABLE `CommissioningFile`
+    MODIFY COLUMN `fileMime`        VARCHAR(128)        NOT NULL;
 
