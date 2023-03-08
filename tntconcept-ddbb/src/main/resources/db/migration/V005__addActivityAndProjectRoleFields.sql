@@ -25,16 +25,7 @@ ALTER TABLE Activity
 
 /* ProjectRole Table */
 
-ALTER TABLE ProjectRole
-    MODIFY requireEvidence varchar(10);
 
-UPDATE ProjectRole SET requireEvidence = CASE
-    WHEN requireEvidence = '0' THEN 'NO'
-    WHEN requireEvidence = '1' THEN 'WEEKLY'
-END;
-
-ALTER TABLE ProjectRole
-    MODIFY requireEvidence varchar(10) NOT NULL;
 
 ALTER TABLE ProjectRole
     ADD timeUnit varchar(10) NOT NULL DEFAULT 'MINUTES';

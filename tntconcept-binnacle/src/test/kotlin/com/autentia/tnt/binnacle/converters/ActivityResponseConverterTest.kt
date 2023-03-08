@@ -1,10 +1,7 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -108,7 +105,8 @@ internal class ActivityResponseConverterTest {
             billable = false,
             departmentId = 1,
             hasEvidences = false,
-            projectRole = DUMMY_PROJECT_ROLE
+            projectRole = DUMMY_PROJECT_ROLE,
+            approvalState = ApprovalState.NA
         )
 
         val DUMMY_ACTIVITY_RESPONSE = ActivityResponse(
@@ -121,7 +119,9 @@ internal class ActivityResponseConverterTest {
             DUMMY_ACTIVITY.billable,
             DUMMY_ORGANIZATION,
             DUMMY_PROJECT,
-            DUMMY_ACTIVITY.hasEvidences
+            DUMMY_ACTIVITY.hasEvidences,
+            DUMMY_ACTIVITY.approvalState
+
         )
 
         val DUMMY_ACTIVITY_DTO = ActivityResponseDTO(
@@ -134,7 +134,9 @@ internal class ActivityResponseConverterTest {
             DUMMY_ACTIVITY.billable,
             DUMMY_ORGANIZATION_DTO,
             DUMMY_PROJECT_DTO,
-            DUMMY_ACTIVITY.hasEvidences
+            DUMMY_ACTIVITY.hasEvidences,
+            DUMMY_ACTIVITY.approvalState
+
         )
 
 

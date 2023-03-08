@@ -19,8 +19,9 @@ class ActivityRequestBodyConverter() {
             activityRequestBodyDTO.description,
             activityRequestBodyDTO.billable,
             activityRequestBodyDTO.projectRoleId,
-            activityRequestBodyDTO.hasImage,
-            activityRequestBodyDTO.imageFile
+            activityRequestBodyDTO.hasEvidences,
+            activityRequestBodyDTO.imageFile,
+            activityRequestBodyDTO.approvalState
         )
 
 
@@ -40,7 +41,8 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.billable,
             user.departmentId,
             insertDate,
-            activityRequestBody.hasImage
+            activityRequestBody.hasImage,
+            activityRequestBody.approvalState
         )
 
     fun mapActivityRequestBodyToActivityRequestDTO(activityRequestBody: ActivityRequestBody) =
@@ -52,7 +54,8 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.billable,
             activityRequestBody.projectRoleId,
             activityRequestBody.hasImage,
-            activityRequestBody.imageFile
+            activityRequestBody.imageFile,
+            activityRequestBody.approvalState
         )
 
 }

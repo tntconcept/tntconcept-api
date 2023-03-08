@@ -1,5 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -290,7 +291,8 @@ internal class ActivityControllerIT {
             true,
             3,
             false,
-            null
+            null,
+            ApprovalState.PENDING
         )
 
         private val ACTIVITY_POST_JSON = """
@@ -299,7 +301,8 @@ internal class ActivityControllerIT {
                 "duration": ${ACTIVITY_REQUEST_BODY_DTO.duration},
                 "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
-                "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId}
+                "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
+                "approvalState": "${ACTIVITY_REQUEST_BODY_DTO.approvalState}"
             }
         """.trimIndent()
 
@@ -313,7 +316,8 @@ internal class ActivityControllerIT {
             ACTIVITY_REQUEST_BODY_DTO.billable,
             OrganizationResponseDTO(6, "organization"),
             ProjectResponseDTO(5, "project", true, true),
-            ACTIVITY_REQUEST_BODY_DTO.hasImage,
+            ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
+            ACTIVITY_REQUEST_BODY_DTO.approvalState
         )
 
         private val ACTIVITY_PUT_JSON = """
@@ -323,7 +327,8 @@ internal class ActivityControllerIT {
                 "duration": ${ACTIVITY_RESPONSE_DTO.duration},
                 "description": "Updated activity description",
                 "billable": ${ACTIVITY_RESPONSE_DTO.billable},
-                "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRole.id}
+                "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRole.id},
+                "approvalState": "${ACTIVITY_RESPONSE_DTO.approvalState}"
             }
         """.trimIndent()
 

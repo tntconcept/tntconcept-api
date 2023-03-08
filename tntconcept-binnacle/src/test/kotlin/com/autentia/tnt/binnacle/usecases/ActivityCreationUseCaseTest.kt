@@ -6,10 +6,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -99,7 +96,9 @@ internal class ActivityCreationUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
+            null,
+            ApprovalState.NA
         )
 
         private fun generateLargeDescription(mainMessage: String): String {
@@ -118,7 +117,8 @@ internal class ActivityCreationUseCaseTest {
             duration: Int = 75,
             billable: Boolean = false,
             hasImage: Boolean = false,
-            projectRole: ProjectRole = PROJECT_ROLE
+            projectRole: ProjectRole = PROJECT_ROLE,
+            approvalState: ApprovalState = ApprovalState.NA
         ): Activity =
             Activity(
                 id = id,
@@ -128,7 +128,8 @@ internal class ActivityCreationUseCaseTest {
                 duration = duration,
                 billable = billable,
                 hasEvidences = hasImage,
-                projectRole = projectRole
+                projectRole = projectRole,
+                approvalState = approvalState
             )
 
         private fun createActivityResponseDTO(
@@ -141,7 +142,8 @@ internal class ActivityCreationUseCaseTest {
             hasImage: Boolean = false,
             projectRole: ProjectRoleResponseDTO = PROJECT_ROLE_RESPONSE_DTO,
             organization: OrganizationResponseDTO = ORGANIZATION_DTO,
-            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO
+            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO,
+            approvalState: ApprovalState = ApprovalState.NA
         ): ActivityResponseDTO =
             ActivityResponseDTO(
                 id,
@@ -154,6 +156,7 @@ internal class ActivityCreationUseCaseTest {
                 organization,
                 project,
                 hasImage,
+                approvalState
             )
 
     }

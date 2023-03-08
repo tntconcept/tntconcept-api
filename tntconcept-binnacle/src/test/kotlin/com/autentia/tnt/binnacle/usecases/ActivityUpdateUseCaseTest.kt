@@ -7,10 +7,7 @@ import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -95,7 +92,8 @@ internal class ActivityUpdateUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
         private val todayActivity = Activity(
             1,
@@ -108,6 +106,7 @@ internal class ActivityUpdateUseCaseTest {
             null,
             null,
             false,
+            approvalState = ApprovalState.NA
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
             1,
@@ -120,6 +119,7 @@ internal class ActivityUpdateUseCaseTest {
             ORGANIZATION_DTO,
             PROJECT_RESPONSE_DTO,
             false,
+            approvalState = ApprovalState.NA
         )
         private val activityToUpdate = ActivityRequestBody(
             1L,
@@ -128,7 +128,8 @@ internal class ActivityUpdateUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
     }
 }
