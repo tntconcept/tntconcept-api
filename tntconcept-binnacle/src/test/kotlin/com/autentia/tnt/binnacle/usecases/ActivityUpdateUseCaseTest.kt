@@ -83,7 +83,7 @@ internal class ActivityUpdateUseCaseTest {
             open = true,
             billable = false
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true)
         private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
         private val NEW_ACTIVITY_DTO = ActivityRequestBodyDTO(
             1L,

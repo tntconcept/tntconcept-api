@@ -82,12 +82,12 @@ internal class SearchByRoleIdUseCaseTest {
 
         private val AUTENTIA = Organization(1, "Autentia", emptyList())
         private val INTERNAL_TRAINING = Project(1, "Internal training", true, true, AUTENTIA, emptyList())
-        private val INTERNAL_STUDENT = ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 0)
-        private val INTERNAL_TEACHER = ProjectRole(2, "Internal Teacher", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 0)
+        private val INTERNAL_STUDENT = ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 0, true)
+        private val INTERNAL_TEACHER = ProjectRole(2, "Internal Teacher", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 0, true)
 
         private val OTHER_COMPANY = Organization(2, "Other S.A.", emptyList())
         private val EXTERNAL_TRAINING = Project(2, "External training", true, true, OTHER_COMPANY, emptyList())
-        private val EXTERNAL_STUDENT = ProjectRole(3, "External student", RequireEvidence.WEEKLY, EXTERNAL_TRAINING, 0)
-        private val EXTERNAL_TEACHER = ProjectRole(4, "External teacher", RequireEvidence.WEEKLY, EXTERNAL_TRAINING, 0)
+        private val EXTERNAL_STUDENT = ProjectRole(3, "External student", RequireEvidence.WEEKLY, EXTERNAL_TRAINING, 0, true)
+        private val EXTERNAL_TEACHER = ProjectRole(4, "External teacher", RequireEvidence.WEEKLY, EXTERNAL_TRAINING, 0, true)
     }
 }

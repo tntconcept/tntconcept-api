@@ -21,7 +21,7 @@ class ActivityRequestBodyConverter() {
             activityRequestBodyDTO.billable,
             activityRequestBodyDTO.projectRoleId,
             activityRequestBodyDTO.hasImage,
-            activityRequestBodyDTO.imageFile
+            activityRequestBodyDTO.imageFile,
         )
 
 
@@ -43,18 +43,6 @@ class ActivityRequestBodyConverter() {
             insertDate,
             activityRequestBody.hasImage,
             ApprovalState.NA
-        )
-
-    fun mapActivityRequestBodyToActivityRequestDTO(activityRequestBody: ActivityRequestBody) =
-        ActivityRequestBodyDTO(
-            activityRequestBody.id,
-            activityRequestBody.startDate,
-            activityRequestBody.duration,
-            activityRequestBody.description,
-            activityRequestBody.billable,
-            activityRequestBody.projectRoleId,
-            activityRequestBody.hasImage,
-            activityRequestBody.imageFile
         )
 
 }

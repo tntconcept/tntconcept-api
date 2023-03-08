@@ -41,7 +41,8 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
                 ORGANIZATION,
                 emptyList()
             ),
-            0
+            0,
+            true,
         )
         private val PROJECT_ROLE_PROJECT_OPEN = ProjectRole(
             1L,
@@ -55,7 +56,8 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
                 ORGANIZATION,
                 emptyList()
             ),
-            0
+            0,
+            true,
         )
 
         private val projectOpen = Project(1L, "Project is Open", true,  false,  ORGANIZATION,

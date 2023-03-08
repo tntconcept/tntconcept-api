@@ -88,7 +88,7 @@ internal class ActivityImageRetrievalUseCaseTest {
             ORGANIZATION,
             listOf(),
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true)
 
         private val todayActivity = Activity(
             ID,

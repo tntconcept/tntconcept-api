@@ -24,8 +24,8 @@ internal class ProjectRoleResponseConverterTest {
     @Test
     fun `given ProjectRole list should return ProjectRoleResponseDTO list with converted values`() {
         val projectRoleList = listOf(
-            ProjectRole(1, "First Role", RequireEvidence.NO, project, 0),
-            ProjectRole(2, "Second Role", RequireEvidence.WEEKLY, project, 0)
+            ProjectRole(1, "First Role", RequireEvidence.NO, project, 0, true),
+            ProjectRole(2, "Second Role", RequireEvidence.WEEKLY, project, 0, true)
         )
 
         val projectRoleResponseDTOList = projectRoleList.map { projectRoleResponseConverter.toProjectRoleResponseDTO(it) }
@@ -39,7 +39,7 @@ internal class ProjectRoleResponseConverterTest {
 
     private companion object{
         val project = Project(1,"Dummy project", false, false, Organization(2, "Organzation", listOf()), listOf())
-        val role = ProjectRole(1, "First Role", RequireEvidence.NO, project, 0)
+        val role = ProjectRole(1, "First Role", RequireEvidence.NO, project, 0, true)
 
     }
 }

@@ -27,4 +27,6 @@ data class ProjectRole(
     val project: Project,
 
     val maxAllowed: Int,
+
+    val isWorkingTime: Boolean,
 )

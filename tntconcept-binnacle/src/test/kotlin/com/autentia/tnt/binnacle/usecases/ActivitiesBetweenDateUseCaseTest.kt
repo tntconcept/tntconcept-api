@@ -68,7 +68,7 @@ internal class ActivitiesBetweenDateUseCaseTest {
 
         private val ORGANIZATION = Organization(1, "organization", emptyList())
         private val PROJECT = Project(1, "project", true, true, ORGANIZATION, emptyList())
-        private val PROJECT_ROLE = ProjectRole(1, "Role", RequireEvidence.NO, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(1, "Role", RequireEvidence.NO, PROJECT, 0, true)
         private val WORKED_TIME = 120
 
         private val ACTIVITY_RESPONSE = ActivityResponse(

@@ -86,7 +86,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 Organization(1L, "Dummy Organization", listOf()),
                 listOf(),
             ),
-            0
+            0,
+            true
         )
 
         private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
