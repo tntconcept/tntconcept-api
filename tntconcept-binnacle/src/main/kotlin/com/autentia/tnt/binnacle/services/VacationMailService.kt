@@ -26,11 +26,6 @@ internal class VacationMailService(
             return
         }
 
-        if (appProperties.binnacle.vacationsApprover.isBlank()) {
-            print("No vacations approvers specified)")
-            return
-        }
-
         val body = messageSource
             .getMessage(
                 "mail.request.vacations.template",
@@ -46,7 +41,7 @@ internal class VacationMailService(
             .getMessage("mail.request.vacations.subject", locale, userName)
             .orElse(null) ?: error("Cannot find message mail.request.vacations.subject")
 
-        mailService.send(appProperties.mail.from, appProperties.binnacle.vacationsApprover, subject, body)
+        mailService.send(appProperties.mail.from, appProperties.binnacle.vacationsApprovers, subject, body)
             .onFailure { logger.error("Error sending vacations email", it) }
 
     }
