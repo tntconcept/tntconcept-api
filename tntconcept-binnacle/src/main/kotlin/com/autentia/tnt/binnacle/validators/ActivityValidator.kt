@@ -23,7 +23,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
 import javax.transaction.Transactional
-import kotlin.math.absoluteValue
 
 @Singleton
 internal class ActivityValidator(
@@ -46,19 +45,16 @@ internal class ActivityValidator(
                 user
             ) -> throw ActivityBeforeHiringDateException()
 
-            isExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user) -> throw MaxHoursPerRoleException(
-                projectRoleDb.maxAllowed / DECIMAL_HOUR,
-                getRemainingTime(Activity.emptyActivity(projectRoleDb), projectRoleDb, activityRequest, user) / DECIMAL_HOUR
-            )
         }
+        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user)
     }
 
-    private fun isExceedingMaxHoursForRole(
+    private fun checkIfIsExceedingMaxHoursForRole(
         currentActivity: Activity,
         activityRequest: ActivityRequestBody,
         projectRole: ProjectRole,
         user: User
-    ): Boolean {
+    ) {
         if (projectRole.maxAllowed > 0) {
             val year = activityRequest.startDate.year
             val activitiesSinceStartOfYear = getActivitiesInYear(year, user)
@@ -66,26 +62,39 @@ internal class ActivityValidator(
                 getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
             var totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole
 
-            if(currentActivity.projectRole.id == activityRequest.projectRoleId) {
+            if (currentActivity.projectRole.id == activityRequest.projectRoleId) {
                 totalRegisteredHoursForThisRoleAfterDiscount =
                     totalRegisteredHoursForThisRole - currentActivity.duration
             }
 
-            val totalRegisteredHoursAfterSaveRequested = totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
+            val totalRegisteredHoursAfterSaveRequested =
+                totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
 
-            return totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed
-
+            if (totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed) {
+                throw MaxHoursPerRoleException(
+                    projectRole.maxAllowed / DECIMAL_HOUR,
+                    getRemainingTime(
+                        currentActivity,
+                        projectRole,
+                        activityRequest,
+                        activitiesSinceStartOfYear
+                    ) / DECIMAL_HOUR
+                )
+            }
         }
-        return false
     }
 
-    private fun getRemainingTime(currentActivity: Activity, projectRole: ProjectRole, activityRequest: ActivityRequestBody, user: User): Double {
-        val activitiesInYear = getActivitiesInYear(activityRequest.startDate.year, user)
+    private fun getRemainingTime(
+        currentActivity: Activity,
+        projectRole: ProjectRole,
+        activityRequest: ActivityRequestBody,
+        activitiesInYear: List<ActivityTimeOnly>
+    ): Double {
         val totalRegisteredHoursForThisRole = getTotalHoursPerRole(activitiesInYear, activityRequest)
 
         var pastRegisteredTime = totalRegisteredHoursForThisRole
-        if(currentActivity.projectRole.id == activityRequest.projectRoleId) {
-             pastRegisteredTime = totalRegisteredHoursForThisRole - currentActivity.duration
+        if (currentActivity.projectRole.id == activityRequest.projectRoleId) {
+            pastRegisteredTime = totalRegisteredHoursForThisRole - currentActivity.duration
         }
 
         var remainingTime = 0.0
@@ -136,17 +145,8 @@ internal class ActivityValidator(
                 activityRequest.startDate.toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
-
-            isExceedingMaxHoursForRole(
-                activityDb,
-                activityRequest,
-                projectRoleDb,
-                user
-            ) -> throw MaxHoursPerRoleException(
-                projectRoleDb.maxAllowed / DECIMAL_HOUR,
-                getRemainingTime(activityDb, projectRoleDb, activityRequest, user) / DECIMAL_HOUR
-            )
         }
+        checkIfIsExceedingMaxHoursForRole(activityDb, activityRequest, projectRoleDb, user)
     }
 
 
