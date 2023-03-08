@@ -120,32 +120,19 @@ internal fun createProjectResponseDTO(id: Long = 1L, open: Boolean = false, bill
     )
 
 internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
-    id = id,
-    name = "Dummy Project role",
-    requireEvidence = RequireEvidence.WEEKLY,
-    project = createProject(),
-    maxAllowed = 0
+    id,
+    "Dummy Project role",
+    RequireEvidence.WEEKLY,
+    createProject(),
+    0,
+    true,
+    false
 )
 
-internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =
-    ProjectRoleResponseDTO(
-        id,
-        "Dummy Project Role",
-        requireEvidence
-    )
-
-internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasEvidences: Boolean) = ActivityResponse(
-    id = id,
-    startDate = startDate,
-    duration = 60,
-    description = "",
-    projectRole = createProjectRole(),
-    userId = 1L,
-    billable = false,
-    organization = createOrganization(),
-    project = createProject(),
-    hasEvidences = hasEvidences,
-    approvalState = ApprovalState.PENDING
+internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) = ProjectRoleResponseDTO(
+    id,
+    "Dummy Project Role",
+    requireEvidence
 )
 
 internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasEvidences: Boolean) = ActivityResponseDTO(
@@ -162,12 +149,7 @@ internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasEv
     approvalState = ApprovalState.PENDING
 )
 
-internal fun createActivityRequestBodyDTO(
-    id: Long,
-    startDate: LocalDateTime,
-    projectRoleId: Long,
-    hasEvidences: Boolean
-) =
+internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasEvidences: Boolean) =
     ActivityRequestBodyDTO(
         id,
         startDate,
@@ -175,7 +157,7 @@ internal fun createActivityRequestBodyDTO(
         "New activity",
         false,
         projectRoleId,
-        hasEvidences,
+        hasEvidences
     )
 
 

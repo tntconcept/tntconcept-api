@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.entities
 import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.*
 
-enum class RequireEvidence {
+enum class RequireEvidence{
     NO, ONCE, WEEKLY
 }
 
@@ -27,6 +27,8 @@ data class ProjectRole(
     val project: Project,
 
     val maxAllowed: Int,
+
+    val isWorkingTime: Boolean,
 
     val isApprovalRequired: Boolean
 )

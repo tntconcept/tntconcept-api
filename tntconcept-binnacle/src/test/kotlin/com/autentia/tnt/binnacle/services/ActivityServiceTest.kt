@@ -328,7 +328,7 @@ internal class ActivityServiceTest {
 
         private val organization = Organization(1L, "Autentia", emptyList())
         private val project = Project(1L, "Back-end developers", true, false, organization, emptyList())
-        private val projectRole = ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0)
+        private val projectRole = ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false)
 
         private val TODAY_NOON = LocalDateTime.of(LocalDate.now(), LocalTime.NOON)
 

@@ -621,10 +621,11 @@ internal class ActivityValidatorTest {
             Project(1, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
         private val permisoProject =
             Project(2, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
-        private val projectRole = ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0)
+        private val projectRole = ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false)
 
-        private val projectRoleNoLimit = ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0)
-        private val projectRoleLimited = ProjectRole(3, "vac", RequireEvidence.NO, vacationProject, (HOUR * 8))
+        private val projectRoleNoLimit = ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0, true, false)
+        private val projectRoleLimited =
+            ProjectRole(3, "vac", RequireEvidence.NO, vacationProject, (HOUR * 8), false, false)
 
         private val activityNotReachedLimitUpdate = createActivity(
             id = 1L,
@@ -789,7 +790,8 @@ internal class ActivityValidatorTest {
             CLOSED_ID, "TNT", false, false,
             Organization(1, "Autentia", emptyList()), emptyList()
         )
-        private val closedProjectRole = ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0)
+        private val closedProjectRole =
+            ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false)
 
         private fun createActivityRequestBody(
             startDate: LocalDateTime,
@@ -856,11 +858,13 @@ internal class ActivityValidatorTest {
             project: Project = Project(1, "Project", true, false, organization, listOf()),
             maxAllowed: Int
         ) = ProjectRole(
-            id = id,
-            name = name,
-            requireEvidence = requireEvidence,
-            project = project,
-            maxAllowed = maxAllowed,
+            id,
+            name,
+            requireEvidence,
+            project,
+            maxAllowed,
+            true,
+            false
         )
 
         private fun someYearsAgoLocalDateTime(yearsAgo: Int) =

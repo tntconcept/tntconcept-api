@@ -45,16 +45,4 @@ class ActivityRequestBodyConverter() {
             ApprovalState.NA
         )
 
-    fun mapActivityRequestBodyToActivityRequestDTO(activityRequestBody: ActivityRequestBody) =
-        ActivityRequestBodyDTO(
-            activityRequestBody.id,
-            activityRequestBody.startDate,
-            activityRequestBody.duration,
-            activityRequestBody.description,
-            activityRequestBody.billable,
-            activityRequestBody.projectRoleId,
-            activityRequestBody.hasEvidences,
-            activityRequestBody.imageFile
-        )
-
 }

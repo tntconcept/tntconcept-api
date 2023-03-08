@@ -34,7 +34,7 @@ internal class ProjectRolesByProjectIdUseCaseTest {
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
         private val PROJECT = Project(1L, "Dummy project", true,  false, ORGANIZATION, listOf())
 
-        private val PROJECT_ROLE = ProjectRole(PROJECT_ID, "Dummy Role", RequireEvidence.NO, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(PROJECT_ID, "Dummy Role", RequireEvidence.NO, PROJECT, 0, true, false)
 
 
     }
