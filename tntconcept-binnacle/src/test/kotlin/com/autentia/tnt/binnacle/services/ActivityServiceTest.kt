@@ -9,10 +9,7 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -120,6 +117,7 @@ internal class ActivityServiceTest {
                     activityWithoutImageSaved.projectRole.project.organization,
                     activityWithoutImageSaved.projectRole.project,
                     false,
+                    activityWithoutImageSaved.approvalState
                 )
             ),
             actual
@@ -182,7 +180,9 @@ internal class ActivityServiceTest {
             "Description...",
             false,
             projectRole.id,
-            false
+            false,
+            null,
+            activityWithoutImageSaved.approvalState
         )
 
         doReturn(Optional.of(activityWithoutImageSaved))
@@ -215,7 +215,8 @@ internal class ActivityServiceTest {
             false,
             projectRole.id,
             true,
-            "Base64 format..."
+            "Base64 format...",
+            ApprovalState.PENDING
         )
 
         val oldActivity = mock(Activity::class.java)
@@ -261,7 +262,9 @@ internal class ActivityServiceTest {
             "Description...",
             false,
             projectRole.id,
-            false
+            false,
+            null,
+            ApprovalState.PENDING
         )
 
         val oldActivity = mock(Activity::class.java)
@@ -337,7 +340,9 @@ internal class ActivityServiceTest {
             "Dummy description",
             false,
             projectRole.id,
-            false
+            false,
+            null,
+            ApprovalState.PENDING
         )
 
         private val activityWithImageRequest = ActivityRequestBody(
@@ -348,7 +353,8 @@ internal class ActivityServiceTest {
             false,
             projectRole.id,
             true,
-            "Base64 format..."
+            "Base64 format...",
+            ApprovalState.PENDING
         )
     }
 

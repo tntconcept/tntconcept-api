@@ -5,10 +5,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -101,7 +98,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             "Dummy description",
             PROJECT_ROLE,
             USER.id,
-            true
+            true,
+            approvalState = ApprovalState.NA
         )
 
         val savedActivity = Activity(
@@ -111,7 +109,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             "Dummy description",
             PROJECT_ROLE,
             33L,
-            true
+            true,
+            approvalState = ApprovalState.NA
         )
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
             2L,
@@ -123,7 +122,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             true,
             ORGANIZATION_DTO,
             PROJECT_RESPONSE_DTO,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
 
     }

@@ -1,13 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.Role
-import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.entities.WorkingAgreement
-import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -141,7 +135,8 @@ internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage
     billable = false,
     organization = createOrganization(),
     project = createProject(),
-    hasImage = hasImage
+    hasImage = hasImage,
+    approvalState = ApprovalState.PENDING
 )
 
 internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasImage: Boolean) = ActivityResponseDTO(
@@ -154,7 +149,8 @@ internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasIm
     hasImage = hasImage,
     organization = createOrganizationResponseDTO(),
     project = createProjectResponseDTO(),
-    projectRole = createProjectRoleResponseDTO()
+    projectRole = createProjectRoleResponseDTO(),
+    approvalState = ApprovalState.PENDING
 )
 
 internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasImage: Boolean) =
@@ -165,7 +161,8 @@ internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, pr
         "New activity",
         false,
         projectRoleId,
-        hasImage
+        hasImage,
+        approvalState = ApprovalState.PENDING
     )
 
 

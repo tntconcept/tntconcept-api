@@ -2,10 +2,7 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -46,7 +43,9 @@ internal class ActivityRequestBodyConverterTest {
             "New activity",
             false,
             1,
-            false
+            false,
+            null,
+            ApprovalState.NA
         )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
@@ -56,7 +55,9 @@ internal class ActivityRequestBodyConverterTest {
             ACTIVITY_REQUEST_BODY.description,
             ACTIVITY_REQUEST_BODY.billable,
             ACTIVITY_REQUEST_BODY.projectRoleId,
-            ACTIVITY_REQUEST_BODY.hasImage
+            ACTIVITY_REQUEST_BODY.hasImage,
+            ACTIVITY_REQUEST_BODY.imageFile,
+            ACTIVITY_REQUEST_BODY.approvalState
         )
 
         val DUMMY_ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
@@ -75,7 +76,8 @@ internal class ActivityRequestBodyConverterTest {
                 false,
                 1,
                 null,
-                false
+                false,
+                ApprovalState.NA
         )
 
     }
