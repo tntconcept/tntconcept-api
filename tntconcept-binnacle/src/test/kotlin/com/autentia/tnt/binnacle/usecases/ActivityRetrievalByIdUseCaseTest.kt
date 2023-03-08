@@ -5,10 +5,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -80,7 +77,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
         private val PROJECT_ROLE = ProjectRole(
             10L,
             "Dummy Project role",
-            false,
+            RequireEvidence.NO,
             Project(
                 1L,
                 "Dummy Project",
@@ -92,7 +89,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
             0
         )
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
 
         val yesterdayActivity = Activity(
             2L,

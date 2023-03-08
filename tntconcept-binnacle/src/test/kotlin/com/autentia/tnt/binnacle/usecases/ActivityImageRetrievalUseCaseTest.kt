@@ -1,10 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.NoImageInActivityException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.services.ActivityImageService
@@ -91,7 +88,7 @@ internal class ActivityImageRetrievalUseCaseTest {
             ORGANIZATION,
             listOf(),
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0)
 
         private val todayActivity = Activity(
             ID,

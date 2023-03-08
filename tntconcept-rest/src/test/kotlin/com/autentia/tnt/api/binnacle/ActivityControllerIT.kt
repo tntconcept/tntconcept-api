@@ -1,5 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -308,7 +309,7 @@ internal class ActivityControllerIT {
             ACTIVITY_REQUEST_BODY_DTO.startDate,
             ACTIVITY_REQUEST_BODY_DTO.duration,
             ACTIVITY_REQUEST_BODY_DTO.description,
-            ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", true),
+            ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", RequireEvidence.WEEKLY),
             2,
             ACTIVITY_REQUEST_BODY_DTO.billable,
             OrganizationResponseDTO(6, "organization"),

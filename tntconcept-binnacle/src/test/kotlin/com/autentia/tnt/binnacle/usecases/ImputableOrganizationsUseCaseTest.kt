@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.repositories.OrganizationRepository
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,7 +35,7 @@ internal class ImputableOrganizationsUseCaseTest {
     private companion object {
 
         private fun buildProjectRole(id: Long): ProjectRole {
-            return ProjectRole(id, "Project Role ID $id", false, mock(Project::class.java), 0)
+            return ProjectRole(id, "Project Role ID $id", RequireEvidence.NO, mock(Project::class.java), 0)
         }
 
         private fun buildProject(id: Long, open: Boolean, roles: List<ProjectRole>): Project {

@@ -9,10 +9,7 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -324,7 +321,7 @@ internal class ActivityServiceTest {
 
         private val organization = Organization(1L, "Autentia", emptyList())
         private val project = Project(1L, "Back-end developers", true, false, organization, emptyList())
-        private val projectRole = ProjectRole(10, "Kotlin developer", false, project, 0)
+        private val projectRole = ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0)
 
         private val TODAY_NOON = LocalDateTime.of(LocalDate.now(), LocalTime.NOON)
 

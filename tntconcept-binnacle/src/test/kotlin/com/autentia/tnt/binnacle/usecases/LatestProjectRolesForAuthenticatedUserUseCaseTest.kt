@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.Test
@@ -43,14 +44,14 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
 
         private fun buildProjectRoleRecent(id: Long, date: LocalDate, projectOpen: Boolean = true): ProjectRoleRecent {
             return ProjectRoleRecent(
-                id = id,
-                date = date.atTime(LocalTime.MIDNIGHT),
-                name = "Role ID $id",
-                projectBillable = false,
-                projectOpen = projectOpen,
-                projectName = "Project Name of role $id",
-                organizationName = "Org Name of role $id",
-                requireEvidence = false
+                id,
+                "Role ID $id",
+                "Project Name of role $id",
+                "Org Name of role $id",
+                false,
+                projectOpen,
+                date.atTime(LocalTime.MIDNIGHT),
+                RequireEvidence.NO
             )
         }
 

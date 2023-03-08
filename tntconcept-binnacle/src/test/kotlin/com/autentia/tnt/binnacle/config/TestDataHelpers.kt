@@ -111,12 +111,12 @@ internal fun createProjectResponseDTO(id: Long = 1L, open: Boolean = false, bill
 internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
     id = id,
     name = "Dummy Project role",
-    requireEvidence = true,
+    requireEvidence = RequireEvidence.WEEKLY,
     project = createProject(),
     maxAllowed = 0
 )
 
-internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: Boolean = false) = ProjectRoleResponseDTO(
+internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) = ProjectRoleResponseDTO(
     id = id,
     name = "Dummy Project Role",
     requireEvidence = requireEvidence

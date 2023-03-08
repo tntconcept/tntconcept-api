@@ -3,11 +3,7 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
@@ -614,10 +610,10 @@ internal class ActivityValidatorTest {
             Project(1, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
         private val permisoProject =
             Project(2, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
-        private val projectRole = ProjectRole(1, "vac", false, vacationProject, 0)
+        private val projectRole = ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0)
 
-        private val projectRoleNoLimit = ProjectRole(2, "perm", false, permisoProject, 0)
-        private val projectRoleLimited = ProjectRole(3, "vac", false, vacationProject, (HOUR * 8))
+        private val projectRoleNoLimit = ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0)
+        private val projectRoleLimited = ProjectRole(3, "vac", RequireEvidence.NO, vacationProject, (HOUR * 8))
 
         private val activityNotReachedLimitUpdate = createActivity(
             id = 1L,
@@ -780,7 +776,7 @@ internal class ActivityValidatorTest {
             CLOSED_ID, "TNT", false, false,
             Organization(1, "Autentia", emptyList()), emptyList()
         )
-        private val closedProjectRole = ProjectRole(CLOSED_ID, "Architect", false, closedProject, 0)
+        private val closedProjectRole = ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0)
 
         private fun createActivityRequestBody(
             startDate: LocalDateTime,
@@ -842,7 +838,7 @@ internal class ActivityValidatorTest {
         fun createProjectRoleWithLimit(
             id: Long = projectRoleLimited.id,
             name: String = "Role with limit",
-            requireEvidence: Boolean = false,
+            requireEvidence: RequireEvidence = RequireEvidence.NO,
             project: Project = Project(1, "Project", true, false, organization, listOf()),
             maxAllowed: Int
         ) = ProjectRole(

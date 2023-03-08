@@ -6,10 +6,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -88,9 +85,9 @@ internal class ActivityCreationUseCaseTest {
             open = true,
             billable = false,
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0)
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
