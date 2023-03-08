@@ -2,6 +2,7 @@ package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleRecentConverter
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
@@ -30,9 +31,9 @@ internal class ProjectRoleControllerTest {
 
         val roleId = 1
         val role = ProjectRoleResponseDTO(
-            id = 1,
-            name = "Dummy Project Role",
-            requireEvidence = true,
+            1,
+            "Dummy Project Role",
+            RequireEvidence.WEEKLY,
         )
 
         doReturn(role).whenever(projectRoleByIdUseCase).get(roleId.toLong())
@@ -56,14 +57,14 @@ internal class ProjectRoleControllerTest {
     private companion object {
 
         private val PROJECT_ROLE_RECENT = ProjectRoleRecent(
-            id = 1L,
-            name = "Dummy Project Role",
-            requireEvidence = false,
-            date = LocalDateTime.of(2020, Month.JANUARY, 1, 0, 0, 0),
-            organizationName = "Dummy Organization",
-            projectName = "Dummy Project",
-            projectBillable = false,
-            projectOpen = true
+            1L,
+            "Dummy Project Role",
+            "Dummy Project",
+            "Dummy Organization",
+            false,
+            true,
+            LocalDateTime.of(2020, Month.JANUARY, 1, 0, 0, 0),
+            RequireEvidence.NO
         )
 
         private val PROJECT_ROLE_RECENT_DTO = ProjectRoleRecentDTO(

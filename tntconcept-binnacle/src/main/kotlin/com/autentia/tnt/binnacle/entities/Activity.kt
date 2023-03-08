@@ -55,7 +55,5 @@ data class Activity(
     var hasEvidences: Boolean = false,
 
     @Enumerated(EnumType.STRING)
-    val approvalState: ApprovalState,
-
-    var isApprovalRequired: Boolean = false
+    val approvalState: ApprovalState
 )

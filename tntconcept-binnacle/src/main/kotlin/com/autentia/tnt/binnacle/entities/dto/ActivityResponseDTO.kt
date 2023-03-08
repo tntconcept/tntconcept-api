@@ -13,6 +13,6 @@ data class ActivityResponseDTO(
         val billable: Boolean,
         val organization: OrganizationResponseDTO,
         val project: ProjectResponseDTO,
-        val hasImage: Boolean?,
+        val hasEvidences: Boolean?,
         val approvalState: ApprovalState
 ) {}

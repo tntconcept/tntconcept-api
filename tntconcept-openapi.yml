@@ -574,7 +574,7 @@ components:
       - billable
       - description
       - duration
-      - hasImage
+      - hasEvidences
       - projectRoleId
       - startDate
       type: object
@@ -597,7 +597,7 @@ components:
         projectRoleId:
           type: integer
           format: int64
-        hasImage:
+        hasEvidences:
           type: boolean
         imageFile:
           type: string
@@ -637,7 +637,7 @@ components:
           $ref: '#/components/schemas/OrganizationResponseDTO'
         project:
           $ref: '#/components/schemas/ProjectResponseDTO'
-        hasImage:
+        hasEvidences:
           type: boolean
           nullable: true
     AnnualBalanceDTO:

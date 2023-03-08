@@ -6,7 +6,12 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -85,9 +90,9 @@ internal class ActivityCreationUseCaseTest {
             open = true,
             billable = false,
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0)
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
@@ -98,7 +103,6 @@ internal class ActivityCreationUseCaseTest {
             PROJECT_ROLE.id,
             false,
             null,
-            ApprovalState.NA
         )
 
         private fun generateLargeDescription(mainMessage: String): String {
@@ -116,7 +120,7 @@ internal class ActivityCreationUseCaseTest {
             startDate: LocalDateTime = TIME_NOW,
             duration: Int = 75,
             billable: Boolean = false,
-            hasImage: Boolean = false,
+            hasEvidences: Boolean = false,
             projectRole: ProjectRole = PROJECT_ROLE,
             approvalState: ApprovalState = ApprovalState.NA
         ): Activity =
@@ -127,7 +131,7 @@ internal class ActivityCreationUseCaseTest {
                 startDate = startDate,
                 duration = duration,
                 billable = billable,
-                hasEvidences = hasImage,
+                hasEvidences = hasEvidences,
                 projectRole = projectRole,
                 approvalState = approvalState
             )
@@ -139,7 +143,7 @@ internal class ActivityCreationUseCaseTest {
             startDate: LocalDateTime = TIME_NOW,
             duration: Int = 75,
             billable: Boolean = false,
-            hasImage: Boolean = false,
+            hasEvidences: Boolean = false,
             projectRole: ProjectRoleResponseDTO = PROJECT_ROLE_RESPONSE_DTO,
             organization: OrganizationResponseDTO = ORGANIZATION_DTO,
             project: ProjectResponseDTO = PROJECT_RESPONSE_DTO,
@@ -155,7 +159,7 @@ internal class ActivityCreationUseCaseTest {
                 billable,
                 organization,
                 project,
-                hasImage,
+                hasEvidences,
                 approvalState
             )
 

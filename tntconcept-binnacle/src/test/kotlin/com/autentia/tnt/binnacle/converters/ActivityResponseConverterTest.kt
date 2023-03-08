@@ -90,10 +90,10 @@ internal class ActivityResponseConverterTest {
 
         private val DUMMY_ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
         private val DUMMY_PROJECT = Project(1L, "Dummy Project", true, false, DUMMY_ORGANIZATION, listOf())
-        private val DUMMY_PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, DUMMY_PROJECT, 0)
+        private val DUMMY_PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, DUMMY_PROJECT, 0)
 
         private val DUMMY_ORGANIZATION_DTO = OrganizationResponseDTO(1L, "Dummy Organization")
-        private val DUMMY_PROJECT_ROLE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val DUMMY_PROJECT_ROLE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
         private val DUMMY_PROJECT_DTO = ProjectResponseDTO(1L, "Dummy Project", true, false)
 
         val DUMMY_ACTIVITY = Activity(

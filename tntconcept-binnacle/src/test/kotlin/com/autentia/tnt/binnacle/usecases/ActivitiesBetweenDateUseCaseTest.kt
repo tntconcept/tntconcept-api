@@ -12,6 +12,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -67,7 +68,7 @@ internal class ActivitiesBetweenDateUseCaseTest {
 
         private val ORGANIZATION = Organization(1, "organization", emptyList())
         private val PROJECT = Project(1, "project", true, true, ORGANIZATION, emptyList())
-        private val PROJECT_ROLE = ProjectRole(1, "Role", false, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(1, "Role", RequireEvidence.NO, PROJECT, 0)
         private val WORKED_TIME = 120
 
         private val ACTIVITY_RESPONSE = ActivityResponse(
@@ -94,7 +95,7 @@ internal class ActivitiesBetweenDateUseCaseTest {
             ACTIVITY_RESPONSE.billable,
             OrganizationResponseDTO(ORGANIZATION.id, ORGANIZATION.name),
             ProjectResponseDTO(PROJECT.id, PROJECT.name, PROJECT.open, PROJECT.billable),
-            ACTIVITY_RESPONSE.hasImage,
+            ACTIVITY_RESPONSE.hasEvidences,
             ACTIVITY_RESPONSE.approvalState
         )
 

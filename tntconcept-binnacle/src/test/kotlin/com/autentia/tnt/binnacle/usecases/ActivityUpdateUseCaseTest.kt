@@ -83,8 +83,8 @@ internal class ActivityUpdateUseCaseTest {
             open = true,
             billable = false
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, PROJECT, 0)
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
         private val NEW_ACTIVITY_DTO = ActivityRequestBodyDTO(
             1L,
             TODAY,
@@ -93,7 +93,6 @@ internal class ActivityUpdateUseCaseTest {
             false,
             PROJECT_ROLE.id,
             false,
-            approvalState = ApprovalState.NA
         )
         private val todayActivity = Activity(
             1,
@@ -129,7 +128,6 @@ internal class ActivityUpdateUseCaseTest {
             false,
             PROJECT_ROLE.id,
             false,
-            approvalState = ApprovalState.NA
         )
     }
 }

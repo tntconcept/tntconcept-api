@@ -2,6 +2,7 @@ package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleRecentConverter
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
@@ -62,7 +63,7 @@ internal class ProjectRoleControllerIT {
         val projectRole = ProjectRoleResponseDTO(
             1L,
             "Asistente",
-            true
+            RequireEvidence.WEEKLY
         )
 
         doReturn(projectRole).whenever(projectRoleByIdUseCase).get(projectRole.id)
@@ -106,7 +107,7 @@ internal class ProjectRoleControllerIT {
             false,
             true,
             LocalDateTime.now(),
-            true
+            RequireEvidence.WEEKLY
         )
 
         val projectRoleRecentDTO = ProjectRoleRecentDTO(
@@ -117,7 +118,7 @@ internal class ProjectRoleControllerIT {
             false,
             true,
             LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
-            true
+            RequireEvidence.WEEKLY
         )
 
         doReturn(listOf(projectRoleRecent)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get()

@@ -77,7 +77,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
         private val PROJECT_ROLE = ProjectRole(
             10L,
             "Dummy Project role",
-            false,
+            RequireEvidence.NO,
             Project(
                 1L,
                 "Dummy Project",
@@ -89,7 +89,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
             0
         )
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
 
         val yesterdayActivity = Activity(
             2L,

@@ -26,7 +26,7 @@ class ActivityResponseConverter(
         project = projectResponseConverter.toProjectResponseDTO(activity.projectRole.project),
         projectRole = projectRoleResponseConverter.toProjectRoleResponseDTO(activity.projectRole),
         duration = activity.duration,
-        hasImage = activity.hasEvidences,
+        hasEvidences = activity.hasEvidences,
         approvalState = activity.approvalState
     )
 
@@ -40,7 +40,7 @@ class ActivityResponseConverter(
         project = activity.projectRole.project,
         projectRole = activity.projectRole,
         duration = activity.duration,
-        hasImage = activity.hasEvidences,
+        hasEvidences = activity.hasEvidences,
         approvalState = activity.approvalState
     )
 
@@ -55,9 +55,9 @@ class ActivityResponseConverter(
             activityResponse.billable,
             organizationResponseConverter.toOrganizationResponseDTO(activityResponse.organization),
             projectResponseConverter.toProjectResponseDTO(activityResponse.project),
-            activityResponse.hasImage,
+            activityResponse.hasEvidences,
             approvalState = activityResponse.approvalState
-            )
+        )
 
     fun toActivity(activityResponse: ActivityResponse) =
         com.autentia.tnt.binnacle.core.domain.Activity(

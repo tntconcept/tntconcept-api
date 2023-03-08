@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -76,9 +77,10 @@ internal class ActivityDateConverterTest {
         private const val USER_ID = 1L
         private val START_DATE = LocalDate.now().atStartOfDay().minusYears(1)
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
-        private val PROJECT = Project(1L, "Dummy Project", true, false, ORGANIZATION, listOf() )
-        private val PROJECT_ROLE = ProjectRole(10L, "Workable Project role", false, PROJECT, 0)
-        private val PROJECT_ROLE_NOT_WORKABLE = ProjectRole(6L, "Project role not workable", true, PROJECT, 0)
+        private val PROJECT = Project(1L, "Dummy Project", true, false, ORGANIZATION, listOf())
+        private val PROJECT_ROLE = ProjectRole(10L, "Workable Project role", RequireEvidence.NO, PROJECT, 0)
+        private val PROJECT_ROLE_NOT_WORKABLE =
+            ProjectRole(6L, "Project role not workable", RequireEvidence.WEEKLY, PROJECT, 0)
 
         private val ACTIVITY_RESPONSE = ActivityResponse(
             1L,
@@ -104,7 +106,7 @@ internal class ActivityDateConverterTest {
             ACTIVITY_RESPONSE.billable,
             OrganizationResponseDTO(ORGANIZATION.id, ORGANIZATION.name),
             ProjectResponseDTO(PROJECT.id, PROJECT.name, PROJECT.open, PROJECT.billable),
-            ACTIVITY_RESPONSE.hasImage,
+            ACTIVITY_RESPONSE.hasEvidences,
             ACTIVITY_RESPONSE.approvalState
         )
     }
