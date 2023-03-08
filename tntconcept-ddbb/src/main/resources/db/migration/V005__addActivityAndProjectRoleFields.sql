@@ -11,8 +11,8 @@ UPDATE Activity
 ALTER TABLE Activity
     MODIFY end datetime NOT NULL;
 
-ALTER TABLE Activity
-    DROP duration;
+--ALTER TABLE Activity
+--    DROP duration;
 
 ALTER TABLE Activity
     ADD approvalState varchar(64) NOT NULL DEFAULT 'NA';
