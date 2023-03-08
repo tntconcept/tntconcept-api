@@ -56,5 +56,5 @@ data class Activity(
     @JsonIgnore
     var insertDate: Date? = null,
 
-    var hasImage: Boolean = false
+    var hasEvidences: Boolean = false
 )

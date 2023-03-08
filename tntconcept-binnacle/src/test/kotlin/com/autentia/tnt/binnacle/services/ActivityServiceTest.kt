@@ -268,7 +268,7 @@ internal class ActivityServiceTest {
         // The old activity has an image but the new activity body does not
         val oldActivityHasImage = true
         val oldActivityInsertDate = Date()
-        given(oldActivity.hasImage).willReturn(oldActivityHasImage)
+        given(oldActivity.hasEvidences).willReturn(oldActivityHasImage)
         given(oldActivity.insertDate).willReturn(oldActivityInsertDate)
         given(activityRepository.findById(activityId)).willReturn(Optional.of(oldActivity))
 

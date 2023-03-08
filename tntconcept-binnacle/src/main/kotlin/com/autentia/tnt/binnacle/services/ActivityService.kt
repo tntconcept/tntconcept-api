@@ -94,7 +94,7 @@ internal class ActivityService(
         }
 
         // Delete stored image
-        if (!activityRequest.hasImage && oldActivity.hasImage) {
+        if (!activityRequest.hasImage && oldActivity.hasEvidences) {
             activityImageService.deleteActivityImage(activityRequest.id!!, oldActivity.insertDate!!)
         }
 
@@ -111,7 +111,7 @@ internal class ActivityService(
     @Transactional
     fun deleteActivityById(id: Long) {
         val activityToDelete = activityRepository.findById(id).orElseThrow() // TODO handle exception
-        if (activityToDelete.hasImage) {
+        if (activityToDelete.hasEvidences) {
             activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
         }
         activityRepository.deleteById(id)

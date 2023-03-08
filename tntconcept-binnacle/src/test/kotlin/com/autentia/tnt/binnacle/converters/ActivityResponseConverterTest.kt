@@ -107,7 +107,7 @@ internal class ActivityResponseConverterTest {
             userId = 1,
             billable = false,
             departmentId = 1,
-            hasImage = false,
+            hasEvidences = false,
             projectRole = DUMMY_PROJECT_ROLE
         )
 
@@ -121,7 +121,7 @@ internal class ActivityResponseConverterTest {
             DUMMY_ACTIVITY.billable,
             DUMMY_ORGANIZATION,
             DUMMY_PROJECT,
-            DUMMY_ACTIVITY.hasImage
+            DUMMY_ACTIVITY.hasEvidences
         )
 
         val DUMMY_ACTIVITY_DTO = ActivityResponseDTO(
@@ -134,7 +134,7 @@ internal class ActivityResponseConverterTest {
             DUMMY_ACTIVITY.billable,
             DUMMY_ORGANIZATION_DTO,
             DUMMY_PROJECT_DTO,
-            DUMMY_ACTIVITY.hasImage
+            DUMMY_ACTIVITY.hasEvidences
         )
 
 

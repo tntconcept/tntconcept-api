@@ -21,7 +21,7 @@ ALTER TABLE Activity
     MODIFY approvalState varchar(64) NOT NULL;
 
 ALTER TABLE Activity
-    RENAME COLUMN hasImage TO hasEvidence;
+    RENAME COLUMN hasImage TO hasEvidences;
 
 /* ProjectRole Table */
 

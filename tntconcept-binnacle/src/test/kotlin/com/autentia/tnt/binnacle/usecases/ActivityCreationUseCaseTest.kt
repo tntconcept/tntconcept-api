@@ -20,15 +20,15 @@ import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
 import java.util.Optional
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.whenever
 
 internal class ActivityCreationUseCaseTest {
 
@@ -127,7 +127,7 @@ internal class ActivityCreationUseCaseTest {
                 startDate = startDate,
                 duration = duration,
                 billable = billable,
-                hasImage = hasImage,
+                hasEvidences = hasImage,
                 projectRole = projectRole
             )
 
