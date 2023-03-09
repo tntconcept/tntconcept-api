@@ -23,7 +23,7 @@ data class Vacation(
     val state: VacationState,
 
     val userId: Long,
-    var observations: String? = null,
+    var observations: String = "",
     var departmentId: Long? = null,
 
     @Column(name = "userComment")
