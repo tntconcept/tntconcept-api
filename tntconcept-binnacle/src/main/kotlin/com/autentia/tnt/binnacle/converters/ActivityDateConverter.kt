@@ -25,11 +25,11 @@ class ActivityDateConverter(
 
     fun toListActivityDate(
         activities: List<ActivityResponse>,
-        startDate: LocalDate,
-        endDate: LocalDate,
+        start: LocalDate,
+        end: LocalDate,
     ): List<ActivityDate> {
-        val activitiesByDate = activities.groupBy { it.startDate.toLocalDate() }
-        val allActivitiesBetweenDates = startDate.myDatesUntil(endDate)
+        val activitiesByDate = activities.groupBy { it.start.toLocalDate() }
+        val allActivitiesBetweenDates = start.myDatesUntil(end)
             .associateWith { emptyList<ActivityResponse>() }
             .toMutableMap()
         allActivitiesBetweenDates.putAll(activitiesByDate)
@@ -42,7 +42,7 @@ class ActivityDateConverter(
             workedMinutes = entry.value
                 .filter { workableProjectRoleIdChecker.isWorkable(ProjectRoleId(it.projectRole.id)) }
                 .fold(0) { acc, activity -> acc + activity.duration },
-            activities = entry.value.sortedBy { it.startDate }
+            activities = entry.value.sortedBy { it.start }
         )
 
 }

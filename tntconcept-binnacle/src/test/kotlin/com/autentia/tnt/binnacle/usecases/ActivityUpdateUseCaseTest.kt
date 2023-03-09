@@ -91,6 +91,7 @@ internal class ActivityUpdateUseCaseTest {
         private val NEW_ACTIVITY_DTO = ActivityRequestBodyDTO(
             1L,
             TODAY,
+            TODAY,
             75,
             "New activity",
             false,
@@ -99,6 +100,7 @@ internal class ActivityUpdateUseCaseTest {
         )
         private val todayActivity = Activity(
             1,
+            TODAY,
             TODAY,
             75,
             "New activity",
@@ -112,6 +114,7 @@ internal class ActivityUpdateUseCaseTest {
         private val todayActivityResponseDTO = ActivityResponseDTO(
             1,
             TODAY,
+            TODAY,
             75,
             "New activity",
             PROJECT_ROLE_RESPONSE_DTO,
@@ -123,6 +126,7 @@ internal class ActivityUpdateUseCaseTest {
         )
         private val activityToUpdate = ActivityRequestBody(
             1L,
+            TODAY,
             TODAY,
             75,
             "New activity",

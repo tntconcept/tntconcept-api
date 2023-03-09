@@ -42,6 +42,7 @@ internal class ActivityRequestBodyConverterTest {
         private val ACTIVITY_REQUEST_BODY = ActivityRequestBody(
             1L,
             LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
+            LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
             75,
             "New activity",
             false,
@@ -51,7 +52,8 @@ internal class ActivityRequestBodyConverterTest {
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             ACTIVITY_REQUEST_BODY.id,
-            ACTIVITY_REQUEST_BODY.startDate,
+            ACTIVITY_REQUEST_BODY.start,
+            ACTIVITY_REQUEST_BODY.end,
             ACTIVITY_REQUEST_BODY.duration,
             ACTIVITY_REQUEST_BODY.description,
             ACTIVITY_REQUEST_BODY.billable,
@@ -67,6 +69,7 @@ internal class ActivityRequestBodyConverterTest {
 
         val ACTIVITY = Activity(
                 1L,
+                LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
                 LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
                 75,
                 "New activity",

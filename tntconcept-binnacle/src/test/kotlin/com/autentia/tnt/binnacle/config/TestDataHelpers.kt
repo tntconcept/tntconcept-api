@@ -122,9 +122,10 @@ internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: Boolea
     requireEvidence = requireEvidence
 )
 
-internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage: Boolean) = ActivityResponse(
+internal fun createActivityResponse(id: Long, start: LocalDateTime, end: LocalDateTime ,hasImage: Boolean) = ActivityResponse(
     id = id,
-    startDate = startDate,
+    start = start,
+    end = end,
     duration = 60,
     description = "",
     projectRole = createProjectRole(),
@@ -135,9 +136,10 @@ internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage
     hasImage = hasImage
 )
 
-internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasImage: Boolean) = ActivityResponseDTO(
+internal fun createActivityResponseDTO(id: Long, start: LocalDateTime, end: LocalDateTime, hasImage: Boolean) = ActivityResponseDTO(
     id = id,
-    startDate = startDate,
+    start = start,
+    end = end,
     duration = 540,
     description = "Dummy description",
     userId = 1L,
@@ -148,10 +150,11 @@ internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasIm
     projectRole = createProjectRoleResponseDTO()
 )
 
-internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasImage: Boolean) =
+internal fun createActivityRequestBodyDTO(id: Long, start: LocalDateTime, end: LocalDateTime, projectRoleId: Long, hasImage: Boolean) =
     ActivityRequestBodyDTO(
         id,
-        startDate,
+        start,
+        end,
         75,
         "New activity",
         false,

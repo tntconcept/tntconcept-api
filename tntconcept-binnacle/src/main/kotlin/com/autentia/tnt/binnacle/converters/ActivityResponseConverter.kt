@@ -18,7 +18,8 @@ class ActivityResponseConverter(
 
     fun mapActivityToActivityResponseDTO(activity: Activity) = ActivityResponseDTO(
         id = activity.id!!,
-        startDate = activity.startDate,
+        start = activity.start,
+        end = activity.end,
         billable = activity.billable,
         userId = activity.userId,
         description = activity.description,
@@ -31,7 +32,8 @@ class ActivityResponseConverter(
 
     fun mapActivityToActivityResponse(activity: Activity) = ActivityResponse(
         id = activity.id!!,
-        startDate = activity.startDate,
+        start = activity.start,
+        end = activity.end,
         billable = activity.billable,
         userId = activity.userId,
         description = activity.description,
@@ -45,7 +47,8 @@ class ActivityResponseConverter(
     fun toActivityResponseDTO(activityResponse: ActivityResponse) =
         ActivityResponseDTO(
             activityResponse.id,
-            activityResponse.startDate,
+            activityResponse.start,
+            activityResponse.end,
             activityResponse.duration,
             activityResponse.description,
             projectRoleResponseConverter.toProjectRoleResponseDTO(activityResponse.projectRole),
@@ -60,7 +63,7 @@ class ActivityResponseConverter(
     fun toActivity(activityResponse: ActivityResponse) =
         com.autentia.tnt.binnacle.core.domain.Activity(
             activityResponse.duration.toDuration(DurationUnit.MINUTES),
-            activityResponse.startDate,
+            activityResponse.start,
             ProjectRoleId(activityResponse.projectRole.id)
         )
 

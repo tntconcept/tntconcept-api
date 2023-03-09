@@ -96,6 +96,7 @@ internal class ActivityImageRetrievalUseCaseTest {
         private val todayActivity = Activity(
             ID,
             TODAY,
+            TODAY,
             60,
             "Dummy description",
             PROJECT_ROLE,
@@ -108,6 +109,7 @@ internal class ActivityImageRetrievalUseCaseTest {
 
         val activityWithoutImage = Activity(
             ID,
+            TODAY,
             TODAY,
             60,
             "Dummy description",

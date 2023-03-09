@@ -60,9 +60,10 @@ internal class ActivityControllerTest {
                 date = LocalDate.of(2019, Month.DECEMBER, 30),
                 workedMinutes = 120,
                 activities = listOf(
-                    createActivityResponseDTO(1L, LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(), false),
+                    createActivityResponseDTO(1L, LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(), LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(), false),
                     createActivityResponseDTO(
                         2L,
+                        LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay().plusHours(1),
                         LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay().plusHours(1),
                         false
                     ),
@@ -72,7 +73,7 @@ internal class ActivityControllerTest {
                 date = LocalDate.of(2020, Month.FEBRUARY, 2),
                 workedMinutes = 120,
                 activities = listOf(
-                    createActivityResponseDTO(3L, LocalDate.of(2020, Month.FEBRUARY, 2).atStartOfDay(), false)
+                    createActivityResponseDTO(3L, LocalDate.of(2020, Month.FEBRUARY, 2).atStartOfDay(), LocalDate.of(2020, Month.FEBRUARY, 2).atStartOfDay(), false)
                 )
             )
         )
@@ -91,7 +92,7 @@ internal class ActivityControllerTest {
         @Test
         fun `return the activity`() {
             val activity =
-                createActivityResponseDTO(ACTIVITY_ID, LocalDate.of(2020, Month.JULY, 2).atStartOfDay(), false)
+                createActivityResponseDTO(ACTIVITY_ID, LocalDate.of(2020, Month.JULY, 2).atStartOfDay(), LocalDate.of(2020, Month.JULY, 2).atStartOfDay(), false)
 
             doReturn(activity).whenever(activityRetrievalUseCase).getActivityById(ACTIVITY_ID)
 
@@ -181,11 +182,12 @@ internal class ActivityControllerTest {
     inner class CreateActivity() {
         @Test
         fun `create new activity when is valid`() {
-            val startDate = LocalDate.of(2020, Month.JULY, 31).atTime(8, 45)
+            val start = LocalDate.of(2020, Month.JULY, 31).atTime(8, 45)
+            val end = LocalDate.of(2020, Month.JULY, 31).atTime(8, 45)
 
-            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, startDate, 1L, false)
+            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, start, end,1L, false)
 
-            val expectedActivityResponseDTO = createActivityResponseDTO(ACTIVITY_ID, startDate, false)
+            val expectedActivityResponseDTO = createActivityResponseDTO(ACTIVITY_ID, start, end,false)
 
             doReturn(expectedActivityResponseDTO).whenever(activityCreationUseCase).createActivity(newActivity)
 
@@ -218,7 +220,7 @@ internal class ActivityControllerTest {
         @Test
         fun `throws ActivityPeriodClosedException when activity period is closed`() {
 
-            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), 1L, false)
+            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), LocalDateTime.now(),1L, false)
 
             doThrow(ActivityPeriodClosedException()).whenever(activityCreationUseCase).createActivity(newActivity)
 
@@ -235,7 +237,7 @@ internal class ActivityControllerTest {
         @Test
         fun `throws OverlapsAnotherTimeException when activity time overlaps another activity`() {
             //Given
-            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), 1L, false)
+            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), LocalDateTime.now(),1L, false)
 
             doThrow(OverlapsAnotherTimeException()).whenever(activityCreationUseCase).createActivity(newActivity)
 
@@ -252,7 +254,7 @@ internal class ActivityControllerTest {
         @Test
         fun `throws ProjectRoleNotFoundException when the activity project role is not found in the database`() {
             val projectRoleId = 10L
-            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), projectRoleId, false)
+            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), LocalDateTime.now(), projectRoleId, false)
             doThrow(ProjectRoleNotFoundException(projectRoleId))
                 .whenever(activityCreationUseCase).createActivity(newActivity)
 
@@ -266,7 +268,7 @@ internal class ActivityControllerTest {
 
         @Test
         fun `throws ProjectClosedException when the activity project is closed`() {
-            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), 1L, false)
+            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), LocalDateTime.now(), 1L, false)
 
             doThrow(ProjectClosedException()).whenever(activityCreationUseCase).createActivity(newActivity)
 
@@ -279,7 +281,7 @@ internal class ActivityControllerTest {
 
         @Test
         fun `throws ActivityBeforeHiringDateException when the activity date is before user hiring date`() {
-            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), 1L, false)
+            val newActivity = createActivityRequestBodyDTO(ACTIVITY_ID, LocalDateTime.now(), LocalDateTime.now(), 1L, false)
             doThrow(ActivityBeforeHiringDateException()).whenever(activityCreationUseCase).createActivity(newActivity)
 
             val exception = assertThrows<ActivityBeforeHiringDateException> {
@@ -294,11 +296,11 @@ internal class ActivityControllerTest {
     @Nested
     inner class UpdateActivity() {
 
-        private val activityToUpdate = createActivityRequestBodyDTO(ACTIVITY_ID, START_DATE, PROJECT_ROLE_ID, false)
+        private val activityToUpdate = createActivityRequestBodyDTO(ACTIVITY_ID, START, END,  PROJECT_ROLE_ID, false)
 
         @Test
         fun `update new activity when is valid`() {
-            val expectedActivityResponseDTO = createActivityResponseDTO(ACTIVITY_ID, START_DATE, false)
+            val expectedActivityResponseDTO = createActivityResponseDTO(ACTIVITY_ID, START, END,false)
 
             doReturn(expectedActivityResponseDTO).whenever(activityUpdateUseCase).updateActivity(activityToUpdate)
 
@@ -448,7 +450,8 @@ internal class ActivityControllerTest {
     private companion object {
         private const val ACTIVITY_ID = 2L
         private const val PROJECT_ROLE_ID = 10L
-        private val START_DATE = LocalDate.of(2020, Month.JULY, 31).atTime(8, 45)
+        private val START = LocalDate.of(2020, Month.JULY, 31).atTime(8, 45)
+        private val END = LocalDate.of(2020, Month.JULY, 31).atTime(8, 45)
     }
 
 }

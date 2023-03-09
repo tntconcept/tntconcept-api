@@ -14,7 +14,8 @@ class ActivityRequestBodyConverter() {
     fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyDTO) =
         ActivityRequestBody(
             activityRequestBodyDTO.id,
-            activityRequestBodyDTO.startDate,
+            activityRequestBodyDTO.start,
+            activityRequestBodyDTO.end,
             activityRequestBodyDTO.duration,
             activityRequestBodyDTO.description,
             activityRequestBodyDTO.billable,
@@ -32,7 +33,8 @@ class ActivityRequestBodyConverter() {
     ) =
         Activity(
             activityRequestBody.id,
-            activityRequestBody.startDate,
+            activityRequestBody.start,
+            activityRequestBody.end,
             activityRequestBody.duration,
             activityRequestBody.description,
             projectRole,
@@ -46,7 +48,8 @@ class ActivityRequestBodyConverter() {
     fun mapActivityRequestBodyToActivityRequestDTO(activityRequestBody: ActivityRequestBody) =
         ActivityRequestBodyDTO(
             activityRequestBody.id,
-            activityRequestBody.startDate,
+            activityRequestBody.start,
+            activityRequestBody.end,
             activityRequestBody.duration,
             activityRequestBody.description,
             activityRequestBody.billable,

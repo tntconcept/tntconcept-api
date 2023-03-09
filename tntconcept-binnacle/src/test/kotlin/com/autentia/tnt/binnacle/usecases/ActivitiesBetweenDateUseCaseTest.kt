@@ -72,6 +72,7 @@ internal class ActivitiesBetweenDateUseCaseTest {
         private val ACTIVITY_RESPONSE = ActivityResponse(
             1,
             TIME_NOW,
+            TIME_NOW,
             WORKED_TIME,
             "Activity",
             PROJECT_ROLE,
@@ -84,6 +85,7 @@ internal class ActivitiesBetweenDateUseCaseTest {
 
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             ACTIVITY_RESPONSE.id,
+            TIME_NOW,
             TIME_NOW,
             ACTIVITY_RESPONSE.duration,
             ACTIVITY_RESPONSE.description,
