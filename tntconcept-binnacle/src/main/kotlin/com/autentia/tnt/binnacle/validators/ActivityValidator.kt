@@ -70,38 +70,17 @@ internal class ActivityValidator(
             val totalRegisteredHoursAfterSaveRequested =
                 totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
 
+
+
             if (totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed) {
+                val remainingTime = (projectRole.maxAllowed - totalRegisteredHoursForThisRole.toDouble()) / DECIMAL_HOUR
+
                 throw MaxHoursPerRoleException(
                     projectRole.maxAllowed / DECIMAL_HOUR,
-                    getRemainingTime(
-                        currentActivity,
-                        projectRole,
-                        activityRequest,
-                        activitiesSinceStartOfYear
-                    ) / DECIMAL_HOUR
+                    remainingTime
                 )
             }
         }
-    }
-
-    private fun getRemainingTime(
-        currentActivity: Activity,
-        projectRole: ProjectRole,
-        activityRequest: ActivityRequestBody,
-        activitiesInYear: List<ActivityTimeOnly>
-    ): Double {
-        val totalRegisteredHoursForThisRole = getTotalHoursPerRole(activitiesInYear, activityRequest)
-
-        var pastRegisteredTime = totalRegisteredHoursForThisRole
-        if (currentActivity.projectRole.id == activityRequest.projectRoleId) {
-            pastRegisteredTime = totalRegisteredHoursForThisRole - currentActivity.duration
-        }
-
-        var remainingTime = 0.0
-        if (pastRegisteredTime < projectRole.maxAllowed) {
-            remainingTime = ((projectRole.maxAllowed - pastRegisteredTime).toDouble())
-        }
-        return remainingTime
     }
 
     private fun isBeforeHiringDate(startDate: LocalDate, user: User): Boolean {
