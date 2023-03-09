@@ -61,5 +61,7 @@ data class Activity(
     companion object {
         fun emptyActivity(projectRole: ProjectRole) : Activity = Activity(0, LocalDateTime.MIN, LocalDateTime.MIN, "Empty activity", projectRole, 0L, false, 0, null, false, ApprovalState.NA)
     }
-    val duration: Int = Duration.between(start, end).toMinutes().toInt()
+    val duration: Int =
+        if (projectRole.timeUnit == TimeUnit.MINUTES) Duration.between(start, end).toMinutes().toInt()
+        else Duration.between(start, end).toDays().toInt() * 8 * 60
 }
