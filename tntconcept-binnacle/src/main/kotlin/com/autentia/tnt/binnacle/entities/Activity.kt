@@ -58,5 +58,8 @@ data class Activity(
     @Enumerated(EnumType.STRING)
     val approvalState: ApprovalState
 ) {
+    companion object {
+        fun emptyActivity(projectRole: ProjectRole) : Activity = Activity(0, LocalDateTime.MIN, LocalDateTime.MIN, "Empty activity", projectRole, 0L, false, 0, null, false, ApprovalState.NA)
+    }
     val duration: Int = Duration.between(start, end).toMinutes().toInt()
 }
