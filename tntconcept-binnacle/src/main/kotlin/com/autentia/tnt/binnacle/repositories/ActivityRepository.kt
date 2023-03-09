@@ -15,11 +15,11 @@ internal interface ActivityRepository : CrudRepository<Activity, Long> {
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun findByIdEager(id: Long): Activity?
 
-    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.startDate BETWEEN :startDate AND :endDate")
+    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.start BETWEEN :start AND :end")
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
-    fun getActivitiesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
+    fun getActivitiesBetweenDate(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity>
 
-    @Query("SELECT new com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly(a.startDate, a.duration, a.projectRole.id) FROM Activity a WHERE a.userId= :userId AND a.startDate BETWEEN :startDate AND :endDate")
-    fun workedMinutesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
+    @Query("SELECT new com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly(a.start, a.duration, a.projectRole.id) FROM Activity a WHERE a.userId= :userId AND a.start BETWEEN :start AND :end")
+    fun workedMinutesBetweenDate(start: LocalDateTime, end: LocalDateTime, userId: Long): List<ActivityTimeOnly>
 
 }

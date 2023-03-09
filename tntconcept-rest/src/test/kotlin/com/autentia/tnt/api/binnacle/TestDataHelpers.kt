@@ -122,9 +122,10 @@ internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: Requir
     requireEvidence
 )
 
-internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasEvidences: Boolean) = ActivityResponseDTO(
+internal fun createActivityResponseDTO(id: Long,start: LocalDateTime, end: LocalDateTime, hasEvidences: Boolean) = ActivityResponseDTO(
     id = id,
-    startDate = startDate,
+    start = start,
+    end = end,
     duration = 540,
     description = "Dummy description",
     userId = 1L,
@@ -135,11 +136,11 @@ internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasEv
     projectRole = createProjectRoleResponseDTO(),
     approvalState = ApprovalState.PENDING
 )
-
-internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasEvidences: Boolean) =
+internal fun createActivityRequestBodyDTO(id: Long, start: LocalDateTime, end: LocalDateTime, projectRoleId: Long, hasEvidences: Boolean) =
     ActivityRequestBodyDTO(
         id,
-        startDate,
+        start,
+        end,
         75,
         "New activity",
         false,

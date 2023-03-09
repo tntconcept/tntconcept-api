@@ -153,7 +153,7 @@ internal class UserWorkTimeUseCaseTest {
 
         private val vacations = mutableListOf<VacationDomain>()
 
-        private val LAST_YEAR_ACTIVITY = createActivityResponse(1L, LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30), false)
+        private val LAST_YEAR_ACTIVITY = createActivityResponse(1L, LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30), LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30), false)
 
         val vacationsChargedThisYear = listOf(
             Vacation(

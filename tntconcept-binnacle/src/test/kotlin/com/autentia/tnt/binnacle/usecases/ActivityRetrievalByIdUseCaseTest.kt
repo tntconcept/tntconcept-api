@@ -97,6 +97,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
         val yesterdayActivity = Activity(
             2L,
             YESTERDAY.atStartOfDay(),
+            YESTERDAY.atStartOfDay(),
             540,
             "Dummy description",
             PROJECT_ROLE,
@@ -108,6 +109,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
         val savedActivity = Activity(
             2L,
             LocalDate.of(2020, Month.JULY, 2).atStartOfDay(),
+            LocalDate.of(2020, Month.JULY, 2).atStartOfDay(),
             540,
             "Dummy description",
             PROJECT_ROLE,
@@ -117,6 +119,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
         )
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
             2L,
+            YESTERDAY.atStartOfDay(),
             YESTERDAY.atStartOfDay(),
             540,
             "Dummy description",

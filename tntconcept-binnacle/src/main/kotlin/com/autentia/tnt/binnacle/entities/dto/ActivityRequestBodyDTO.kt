@@ -7,7 +7,8 @@ import javax.validation.constraints.Size
 @Introspected
 data class ActivityRequestBodyDTO(
     val id: Long? = null,
-    val startDate: LocalDateTime,
+    val start: LocalDateTime,
+    val end: LocalDateTime,
     val duration: Int,
     @field:Size(max = 2048, message = "Description must not exceed 2048 characters")
     val description: String,

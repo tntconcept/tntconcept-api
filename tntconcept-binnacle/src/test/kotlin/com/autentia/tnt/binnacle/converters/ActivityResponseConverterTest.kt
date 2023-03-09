@@ -81,7 +81,7 @@ internal class ActivityResponseConverterTest {
         val activity = activityResponseConverter.toActivity(DUMMY_ACTIVITY_RESPONSE)
 
         //Then
-        assertEquals(DUMMY_ACTIVITY_RESPONSE.startDate, activity.date)
+        assertEquals(DUMMY_ACTIVITY_RESPONSE.start, activity.date)
         assertEquals(DUMMY_ACTIVITY_RESPONSE.duration.toDuration(DurationUnit.MINUTES), activity.duration)
         assertEquals(DUMMY_ACTIVITY_RESPONSE.projectRole.id, activity.projectRole.id)
     }
@@ -99,7 +99,8 @@ internal class ActivityResponseConverterTest {
 
         val DUMMY_ACTIVITY = Activity(
             id = 1L,
-            startDate = LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
+            start = LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
+            end = LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
             duration = 75,
             description = "Dummy activity",
             userId = 1,
@@ -112,7 +113,8 @@ internal class ActivityResponseConverterTest {
 
         val DUMMY_ACTIVITY_RESPONSE = ActivityResponse(
             DUMMY_ACTIVITY.id!!,
-            DUMMY_ACTIVITY.startDate,
+            DUMMY_ACTIVITY.start,
+            DUMMY_ACTIVITY.end,
             DUMMY_ACTIVITY.duration,
             DUMMY_ACTIVITY.description,
             DUMMY_PROJECT_ROLE,
@@ -127,7 +129,8 @@ internal class ActivityResponseConverterTest {
 
         val DUMMY_ACTIVITY_DTO = ActivityResponseDTO(
             DUMMY_ACTIVITY.id!!,
-            DUMMY_ACTIVITY.startDate,
+            DUMMY_ACTIVITY.start,
+            DUMMY_ACTIVITY.end,
             DUMMY_ACTIVITY.duration,
             DUMMY_ACTIVITY.description,
             DUMMY_PROJECT_ROLE_DTO,

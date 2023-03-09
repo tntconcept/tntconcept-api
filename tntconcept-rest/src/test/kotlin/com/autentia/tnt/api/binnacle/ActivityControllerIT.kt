@@ -262,10 +262,12 @@ internal class ActivityControllerIT {
 
     private companion object {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
+        private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 11, 0)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
             START_DATE,
+            END_DATE,
             4 * 60,
             "Activity description",
             true,
@@ -276,7 +278,8 @@ internal class ActivityControllerIT {
 
         private val ACTIVITY_POST_JSON = """
             {
-                "startDate": "${ACTIVITY_REQUEST_BODY_DTO.startDate.toJson()}",
+                "start": "${ACTIVITY_REQUEST_BODY_DTO.start.toJson()}",
+                "end": "${ACTIVITY_REQUEST_BODY_DTO.end.toJson()}",
                 "duration": ${ACTIVITY_REQUEST_BODY_DTO.duration},
                 "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
@@ -286,7 +289,8 @@ internal class ActivityControllerIT {
 
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             42,
-            ACTIVITY_REQUEST_BODY_DTO.startDate,
+            ACTIVITY_REQUEST_BODY_DTO.start,
+            ACTIVITY_REQUEST_BODY_DTO.end,
             ACTIVITY_REQUEST_BODY_DTO.duration,
             ACTIVITY_REQUEST_BODY_DTO.description,
             ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", RequireEvidence.WEEKLY),
@@ -301,7 +305,8 @@ internal class ActivityControllerIT {
         private val ACTIVITY_PUT_JSON = """
             {
                 "id": ${ACTIVITY_RESPONSE_DTO.id},
-                "startDate": "${ACTIVITY_RESPONSE_DTO.startDate.toJson()}",
+                "start": "${ACTIVITY_RESPONSE_DTO.start.toJson()}",
+                "end": "${ACTIVITY_RESPONSE_DTO.end.toJson()}",
                 "duration": ${ACTIVITY_RESPONSE_DTO.duration},
                 "description": "Updated activity description",
                 "billable": ${ACTIVITY_RESPONSE_DTO.billable},
@@ -311,7 +316,7 @@ internal class ActivityControllerIT {
         """.trimIndent()
 
         private val ACTIVITY_DATE_DTO = ActivityDateDTO(
-            ACTIVITY_REQUEST_BODY_DTO.startDate.toLocalDate(),
+            ACTIVITY_REQUEST_BODY_DTO.start.toLocalDate(),
             ACTIVITY_REQUEST_BODY_DTO.duration,
             listOf(ACTIVITY_RESPONSE_DTO)
         )

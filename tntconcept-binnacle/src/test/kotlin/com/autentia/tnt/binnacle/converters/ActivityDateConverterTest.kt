@@ -43,15 +43,15 @@ internal class ActivityDateConverterTest {
         val lastDay = firstDay.plusDays(2)
 
         val activitiesFirstDay = listOf(
-            ACTIVITY_RESPONSE.copy(id = 1L, duration = 60, startDate = firstDay.plusHours(1)),
-            ACTIVITY_RESPONSE.copy(id = 2L, duration = 120, startDate = firstDay.plusHours(5))
+            ACTIVITY_RESPONSE.copy(id = 1L, duration = 60, start = firstDay.plusHours(1)),
+            ACTIVITY_RESPONSE.copy(id = 2L, duration = 120, start = firstDay.plusHours(5))
         )
         val activitiesSecondDay = listOf(
-            ACTIVITY_RESPONSE.copy(id = 3L, duration = 180, startDate = secondDay)
+            ACTIVITY_RESPONSE.copy(id = 3L, duration = 180, start = secondDay)
         )
         val activitiesLastDay = listOf(
-            ACTIVITY_RESPONSE.copy(id = 4L, duration = 100, startDate = lastDay),
-            ACTIVITY_RESPONSE.copy(id = 5L, duration = 100, startDate = lastDay, projectRole = PROJECT_ROLE_NOT_WORKABLE)
+            ACTIVITY_RESPONSE.copy(id = 4L, duration = 100, start = lastDay),
+            ACTIVITY_RESPONSE.copy(id = 5L, duration = 100, start = lastDay, projectRole = PROJECT_ROLE_NOT_WORKABLE)
         )
 
         val activitiesDate = activityDateConverter.toListActivityDate(
@@ -72,6 +72,7 @@ internal class ActivityDateConverterTest {
     private companion object {
         private const val USER_ID = 1L
         private val START_DATE = LocalDate.now().atStartOfDay().minusYears(1)
+        private val END_DATE = LocalDate.now().atStartOfDay().minusYears(1)
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
         private val PROJECT = Project(1L, "Dummy Project", true, false, ORGANIZATION, listOf())
         private val PROJECT_ROLE =
@@ -82,6 +83,7 @@ internal class ActivityDateConverterTest {
         private val ACTIVITY_RESPONSE = ActivityResponse(
             1L,
             START_DATE,
+            END_DATE,
             60,
             "Activity",
             PROJECT_ROLE,
@@ -95,7 +97,8 @@ internal class ActivityDateConverterTest {
 
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             ACTIVITY_RESPONSE.id,
-            ACTIVITY_RESPONSE.startDate,
+            ACTIVITY_RESPONSE.start,
+            ACTIVITY_RESPONSE.end,
             ACTIVITY_RESPONSE.duration,
             ACTIVITY_RESPONSE.description,
             ProjectRoleResponseDTO(PROJECT_ROLE.id, PROJECT_ROLE.name, PROJECT_ROLE.requireEvidence),

@@ -36,7 +36,8 @@ data class Activity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    val startDate: LocalDateTime,
+    val start: LocalDateTime,
+    val end: LocalDateTime,
     val duration: Int,
     val description: String,
 

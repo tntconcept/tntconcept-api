@@ -39,10 +39,10 @@ internal class ActivityValidator(
         when {
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
-            !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
-                activityRequest.startDate.toLocalDate(),
+                activityRequest.start.toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
 
@@ -137,10 +137,10 @@ internal class ActivityValidator(
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !userHasAccess(activityDb, user) -> throw UserPermissionException()
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
-            !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
-                activityRequest.startDate.toLocalDate(),
+                activityRequest.start.toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
 
@@ -163,7 +163,7 @@ internal class ActivityValidator(
         val activityDb = activityRepository.findById(id).orElse(null)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
-            !isOpenPeriod(activityDb.startDate) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
             !userHasAccess(activityDb, user) -> throw UserPermissionException()
         }
     }
@@ -181,20 +181,20 @@ internal class ActivityValidator(
             return false
         }
 
-        val startDate = activityRequest.startDate.withHour(0).withMinute(0).withSecond(0)
-        val endDate = activityRequest.startDate.withHour(23).withMinute(59).withSecond(59)
+        val startDate = activityRequest.start.withHour(0).withMinute(0).withSecond(0)
+        val endDate = activityRequest.start.withHour(23).withMinute(59).withSecond(59)
         val activities = activityRepository.getActivitiesBetweenDate(startDate, endDate, user.id)
 
         return checkTimeOverlapping(activityRequest, activities)
     }
 
     private fun checkTimeOverlapping(activityRequest: ActivityRequestBody, activities: List<Activity>): Boolean {
-        val startDate = activityRequest.startDate
-        val endDate = activityRequest.startDate.plusMinutes(activityRequest.duration.toLong())
+        val startDate = activityRequest.start
+        val endDate = activityRequest.start.plusMinutes(activityRequest.duration.toLong())
 
         return activities.any {
-            val otherStartDate = it.startDate
-            val otherEndDate = it.startDate.plusMinutes(it.duration.toLong())
+            val otherStartDate = it.start
+            val otherEndDate = it.start.plusMinutes(it.duration.toLong())
             activityRequest.id != it.id && it.duration > 0 && (startDate..endDate).overlaps(otherStartDate..otherEndDate)
         }
     }
