@@ -40,7 +40,7 @@ data class Activity(
     val start: LocalDateTime,
     val end: LocalDateTime,
     val description: String,
-
+    
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "roleId")
     val projectRole: ProjectRole,
@@ -58,5 +58,7 @@ data class Activity(
     @Enumerated(EnumType.STRING)
     val approvalState: ApprovalState
 ) {
-    val duration: Int = Duration.between(start, end).toMinutes().toInt()
+    val duration: Int =
+        if (projectRole.timeUnit.name === TimeUnit.MINUTES.name) Duration.between(start, end).toMinutes().toInt()
+        else Duration.between(start, end).toDays().toInt() * 8 * 60
 }
