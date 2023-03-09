@@ -7,6 +7,10 @@ enum class RequireEvidence{
     NO, ONCE, WEEKLY
 }
 
+enum class TimeUnit{
+    MINUTES, DAYS
+}
+
 @Entity
 @NamedEntityGraph(
     name = "roleWithProject",
@@ -30,5 +34,8 @@ data class ProjectRole(
 
     val isWorkingTime: Boolean,
 
-    val isApprovalRequired: Boolean
+    val isApprovalRequired: Boolean,
+
+    @Enumerated(EnumType.STRING)
+    val timeUnit: TimeUnit
 )

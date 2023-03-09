@@ -1,9 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -43,7 +40,8 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
             ),
             0,
             true,
-            false
+            false,
+            TimeUnit.MINUTES
         )
         private val PROJECT_ROLE_PROJECT_OPEN = ProjectRole(
             1L,
@@ -59,7 +57,8 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
             ),
             0,
             true,
-            false
+            false,
+            TimeUnit.MINUTES
         )
 
         private val projectOpen = Project(1L, "Project is Open", true,  false,  ORGANIZATION,
