@@ -383,7 +383,7 @@ internal class VacationServiceTest {
             endDate = JAN_SECOND_CURRENT.plusDays(1),
             state = PENDING,
             userId = USER.id,
-            observations = null,
+            observations = "",
             departmentId = null,
             description = "",
             chargeYear = LocalDate.now()
@@ -494,7 +494,7 @@ internal class VacationServiceTest {
             endDate: LocalDate,
             state: VacationState = PENDING,
             userId: Long = 1L,
-            observations: String? = null,
+            observations: String = "",
             departmentId: Long? = null,
             description: String = "Dummy description",
             chargeYear: LocalDate = NOW,

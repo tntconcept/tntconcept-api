@@ -127,7 +127,7 @@ internal class VacationService(
                 state = VacationState.PENDING,
                 userId = user.id,
                 departmentId = user.departmentId,
-                observations = null,
+                observations = "",
                 chargeYear = LocalDate.of(it.chargeYear, Month.JANUARY, 1)
             )
         }

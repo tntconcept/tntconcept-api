@@ -5,8 +5,8 @@ import java.time.LocalDate
 
 data class Vacation(
     var id: Long? = null,
-    var observations: String? = null,
-    var description: String? = null,
+    var observations: String = "",
+    var description: String = "",
     val state: VacationState,
     val startDate: LocalDate,
     val endDate: LocalDate,

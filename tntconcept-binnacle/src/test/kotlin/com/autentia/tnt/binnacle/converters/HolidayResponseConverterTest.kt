@@ -39,7 +39,7 @@ internal class HolidayResponseConverterTest {
         private val HOLIDAY_DATE = LocalDateTime.of(2020, Month.JANUARY, 1, 0, 0, 0)
 
         private val VACATION_ID = 20L
-        private val VACATION_OBSERVATIONS = null
+        private val VACATION_OBSERVATIONS = ""
         private val VACATION_DESCRIPTION = "Dummy Description"
         private val VACATION_STATE = VacationState.ACCEPT
         private val VACATION_START_DATE = LocalDate.of(2020, Month.JANUARY, 2)
