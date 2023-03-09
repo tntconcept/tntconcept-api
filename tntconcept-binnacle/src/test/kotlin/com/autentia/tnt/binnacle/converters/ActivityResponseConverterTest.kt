@@ -106,7 +106,6 @@ internal class ActivityResponseConverterTest {
             id = 1L,
             start = LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
             end = LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
-            duration = 75,
             description = "Dummy activity",
             userId = 1,
             billable = false,

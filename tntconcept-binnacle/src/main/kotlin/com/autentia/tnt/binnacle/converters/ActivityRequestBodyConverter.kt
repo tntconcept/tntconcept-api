@@ -36,7 +36,6 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.id,
             activityRequestBody.start,
             activityRequestBody.end,
-            activityRequestBody.duration,
             activityRequestBody.description,
             projectRole,
             user.id,

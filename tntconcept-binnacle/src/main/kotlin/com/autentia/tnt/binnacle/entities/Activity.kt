@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.entities
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.micronaut.data.annotation.DateCreated
+import java.time.Duration
 import java.time.LocalDateTime
 import java.util.Date
 import javax.persistence.*
@@ -38,7 +39,6 @@ data class Activity(
 
     val start: LocalDateTime,
     val end: LocalDateTime,
-    val duration: Int,
     val description: String,
 
     @ManyToOne(fetch = LAZY)
@@ -57,4 +57,6 @@ data class Activity(
 
     @Enumerated(EnumType.STRING)
     val approvalState: ApprovalState
-)
+) {
+    val duration: Int = Duration.between(start, end).toMinutes().toInt()
+}

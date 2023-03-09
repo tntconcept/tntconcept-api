@@ -99,7 +99,6 @@ internal class ActivityImageRetrievalUseCaseTest {
             ID,
             TODAY,
             TODAY,
-            60,
             "Dummy description",
             PROJECT_ROLE,
             USER.id,
@@ -114,7 +113,7 @@ internal class ActivityImageRetrievalUseCaseTest {
             ID,
             TODAY,
             TODAY,
-            60,
+
             "Dummy description",
             PROJECT_ROLE,
             USER.id,

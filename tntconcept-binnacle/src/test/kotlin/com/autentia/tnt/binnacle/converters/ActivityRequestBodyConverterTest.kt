@@ -76,7 +76,6 @@ internal class ActivityRequestBodyConverterTest {
                 1L,
                 LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
                 LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
-                75,
                 "New activity",
                 DUMMY_PROJECT_ROLE,
                 user.id,
