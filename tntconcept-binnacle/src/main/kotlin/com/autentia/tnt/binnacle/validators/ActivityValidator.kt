@@ -71,7 +71,6 @@ internal class ActivityValidator(
                 totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
 
 
-
             if (totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed) {
                 val remainingTime = (projectRole.maxAllowed - totalRegisteredHoursForThisRole.toDouble()) / DECIMAL_HOUR
 

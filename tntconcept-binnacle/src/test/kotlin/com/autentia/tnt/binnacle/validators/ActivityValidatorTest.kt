@@ -391,7 +391,7 @@ internal class ActivityValidatorTest {
                         startDate = todayDateTime.minusYears(1L),
                         duration = HOUR * 9
                     ),
-                    6.0,
+                    0.0,
                     firstDayOfYear.minusYears(1L),
                     lastDayOfYear.minusYears(1L)
                 ),
@@ -405,7 +405,7 @@ internal class ActivityValidatorTest {
                         startDate = todayDateTime.minusYears(1L),
                         duration = HOUR * 10
                     ),
-                    8.0,
+                    2.0,
                     firstDayOfYear.minusYears(1L),
                     lastDayOfYear.minusYears(1L)
                 ),
@@ -419,7 +419,7 @@ internal class ActivityValidatorTest {
                         startDate = todayDateTime,
                         duration = HOUR * 9
                     ),
-                    8.0,
+                    0.0,
                     firstDayOfYear,
                     lastDayOfYear
                 ),
