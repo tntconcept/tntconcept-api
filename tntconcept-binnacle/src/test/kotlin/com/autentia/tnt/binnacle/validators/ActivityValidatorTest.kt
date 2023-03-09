@@ -621,11 +621,11 @@ internal class ActivityValidatorTest {
             Project(1, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
         private val permisoProject =
             Project(2, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
-        private val projectRole = ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false)
+        private val projectRole = ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false, TimeUnit.MINUTES)
 
-        private val projectRoleNoLimit = ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0, true, false)
+        private val projectRoleNoLimit = ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0, true, false, TimeUnit.MINUTES)
         private val projectRoleLimited =
-            ProjectRole(3, "vac", RequireEvidence.NO, vacationProject, (HOUR * 8), false, false)
+            ProjectRole(3, "vac", RequireEvidence.NO, vacationProject, (HOUR * 8), false, false, TimeUnit.MINUTES)
 
         private val activityNotReachedLimitUpdate = createActivity(
             id = 1L,
@@ -791,7 +791,7 @@ internal class ActivityValidatorTest {
             Organization(1, "Autentia", emptyList()), emptyList()
         )
         private val closedProjectRole =
-            ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false)
+            ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false, TimeUnit.MINUTES)
 
         private fun createActivityRequestBody(
             startDate: LocalDateTime,
@@ -864,7 +864,8 @@ internal class ActivityValidatorTest {
             project,
             maxAllowed,
             true,
-            false
+            false,
+            TimeUnit.MINUTES
         )
 
         private fun someYearsAgoLocalDateTime(yearsAgo: Int) =

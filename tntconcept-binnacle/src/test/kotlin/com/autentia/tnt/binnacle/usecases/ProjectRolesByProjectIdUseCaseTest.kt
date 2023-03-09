@@ -1,10 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,7 +31,7 @@ internal class ProjectRolesByProjectIdUseCaseTest {
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
         private val PROJECT = Project(1L, "Dummy project", true,  false, ORGANIZATION, listOf())
 
-        private val PROJECT_ROLE = ProjectRole(PROJECT_ID, "Dummy Role", RequireEvidence.NO, PROJECT, 0, true, false)
+        private val PROJECT_ROLE = ProjectRole(PROJECT_ID, "Dummy Role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
 
     }
