@@ -123,6 +123,11 @@ UPDATE `OrganizationDocCategory`
 SET `insertDate` = NOW()
 WHERE `insertDate` IS NULL;
 
+
+UPDATE `Organization`
+SET `insertDate` = NOW()
+WHERE `insertDate` IS NULL;
+
 ALTER TABLE `Organization`
     MODIFY COLUMN `insertDate` datetime NOT NULL DEFAULT NOW();
 
