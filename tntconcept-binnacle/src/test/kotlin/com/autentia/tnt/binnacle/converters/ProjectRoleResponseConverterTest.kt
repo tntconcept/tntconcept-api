@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.converters
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -23,22 +24,22 @@ internal class ProjectRoleResponseConverterTest {
     @Test
     fun `given ProjectRole list should return ProjectRoleResponseDTO list with converted values`() {
         val projectRoleList = listOf(
-            ProjectRole(1, "First Role", false, project, 0),
-            ProjectRole(2, "Second Role", true, project, 0)
+            ProjectRole(1, "First Role", RequireEvidence.NO, project, 0, true, false),
+            ProjectRole(2, "Second Role", RequireEvidence.WEEKLY, project, 0, true, false)
         )
 
         val projectRoleResponseDTOList = projectRoleList.map { projectRoleResponseConverter.toProjectRoleResponseDTO(it) }
 
         val expectedProjectRoleResponseDTOList = listOf(
-            ProjectRoleResponseDTO(1, "First Role", false),
-            ProjectRoleResponseDTO(2, "Second Role", true)
+            ProjectRoleResponseDTO(1, "First Role", RequireEvidence.NO),
+            ProjectRoleResponseDTO(2, "Second Role", RequireEvidence.WEEKLY)
         )
         assertEquals(expectedProjectRoleResponseDTOList, projectRoleResponseDTOList)
     }
 
-    private companion object{
-        val project = Project(1,"Dummy project", false, false, Organization(2, "Organzation", listOf()), listOf())
-        val role = ProjectRole(1, "First Role", false, project, 0)
+    private companion object {
+        val project = Project(1, "Dummy project", false, false, Organization(2, "Organzation", listOf()), listOf())
+        val role = ProjectRole(1, "First Role", RequireEvidence.NO, project, 0, true, false)
 
     }
 }

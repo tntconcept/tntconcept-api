@@ -6,9 +6,11 @@ import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -16,6 +18,7 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
@@ -23,7 +26,6 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.Month
-import org.junit.jupiter.api.Assertions.assertEquals
 
 internal class ActivityRetrievalByIdUseCaseTest {
 
@@ -80,7 +82,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
         private val PROJECT_ROLE = ProjectRole(
             10L,
             "Dummy Project role",
-            false,
+            RequireEvidence.NO,
             Project(
                 1L,
                 "Dummy Project",
@@ -89,10 +91,12 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 Organization(1L, "Dummy Organization", listOf()),
                 listOf(),
             ),
-            0
+            0,
+            true,
+            false
         )
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
 
         val yesterdayActivity = Activity(
             2L,
@@ -102,7 +106,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             "Dummy description",
             PROJECT_ROLE,
             USER.id,
-            true
+            true,
+            approvalState = ApprovalState.NA
         )
 
         val savedActivity = Activity(
@@ -113,7 +118,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             "Dummy description",
             PROJECT_ROLE,
             33L,
-            true
+            true,
+            approvalState = ApprovalState.NA
         )
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
             2L,
@@ -126,7 +132,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             true,
             ORGANIZATION_DTO,
             PROJECT_RESPONSE_DTO,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
 
     }

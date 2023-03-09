@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -28,7 +29,7 @@ internal class ProjectRoleRecentConverterTest {
             ProjectRoleRecent(
                 id = 1L,
                 name = "First Project Role",
-                requireEvidence = false,
+                requireEvidence = RequireEvidence.NO,
                 date = LocalDateTime.of(2020, JANUARY, 1, 0, 0, 0),
                 organizationName = "Dummy Organization",
                 projectName = "Dummy Project",
@@ -38,7 +39,7 @@ internal class ProjectRoleRecentConverterTest {
             ProjectRoleRecent(
                 id = 2L,
                 name = "Second Project Role",
-                requireEvidence = false,
+                requireEvidence = RequireEvidence.NO,
                 date = LocalDateTime.of(2021, FEBRUARY, 1, 0, 0, 0),
                 organizationName = "Dummy Organization",
                 projectName = "Dummy Project",
@@ -51,7 +52,7 @@ internal class ProjectRoleRecentConverterTest {
             ProjectRoleRecentDTO(
                 id = 1L,
                 name = "First Project Role",
-                requireEvidence = false,
+                requireEvidence = RequireEvidence.NO,
                 date = LocalDateTime.of(2020, JANUARY, 1, 0, 0, 0),
                 organizationName = "Dummy Organization",
                 projectName = "Dummy Project",
@@ -61,7 +62,7 @@ internal class ProjectRoleRecentConverterTest {
             ProjectRoleRecentDTO(
                 id = 2L,
                 name = "Second Project Role",
-                requireEvidence = false,
+                requireEvidence = RequireEvidence.NO,
                 date = LocalDateTime.of(2021, FEBRUARY, 1, 0, 0, 0),
                 organizationName = "Dummy Organization",
                 projectName = "Dummy Project",

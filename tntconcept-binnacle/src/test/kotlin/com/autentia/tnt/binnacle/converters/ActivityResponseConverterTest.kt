@@ -2,9 +2,11 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -93,10 +95,11 @@ internal class ActivityResponseConverterTest {
 
         private val DUMMY_ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
         private val DUMMY_PROJECT = Project(1L, "Dummy Project", true, false, DUMMY_ORGANIZATION, listOf())
-        private val DUMMY_PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, DUMMY_PROJECT, 0)
+        private val DUMMY_PROJECT_ROLE =
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, DUMMY_PROJECT, 0, true, false)
 
         private val DUMMY_ORGANIZATION_DTO = OrganizationResponseDTO(1L, "Dummy Organization")
-        private val DUMMY_PROJECT_ROLE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val DUMMY_PROJECT_ROLE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
         private val DUMMY_PROJECT_DTO = ProjectResponseDTO(1L, "Dummy Project", true, false)
 
         val DUMMY_ACTIVITY = Activity(
@@ -108,8 +111,9 @@ internal class ActivityResponseConverterTest {
             userId = 1,
             billable = false,
             departmentId = 1,
-            hasImage = false,
-            projectRole = DUMMY_PROJECT_ROLE
+            hasEvidences = false,
+            projectRole = DUMMY_PROJECT_ROLE,
+            approvalState = ApprovalState.NA
         )
 
         val DUMMY_ACTIVITY_RESPONSE = ActivityResponse(
@@ -123,7 +127,9 @@ internal class ActivityResponseConverterTest {
             DUMMY_ACTIVITY.billable,
             DUMMY_ORGANIZATION,
             DUMMY_PROJECT,
-            DUMMY_ACTIVITY.hasImage
+            DUMMY_ACTIVITY.hasEvidences,
+            DUMMY_ACTIVITY.approvalState
+
         )
 
         val DUMMY_ACTIVITY_DTO = ActivityResponseDTO(
@@ -137,7 +143,9 @@ internal class ActivityResponseConverterTest {
             DUMMY_ACTIVITY.billable,
             DUMMY_ORGANIZATION_DTO,
             DUMMY_PROJECT_DTO,
-            DUMMY_ACTIVITY.hasImage
+            DUMMY_ACTIVITY.hasEvidences,
+            DUMMY_ACTIVITY.approvalState
+
         )
 
 

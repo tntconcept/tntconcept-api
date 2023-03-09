@@ -5,6 +5,7 @@ services:
   mysql:
    container_name: tntconcept-mysql
    image: mysql:8.0.32
+   platform: linux/x86_64
    ports:
     - "3306:3306"
    command: ["--log_bin_trust_function_creators=1"]

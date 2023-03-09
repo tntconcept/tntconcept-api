@@ -8,9 +8,11 @@ import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -19,16 +21,16 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import java.time.LocalDateTime
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDateTime
 
 internal class ActivityUpdateUseCaseTest {
 
@@ -86,8 +88,8 @@ internal class ActivityUpdateUseCaseTest {
             open = true,
             billable = false
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, PROJECT, 0)
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
         private val NEW_ACTIVITY_DTO = ActivityRequestBodyDTO(
             1L,
             TODAY,
@@ -96,7 +98,7 @@ internal class ActivityUpdateUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
         )
         private val todayActivity = Activity(
             1,
@@ -110,6 +112,7 @@ internal class ActivityUpdateUseCaseTest {
             null,
             null,
             false,
+            approvalState = ApprovalState.NA
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
             1,
@@ -123,6 +126,7 @@ internal class ActivityUpdateUseCaseTest {
             ORGANIZATION_DTO,
             PROJECT_RESPONSE_DTO,
             false,
+            approvalState = ApprovalState.NA
         )
         private val activityToUpdate = ActivityRequestBody(
             1L,
@@ -132,7 +136,7 @@ internal class ActivityUpdateUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
         )
     }
 }

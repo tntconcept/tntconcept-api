@@ -13,6 +13,7 @@ import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -121,6 +122,7 @@ internal class ActivityServiceTest {
                     activityWithoutImageSaved.projectRole.project.organization,
                     activityWithoutImageSaved.projectRole.project,
                     false,
+                    activityWithoutImageSaved.approvalState
                 )
             ),
             actual
@@ -184,7 +186,8 @@ internal class ActivityServiceTest {
             "Description...",
             false,
             projectRole.id,
-            false
+            false,
+            null,
         )
 
         doReturn(Optional.of(activityWithoutImageSaved))
@@ -218,7 +221,7 @@ internal class ActivityServiceTest {
             false,
             projectRole.id,
             true,
-            "Base64 format..."
+            "Base64 format...",
         )
 
         val oldActivity = mock(Activity::class.java)
@@ -265,14 +268,15 @@ internal class ActivityServiceTest {
             "Description...",
             false,
             projectRole.id,
-            false
+            false,
+            null,
         )
 
         val oldActivity = mock(Activity::class.java)
         // The old activity has an image but the new activity body does not
-        val oldActivityHasImage = true
+        val oldActivityHasEvidences = true
         val oldActivityInsertDate = Date()
-        given(oldActivity.hasImage).willReturn(oldActivityHasImage)
+        given(oldActivity.hasEvidences).willReturn(oldActivityHasEvidences)
         given(oldActivity.insertDate).willReturn(oldActivityInsertDate)
         given(activityRepository.findById(activityId)).willReturn(Optional.of(oldActivity))
 
@@ -328,7 +332,7 @@ internal class ActivityServiceTest {
 
         private val organization = Organization(1L, "Autentia", emptyList())
         private val project = Project(1L, "Back-end developers", true, false, organization, emptyList())
-        private val projectRole = ProjectRole(10, "Kotlin developer", false, project, 0)
+        private val projectRole = ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false)
 
         private val TODAY_NOON = LocalDateTime.of(LocalDate.now(), LocalTime.NOON)
 
@@ -342,7 +346,8 @@ internal class ActivityServiceTest {
             "Dummy description",
             false,
             projectRole.id,
-            false
+            false,
+            null,
         )
 
         private val activityWithImageRequest = ActivityRequestBody(
@@ -354,7 +359,7 @@ internal class ActivityServiceTest {
             false,
             projectRole.id,
             true,
-            "Base64 format..."
+            "Base64 format...",
         )
     }
 

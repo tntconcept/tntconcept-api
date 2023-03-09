@@ -1,32 +1,13 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityRetrievalByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityUpdateUseCase
-import io.micronaut.http.HttpRequest.DELETE
-import io.micronaut.http.HttpRequest.GET
-import io.micronaut.http.HttpRequest.POST
-import io.micronaut.http.HttpRequest.PUT
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
+import io.micronaut.http.HttpRequest.*
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.HttpStatus.BAD_REQUEST
-import io.micronaut.http.HttpStatus.NOT_FOUND
-import io.micronaut.http.HttpStatus.OK
+import io.micronaut.http.HttpStatus.*
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
@@ -281,7 +262,7 @@ internal class ActivityControllerIT {
 
     private companion object {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
-        private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
+        private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 11, 0)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
@@ -297,7 +278,8 @@ internal class ActivityControllerIT {
 
         private val ACTIVITY_POST_JSON = """
             {
-                "startDate": "${ACTIVITY_REQUEST_BODY_DTO.start.toJson()}",
+                "start": "${ACTIVITY_REQUEST_BODY_DTO.start.toJson()}",
+                "end": "${ACTIVITY_REQUEST_BODY_DTO.end.toJson()}",
                 "duration": ${ACTIVITY_REQUEST_BODY_DTO.duration},
                 "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
@@ -311,22 +293,25 @@ internal class ActivityControllerIT {
             ACTIVITY_REQUEST_BODY_DTO.end,
             ACTIVITY_REQUEST_BODY_DTO.duration,
             ACTIVITY_REQUEST_BODY_DTO.description,
-            ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", true),
+            ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", RequireEvidence.WEEKLY),
             2,
             ACTIVITY_REQUEST_BODY_DTO.billable,
             OrganizationResponseDTO(6, "organization"),
             ProjectResponseDTO(5, "project", true, true),
-            ACTIVITY_REQUEST_BODY_DTO.hasImage,
+            ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
+            ApprovalState.NA
         )
 
         private val ACTIVITY_PUT_JSON = """
             {
                 "id": ${ACTIVITY_RESPONSE_DTO.id},
-                "startDate": "${ACTIVITY_RESPONSE_DTO.start.toJson()}",
+                "start": "${ACTIVITY_RESPONSE_DTO.start.toJson()}",
+                "end": "${ACTIVITY_RESPONSE_DTO.end.toJson()}",
                 "duration": ${ACTIVITY_RESPONSE_DTO.duration},
                 "description": "Updated activity description",
                 "billable": ${ACTIVITY_RESPONSE_DTO.billable},
-                "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRole.id}
+                "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRole.id},
+                "approvalState": "${ACTIVITY_RESPONSE_DTO.approvalState}"
             }
         """.trimIndent()
 

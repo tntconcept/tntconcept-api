@@ -1,11 +1,21 @@
 package com.autentia.tnt.binnacle.config
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.Role
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
-import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
@@ -109,20 +119,28 @@ internal fun createProjectResponseDTO(id: Long = 1L, open: Boolean = false, bill
 )
 
 internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
-    id = id,
-    name = "Dummy Project role",
-    requireEvidence = true,
-    project = createProject(),
-    maxAllowed = 0
+    id,
+    "Dummy Project role",
+    RequireEvidence.WEEKLY,
+    createProject(),
+    0,
+    true,
+    false
 )
 
-internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: Boolean = false) = ProjectRoleResponseDTO(
-    id = id,
-    name = "Dummy Project Role",
-    requireEvidence = requireEvidence
-)
-
-internal fun createActivityResponse(id: Long, start: LocalDateTime, end: LocalDateTime ,hasImage: Boolean) = ActivityResponse(
+internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =
+    ProjectRoleResponseDTO(
+        id = id,
+        name = "Dummy Project Role",
+        requireEvidence = requireEvidence
+    )
+internal fun createActivityResponse(
+    id: Long,
+    start: LocalDateTime,
+    end: LocalDateTime,
+    hasEvidences: Boolean,
+    approvalState: ApprovalState = ApprovalState.NA
+) = ActivityResponse(
     id = id,
     start = start,
     end = end,
@@ -133,10 +151,16 @@ internal fun createActivityResponse(id: Long, start: LocalDateTime, end: LocalDa
     billable = false,
     organization = createOrganization(),
     project = createProject(),
-    hasImage = hasImage
+    hasEvidences = hasEvidences,
+    approvalState = approvalState
 )
-
-internal fun createActivityResponseDTO(id: Long, start: LocalDateTime, end: LocalDateTime, hasImage: Boolean) = ActivityResponseDTO(
+internal fun createActivityResponseDTO(
+    id: Long,
+    start: LocalDateTime,
+    end: LocalDateTime,
+    hasEvidences: Boolean,
+    approvalState: ApprovalState = ApprovalState.NA
+) = ActivityResponseDTO(
     id = id,
     start = start,
     end = end,
@@ -144,13 +168,19 @@ internal fun createActivityResponseDTO(id: Long, start: LocalDateTime, end: Loca
     description = "Dummy description",
     userId = 1L,
     billable = true,
-    hasImage = hasImage,
+    hasEvidences = hasEvidences,
     organization = createOrganizationResponseDTO(),
     project = createProjectResponseDTO(),
-    projectRole = createProjectRoleResponseDTO()
+    projectRole = createProjectRoleResponseDTO(),
+    approvalState = approvalState
 )
-
-internal fun createActivityRequestBodyDTO(id: Long, start: LocalDateTime, end: LocalDateTime, projectRoleId: Long, hasImage: Boolean) =
+internal fun createActivityRequestBodyDTO(
+    id: Long,
+    start: LocalDateTime,
+    end: LocalDateTime,
+    projectRoleId: Long,
+    hasEvidences: Boolean
+) =
     ActivityRequestBodyDTO(
         id,
         start,
@@ -159,7 +189,7 @@ internal fun createActivityRequestBodyDTO(id: Long, start: LocalDateTime, end: L
         "New activity",
         false,
         projectRoleId,
-        hasImage
+        hasEvidences,
     )
 
 

@@ -7,9 +7,11 @@ import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -20,15 +22,15 @@ import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
 import java.util.Optional
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.whenever
 
 internal class ActivityCreationUseCaseTest {
 
@@ -88,9 +90,9 @@ internal class ActivityCreationUseCaseTest {
             open = true,
             billable = false,
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false)
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
@@ -100,7 +102,8 @@ internal class ActivityCreationUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
+            null,
         )
 
         private fun generateLargeDescription(mainMessage: String): String {
@@ -119,8 +122,9 @@ internal class ActivityCreationUseCaseTest {
             end: LocalDateTime = TIME_NOW,
             duration: Int = 75,
             billable: Boolean = false,
-            hasImage: Boolean = false,
-            projectRole: ProjectRole = PROJECT_ROLE
+            hasEvidences: Boolean = false,
+            projectRole: ProjectRole = PROJECT_ROLE,
+            approvalState: ApprovalState = ApprovalState.NA
         ): Activity =
             Activity(
                 id = id,
@@ -130,8 +134,9 @@ internal class ActivityCreationUseCaseTest {
                 end = end,
                 duration = duration,
                 billable = billable,
-                hasImage = hasImage,
-                projectRole = projectRole
+                hasEvidences = hasEvidences,
+                projectRole = projectRole,
+                approvalState = approvalState
             )
 
         private fun createActivityResponseDTO(
@@ -142,10 +147,11 @@ internal class ActivityCreationUseCaseTest {
             end: LocalDateTime = TIME_NOW,
             duration: Int = 75,
             billable: Boolean = false,
-            hasImage: Boolean = false,
+            hasEvidences: Boolean = false,
             projectRole: ProjectRoleResponseDTO = PROJECT_ROLE_RESPONSE_DTO,
             organization: OrganizationResponseDTO = ORGANIZATION_DTO,
-            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO
+            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO,
+            approvalState: ApprovalState = ApprovalState.NA
         ): ActivityResponseDTO =
             ActivityResponseDTO(
                 id,
@@ -158,7 +164,8 @@ internal class ActivityCreationUseCaseTest {
                 billable,
                 organization,
                 project,
-                hasImage,
+                hasEvidences,
+                approvalState
             )
 
     }

@@ -3,11 +3,7 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
@@ -19,24 +15,24 @@ import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.ArgumentMatchers.any
 import org.mockito.BDDMockito.given
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import java.util.Optional
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.whenever
 
 @TestInstance(PER_CLASS)
 internal class ActivityValidatorTest {
@@ -130,7 +126,7 @@ internal class ActivityValidatorTest {
                 "New activity",
                 false,
                 user.id,
-                false
+                false,
             )
 
             doReturn(
@@ -144,6 +140,7 @@ internal class ActivityValidatorTest {
                         projectRole,
                         user.id,
                         false,
+                        approvalState = ApprovalState.NA
                     )
                 )
             ).whenever(activityRepository).getActivitiesBetweenDate(
@@ -249,7 +246,7 @@ internal class ActivityValidatorTest {
                 "description",
                 false,
                 user.id,
-                false
+                false,
             )
             val currentActivity = Activity(
                 1L,
@@ -259,7 +256,8 @@ internal class ActivityValidatorTest {
                 "Old description",
                 projectRole,
                 user.id,
-                false
+                false,
+                approvalState = ApprovalState.NA
             )
 
             doReturn(Optional.empty<ProjectRole>()).whenever(projectRoleRepository).findById(projectRole.id)
@@ -295,7 +293,7 @@ internal class ActivityValidatorTest {
                 "description",
                 false,
                 2L,
-                false
+                false,
             )
 
             doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
@@ -336,7 +334,7 @@ internal class ActivityValidatorTest {
                 "description",
                 false,
                 user.id,
-                false
+                false,
             )
             given(activityRepository.findById(1L)).willReturn(Optional.of(currentActivity))
 
@@ -357,7 +355,8 @@ internal class ActivityValidatorTest {
                         projectRole,
                         user.id,
                         billable = false,
-                        hasImage = false,
+                        approvalState = ApprovalState.NA,
+                        hasEvidences = false
                     )
                 )
             )
@@ -435,7 +434,7 @@ internal class ActivityValidatorTest {
                 "New description",
                 false,
                 user.id,
-                false
+                false,
             )
             val currentActivity = Activity(
                 1L,
@@ -445,7 +444,8 @@ internal class ActivityValidatorTest {
                 "Old description",
                 projectRole,
                 user.id,
-                false
+                false,
+                approvalState = ApprovalState.NA
             )
             given(activityRepository.findById(1L)).willReturn(Optional.of(currentActivity))
 
@@ -466,7 +466,9 @@ internal class ActivityValidatorTest {
                         projectRole,
                         user.id,
                         billable = false,
-                        hasImage = false
+                        hasEvidences = false,
+                        approvalState = ApprovalState.NA
+
                     )
                 )
             )
@@ -498,7 +500,7 @@ internal class ActivityValidatorTest {
                 "Updated activity",
                 false,
                 userHiredLastYear.id,
-                false
+                false,
             )
             val currentActivity = Activity(
                 1L,
@@ -508,7 +510,8 @@ internal class ActivityValidatorTest {
                 "Old description",
                 projectRole,
                 userHiredLastYear.id,
-                false
+                false,
+                approvalState = ApprovalState.NA
             )
 
             doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
@@ -535,7 +538,8 @@ internal class ActivityValidatorTest {
                 "description",
                 projectRole,
                 user.id,
-                false
+                false,
+                approvalState = ApprovalState.NA
             )
 
             doReturn(Optional.of(activity)).whenever(activityRepository).findById(id)
@@ -566,7 +570,8 @@ internal class ActivityValidatorTest {
                 "description",
                 projectRole,
                 user.id,
-                false
+                false,
+                approvalState = ApprovalState.NA
             )
 
             doReturn(Optional.of(activity)).whenever(activityRepository).findById(id)
@@ -585,7 +590,8 @@ internal class ActivityValidatorTest {
                 "description",
                 projectRole,
                 user.id,
-                false
+                false,
+                approvalState = ApprovalState.NA
             )
 
             doReturn(Optional.of(activity)).whenever(activityRepository).findById(id)
@@ -606,7 +612,8 @@ internal class ActivityValidatorTest {
                 "description",
                 projectRole,
                 33L,
-                false
+                false,
+                approvalState = ApprovalState.NA
             )
 
             doReturn(Optional.of(activity)).whenever(activityRepository).findById(id)
@@ -638,10 +645,11 @@ internal class ActivityValidatorTest {
             Project(1, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
         private val permisoProject =
             Project(2, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
-        private val projectRole = ProjectRole(1, "vac", false, vacationProject, 0)
+        private val projectRole = ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false)
 
-        private val projectRoleNoLimit = ProjectRole(2, "perm", false, permisoProject, 0)
-        private val projectRoleLimited = ProjectRole(3, "vac", false, vacationProject, (HOUR * 8))
+        private val projectRoleNoLimit = ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0, true, false)
+        private val projectRoleLimited =
+            ProjectRole(3, "vac", RequireEvidence.NO, vacationProject, (HOUR * 8), false, false)
 
         private val activityNotReachedLimitUpdate = createActivity(
             id = 1L,
@@ -694,7 +702,7 @@ internal class ActivityValidatorTest {
             "description",
             false,
             user.id,
-            false
+            false,
         )
         private const val CLOSED_ID = 2L
 
@@ -706,7 +714,7 @@ internal class ActivityValidatorTest {
             "description",
             false,
             CLOSED_ID,
-            false
+            false,
         )
         private val newActivityLastYear = ActivityRequestBody(
             null,
@@ -716,7 +724,7 @@ internal class ActivityValidatorTest {
             "description",
             false,
             user.id,
-            false
+            false,
         )
         private val newActivityTwoYearsAgo = ActivityRequestBody(
             null,
@@ -726,7 +734,7 @@ internal class ActivityValidatorTest {
             "description",
             false,
             user.id,
-            false
+            false,
         )
 
         private val activityLastYear = ActivityRequestBody(
@@ -737,7 +745,7 @@ internal class ActivityValidatorTest {
             "Updated activity",
             false,
             user.id,
-            false
+            false,
         )
         private val activityUpdateNonexistentID = ActivityRequestBody(
             1,
@@ -747,7 +755,7 @@ internal class ActivityValidatorTest {
             "Updated activity",
             false,
             user.id,
-            false
+            false,
         )
 
         private val currentActivity = Activity(
@@ -758,7 +766,8 @@ internal class ActivityValidatorTest {
             "Old description",
             projectRole,
             user.id,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
         val newActivityRequest = ActivityRequestBody(
             1L,
@@ -769,7 +778,7 @@ internal class ActivityValidatorTest {
             "description",
             false,
             user.id,
-            false
+            false,
         )
         val activityUpdateTwoYearsAgo = ActivityRequestBody(
             1,
@@ -779,7 +788,7 @@ internal class ActivityValidatorTest {
             "Updated activity",
             false,
             user.id,
-            false
+            false,
         )
         private const val anyOtherUserId = 33L
 
@@ -791,7 +800,8 @@ internal class ActivityValidatorTest {
             "Old description",
             projectRole,
             anyOtherUserId,
-            false
+            false,
+            approvalState = ApprovalState.NA
         )
         private val validActivityToUpdate = ActivityRequestBody(
             1L,
@@ -801,7 +811,7 @@ internal class ActivityValidatorTest {
             "description",
             false,
             user.id,
-            false
+            false,
         )
 
         private val newActivityBeforeHiringDate = ActivityRequestBody(
@@ -812,14 +822,15 @@ internal class ActivityValidatorTest {
             "description",
             false,
             userHiredLastYear.id,
-            false
+            false,
         )
 
         private val closedProject = Project(
             CLOSED_ID, "TNT", false, false,
             Organization(1, "Autentia", emptyList()), emptyList()
         )
-        private val closedProjectRole = ProjectRole(CLOSED_ID, "Architect", false, closedProject, 0)
+        private val closedProjectRole =
+            ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false)
 
         private fun createActivityRequestBody(
             start: LocalDateTime,
@@ -828,7 +839,7 @@ internal class ActivityValidatorTest {
             description: String = "",
             projectRoleId: Long = projectRoleLimited.id,
             billable: Boolean = false,
-            hasImage: Boolean = false,
+            hasEvidences: Boolean = false,
         ): ActivityRequestBody =
             ActivityRequestBody(
                 start = start,
@@ -837,7 +848,7 @@ internal class ActivityValidatorTest {
                 description = description,
                 projectRoleId = projectRoleId,
                 billable = billable,
-                hasImage = hasImage,
+                hasEvidences = hasEvidences,
             )
 
         private fun createActivityRequestBodyToUpdate(
@@ -848,7 +859,7 @@ internal class ActivityValidatorTest {
             description: String = "",
             projectRoleId: Long = projectRoleLimited.id,
             billable: Boolean = false,
-            hasImage: Boolean = false,
+            hasEvidences: Boolean = false,
         ): ActivityRequestBody =
             ActivityRequestBody(
                 id = id,
@@ -858,7 +869,7 @@ internal class ActivityValidatorTest {
                 description = description,
                 projectRoleId = projectRoleId,
                 billable = billable,
-                hasImage = hasImage,
+                hasEvidences = hasEvidences
             )
 
         private fun createActivity(
@@ -869,7 +880,8 @@ internal class ActivityValidatorTest {
             description: String = "",
             billable: Boolean = false,
             projectRole: ProjectRole,
-            userId: Long = user.id
+            userId: Long = user.id,
+            approvalState: ApprovalState = ApprovalState.NA
         ) = Activity(
             id = id,
             start = start,
@@ -879,7 +891,7 @@ internal class ActivityValidatorTest {
             projectRole = projectRole,
             userId = userId,
             billable = billable,
-
+            approvalState = approvalState
             )
 
         private val organization = Organization(1, "Organization", listOf())
@@ -887,15 +899,17 @@ internal class ActivityValidatorTest {
         fun createProjectRoleWithLimit(
             id: Long = projectRoleLimited.id,
             name: String = "Role with limit",
-            requireEvidence: Boolean = false,
+            requireEvidence: RequireEvidence = RequireEvidence.NO,
             project: Project = Project(1, "Project", true, false, organization, listOf()),
             maxAllowed: Int
         ) = ProjectRole(
-            id = id,
-            name = name,
-            requireEvidence = requireEvidence,
-            project = project,
-            maxAllowed = maxAllowed,
+            id,
+            name,
+            requireEvidence,
+            project,
+            maxAllowed,
+            true,
+            false
         )
 
         private fun someYearsAgoLocalDateTime(yearsAgo: Int) =

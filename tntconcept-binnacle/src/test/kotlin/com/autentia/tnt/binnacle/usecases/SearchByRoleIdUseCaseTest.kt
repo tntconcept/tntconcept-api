@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.converters.SearchConverter
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.services.ProjectRoleService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -81,12 +82,16 @@ internal class SearchByRoleIdUseCaseTest {
 
         private val AUTENTIA = Organization(1, "Autentia", emptyList())
         private val INTERNAL_TRAINING = Project(1, "Internal training", true, true, AUTENTIA, emptyList())
-        private val INTERNAL_STUDENT = ProjectRole(1, "Student", true, INTERNAL_TRAINING, 0)
-        private val INTERNAL_TEACHER = ProjectRole(2, "Internal Teacher", true, INTERNAL_TRAINING, 0)
+        private val INTERNAL_STUDENT =
+            ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 0, true, false)
+        private val INTERNAL_TEACHER =
+            ProjectRole(2, "Internal Teacher", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 0, true, false)
 
         private val OTHER_COMPANY = Organization(2, "Other S.A.", emptyList())
         private val EXTERNAL_TRAINING = Project(2, "External training", true, true, OTHER_COMPANY, emptyList())
-        private val EXTERNAL_STUDENT = ProjectRole(3, "External student", true, EXTERNAL_TRAINING, 0)
-        private val EXTERNAL_TEACHER = ProjectRole(4, "External teacher", true, EXTERNAL_TRAINING, 0)
+        private val EXTERNAL_STUDENT =
+            ProjectRole(3, "External student", RequireEvidence.WEEKLY, EXTERNAL_TRAINING, 0, true, false)
+        private val EXTERNAL_TEACHER =
+            ProjectRole(4, "External teacher", RequireEvidence.WEEKLY, EXTERNAL_TRAINING, 0, true, false)
     }
 }

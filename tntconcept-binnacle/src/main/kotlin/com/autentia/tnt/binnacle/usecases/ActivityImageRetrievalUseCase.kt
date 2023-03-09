@@ -20,7 +20,7 @@ class ActivityImageRetrievalUseCase internal constructor(
         val activity = activityService.getActivityById(id)
 
         if (activityValidator.userHasAccess(activity, user)) {
-            if (activity.hasImage) {
+            if (activity.hasEvidences) {
                 return activityImageService.getActivityImageAsBase64(id, activity.insertDate!!)
             } else {
                 throw NoImageInActivityException(id)

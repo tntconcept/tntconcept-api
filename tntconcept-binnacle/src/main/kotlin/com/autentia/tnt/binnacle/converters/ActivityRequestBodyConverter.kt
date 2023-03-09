@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
@@ -20,7 +21,7 @@ class ActivityRequestBodyConverter() {
             activityRequestBodyDTO.description,
             activityRequestBodyDTO.billable,
             activityRequestBodyDTO.projectRoleId,
-            activityRequestBodyDTO.hasImage,
+            activityRequestBodyDTO.hasEvidences,
             activityRequestBodyDTO.imageFile
         )
 
@@ -42,20 +43,8 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.billable,
             user.departmentId,
             insertDate,
-            activityRequestBody.hasImage
-        )
-
-    fun mapActivityRequestBodyToActivityRequestDTO(activityRequestBody: ActivityRequestBody) =
-        ActivityRequestBodyDTO(
-            activityRequestBody.id,
-            activityRequestBody.start,
-            activityRequestBody.end,
-            activityRequestBody.duration,
-            activityRequestBody.description,
-            activityRequestBody.billable,
-            activityRequestBody.projectRoleId,
-            activityRequestBody.hasImage,
-            activityRequestBody.imageFile
+            activityRequestBody.hasEvidences,
+            ApprovalState.NA
         )
 
 }

@@ -14,6 +14,6 @@ data class ActivityRequestBodyDTO(
     val description: String,
     val billable: Boolean,
     val projectRoleId: Long,
-    val hasImage: Boolean,
-    val imageFile: String? = null
+    val hasEvidences: Boolean,
+    val imageFile: String? = null,
 )

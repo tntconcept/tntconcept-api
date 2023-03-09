@@ -8,14 +8,14 @@ import jakarta.inject.Singleton
 class ProjectRoleRecentConverter {
 
     fun toProjectRoleRecentDTO(projectRoleRecent: ProjectRoleRecent): ProjectRoleRecentDTO = ProjectRoleRecentDTO(
-        id = projectRoleRecent.id,
-        name = projectRoleRecent.name,
-        projectName = projectRoleRecent.projectName,
-        organizationName = projectRoleRecent.organizationName,
-        projectBillable = projectRoleRecent.projectBillable,
-        projectOpen = projectRoleRecent.projectOpen,
-        date = projectRoleRecent.date,
-        requireEvidence = projectRoleRecent.requireEvidence
+        projectRoleRecent.id,
+        projectRoleRecent.name,
+        projectRoleRecent.projectName,
+        projectRoleRecent.organizationName,
+        projectRoleRecent.projectBillable,
+        projectRoleRecent.projectOpen,
+        projectRoleRecent.date,
+        projectRoleRecent.requireEvidence
     )
 
 }
