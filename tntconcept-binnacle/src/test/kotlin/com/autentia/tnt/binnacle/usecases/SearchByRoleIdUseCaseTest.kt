@@ -22,7 +22,7 @@ internal class SearchByRoleIdUseCaseTest {
     fun `return empty list when roleid is not found`() {
 
         doReturn(emptyList<ProjectRole>())
-            .whenever(projectRoleService).getAllByProjectIds(listOf(UNKONW_ROLE_ID.toInt()))
+            .whenever(projectRoleService).getAllByIds(listOf(UNKONW_ROLE_ID.toInt()))
 
         val roles = searchByRoleIdUseCase.getDescriptions(listOf(UNKONW_ROLE_ID))
 
@@ -34,7 +34,7 @@ internal class SearchByRoleIdUseCaseTest {
     @Test
     fun `return an unique element for Organization, Project and Role when search only for one projectRole`() {
         val rolesForSearch = listOf(INTERNAL_STUDENT.id)
-        doReturn(listOf(INTERNAL_STUDENT)).whenever(projectRoleService).getAllByProjectIds(rolesForSearch.map(Long::toInt))
+        doReturn(listOf(INTERNAL_STUDENT)).whenever(projectRoleService).getAllByIds(rolesForSearch.map(Long::toInt))
 
         val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch)
 
@@ -62,7 +62,7 @@ internal class SearchByRoleIdUseCaseTest {
                 EXTERNAL_STUDENT,
                 EXTERNAL_TEACHER
             )
-        ).whenever(projectRoleService).getAllByProjectIds(rolesForSearch.map(Long::toInt))
+        ).whenever(projectRoleService).getAllByIds(rolesForSearch.map(Long::toInt))
 
         val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch)
 

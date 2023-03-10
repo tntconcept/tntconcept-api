@@ -19,9 +19,9 @@ internal class ProjectRoleServiceTest {
         val projectRoles = listOf(mock<ProjectRole>())
         val ids = listOf(1, 2)
 
-        doReturn(projectRoles).whenever(projectRoleRepository).getAllByProjectIdIn(ids.map(Int::toLong))
+        doReturn(projectRoles).whenever(projectRoleRepository).getAllByIdIn(ids.map(Int::toLong))
 
-        val actual = projectRoleService.getAllByProjectIds(ids)
+        val actual = projectRoleService.getAllByIds(ids)
 
         assertEquals(projectRoles, actual)
     }
