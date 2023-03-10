@@ -1,7 +1,13 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -112,9 +118,9 @@ internal class ActivityResponseConverterTest {
 
         val DUMMY_ACTIVITY_RESPONSE = ActivityResponse(
             DUMMY_ACTIVITY.id!!,
-            DUMMY_ACTIVITY.start,
-            DUMMY_ACTIVITY.end,
-            DUMMY_ACTIVITY.duration,
+            DUMMY_ACTIVITY.interval.start,
+            DUMMY_ACTIVITY.interval.end,
+            DUMMY_ACTIVITY.duration(),
             DUMMY_ACTIVITY.description,
             DUMMY_PROJECT_ROLE,
             DUMMY_ACTIVITY.userId,
@@ -128,9 +134,9 @@ internal class ActivityResponseConverterTest {
 
         val DUMMY_ACTIVITY_DTO = ActivityResponseDTO(
             DUMMY_ACTIVITY.id!!,
-            DUMMY_ACTIVITY.start,
-            DUMMY_ACTIVITY.end,
-            DUMMY_ACTIVITY.duration,
+            DUMMY_ACTIVITY.interval.start,
+            DUMMY_ACTIVITY.interval.end,
+            DUMMY_ACTIVITY.duration(),
             DUMMY_ACTIVITY.description,
             DUMMY_PROJECT_ROLE_DTO,
             DUMMY_ACTIVITY.userId,

@@ -77,7 +77,7 @@ internal class ActivityValidator(
     ) =
         activitiesInYear
             .filter { it.projectRoleId == activityRequest.projectRoleId }
-            .sumOf { it.duration }
+            .sumOf { it.duration() }
 
     private fun getActivitiesInYear(year: Int, user: User) =
         activityRepository.workedMinutesBetweenDate(
@@ -116,9 +116,9 @@ internal class ActivityValidator(
             val totalRegisteredHoursForThisRole =
                 getTotalHoursPerRoleAndActivity(activitiesSinceStartOfYear, activityRequestUpdate)
 
-            if (currentActivity.duration < activityRequestUpdate.duration) {
+            if (currentActivity.duration() < activityRequestUpdate.duration) {
                 isExceedingMaxHours =
-                    (totalRegisteredHoursForThisRole + ((currentActivity.duration - activityRequestUpdate.duration).absoluteValue) > projectRole.maxAllowed)
+                    (totalRegisteredHoursForThisRole + ((currentActivity.duration() - activityRequestUpdate.duration).absoluteValue) > projectRole.maxAllowed)
             }
 
         }
@@ -163,7 +163,7 @@ internal class ActivityValidator(
         val activityDb = activityRepository.findById(id).orElse(null)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
-            !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityDb.interval.start) -> throw ActivityPeriodClosedException()
             !userHasAccess(activityDb, user) -> throw UserPermissionException()
         }
     }
@@ -193,9 +193,9 @@ internal class ActivityValidator(
         val endDate = activityRequest.start.plusMinutes(activityRequest.duration.toLong())
 
         return activities.any {
-            val otherStartDate = it.start
-            val otherEndDate = it.start.plusMinutes(it.duration.toLong())
-            activityRequest.id != it.id && it.duration > 0 && (startDate..endDate).overlaps(otherStartDate..otherEndDate)
+            val otherStartDate = it.interval.start
+            val otherEndDate = it.interval.start.plusMinutes(it.duration().toLong())
+            activityRequest.id != it.id && it.duration() > 0 && (startDate..endDate).overlaps(otherStartDate..otherEndDate)
         }
     }
 

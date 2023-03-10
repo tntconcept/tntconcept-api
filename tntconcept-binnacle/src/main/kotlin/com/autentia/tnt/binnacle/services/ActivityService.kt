@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
@@ -39,14 +38,6 @@ internal class ActivityService(
         return activityRepository
             .getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
-    }
-
-    @Transactional
-    @ReadOnly
-    fun workedMinutesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityTimeOnly> {
-        val startDateMinHour = startDate.atTime(LocalTime.MIN)
-        val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository.workedMinutesBetweenDate(startDateMinHour, endDateMaxHour, userId)
     }
 
     @Transactional(rollbackOn = [Exception::class])

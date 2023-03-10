@@ -658,29 +658,34 @@ internal class ActivityValidatorTest {
 
         val activityReachedLimitTimeOnly = ActivityTimeOnly(
             yesterdayDateTime,
-            projectRoleLimited.maxAllowed,
-            projectRoleLimited.id
+            yesterdayDateTime.plusMinutes(projectRoleLimited.maxAllowed.toLong()),
+            projectRoleLimited.id,
+            projectRoleLimited.timeUnit
         )
 
         val activityNoLimitTimeOnly = ActivityTimeOnly(
             yesterdayDateTime,
-            (HOUR * 8),
-            projectRoleNoLimit.id
+            yesterdayDateTime.plusMinutes(HOUR * 8L),
+            projectRoleNoLimit.id,
+            projectRoleNoLimit.timeUnit
         )
         val activityReachedLimitTodayTimeOnly = ActivityTimeOnly(
             todayDateTime,
-            projectRoleLimited.maxAllowed,
-            projectRoleLimited.id
+            todayDateTime.plusMinutes(projectRoleLimited.maxAllowed.toLong()),
+            projectRoleLimited.id,
+            projectRoleLimited.timeUnit
         )
         val activityReachedHalfHourTimeOnly = ActivityTimeOnly(
             todayDateTime,
-            HOUR,
-            projectRoleLimited.id
+            todayDateTime.plusMinutes(HOUR.toLong()),
+            projectRoleLimited.id,
+            projectRoleLimited.timeUnit
         )
         val activityNotReachedLimitTimeOnly = ActivityTimeOnly(
             todayDateTime,
-            (HOUR * 5),
-            projectRoleLimited.id
+            todayDateTime.plusMinutes(HOUR * 5L),
+            projectRoleLimited.id,
+            projectRoleLimited.timeUnit
         )
 
         private val newActivityInMarch = ActivityRequestBody(

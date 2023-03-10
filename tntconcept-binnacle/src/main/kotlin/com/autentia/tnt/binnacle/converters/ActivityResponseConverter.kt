@@ -18,30 +18,30 @@ class ActivityResponseConverter(
 
     fun mapActivityToActivityResponseDTO(activity: Activity) = ActivityResponseDTO(
         id = activity.id!!,
-        start = activity.start,
-        end = activity.end,
+        start = activity.interval.start,
+        end = activity.interval.end,
         billable = activity.billable,
         userId = activity.userId,
         description = activity.description,
         organization = organizationResponseConverter.toOrganizationResponseDTO(activity.projectRole.project.organization),
         project = projectResponseConverter.toProjectResponseDTO(activity.projectRole.project),
         projectRole = projectRoleResponseConverter.toProjectRoleResponseDTO(activity.projectRole),
-        duration = activity.duration,
+        duration = activity.duration(),
         hasEvidences = activity.hasEvidences,
         approvalState = activity.approvalState
     )
 
     fun mapActivityToActivityResponse(activity: Activity) = ActivityResponse(
         id = activity.id!!,
-        start = activity.start,
-        end = activity.end,
+        start = activity.interval.start,
+        end = activity.interval.end,
         billable = activity.billable,
         userId = activity.userId,
         description = activity.description,
         organization = activity.projectRole.project.organization,
         project = activity.projectRole.project,
         projectRole = activity.projectRole,
-        duration = activity.duration,
+        duration = activity.duration(),
         hasEvidences = activity.hasEvidences,
         approvalState = activity.approvalState
     )
@@ -59,7 +59,7 @@ class ActivityResponseConverter(
             organizationResponseConverter.toOrganizationResponseDTO(activityResponse.organization),
             projectResponseConverter.toProjectResponseDTO(activityResponse.project),
             activityResponse.hasEvidences,
-            approvalState = activityResponse.approvalState
+            activityResponse.approvalState
         )
 
     fun toActivity(activityResponse: ActivityResponse) =

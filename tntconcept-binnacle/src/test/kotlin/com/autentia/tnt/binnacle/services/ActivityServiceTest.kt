@@ -8,8 +8,12 @@ import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -108,9 +112,9 @@ internal class ActivityServiceTest {
             listOf(
                 ActivityResponse(
                     activityWithoutImageSaved.id as Long,
-                    activityWithoutImageSaved.start,
-                    activityWithoutImageSaved.end,
-                    activityWithoutImageSaved.duration,
+                    activityWithoutImageSaved.interval.start,
+                    activityWithoutImageSaved.interval.end,
+                    activityWithoutImageSaved.duration(),
                     activityWithoutImageSaved.description,
                     activityWithoutImageSaved.projectRole,
                     activityWithoutImageSaved.userId,
@@ -123,29 +127,6 @@ internal class ActivityServiceTest {
             ),
             actual
         )
-    }
-
-    @Test
-    fun `get worked minutes between start and end date`() {
-        val startDate = LocalDate.of(2019, 1, 1)
-        val endDate = LocalDate.of(2019, 1, 31)
-        val userId = 2L
-        val activityTimeOnly = ActivityTimeOnly(
-            activityWithoutImageSaved.start,
-            activityWithoutImageSaved.duration,
-            activityWithoutImageSaved.projectRole.id
-        )
-
-        doReturn(listOf(activityTimeOnly))
-            .whenever(activityRepository).workedMinutesBetweenDate(
-                startDate.atTime(LocalTime.MIN),
-                endDate.atTime(23, 59, 59),
-                userId
-            )
-
-        val actual = activityService.workedMinutesBetweenDates(startDate, endDate, userId)
-
-        assertEquals(listOf(activityTimeOnly), actual)
     }
 
     @Test
