@@ -18,7 +18,6 @@ import javax.persistence.ManyToOne
 import javax.persistence.NamedAttributeNode
 import javax.persistence.NamedEntityGraph
 import javax.persistence.NamedSubgraph
-import javax.persistence.Transient
 
 enum class ApprovalState {
     NA, PENDING, ACCEPTED
@@ -51,7 +50,6 @@ data class Activity(
 
     @Embedded
     val interval: Interval,
-
     val description: String,
 
     @ManyToOne(fetch = LAZY)
@@ -80,6 +78,10 @@ data class Activity(
         id, Interval(start, end), description, projectRole, userId, billable, departmentId, insertDate,
         hasEvidences, approvalState
     )
-    
+
     fun duration(): Int = interval.getDuration(projectRole.timeUnit)
+
+    companion object {
+        fun emptyActivity(projectRole: ProjectRole) : Activity = Activity(0, LocalDateTime.MIN, LocalDateTime.MIN, "Empty activity", projectRole, 0L, false, 0, null, false, ApprovalState.NA)
+    }
 }

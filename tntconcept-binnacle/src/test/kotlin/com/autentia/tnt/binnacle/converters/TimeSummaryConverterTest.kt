@@ -133,8 +133,8 @@ internal class TimeSummaryConverterTest {
         val vacationsList = listOf(
             Vacation(
                 1L,
-                null,
-                null,
+                "",
+                "",
                 VacationState.PENDING,
                 LocalDate.of(2022, 1, 3),
                 LocalDate.of(2022, 1, 3),
@@ -143,8 +143,8 @@ internal class TimeSummaryConverterTest {
             ),
             Vacation(
                 1L,
-                null,
-                null,
+                "",
+                "",
                 VacationState.PENDING,
                 LocalDate.of(2022, 2, 3),
                 LocalDate.of(2022, 2, 3),

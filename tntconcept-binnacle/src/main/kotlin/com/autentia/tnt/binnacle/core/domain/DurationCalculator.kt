@@ -7,6 +7,9 @@ import java.time.LocalDateTime
 class DurationCalculator {
     companion object {
         fun getDuration(start: LocalDateTime, end: LocalDateTime, timeUnit: TimeUnit) =
-            Duration.between(start, end).toMinutes().toInt()
+            if (timeUnit == TimeUnit.MINUTES)
+                Duration.between(start, end).toMinutes().toInt()
+            else
+                Duration.between(start, end).toDays().toInt() * 8 * 60
     }
 }
