@@ -35,7 +35,7 @@ internal class WorkTimeConfig {
         val projectRoleIds =
             if (appProperties.binnacle.notWorkableProjects.isEmpty()) emptyList()
             else projectRoleService
-                .getAllByProjectIds(appProperties.binnacle.notWorkableProjects)
+                .getAllByIds(appProperties.binnacle.notWorkableProjects)
                 .map { ProjectRoleId(it.id) }
         return WorkableProjectRoleIdChecker(projectRoleIds)
     }

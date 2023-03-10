@@ -15,7 +15,7 @@ class SearchByRoleIdUseCase internal constructor(
         // Remove duplicated elements to search
         val distinctRoles = roleIds.distinct()
 
-        val roles = projectRoleService.getAllByProjectIds(distinctRoles.map(Long::toInt))
+        val roles = projectRoleService.getAllByIds(distinctRoles.map(Long::toInt))
 
         return searchConverter.toResponseDTO(roles)
     }
