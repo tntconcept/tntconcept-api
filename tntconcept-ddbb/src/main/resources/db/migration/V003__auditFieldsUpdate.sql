@@ -103,7 +103,7 @@ WHERE `updateDate` IS NULL;
 ALTER TABLE `OrganizationISOCategory`
     MODIFY COLUMN `updateDate` datetime NOT NULL DEFAULT NOW();
 
-/* OrganizationISOCategory Table */
+/* OrganizationDocCategory Table */
 UPDATE `OrganizationDocCategory`
 SET `insertDate` = NOW()
 WHERE `insertDate` IS NULL;
@@ -119,7 +119,7 @@ ALTER TABLE `OrganizationDocCategory`
     MODIFY COLUMN `updateDate` datetime NOT NULL DEFAULT NOW();
 
 /* Organization Table */
-UPDATE `OrganizationDocCategory`
+UPDATE `Organization`
 SET `insertDate` = NOW()
 WHERE `insertDate` IS NULL;
 
