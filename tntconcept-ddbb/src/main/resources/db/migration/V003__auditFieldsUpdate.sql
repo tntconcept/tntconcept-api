@@ -1161,596 +1161,423 @@ ALTER TABLE `Link`
 ALTER TABLE `Link`
     ADD `updateDate` datetime NOT NULL DEFAULT NOW();
 
-delimiter |
-
 CREATE TRIGGER updateAuditoryDateCountry BEFORE UPDATE ON Country
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateDocument BEFORE UPDATE ON Document
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateDocumentCategory BEFORE UPDATE ON DocumentCategory
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateDocumentVersion BEFORE UPDATE ON DocumentVersion
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateDocumentCategoryDoc BEFORE UPDATE ON DocumentCategoryDoc
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOrganizationType BEFORE UPDATE ON OrganizationType
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOrganizationISOCategory BEFORE UPDATE ON OrganizationISOCategory
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOrganizationDocCategory BEFORE UPDATE ON OrganizationDocCategory
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOrganization BEFORE UPDATE ON Organization
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateDepartment BEFORE UPDATE ON Department
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateContact BEFORE UPDATE ON Contact
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDatePosition BEFORE UPDATE ON Position
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDatePosition_Department BEFORE UPDATE ON Position_Department
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateDepartment_Organization BEFORE UPDATE ON Department_Organization
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateContactInfo BEFORE UPDATE ON ContactInfo
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateProject BEFORE UPDATE ON Project
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateProjectRole BEFORE UPDATE ON ProjectRole
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateProjectCost BEFORE UPDATE ON ProjectCost
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateRole BEFORE UPDATE ON Role
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateContractType BEFORE UPDATE ON ContractType
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateWorkingAgreement BEFORE UPDATE ON WorkingAgreement
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateWorkingAgreementTerms BEFORE UPDATE ON WorkingAgreementTerms
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateUserCategory BEFORE UPDATE ON UserCategory
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateUser BEFORE UPDATE ON User
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateAnnualWorkSummary BEFORE UPDATE ON AnnualWorkSummary
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateAnnualWorkSummaryJob BEFORE UPDATE ON AnnualWorkSummaryJob
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateActivity BEFORE UPDATE ON Activity
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateAccountType BEFORE UPDATE ON AccountType
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateAccount BEFORE UPDATE ON Account
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateAccountEntryGroup BEFORE UPDATE ON AccountEntryGroup
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateAccountEntryType BEFORE UPDATE ON AccountEntryType
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateAccountEntry BEFORE UPDATE ON AccountEntry
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateIVAType BEFORE UPDATE ON IVAType
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateIVAReason BEFORE UPDATE ON IVAReason
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBillCategory BEFORE UPDATE ON BillCategory
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateRectifiedBillCategory BEFORE UPDATE ON RectifiedBillCategory
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBillRegime BEFORE UPDATE ON BillRegime
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBill BEFORE UPDATE ON Bill
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBill_AccountEntry BEFORE UPDATE ON Bill_AccountEntry
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBillBreakDown BEFORE UPDATE ON BillBreakDown
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBillPayment BEFORE UPDATE ON BillPayment
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBulletinBoardCategory BEFORE UPDATE ON BulletinBoardCategory
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCompanyState BEFORE UPDATE ON CompanyState
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateIdea BEFORE UPDATE ON Idea
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateInventory BEFORE UPDATE ON Inventory
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateObjective BEFORE UPDATE ON Objective
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateMagazine BEFORE UPDATE ON Magazine
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateTutorial BEFORE UPDATE ON Tutorial
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDatePublication BEFORE UPDATE ON Publication
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBulletinBoard BEFORE UPDATE ON BulletinBoard
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateBook BEFORE UPDATE ON Book
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateFrequency BEFORE UPDATE ON Frequency
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDatePeriodicalAccountEntry BEFORE UPDATE ON PeriodicalAccountEntry
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateHoliday BEFORE UPDATE ON Holiday
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateRequestHoliday BEFORE UPDATE ON RequestHoliday
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOfferRejectReason BEFORE UPDATE ON OfferRejectReason
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOffer BEFORE UPDATE ON Offer
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOfferRole BEFORE UPDATE ON OfferRole
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOfferCost BEFORE UPDATE ON OfferCost
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateFinancialRatio BEFORE UPDATE ON FinancialRatio
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateInteractionType BEFORE UPDATE ON InteractionType
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateInteraction BEFORE UPDATE ON Interaction
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateSetting BEFORE UPDATE ON Setting
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOccupation BEFORE UPDATE ON Occupation
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCreditTitle BEFORE UPDATE ON CreditTitle
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCreditTitle_Bill BEFORE UPDATE ON CreditTitle_Bill
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCollaborator BEFORE UPDATE ON Collaborator
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCommissioning BEFORE UPDATE ON Commissioning
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCommissioningDelay BEFORE UPDATE ON CommissioningDelay
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCommissioningPaymentData BEFORE UPDATE ON CommissioningPaymentData
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCommissioning_User BEFORE UPDATE ON Commissioning_User
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCommissioningChange BEFORE UPDATE ON CommissioningChange
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateCommissioningFile BEFORE UPDATE ON CommissioningFile
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateExternalActivity BEFORE UPDATE ON ExternalActivity
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateActivityFile BEFORE UPDATE ON ActivityFile
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateTag BEFORE UPDATE ON Tag
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateContact_Tag BEFORE UPDATE ON Contact_Tag
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDatePosition_Tag BEFORE UPDATE ON Position_Tag
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateDepartment_Tag BEFORE UPDATE ON Department_Tag
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateOrganization_Tag BEFORE UPDATE ON Organization_Tag
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDatePositionChange BEFORE UPDATE ON PositionChange
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateContactOwner BEFORE UPDATE ON ContactOwner
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateEntityChange BEFORE UPDATE ON EntityChange
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
+
+
 
 CREATE TRIGGER updateAuditoryDateLink BEFORE UPDATE ON Link
-    FOR EACH ROW
-BEGIN
-    SET NEW.updateDate = NOW();
-END;
-|
+    FOR EACH ROW SET NEW.updateDate = NOW();
 
-delimiter ;
 
 
