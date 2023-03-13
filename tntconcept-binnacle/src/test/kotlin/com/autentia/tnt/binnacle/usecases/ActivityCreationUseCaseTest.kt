@@ -6,7 +6,13 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -15,6 +21,7 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,6 +38,7 @@ internal class ActivityCreationUseCaseTest {
 
     private val user = createUser()
     private val activityService = mock<ActivityService>()
+    private val projectRoleService = mock<ProjectRoleService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityRepository = mock<ActivityRepository>()
     private val activityValidator = ActivityValidator(activityRepository, projectRoleRepository)
@@ -39,6 +47,7 @@ internal class ActivityCreationUseCaseTest {
     private val activityCreationUseCase = ActivityCreationUseCase(
         activityService,
         userService,
+        projectRoleService,
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
@@ -57,7 +66,7 @@ internal class ActivityCreationUseCaseTest {
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
 
         doReturn(activity).whenever(activityService).createActivity(any(), eq(user))
-
+        doReturn(PROJECT_ROLE).whenever(projectRoleService).getById(any())
         doReturn(Optional.of(activity.projectRole)).whenever(projectRoleRepository).findById(any())
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_REQUEST_BODY_DTO)
@@ -93,7 +102,6 @@ internal class ActivityCreationUseCaseTest {
             null,
             TIME_NOW,
             TIME_NOW.plusMinutes(75L),
-            75,
             "New activity",
             false,
             PROJECT_ROLE.id,

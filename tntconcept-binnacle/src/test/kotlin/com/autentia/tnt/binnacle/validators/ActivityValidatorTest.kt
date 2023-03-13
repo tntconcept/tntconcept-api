@@ -121,12 +121,12 @@ internal class ActivityValidatorTest {
             val newActivity = ActivityRequestBody(
                 null,
                 LocalDateTime.of(2022, Month.JULY, 7, 8, 45),
-                LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
-                75,
+                LocalDateTime.of(2022, Month.JULY, 7, 10, 0),
                 "New activity",
                 false,
-                user.id,
-                false,
+                projectRole.id,
+                projectRole.timeUnit,
+                false
             )
 
             doReturn(
@@ -161,7 +161,10 @@ internal class ActivityValidatorTest {
                 "reached limit no remaining hours the year before",
                 listOf(activityReachedLimitTimeOnlyAYearAgo, activityNoLimitTimeOnlyAYearAgo),
                 createProjectRoleWithLimit(maxAllowed = (HOUR * 8)),
-                createActivityRequestBody(start = todayDateTime.minusYears(1L), end = todayDateTime.minusYears(1L).plusMinutes((HOUR * 9).toLong()), HOUR*9),
+                createActivityRequestBody(
+                    start = todayDateTime.minusYears(1L),
+                    end = todayDateTime.minusYears(1L).plusMinutes(HOUR * 9L)
+                ),
                 0.0,
                 firstDayOfYear.minusYears(1L),
                 lastDayOfYear.minusYears(1L)
@@ -170,7 +173,7 @@ internal class ActivityValidatorTest {
                 "reached limit no remaining hours",
                 listOf(activityReachedLimitTimeOnly, activityNoLimitTimeOnly),
                 createProjectRoleWithLimit(maxAllowed = (HOUR * 8)),
-                createActivityRequestBody(start = todayDateTime, end = todayDateTime, duration = (HOUR * 9)),
+                createActivityRequestBody(start = todayDateTime, end = todayDateTime.plusMinutes(HOUR * 9L)),
                 0.0,
                 firstDayOfYear,
                 lastDayOfYear
@@ -179,7 +182,7 @@ internal class ActivityValidatorTest {
                 "reached limit no remaining hours current day",
                 listOf(activityReachedLimitTodayTimeOnly, activityNoLimitTimeOnly),
                 createProjectRoleWithLimit(maxAllowed = (HOUR * 8)),
-                createActivityRequestBody(start = todayDateTime, end = todayDateTime, duration = (HOUR * 9)),
+                createActivityRequestBody(start = todayDateTime, end = todayDateTime.plusMinutes(HOUR * 9L)),
                 0.0,
                 firstDayOfYear,
                 lastDayOfYear
@@ -188,7 +191,7 @@ internal class ActivityValidatorTest {
                 "reached limit no remaining hours half hour",
                 listOf(activityReachedHalfHourTimeOnly, activityNoLimitTimeOnly),
                 createProjectRoleWithLimit(maxAllowed = 90),
-                createActivityRequestBody(start = todayDateTime, end = todayDateTime, duration = (HOUR * 9)),
+                createActivityRequestBody(start = todayDateTime, end = todayDateTime.plusMinutes(HOUR * 9L)),
                 0.5,
                 firstDayOfYear,
                 lastDayOfYear
@@ -197,7 +200,7 @@ internal class ActivityValidatorTest {
                 "not reached limit remaining hours left",
                 listOf(activityNotReachedLimitTimeOnly, activityNoLimitTimeOnly),
                 createProjectRoleWithLimit(maxAllowed = (HOUR * 8)),
-                createActivityRequestBody(start = todayDateTime,end = todayDateTime,  duration = (HOUR * 10)),
+                createActivityRequestBody(start = todayDateTime, end = todayDateTime.plusMinutes(HOUR * 10L)),
                 3.0,
                 firstDayOfYear,
                 lastDayOfYear
@@ -260,11 +263,11 @@ internal class ActivityValidatorTest {
             val newActivity = ActivityRequestBody(
                 1L,
                 LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-                60,
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(60L),
                 "description",
                 false,
-                user.id,
+                projectRole.id,
+                projectRole.timeUnit,
                 false,
             )
             val currentActivity = Activity(
@@ -306,11 +309,11 @@ internal class ActivityValidatorTest {
             val newActivity = ActivityRequestBody(
                 1L,
                 LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-                60,
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(60L),
                 "description",
                 false,
-                2L,
+                closedProjectRole.id,
+                closedProjectRole.timeUnit,
                 false,
             )
 
@@ -347,11 +350,11 @@ internal class ActivityValidatorTest {
             val newActivity = ActivityRequestBody(
                 1L,
                 LocalDateTime.of(2022, Month.JULY, 7, 8, 45, 0),
-                LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
-                75,
+                LocalDateTime.of(2022, Month.JULY, 7, 10, 0, 0),
                 "description",
                 false,
-                user.id,
+                projectRole.id,
+                projectRole.timeUnit,
                 false,
             )
             given(activityRepository.findById(1L)).willReturn(Optional.of(currentActivity))
@@ -393,8 +396,7 @@ internal class ActivityValidatorTest {
                     createActivityRequestBodyToUpdate(
                         id = activityAYearAgoUpdated.id!!,
                         start = todayDateTime.minusYears(1L),
-                        end = todayDateTime.minusYears(1L).plusMinutes((HOUR * 9).toLong()),
-                        duration = HOUR * 9
+                        end = todayDateTime.minusYears(1L).plusMinutes((HOUR * 9).toLong())
                     ),
                     0.0,
                     firstDayOfYear.minusYears(1L),
@@ -408,8 +410,7 @@ internal class ActivityValidatorTest {
                     createActivityRequestBodyToUpdate(
                         id = activityNotReachedLimitUpdate.id!!,
                         start = todayDateTime.minusYears(1L),
-                        end = todayDateTime.minusYears(1L).plusMinutes((HOUR*10).toLong()),
-                        duration = HOUR * 10
+                        end = todayDateTime.minusYears(1L).plusMinutes((HOUR * 10).toLong())
                     ),
                     2.0,
                     firstDayOfYear.minusYears(1L),
@@ -423,8 +424,7 @@ internal class ActivityValidatorTest {
                     createActivityRequestBodyToUpdate(
                         id = activityReachedLimitUpdate.id!!,
                         start = todayDateTime,
-                        end = todayDateTime,
-                        duration = HOUR * 9
+                        end = todayDateTime.plusMinutes(HOUR * 9L)
                     ),
                     0.0,
                     firstDayOfYear,
@@ -438,8 +438,7 @@ internal class ActivityValidatorTest {
                     createActivityRequestBodyToUpdate(
                         id = activityNotReachedLimitUpdate.id!!,
                         start = todayDateTime,
-                        end = todayDateTime,
-                        duration = HOUR * 10
+                        end = todayDateTime.plusMinutes(HOUR * 10L)
                     ),
                     3.0,
                     firstDayOfYear,
@@ -482,11 +481,11 @@ internal class ActivityValidatorTest {
             val newActivity = ActivityRequestBody(
                 1L,
                 LocalDateTime.of(2022, Month.JULY, 7, 8, 45, 0),
-                LocalDateTime.of(2022, Month.JULY, 7, 8, 45, 0),
-                75,
+                LocalDateTime.of(2022, Month.JULY, 7, 8, 45, 0).plusMinutes(75),
                 "New description",
                 false,
-                user.id,
+                projectRole.id,
+                projectRole.timeUnit,
                 false,
             )
             val currentActivity = Activity(
@@ -546,11 +545,11 @@ internal class ActivityValidatorTest {
                     1,
                     2,
                     1
-                ),
-                HOUR,
+                ).plusMinutes(HOUR.toLong()),
                 "Updated activity",
                 false,
-                userHiredLastYear.id,
+                projectRole.id,
+                projectRole.timeUnit,
                 false,
             )
             val currentActivity = Activity(
@@ -679,6 +678,7 @@ internal class ActivityValidatorTest {
 
         private const val HOUR = 60
         private const val DECIMAL_HOUR = 60.0
+        private const val CLOSED_ID = 2L
 
         private val yesterdayDateTime = LocalDateTime.of(LocalDate.now().minusDays(2), LocalTime.now())
         private val todayDateTime =
@@ -691,9 +691,14 @@ internal class ActivityValidatorTest {
             Project(1, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
         private val permisoProject =
             Project(2, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
-        private val projectRole = ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false, TimeUnit.MINUTES)
-
-        private val projectRoleWithoutLimit = ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0, true, false, TimeUnit.MINUTES)
+        private val projectRole =
+            ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false, TimeUnit.MINUTES)
+        private val closedProject =
+            Project(CLOSED_ID, "TNT", false, false, Organization(1, "Autentia", emptyList()), emptyList())
+        private val closedProjectRole =
+            ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false, TimeUnit.MINUTES)
+        private val projectRoleWithoutLimit =
+            ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0, true, false, TimeUnit.MINUTES)
         private val projectRoleLimited =
             ProjectRole(3, "vac", RequireEvidence.NO, vacationProject, (HOUR * 8), false, false, TimeUnit.MINUTES)
 
@@ -782,64 +787,63 @@ internal class ActivityValidatorTest {
         private val newActivityInMarch = ActivityRequestBody(
             null,
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            HOUR,
+            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(HOUR.toLong()),
             "description",
             false,
-            user.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
-        private const val CLOSED_ID = 2L
 
         private val newActivityInClosedProject = ActivityRequestBody(
             null,
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            HOUR,
+            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(HOUR.toLong()),
             "description",
             false,
-            CLOSED_ID,
+            closedProjectRole.id,
+            closedProjectRole.timeUnit,
             false,
         )
         private val newActivityLastYear = ActivityRequestBody(
             null,
             someYearsAgoLocalDateTime(1),
-            someYearsAgoLocalDateTime(1),
-            HOUR,
+            someYearsAgoLocalDateTime(1).plusMinutes(HOUR.toLong()).plusMinutes(HOUR.toLong()),
             "description",
             false,
-            user.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
         private val newActivityTwoYearsAgo = ActivityRequestBody(
             null,
             someYearsAgoLocalDateTime(2),
-            someYearsAgoLocalDateTime(2),
-            HOUR,
+            someYearsAgoLocalDateTime(2).plusMinutes(HOUR.toLong()),
             "description",
             false,
-            user.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
 
         private val activityLastYear = ActivityRequestBody(
             1,
             someYearsAgoLocalDateTime(1),
-            someYearsAgoLocalDateTime(2),
-            HOUR,
+            someYearsAgoLocalDateTime(1).plusMinutes(HOUR.toLong()),
             "Updated activity",
             false,
-            user.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
         private val activityUpdateNonexistentID = ActivityRequestBody(
             1,
             someYearsAgoLocalDateTime(2),
-            someYearsAgoLocalDateTime(2),
-            HOUR,
+            someYearsAgoLocalDateTime(2).plusMinutes(HOUR.toLong()),
             "Updated activity",
             false,
-            user.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
 
@@ -856,21 +860,21 @@ internal class ActivityValidatorTest {
         val newActivityRequest = ActivityRequestBody(
             1L,
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            HOUR,
+            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(HOUR.toLong()),
             "description",
             false,
-            user.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
         val activityUpdateTwoYearsAgo = ActivityRequestBody(
             1,
             someYearsAgoLocalDateTime(2),
-            someYearsAgoLocalDateTime(2),
-            HOUR,
+            someYearsAgoLocalDateTime(2).plusMinutes(HOUR.toLong()),
             "Updated activity",
             false,
-            user.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
         private const val anyOtherUserId = 33L
@@ -888,47 +892,41 @@ internal class ActivityValidatorTest {
         private val validActivityToUpdate = ActivityRequestBody(
             1L,
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            HOUR,
+            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(HOUR.toLong()),
             "description",
             false,
-            user.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
 
         private val newActivityBeforeHiringDate = ActivityRequestBody(
             null,
             LocalDateTime.of(userHiredLastYear.hiringDate.year, userHiredLastYear.hiringDate.month.minus(1), 3, 11, 45),
-            LocalDateTime.of(userHiredLastYear.hiringDate.year, userHiredLastYear.hiringDate.month.minus(1), 3, 11, 45),
-            HOUR,
+            LocalDateTime.of(userHiredLastYear.hiringDate.year, userHiredLastYear.hiringDate.month.minus(1), 3, 11, 45)
+                .plusMinutes(HOUR.toLong()),
             "description",
             false,
-            userHiredLastYear.id,
+            projectRole.id,
+            projectRole.timeUnit,
             false,
         )
-
-        private val closedProject = Project(
-            CLOSED_ID, "TNT", false, false,
-            Organization(1, "Autentia", emptyList()), emptyList()
-        )
-        private val closedProjectRole =
-            ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false, TimeUnit.MINUTES)
 
         private fun createActivityRequestBody(
             start: LocalDateTime,
             end: LocalDateTime,
-            duration: Int,
             description: String = "",
             projectRoleId: Long = projectRoleLimited.id,
+            timeUnit: TimeUnit = projectRoleLimited.timeUnit,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
         ): ActivityRequestBody =
             ActivityRequestBody(
                 start = start,
                 end = end,
-                duration = duration,
                 description = description,
                 projectRoleId = projectRoleId,
+                timeUnit = timeUnit,
                 billable = billable,
                 hasEvidences = hasEvidences,
             )
@@ -937,9 +935,9 @@ internal class ActivityValidatorTest {
             id: Long,
             start: LocalDateTime,
             end: LocalDateTime,
-            duration: Int,
             description: String = "",
             projectRoleId: Long = projectRoleLimited.id,
+            timeUnit: TimeUnit = projectRoleLimited.timeUnit,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
         ): ActivityRequestBody =
@@ -947,9 +945,9 @@ internal class ActivityValidatorTest {
                 id = id,
                 start = start,
                 end = end,
-                duration = duration,
                 description = description,
                 projectRoleId = projectRoleId,
+                timeUnit = timeUnit,
                 billable = billable,
                 hasEvidences = hasEvidences
             )

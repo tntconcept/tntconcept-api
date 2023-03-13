@@ -4,18 +4,19 @@
         <withJansi>true</withJansi>
         <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
-            <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n</pattern>
+            <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n
+            </pattern>
         </encoder>
     </appender>
 
-    <logger name="com.autentia.tnt" level="INFO" />
-<!--    <logger name="io.micronaut" level="DEBUG" />-->
-<!--    <logger name="io.micronaut.context" level="TRACE"/>-->
-<!--    <logger name="io.micronaut.context.condition" level="TRACE"/>-->
-<!--    <logger name="io.micronaut.data.query" level="TRACE" />-->
-<!--    <logger name="io.micronaut.http.client" level="TRACE"/>-->
+    <logger name="com.autentia.tnt" level="INFO"/>
+    <logger name="io.micronaut" level="TRACE"/>
+    <logger name="io.micronaut.context" level="TRACE"/>
+    <logger name="io.micronaut.context.condition" level="TRACE"/>
+    <logger name="io.micronaut.data.query" level="TRACE"/>
+    <logger name="io.micronaut.http.client" level="TRACE"/>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

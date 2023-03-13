@@ -2,7 +2,13 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,7 +23,7 @@ internal class ActivityRequestBodyConverterTest {
     fun `given ActivityRequestBodyDTO should return domain ActivityRequestBody with converted values`() {
 
         val result = activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(
-            ACTIVITY_REQUEST_BODY_DTO
+            ACTIVITY_REQUEST_BODY_DTO, TimeUnit.MINUTES
         )
 
         assertEquals(ACTIVITY_REQUEST_BODY, result)
@@ -40,19 +46,18 @@ internal class ActivityRequestBodyConverterTest {
             1L,
             LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
             LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
-            75,
             "New activity",
             false,
             1,
+            TimeUnit.MINUTES,
             false,
-            null,
+            null
         )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             ACTIVITY_REQUEST_BODY.id,
-            ACTIVITY_REQUEST_BODY.start,
-            ACTIVITY_REQUEST_BODY.end,
-            ACTIVITY_REQUEST_BODY.duration,
+            ACTIVITY_REQUEST_BODY.getStart(),
+            ACTIVITY_REQUEST_BODY.getEnd(),
             ACTIVITY_REQUEST_BODY.description,
             ACTIVITY_REQUEST_BODY.billable,
             ACTIVITY_REQUEST_BODY.projectRoleId,

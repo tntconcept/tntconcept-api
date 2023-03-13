@@ -7,13 +7,20 @@ import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,11 +38,13 @@ internal class ActivityUpdateUseCaseTest {
 
     private val activityService = mock<ActivityService>()
     private val activityValidator = mock<ActivityValidator>()
+    private val projectRoleService = mock<ProjectRoleService>()
     private val userService = mock<UserService>()
 
     private val activityUpdateUseCase = ActivityUpdateUseCase(
         activityService,
         userService,
+        projectRoleService,
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
@@ -50,6 +59,7 @@ internal class ActivityUpdateUseCaseTest {
         doReturn(USER).whenever(userService).getAuthenticatedUser()
 
         doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(USER))
+        doReturn(PROJECT_ROLE).whenever(projectRoleService).getById(any())
 
         assertEquals(todayActivityResponseDTO, activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO))
     }
@@ -89,7 +99,6 @@ internal class ActivityUpdateUseCaseTest {
             1L,
             TODAY,
             TODAY.plusMinutes(75L),
-            75,
             "New activity",
             false,
             PROJECT_ROLE.id,
@@ -126,10 +135,10 @@ internal class ActivityUpdateUseCaseTest {
             1L,
             TODAY,
             TODAY.plusMinutes(75L),
-            75,
             "New activity",
             false,
             PROJECT_ROLE.id,
+            PROJECT_ROLE.timeUnit,
             false,
         )
     }

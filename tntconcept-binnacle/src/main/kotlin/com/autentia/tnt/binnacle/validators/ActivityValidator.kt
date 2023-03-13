@@ -38,10 +38,10 @@ internal class ActivityValidator(
         when {
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
-            !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityRequest.getStart()) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
-                activityRequest.start.toLocalDate(),
+                activityRequest.getStart().toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
 
@@ -56,23 +56,23 @@ internal class ActivityValidator(
         user: User
     ) {
         if (projectRole.maxAllowed > 0) {
-            val year = activityRequest.start.year
+            val year = activityRequest.getStart().year
             val activitiesSinceStartOfYear = getActivitiesInYear(year, user)
-            val totalRegisteredHoursForThisRole =
-                getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
-            var totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole
+            val totalRegisteredDurationForThisRole =
+                getTotalDurationPerRole(activitiesSinceStartOfYear, activityRequest)
+            var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 
             if (currentActivity.projectRole.id == activityRequest.projectRoleId) {
-                totalRegisteredHoursForThisRoleAfterDiscount =
-                    totalRegisteredHoursForThisRole - currentActivity.duration()
+                totalRegisteredDurationForThisRoleAfterDiscount =
+                    totalRegisteredDurationForThisRole - currentActivity.duration()
             }
 
-            val totalRegisteredHoursAfterSaveRequested =
-                totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
+            val totalRegisteredDurationAfterSaveRequested =
+                totalRegisteredDurationForThisRoleAfterDiscount + activityRequest.getDuration()
 
-
-            if (totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed) {
-                val remainingTime = (projectRole.maxAllowed - totalRegisteredHoursForThisRole.toDouble()) / DECIMAL_HOUR
+            if (totalRegisteredDurationAfterSaveRequested > projectRole.maxAllowed) {
+                val remainingTime =
+                    (projectRole.maxAllowed - totalRegisteredDurationForThisRole.toDouble()) / DECIMAL_HOUR
 
                 throw MaxHoursPerRoleException(
                     projectRole.maxAllowed / DECIMAL_HOUR,
@@ -90,7 +90,7 @@ internal class ActivityValidator(
         return startDate.year >= LocalDateTime.now().year - 1
     }
 
-    private fun getTotalHoursPerRole(
+    private fun getTotalDurationPerRole(
         activitiesInYear: List<ActivityTimeOnly>,
         activityRequest: ActivityRequestBody
     ) =
@@ -117,10 +117,10 @@ internal class ActivityValidator(
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !userHasAccess(activityDb, user) -> throw UserPermissionException()
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
-            !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityRequest.getStart()) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
-                activityRequest.start.toLocalDate(),
+                activityRequest.getStart().toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
         }
@@ -148,24 +148,24 @@ internal class ActivityValidator(
     }
 
     private fun isOverlappingAnotherActivityTime(activityRequest: ActivityRequestBody, user: User): Boolean {
-        if (activityRequest.duration == 0) {
+        if (activityRequest.getDuration() == 0) {
             return false
         }
 
-        val startDate = activityRequest.start.withHour(0).withMinute(0).withSecond(0)
-        val endDate = activityRequest.start.withHour(23).withMinute(59).withSecond(59)
+        val startDate = activityRequest.getStart().withHour(0).withMinute(0).withSecond(0)
+        val endDate = activityRequest.getStart().withHour(23).withMinute(59).withSecond(59)
         val activities = activityRepository.getActivitiesBetweenDate(startDate, endDate, user.id)
 
         return checkTimeOverlapping(activityRequest, activities)
     }
 
     private fun checkTimeOverlapping(activityRequest: ActivityRequestBody, activities: List<Activity>): Boolean {
-        val startDate = activityRequest.start
-        val endDate = activityRequest.start.plusMinutes(activityRequest.duration.toLong())
+        val startDate = activityRequest.getStart()
+        val endDate = activityRequest.getEnd()
 
         return activities.any {
             val otherStartDate = it.interval.start
-            val otherEndDate = it.interval.start.plusMinutes(it.duration().toLong())
+            val otherEndDate = it.interval.end
             activityRequest.id != it.id && it.duration() > 0 && (startDate..endDate).overlaps(otherStartDate..otherEndDate)
         }
     }
