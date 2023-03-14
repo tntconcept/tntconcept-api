@@ -81,7 +81,7 @@ internal class VacationService(
             .getRemainingVacations(nextYear, vacationsByYear.getOrElse(nextYear) { listOf() }, user)
 
 
-        var selectedDays = getVacationPeriodDays(requestVacation.startDate, requestVacation.endDate, holidays)
+        var selectedDays = getWorkableDaysBetweenDates(requestVacation.startDate, requestVacation.endDate, holidays)
 
         val remainingHolidaysLastAndCurrentYear = lastYearRemainingVacations + currentYearRemainingVacations
 
@@ -139,7 +139,7 @@ internal class VacationService(
 
     private fun filterVacationsWithHolidays(vacations: List<Vacation>, holidays: List<Holiday>) =
         vacations.map { privateHoliday ->
-            val days = getVacationPeriodDays(privateHoliday.startDate, privateHoliday.endDate, holidays)
+            val days = getWorkableDaysBetweenDates(privateHoliday.startDate, privateHoliday.endDate, holidays)
             vacationConverter.toVacationDomain(privateHoliday, days)
         }
 
@@ -147,8 +147,8 @@ internal class VacationService(
     fun updateVacationPeriod(requestVacation: RequestVacation, user: User, vacation: Vacation): MutableList<CreateVacationResponse> {
         val holidays = this.getHolidaysBetweenLastAndNextYear()
 
-        val oldCorrespondingDays = this.getVacationPeriodDays(vacation.startDate, vacation.endDate, holidays).size
-        val newCorrespondingDays = this.getVacationPeriodDays(requestVacation.startDate, requestVacation.endDate, holidays).size
+        val oldCorrespondingDays = this.getWorkableDaysBetweenDates(vacation.startDate, vacation.endDate, holidays).size
+        val newCorrespondingDays = this.getWorkableDaysBetweenDates(requestVacation.startDate, requestVacation.endDate, holidays).size
 
         var vacationPeriods = mutableListOf<CreateVacationResponse>()
 
@@ -227,7 +227,7 @@ internal class VacationService(
         vacationRepository.deleteById(id)
     }
 
-    fun getVacationPeriodDays(beginDate: LocalDate, finalDate: LocalDate, holidays: List<Holiday>): List<LocalDate> {
+    fun getWorkableDaysBetweenDates(beginDate: LocalDate, finalDate: LocalDate, holidays: List<Holiday>): List<LocalDate> {
         val holidaysDates = holidays.map { it.date.toLocalDate() }
         return beginDate
             .myDatesUntil(finalDate)

@@ -30,7 +30,7 @@ internal class PrivateHolidaysPeriodDaysUseCaseTest {
         doReturn(listOf(
             LocalDate.of(2022, 7, 25),
             LocalDate.of(2022, 8, 15)
-        )).whenever(vacationService).getVacationPeriodDays(startDate, endDate, holidays)
+        )).whenever(vacationService).getWorkableDaysBetweenDates(startDate, endDate, holidays)
 
         assertEquals(holidays.size, privateHolidaysPeriodDaysUseCase.get(startDate, endDate))
     }

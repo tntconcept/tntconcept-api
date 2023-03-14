@@ -45,6 +45,9 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivitiesBetweenDateUseCase::class)
     internal val activitiesBetweenDateUseCase = mock<ActivitiesBetweenDateUseCase>()
 
+    @get:MockBean(ActivitiesSummaryUseCase::class)
+    internal val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
+
     @get:MockBean(ActivityRetrievalByIdUseCase::class)
     internal val activityRetrievalUseCase = mock<ActivityRetrievalByIdUseCase>()
 
@@ -74,6 +77,21 @@ internal class ActivityControllerIT {
 
         val response = client.exchangeList<ActivityDateDTO>(
             GET("/api/activities?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(activities, response.body.get())
+    }
+
+    @Test
+    fun `get summary activities between the start and end date`() {
+        val startDate = LocalDate.of(2018, JANUARY, 1)
+        val endDate = LocalDate.of(2018, JANUARY, 31)
+        val activities = listOf(ACTIVITY_DATE_DTO)
+        doReturn(activities).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
+
+        val response = client.exchangeList<ActivityDateDTO>(
+            GET("/api/activities/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
         assertEquals(OK, response.status)

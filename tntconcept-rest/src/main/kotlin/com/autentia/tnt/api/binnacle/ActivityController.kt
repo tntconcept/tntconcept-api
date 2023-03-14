@@ -1,20 +1,17 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivitySummaryDTO
 import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
 import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
 import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
 import com.autentia.tnt.binnacle.exception.NoImageInActivityException
 import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityRetrievalByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityUpdateUseCase
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Body
@@ -33,6 +30,7 @@ import javax.validation.Valid
 @Validated
 internal class ActivityController(
     private val activitiesBetweenDateUseCase: ActivitiesBetweenDateUseCase,
+    private val activitiesSummaryUseCase: ActivitiesSummaryUseCase,
     private val activityRetrievalUseCase: ActivityRetrievalByIdUseCase,
     private val activityCreationUseCase: ActivityCreationUseCase,
     private val activityUpdateUseCase: ActivityUpdateUseCase,
@@ -44,6 +42,11 @@ internal class ActivityController(
     @Operation(summary = "Gets activities between two dates.")
     internal fun get(startDate: LocalDate, endDate: LocalDate): List<ActivityDateDTO> =
         activitiesBetweenDateUseCase.getActivities(startDate, endDate)
+
+    @Get("/summary")
+    @Operation(summary = "Gets a list with the total time imputed by days.")
+    internal fun getSummary(startDate: LocalDate, endDate: LocalDate): List<ActivitySummaryDTO> =
+        activitiesSummaryUseCase.getActivitiesSummary(startDate, endDate)
 
     @Get("/{id}")
     @Operation(summary = "Gets an activity by its id.")

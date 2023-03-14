@@ -16,7 +16,7 @@ class PrivateHolidaysPeriodDaysUseCase internal constructor(
     @ReadOnly
     fun get(startDate: LocalDate, endDate: LocalDate): Int {
         val publicHolidays = holidayService.findAllBetweenDate(startDate, endDate)
-        return vacationService.getVacationPeriodDays(startDate, endDate, publicHolidays).size
+        return vacationService.getWorkableDaysBetweenDates(startDate, endDate, publicHolidays).size
     }
 
 }

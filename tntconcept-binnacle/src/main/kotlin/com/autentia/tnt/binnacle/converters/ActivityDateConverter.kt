@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityDate
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
+import com.autentia.tnt.binnacle.core.domain.ActivitySummary
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
 import com.autentia.tnt.binnacle.core.utils.myDatesUntil
@@ -35,6 +36,8 @@ class ActivityDateConverter(
         allActivitiesBetweenDates.putAll(activitiesByDate)
         return allActivitiesBetweenDates.map(::toActivityDate)
     }
+
+
 
     private fun toActivityDate(entry: Map.Entry<LocalDate, List<ActivityResponse>>): ActivityDate =
         ActivityDate(

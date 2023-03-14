@@ -35,7 +35,7 @@ internal class VacationValidatorTest {
 
         given(holidayService.findAllBetweenDate(requestVacation.startDate,requestVacation.endDate)).willReturn(holidays)
 
-        given(vacationService.getVacationPeriodDays(today,today.plusDays(1), holidays)).willReturn(
+        given(vacationService.getWorkableDaysBetweenDates(today,today.plusDays(1), holidays)).willReturn(
             listOf(LocalDate.of(2021, Month.MARCH, 11))
         )
 
@@ -149,7 +149,7 @@ internal class VacationValidatorTest {
 
         given(holidayService.findAllBetweenDate(requestVacation.startDate,requestVacation.endDate)).willReturn(holidays)
 
-        given(vacationService.getVacationPeriodDays(requestVacation.startDate,requestVacation.endDate,holidays)).willReturn(emptyList())
+        given(vacationService.getWorkableDaysBetweenDates(requestVacation.startDate,requestVacation.endDate,holidays)).willReturn(emptyList())
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
@@ -176,7 +176,7 @@ internal class VacationValidatorTest {
 
         given(holidayService.findAllBetweenDate(requestVacation.startDate,requestVacation.endDate)).willReturn(holidays)
 
-        given(vacationService.getVacationPeriodDays(today,tomorrow, holidays)).willReturn(
+        given(vacationService.getWorkableDaysBetweenDates(today,tomorrow, holidays)).willReturn(
             listOf(LocalDate.of(2021, Month.MARCH, 14))
         )
 
@@ -392,7 +392,7 @@ internal class VacationValidatorTest {
 
         given(holidayService.findAllBetweenDate(requestVacation.startDate,requestVacation.endDate)).willReturn(holidays)
 
-        given(vacationService.getVacationPeriodDays(requestVacation.startDate,requestVacation.endDate,holidays)).willReturn(emptyList())
+        given(vacationService.getWorkableDaysBetweenDates(requestVacation.startDate,requestVacation.endDate,holidays)).willReturn(emptyList())
 
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
         Assertions.assertThat(result)

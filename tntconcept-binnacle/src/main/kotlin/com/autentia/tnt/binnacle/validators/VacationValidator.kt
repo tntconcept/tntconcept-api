@@ -46,7 +46,7 @@ internal class VacationValidator(
 
     private fun isRequestEmpty(startDate: LocalDate, endDate: LocalDate): Boolean {
         val publicHolidays = holidayService.findAllBetweenDate(startDate, endDate)
-        return vacationService.getVacationPeriodDays(startDate, endDate, publicHolidays).isEmpty()
+        return vacationService.getWorkableDaysBetweenDates(startDate, endDate, publicHolidays).isEmpty()
     }
 
     private fun isDateBeforeHiringDate(startDate: LocalDate, hiringDate: LocalDate): Boolean {

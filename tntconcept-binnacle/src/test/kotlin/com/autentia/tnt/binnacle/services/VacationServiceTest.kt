@@ -35,7 +35,6 @@ import java.time.Month.DECEMBER
 import java.time.Month.JANUARY
 import java.time.Month.SEPTEMBER
 import java.time.temporal.TemporalAdjusters
-import java.util.Date
 
 @TestInstance(PER_CLASS)
 internal class VacationServiceTest {
@@ -113,7 +112,7 @@ internal class VacationServiceTest {
 
     @Test
     fun `calculate the corresponding vacation days between start and end date`() {
-        val actual = vacationService.getVacationPeriodDays(DEC_TWEENTYEIGHT_2020, JAN_FOURTH_2021, holidays2021)
+        val actual = vacationService.getWorkableDaysBetweenDates(DEC_TWEENTYEIGHT_2020, JAN_FOURTH_2021, holidays2021)
 
         assertThat(actual).isEqualTo(
             listOf(
