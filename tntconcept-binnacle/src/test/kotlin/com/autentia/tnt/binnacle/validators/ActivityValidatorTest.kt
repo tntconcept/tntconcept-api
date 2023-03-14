@@ -394,7 +394,7 @@ internal class ActivityValidatorTest {
                         id = activityAYearAgoUpdated.id!!,
                         start = todayDateTime.minusYears(1L),
                         end = todayDateTime.minusYears(1L).plusMinutes((HOUR * 9).toLong()),
-                        duration = HOUR * 9
+                        duration = HOUR * 9,
                     ),
                     0.0,
                     firstDayOfYear.minusYears(1L),
@@ -443,7 +443,7 @@ internal class ActivityValidatorTest {
                     ),
                     3.0,
                     firstDayOfYear,
-                    lastDayOfYear
+                    lastDayOfYear,
                 ),
             )
 
