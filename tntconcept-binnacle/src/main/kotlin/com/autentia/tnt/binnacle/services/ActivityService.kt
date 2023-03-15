@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.utils.myDatesUntil
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -35,10 +36,18 @@ internal class ActivityService(
     @ReadOnly
     fun getActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityResponse> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
-        val endDateMaxHour = endDate.atTime(LocalTime.MIN)
+        val endDateMaxHour = endDate.atTime(LocalTime.MAX)
         return activityRepository
             .getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
+    }
+
+    @Transactional
+    @ReadOnly
+    fun getActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
+        val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
+        val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
+        return activityRepository.getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
     }
 
     @Transactional(rollbackOn = [Exception::class])
@@ -49,9 +58,7 @@ internal class ActivityService(
 
         val savedActivity = activityRepository.save(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                activityRequest,
-                projectRole,
-                user
+                activityRequest, projectRole, user
             )
         )
 
@@ -92,10 +99,7 @@ internal class ActivityService(
 
         return activityRepository.update(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                activityRequest,
-                projectRole,
-                user,
-                oldActivity.insertDate
+                activityRequest, projectRole, user, oldActivity.insertDate
             )
         )
     }
@@ -108,5 +112,6 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
+
 
 }

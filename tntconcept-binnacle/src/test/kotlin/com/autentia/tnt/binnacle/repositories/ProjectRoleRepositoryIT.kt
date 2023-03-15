@@ -1,5 +1,8 @@
 package com.autentia.tnt.binnacle.repositories
 
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,12 +29,20 @@ internal class ProjectRoleRepositoryIT {
 
     @Test
     fun `should get the roles by project ids`() {
-        val projectIds = listOf(1L, 2L)
+        val projectRoleIds = listOf(1L, 2L)
 
-        val result = projectRoleRepository.getAllByProjectIdIn(projectIds)
+        val result = projectRoleRepository.getAllByIdIn(projectRoleIds)
 
-        assertEquals(projectIds.size, result.size)
-        assertTrue(result.map { it.id }.containsAll(projectIds))
+        assertEquals(projectRoleIds.size, result.size)
+        checkProjectRole(result[0], projectRoleIds[0], "vacaciones", 1L)
+        checkProjectRole(result[1], projectRoleIds[1], "permiso", 2L)
+
+    }
+
+    private fun checkProjectRole(projectRole: ProjectRole, expectedProjectRoleId: Long, expectedProjectRoleName: String, expectedProjectId: Long) {
+        assertEquals(projectRole.id, expectedProjectRoleId)
+        assertEquals(projectRole.project.id, expectedProjectId)
+        assertEquals(projectRole.name, expectedProjectRoleName)
     }
 
     @Test

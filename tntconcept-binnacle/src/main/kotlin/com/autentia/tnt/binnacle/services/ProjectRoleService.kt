@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -11,6 +12,11 @@ internal class ProjectRoleService(private val projectRoleRepository: ProjectRole
 
     @Transactional
     @ReadOnly
-    fun getAllByProjectIds(ids: List<Int>): List<ProjectRole> =
-        projectRoleRepository.getAllByProjectIdIn(ids.map(Int::toLong))
+    fun getAllByIds(ids: List<Int>): List<ProjectRole> =
+        projectRoleRepository.getAllByIdIn(ids.map(Int::toLong))
+
+    @Transactional
+    @ReadOnly
+    fun getByProjectRoleId(projectRoleId: Long): ProjectRole =
+        projectRoleRepository.findById(projectRoleId).orElseThrow { ProjectRoleNotFoundException(projectRoleId) }
 }

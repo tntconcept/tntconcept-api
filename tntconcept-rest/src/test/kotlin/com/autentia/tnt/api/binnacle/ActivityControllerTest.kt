@@ -9,7 +9,13 @@ import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.usecases.*
+import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
+import com.autentia.tnt.binnacle.usecases.ActivitiesSummaryUseCase
+import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
+import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
+import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
+import com.autentia.tnt.binnacle.usecases.ActivityRetrievalByIdUseCase
+import com.autentia.tnt.binnacle.usecases.ActivityUpdateUseCase
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
@@ -38,12 +44,12 @@ internal class ActivityControllerTest {
 
     private val activityController = ActivityController(
         activitiesBetweenDateUseCase,
-        activitiesSummaryUseCase,
         activityRetrievalUseCase,
         activityCreationUseCase,
         activityUpdateUseCase,
         activityDeletionUseCase,
-        activityImageRetrievalUseCase
+        activityImageRetrievalUseCase,
+        activitiesSummaryUseCase,
     )
 
     @Test

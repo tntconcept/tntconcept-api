@@ -5,7 +5,13 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -98,6 +104,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
             2L,
             YESTERDAY.atStartOfDay(),
             YESTERDAY.atStartOfDay().plusMinutes(540L),
+            540,
             "Dummy description",
             PROJECT_ROLE,
             USER.id,
@@ -108,7 +115,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
         val savedActivity = Activity(
             2L,
             LocalDate.of(2020, Month.JULY, 2).atStartOfDay(),
-            LocalDate.of(2020, Month.JULY, 2).atStartOfDay(),
+            LocalDate.of(2020, Month.JULY, 2).atStartOfDay().plusMinutes(540),
+            540,
             "Dummy description",
             PROJECT_ROLE,
             33L,

@@ -99,7 +99,7 @@ jpa:
     properties:
       hibernate:
 #        show_sql: true
-#        format_sql: true
+        #        format_sql: true
         physical_naming_strategy: 'org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl'
     entity-scan:
       packages: 'com.autentia.tnt.binnacle.entities'
@@ -137,8 +137,8 @@ app:
       persistence-enabled: true
 
       # https://docs.micronaut.io/2.2.3/api/io/micronaut/scheduling/cron/CronExpression.html
-      # Every day at 04:00 h
-      cron-expression: '0 0 4 * * ?'
+      # Every day at 03:00 h UTC
+      cron-expression: '0 0 3 * * ?'
 
       report:
         path: /tmp
