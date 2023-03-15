@@ -10,7 +10,6 @@ import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivitiesSummaryUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
@@ -40,7 +39,6 @@ internal class ActivityControllerTest {
     private val activityUpdateUseCase = mock<ActivityUpdateUseCase>()
     private val activityDeletionUseCase = mock<ActivityDeletionUseCase>()
     private val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
-    private val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
 
     private val activityController = ActivityController(
         activitiesBetweenDateUseCase,
@@ -48,8 +46,7 @@ internal class ActivityControllerTest {
         activityCreationUseCase,
         activityUpdateUseCase,
         activityDeletionUseCase,
-        activityImageRetrievalUseCase,
-        activitiesSummaryUseCase,
+        activityImageRetrievalUseCase
     )
 
     @Test

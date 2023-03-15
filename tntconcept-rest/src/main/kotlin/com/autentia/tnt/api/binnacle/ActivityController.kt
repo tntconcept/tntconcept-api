@@ -10,7 +10,6 @@ import com.autentia.tnt.binnacle.exception.NoImageInActivityException
 import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivitiesSummaryUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
@@ -38,8 +37,7 @@ internal class ActivityController(
     private val activityCreationUseCase: ActivityCreationUseCase,
     private val activityUpdateUseCase: ActivityUpdateUseCase,
     private val activityDeletionUseCase: ActivityDeletionUseCase,
-    private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase,
-    private val activitiesSummaryUseCase: ActivitiesSummaryUseCase
+    private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase
 ) {
 
     @Get
@@ -71,12 +69,6 @@ internal class ActivityController(
     @Operation(summary = "Deletes an activity by its id.")
     internal fun delete(id: Long) =
         activityDeletionUseCase.deleteActivityById(id)
-
-
-    @Get("/summary")
-    @Operation(summary = "Gets activities summary between two dates")
-    internal fun summary() = activitiesSummaryUseCase.getActivitiesSummary()
-
 
     @Error
     internal fun onOverlapAnotherActivityTimeException(request: HttpRequest<*>, e: OverlapsAnotherTimeException) =
