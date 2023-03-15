@@ -36,7 +36,6 @@ internal class ActivityService(
     fun getActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityResponse> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(LocalTime.MIN)
-        //TODO: No devolver la lista de actividades en crudo, manejar para que las actividades retribuidas salgan bien
         return activityRepository
             .getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
