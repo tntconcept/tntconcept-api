@@ -10,6 +10,7 @@ import com.autentia.tnt.binnacle.exception.NoImageInActivityException
 import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
+import com.autentia.tnt.binnacle.usecases.ActivitiesSummaryUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
 import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
@@ -37,7 +38,8 @@ internal class ActivityController(
     private val activityCreationUseCase: ActivityCreationUseCase,
     private val activityUpdateUseCase: ActivityUpdateUseCase,
     private val activityDeletionUseCase: ActivityDeletionUseCase,
-    private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase
+    private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase,
+    private val activitiesSummaryUseCase: ActivitiesSummaryUseCase
 ) {
 
     @Get
@@ -70,13 +72,25 @@ internal class ActivityController(
     internal fun delete(id: Long) =
         activityDeletionUseCase.deleteActivityById(id)
 
+
+    @Get("/summary")
+    @Operation(summary = "Gets activities summary between two dates")
+    internal fun summary() = activitiesSummaryUseCase.getActivitiesSummary()
+
+
     @Error
     internal fun onOverlapAnotherActivityTimeException(request: HttpRequest<*>, e: OverlapsAnotherTimeException) =
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
 
     @Error
     internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxHoursPerRoleException) =
-        HttpResponse.badRequest(ErrorResponseMaxHoursLimit("MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",e.message, ErrorValues(e.maxAllowedHours, e.remainingHours)))
+        HttpResponse.badRequest(
+            ErrorResponseMaxHoursLimit(
+                "MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",
+                e.message,
+                ErrorValues(e.maxAllowedHours, e.remainingHours)
+            )
+        )
 
     @Error
     internal fun onProjectClosedException(request: HttpRequest<*>, e: ProjectClosedException) =

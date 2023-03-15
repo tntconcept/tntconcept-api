@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -40,6 +41,14 @@ internal class ActivityService(
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
     }
 
+    @Transactional
+    @ReadOnly
+    fun getActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
+        val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
+        val endDateMaxHour = dateInterval.end.atTime(23, 59, 59)
+        return activityRepository.getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
+    }
+
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
@@ -48,9 +57,7 @@ internal class ActivityService(
 
         val savedActivity = activityRepository.save(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                activityRequest,
-                projectRole,
-                user
+                activityRequest, projectRole, user
             )
         )
 
@@ -91,10 +98,7 @@ internal class ActivityService(
 
         return activityRepository.update(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                activityRequest,
-                projectRole,
-                user,
-                oldActivity.insertDate
+                activityRequest, projectRole, user, oldActivity.insertDate
             )
         )
     }
@@ -107,5 +111,6 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
+
 
 }

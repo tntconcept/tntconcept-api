@@ -1,7 +1,13 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.NoImageInActivityException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.services.ActivityImageService
@@ -93,7 +99,8 @@ internal class ActivityImageRetrievalUseCaseTest {
         private val todayActivity = Activity(
             ID,
             TODAY,
-            TODAY,
+            TODAY.plusMinutes(60),
+            60,
             "Dummy description",
             PROJECT_ROLE,
             USER.id,
@@ -107,8 +114,8 @@ internal class ActivityImageRetrievalUseCaseTest {
         val activityWithoutImage = Activity(
             ID,
             TODAY,
-            TODAY,
-
+            TODAY.plusMinutes(60),
+            60,
             "Dummy description",
             PROJECT_ROLE,
             USER.id,

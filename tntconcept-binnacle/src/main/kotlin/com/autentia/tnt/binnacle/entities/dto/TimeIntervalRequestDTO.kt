@@ -4,4 +4,4 @@ import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
 
 @Introspected
-data class IntervalRequestDTO(val start: LocalDateTime, val end: LocalDateTime)
+data class TimeIntervalRequestDTO(val start: LocalDateTime, val end: LocalDateTime)
