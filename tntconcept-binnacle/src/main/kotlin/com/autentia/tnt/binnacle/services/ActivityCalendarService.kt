@@ -28,7 +28,7 @@ internal class ActivityCalendarService(
         return activitiesCalendar.activitiesCalendarMap.toList().map {
             DailyWorkingTime(
                 it.first,
-                (this::getActivitiesDurationSumByCountingNumberOfDays)(it.second, 1) / 60F
+                (this::getActivitiesDurationSumByCountingNumberOfDays)(it.second, 1) / 60.0
             )
         }
     }

@@ -4,5 +4,5 @@ import java.time.LocalDate
 
 data class DailyWorkingTime(
     val date: LocalDate,
-    val workedHours: Float,
+    val workedHours: Double,
 )
