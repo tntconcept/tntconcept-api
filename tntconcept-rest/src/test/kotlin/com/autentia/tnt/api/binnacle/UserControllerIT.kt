@@ -36,7 +36,7 @@ internal class UserControllerIT {
     internal val findByUserNameUseCase = mock<FindByUserNameUseCase>()
 
     @Test
-    fun `return logged user`() {
+    fun `get logged user`() {
         val user = User(
             1L,
             "username",
@@ -54,28 +54,12 @@ internal class UserControllerIT {
         )
         doReturn(user).whenever(findByUserNameUseCase).find()
 
-        val request = HttpRequest.GET<Any>("/api/user")
+        val request = HttpRequest.GET<Any>("/api/user/me")
 
         val response = httpClient.toBlocking().exchange(request, UserResponse::class.java)
 
         assertEquals(200, response.status.code)
         assertEquals(UserResponse(user), response.body.get())
-    }
-
-    //   TODO: @Test
-    fun getSecuredData() {
-        val token = LoginHelper().obtainAccessToken(username, "holahola")
-
-        val client = httpClient.toBlocking()
-
-        val request = HttpRequest.GET<Any>("/api/user/secured")
-            .header("Authorization", "Bearer $token")
-            .accept(APPLICATION_JSON_TYPE)
-//            .contentEncoding("utf-8")
-
-        val response = client.exchange(request, User::class.java)
-
-        assertEquals(response.status.code, FORBIDDEN.code)
     }
 
 }
