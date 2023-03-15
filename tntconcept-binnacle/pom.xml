@@ -49,6 +49,10 @@
 
         <!-- ====================== Security dependencies ========================== -->
         <dependency>
+            <groupId>io.archimedesfw.security</groupId>
+            <artifactId>archimedes-security-auth-micronaut</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.micronaut.security</groupId>
             <artifactId>micronaut-security-oauth2</artifactId>
         </dependency>
