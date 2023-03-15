@@ -1,11 +1,10 @@
 package com.autentia.tnt.binnacle.entities
 
-import com.autentia.tnt.binnacle.core.domain.Interval
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.micronaut.data.annotation.DateCreated
 import java.time.LocalDateTime
 import java.util.Date
-import javax.persistence.Embedded
 import javax.persistence.Entity
 import javax.persistence.EnumType
 import javax.persistence.Enumerated
@@ -48,8 +47,9 @@ data class Activity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    @Embedded
-    val interval: Interval,
+    val start: LocalDateTime,
+    val end: LocalDateTime,
+    val duration: Int,
     val description: String,
 
     @ManyToOne(fetch = LAZY)
@@ -70,18 +70,14 @@ data class Activity(
     val approvalState: ApprovalState
 ) {
 
-    constructor(
-        id: Long? = null, start: LocalDateTime, end: LocalDateTime, description: String, projectRole: ProjectRole,
-        userId: Long, billable: Boolean, departmentId: Long? = null, insertDate: Date? = null,
-        hasEvidences: Boolean = false, approvalState: ApprovalState
-    ) : this(
-        id, Interval(start, end), description, projectRole, userId, billable, departmentId, insertDate,
-        hasEvidences, approvalState
-    )
-
-    fun duration(): Int = interval.getDuration(projectRole.timeUnit)
-
     companion object {
-        fun emptyActivity(projectRole: ProjectRole) : Activity = Activity(0, LocalDateTime.MIN, LocalDateTime.MIN, "Empty activity", projectRole, 0L, false, 0, null, false, ApprovalState.NA)
+        fun emptyActivity(projectRole: ProjectRole): Activity = Activity(
+            0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
+            false, 0, null, false, ApprovalState.NA
+        )
     }
+
+    fun getDateInterval() = DateInterval.of(start.toLocalDate(), end.toLocalDate())
+    fun getTimeInterval() = TimeInterval.of(start, end)
+    fun isOneDay() = start.toLocalDate().isEqual(end.toLocalDate())
 }

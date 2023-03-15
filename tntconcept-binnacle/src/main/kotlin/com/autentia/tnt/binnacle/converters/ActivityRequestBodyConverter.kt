@@ -12,19 +12,18 @@ import java.util.Date
 @Singleton
 class ActivityRequestBodyConverter() {
 
-    fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyDTO) =
+    fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyDTO, duration: Int) =
         ActivityRequestBody(
             activityRequestBodyDTO.id,
-            activityRequestBodyDTO.start,
-            activityRequestBodyDTO.end,
-            activityRequestBodyDTO.duration,
+            activityRequestBodyDTO.interval.start,
+            activityRequestBodyDTO.interval.end,
+            duration,
             activityRequestBodyDTO.description,
             activityRequestBodyDTO.billable,
             activityRequestBodyDTO.projectRoleId,
             activityRequestBodyDTO.hasEvidences,
             activityRequestBodyDTO.imageFile
         )
-
 
     fun mapActivityRequestBodyToActivity(
         activityRequestBody: ActivityRequestBody,
@@ -36,6 +35,7 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.id,
             activityRequestBody.start,
             activityRequestBody.end,
+            activityRequestBody.duration,
             activityRequestBody.description,
             projectRole,
             user.id,
@@ -45,5 +45,4 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.hasEvidences,
             ApprovalState.NA
         )
-
 }

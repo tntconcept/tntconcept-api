@@ -106,7 +106,8 @@ internal class ActivityResponseConverterTest {
         val DUMMY_ACTIVITY = Activity(
             id = 1L,
             start = LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
-            end = LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
+            end = LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay().plusMinutes(75),
+            duration = 75,
             description = "Dummy activity",
             userId = 1,
             billable = false,
@@ -118,9 +119,9 @@ internal class ActivityResponseConverterTest {
 
         val DUMMY_ACTIVITY_RESPONSE = ActivityResponse(
             DUMMY_ACTIVITY.id!!,
-            DUMMY_ACTIVITY.interval.start,
-            DUMMY_ACTIVITY.interval.end,
-            DUMMY_ACTIVITY.duration(),
+            DUMMY_ACTIVITY.start,
+            DUMMY_ACTIVITY.end,
+            DUMMY_ACTIVITY.duration,
             DUMMY_ACTIVITY.description,
             DUMMY_PROJECT_ROLE,
             DUMMY_ACTIVITY.userId,
@@ -134,9 +135,9 @@ internal class ActivityResponseConverterTest {
 
         val DUMMY_ACTIVITY_DTO = ActivityResponseDTO(
             DUMMY_ACTIVITY.id!!,
-            DUMMY_ACTIVITY.interval.start,
-            DUMMY_ACTIVITY.interval.end,
-            DUMMY_ACTIVITY.duration(),
+            DUMMY_ACTIVITY.start,
+            DUMMY_ACTIVITY.end,
+            DUMMY_ACTIVITY.duration,
             DUMMY_ACTIVITY.description,
             DUMMY_PROJECT_ROLE_DTO,
             DUMMY_ACTIVITY.userId,
