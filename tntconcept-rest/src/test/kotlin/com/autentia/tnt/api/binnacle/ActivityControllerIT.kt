@@ -60,6 +60,9 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityImageRetrievalUseCase::class)
     internal val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
 
+    @get:MockBean(ActivityApprovalUseCase::class)
+    internal val activityApprovalUseCase = mock<ActivityApprovalUseCase>()
+
     @BeforeAll
     fun setup() {
         client = httpClient.toBlocking()
@@ -260,6 +263,32 @@ internal class ActivityControllerIT {
         assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get().code)
     }
 
+    @Test
+    fun `approve an activity`() {
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+
+        val response = client.exchangeObject<ActivityResponseDTO>(
+            POST("/api/activities/${ACTIVITY_RESPONSE_DTO.id}/approve", "")
+        )
+
+        assertEquals(OK, response.status)
+        verify(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+    }
+
+    @Test
+    fun `fail to try approve an activity that has been already approved`() {
+        doThrow(ActivityAlreadyApprovedException()).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeObject<Unit>(
+                POST("/api/activities/${ACTIVITY_RESPONSE_DTO.id}/approve", ""),
+            )
+        }
+
+        assertEquals(CONFLICT, ex.status)
+        assertEquals("Activity could not been approved.", ex.response.reason())
+    }
+
     private companion object {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
         private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 11, 0)
@@ -299,7 +328,7 @@ internal class ActivityControllerIT {
             OrganizationResponseDTO(6, "organization"),
             ProjectResponseDTO(5, "project", true, true),
             ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
-            ApprovalState.NA
+            ApprovalState.PENDING
         )
 
         private val ACTIVITY_PUT_JSON = """

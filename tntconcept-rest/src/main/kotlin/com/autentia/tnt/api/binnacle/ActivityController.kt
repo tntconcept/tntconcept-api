@@ -3,20 +3,11 @@ package com.autentia.tnt.api.binnacle
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.NoImageInActivityException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityRetrievalByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityUpdateUseCase
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
+import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Delete
@@ -37,7 +28,8 @@ internal class ActivityController(
     private val activityCreationUseCase: ActivityCreationUseCase,
     private val activityUpdateUseCase: ActivityUpdateUseCase,
     private val activityDeletionUseCase: ActivityDeletionUseCase,
-    private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase
+    private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase,
+    private val activityApprovalUseCase: ActivityApprovalUseCase
 ) {
 
     @Get
@@ -70,6 +62,11 @@ internal class ActivityController(
     internal fun delete(id: Long) =
         activityDeletionUseCase.deleteActivityById(id)
 
+    @Post("/{id}/approve")
+    @Operation(summary = "Approve an existing activity by id.")
+    internal fun approve(id: Long): ActivityResponseDTO =
+        activityApprovalUseCase.approveActivity(id)
+
     @Error
     internal fun onOverlapAnotherActivityTimeException(request: HttpRequest<*>, e: OverlapsAnotherTimeException) =
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
@@ -93,5 +90,9 @@ internal class ActivityController(
     @Error
     internal fun onNoImageInActivityException(request: HttpRequest<*>, e: NoImageInActivityException) =
         HttpResponse.badRequest(ErrorResponse("No image", e.message))
+
+    @Error
+    internal fun onActivityAlreadyApproved(request: HttpRequest<*>, e: ActivityAlreadyApprovedException) =
+        HttpResponse.status<HttpStatus>(HttpStatus.CONFLICT, e.message)
 
 }

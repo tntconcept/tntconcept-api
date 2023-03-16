@@ -5,7 +5,9 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.exception.ActivityAlreadyApprovedException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -72,7 +74,7 @@ internal class ActivityService(
             .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
-            .findById(activityRequest.id)
+            .findById(activityRequest.id!!)
             .orElseThrow { ActivityNotFoundException(activityRequest.id!!) }
 
         // Update stored image
@@ -96,6 +98,18 @@ internal class ActivityService(
                 user,
                 oldActivity.insertDate
             )
+        )
+    }
+
+    @Transactional(rollbackOn = [Exception::class])
+    fun approveActivityById(id: Long): Activity {
+        val activityToApprove = activityRepository.findById(id).orElseThrow { ActivityNotFoundException(id) }
+        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA){
+            throw ActivityAlreadyApprovedException()
+        }
+        activityToApprove.approvalState = ApprovalState.ACCEPTED
+        return activityRepository.update(
+            activityToApprove
         )
     }
 
