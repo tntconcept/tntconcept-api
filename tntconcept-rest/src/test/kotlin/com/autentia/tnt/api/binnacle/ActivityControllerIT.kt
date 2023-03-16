@@ -275,9 +275,20 @@ internal class ActivityControllerIT {
         assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
     }
 
-    @Test
-    fun `fail to try approve an activity that has been already approved`() {
-        doThrow(ActivityAlreadyApprovedException()).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+    private fun approveFailProvider() = arrayOf(
+        arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND", null),
+        arrayOf(ActivityAlreadyApprovedException(), CONFLICT, null,"Activity could not been approved.")
+    )
+
+    @ParameterizedTest
+    @MethodSource("approveFailProvider")
+    fun `fail if try to approve an activity and exception is throw`(
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorCode: String?,
+        expectedResponseReason: String?
+    ) {
+        doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Unit>(
@@ -285,9 +296,11 @@ internal class ActivityControllerIT {
             )
         }
 
-        assertEquals(CONFLICT, ex.status)
-        assertEquals("Activity could not been approved.", ex.response.reason())
+        assertEquals(expectedResponseStatus, ex.status)
+        if(expectedErrorCode !== null) assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get().code)
+        if(expectedResponseReason !== null) assertEquals(expectedResponseReason, ex.response.reason())
     }
+
 
     private companion object {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)

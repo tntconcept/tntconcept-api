@@ -459,6 +459,18 @@ internal class ActivityControllerTest {
             assertThat(exception.message)
                 .isEqualTo("Activity could not been approved.")
         }
+
+        @Test
+        fun `throws UserPermissionException when attempting to approve an activity that does belong to the logged user`() {
+            doThrow(UserPermissionException()).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_ID)
+
+            val exception = assertThrows<UserPermissionException> {
+                activityController.approve(ACTIVITY_ID)
+            }
+
+            assertThat(exception.message).isEqualTo("You don't have permission to access the resource")
+
+        }
     }
 
     private companion object {
