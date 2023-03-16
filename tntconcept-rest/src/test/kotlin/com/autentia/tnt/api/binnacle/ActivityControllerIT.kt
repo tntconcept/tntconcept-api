@@ -88,7 +88,7 @@ internal class ActivityControllerIT {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
         val activities = listOf(ACTIVITY_DATE_DTO)
-        doReturn(activities).whenever(activitiesSummaryUseCase).getActivitiesSummary()
+        doReturn(activities).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
 
         val response = client.exchangeList<ActivityDateDTO>(
             GET("/api/activities/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
