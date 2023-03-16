@@ -1,7 +1,16 @@
 package com.autentia.tnt.binnacle.config
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.Role
+import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.entities.WorkingAgreement
+import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -178,7 +187,6 @@ internal fun createActivityRequestBodyDTO(
         id,
         start,
         end,
-        75,
         "New activity",
         false,
         projectRoleId,

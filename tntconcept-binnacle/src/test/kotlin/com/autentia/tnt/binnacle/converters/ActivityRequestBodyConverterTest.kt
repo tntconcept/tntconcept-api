@@ -2,7 +2,13 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,7 +23,7 @@ internal class ActivityRequestBodyConverterTest {
     fun `given ActivityRequestBodyDTO should return domain ActivityRequestBody with converted values`() {
 
         val result = activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(
-            ACTIVITY_REQUEST_BODY_DTO
+            ACTIVITY_REQUEST_BODY_DTO, 75
         )
 
         assertEquals(ACTIVITY_REQUEST_BODY, result)
@@ -39,20 +45,19 @@ internal class ActivityRequestBodyConverterTest {
         private val ACTIVITY_REQUEST_BODY = ActivityRequestBody(
             1L,
             LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
-            LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
+            LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay().plusMinutes(75),
             75,
             "New activity",
             false,
             1,
             false,
-            null,
+            null
         )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             ACTIVITY_REQUEST_BODY.id,
             ACTIVITY_REQUEST_BODY.start,
             ACTIVITY_REQUEST_BODY.end,
-            ACTIVITY_REQUEST_BODY.duration,
             ACTIVITY_REQUEST_BODY.description,
             ACTIVITY_REQUEST_BODY.billable,
             ACTIVITY_REQUEST_BODY.projectRoleId,
@@ -68,17 +73,18 @@ internal class ActivityRequestBodyConverterTest {
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, DUMMY_PROJECT, 0, true, false, TimeUnit.MINUTES)
 
         val ACTIVITY = Activity(
-                1L,
-                LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
-                LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
-                "New activity",
-                DUMMY_PROJECT_ROLE,
-                user.id,
-                false,
-                1,
-                null,
-                false,
-                ApprovalState.NA
+            1L,
+            LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(),
+            LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay().plusMinutes(75),
+            75,
+            "New activity",
+            DUMMY_PROJECT_ROLE,
+            user.id,
+            false,
+            1,
+            null,
+            false,
+            ApprovalState.NA
         )
 
     }

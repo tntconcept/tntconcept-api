@@ -32,7 +32,6 @@ internal class ActivityServiceTest {
         ProjectResponseConverter(),
         ProjectRoleResponseConverter()
     )
-
     private val activityService = ActivityService(
         activityRepository,
         projectRoleRepository,
@@ -98,9 +97,9 @@ internal class ActivityServiceTest {
             listOf(
                 ActivityResponse(
                     activityWithoutImageSaved.id as Long,
-                    activityWithoutImageSaved.interval.start,
-                    activityWithoutImageSaved.interval.end,
-                    activityWithoutImageSaved.duration(),
+                    activityWithoutImageSaved.start,
+                    activityWithoutImageSaved.end,
+                    activityWithoutImageSaved.duration,
                     activityWithoutImageSaved.description,
                     activityWithoutImageSaved.projectRole,
                     activityWithoutImageSaved.userId,
@@ -144,13 +143,13 @@ internal class ActivityServiceTest {
         val activityRequest = ActivityRequestBody(
             activityWithoutImageSaved.id,
             TODAY_NOON,
-            TODAY_NOON,
+            TODAY_NOON.plusMinutes(120),
             120,
             "Description...",
             false,
             projectRole.id,
             false,
-            null,
+            null
         )
 
         doReturn(Optional.of(activityWithoutImageSaved))
@@ -178,7 +177,7 @@ internal class ActivityServiceTest {
         val activityRequest = ActivityRequestBody(
             activityId,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
             120,
             "Description...",
             false,
@@ -226,7 +225,7 @@ internal class ActivityServiceTest {
         val activityRequest = ActivityRequestBody(
             activityId,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
             120,
             "Description...",
             false,
@@ -317,7 +316,7 @@ internal class ActivityServiceTest {
         private val activityWithoutImageRequest = ActivityRequestBody(
             null,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60),
             60,
             "Dummy description",
             false,
@@ -329,7 +328,7 @@ internal class ActivityServiceTest {
         private val activityWithImageRequest = ActivityRequestBody(
             null,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
             120,
             "Description...",
             false,

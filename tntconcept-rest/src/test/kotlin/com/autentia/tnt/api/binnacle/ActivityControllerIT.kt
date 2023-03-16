@@ -291,13 +291,12 @@ internal class ActivityControllerIT {
 
     private companion object {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
-        private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 11, 0)
+        private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 12, 0)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
             START_DATE,
             END_DATE,
-            4 * 60,
             "Activity description",
             true,
             3,
@@ -307,20 +306,22 @@ internal class ActivityControllerIT {
 
         private val ACTIVITY_POST_JSON = """
             {
-                "start": "${ACTIVITY_REQUEST_BODY_DTO.start.toJson()}",
-                "end": "${ACTIVITY_REQUEST_BODY_DTO.end.toJson()}",
-                "duration": ${ACTIVITY_REQUEST_BODY_DTO.duration},
+                "interval": {
+                    "start": "${ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
+                    "end": "${ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
+                },                
                 "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
-                "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId}
+                "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
+                "hasEvidences": ${ACTIVITY_REQUEST_BODY_DTO.hasEvidences}                
             }
         """.trimIndent()
 
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             42,
-            ACTIVITY_REQUEST_BODY_DTO.start,
-            ACTIVITY_REQUEST_BODY_DTO.end,
-            ACTIVITY_REQUEST_BODY_DTO.duration,
+            ACTIVITY_REQUEST_BODY_DTO.interval.start,
+            ACTIVITY_REQUEST_BODY_DTO.interval.end,
+            240,
             ACTIVITY_REQUEST_BODY_DTO.description,
             ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", RequireEvidence.WEEKLY),
             2,
@@ -334,19 +335,20 @@ internal class ActivityControllerIT {
         private val ACTIVITY_PUT_JSON = """
             {
                 "id": ${ACTIVITY_RESPONSE_DTO.id},
-                "start": "${ACTIVITY_RESPONSE_DTO.start.toJson()}",
-                "end": "${ACTIVITY_RESPONSE_DTO.end.toJson()}",
-                "duration": ${ACTIVITY_RESPONSE_DTO.duration},
+                "interval": {
+                    "start": "${ACTIVITY_RESPONSE_DTO.start.toJson()}",
+                    "end": "${ACTIVITY_RESPONSE_DTO.end.toJson()}"
+                },                                    
                 "description": "Updated activity description",
                 "billable": ${ACTIVITY_RESPONSE_DTO.billable},
                 "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRole.id},
-                "approvalState": "${ACTIVITY_RESPONSE_DTO.approvalState}"
+                "hasEvidences": ${ACTIVITY_RESPONSE_DTO.hasEvidences}
             }
         """.trimIndent()
 
         private val ACTIVITY_DATE_DTO = ActivityDateDTO(
-            ACTIVITY_REQUEST_BODY_DTO.start.toLocalDate(),
-            ACTIVITY_REQUEST_BODY_DTO.duration,
+            ACTIVITY_REQUEST_BODY_DTO.interval.start.toLocalDate(),
+            240,
             listOf(ACTIVITY_RESPONSE_DTO)
         )
 

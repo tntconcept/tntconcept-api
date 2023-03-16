@@ -6,7 +6,14 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -14,6 +21,7 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -31,6 +39,7 @@ internal class ActivityCreationUseCaseTest {
 
     private val user = createUser()
     private val activityService = mock<ActivityService>()
+    private val activityCalendarService = mock<ActivityCalendarService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityRepository = mock<ActivityRepository>()
     private val activityValidator = ActivityValidator(activityRepository, projectRoleRepository)
@@ -38,6 +47,7 @@ internal class ActivityCreationUseCaseTest {
 
     private val activityCreationUseCase = ActivityCreationUseCase(
         activityService,
+        activityCalendarService,
         userService,
         activityValidator,
         ActivityRequestBodyConverter(),
@@ -45,7 +55,8 @@ internal class ActivityCreationUseCaseTest {
             OrganizationResponseConverter(),
             ProjectResponseConverter(),
             ProjectRoleResponseConverter()
-        )
+        ),
+        TimeIntervalConverter()
     )
 
     @Test
@@ -57,7 +68,6 @@ internal class ActivityCreationUseCaseTest {
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
 
         doReturn(activity).whenever(activityService).createActivity(any(), eq(user))
-
         doReturn(Optional.of(activity.projectRole)).whenever(projectRoleRepository).findById(any())
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_REQUEST_BODY_DTO)
@@ -93,7 +103,6 @@ internal class ActivityCreationUseCaseTest {
             null,
             TIME_NOW,
             TIME_NOW.plusMinutes(75L),
-            75,
             "New activity",
             false,
             PROJECT_ROLE.id,
@@ -115,6 +124,7 @@ internal class ActivityCreationUseCaseTest {
             description: String = generateLargeDescription("New activity").substring(0, 2048),
             start: LocalDateTime = TIME_NOW,
             end: LocalDateTime = TIME_NOW.plusMinutes(75L),
+            duration: Int = 75,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
             projectRole: ProjectRole = PROJECT_ROLE,
@@ -126,6 +136,7 @@ internal class ActivityCreationUseCaseTest {
                 description = description,
                 start = start,
                 end = end,
+                duration = duration,
                 billable = billable,
                 hasEvidences = hasEvidences,
                 projectRole = projectRole,
