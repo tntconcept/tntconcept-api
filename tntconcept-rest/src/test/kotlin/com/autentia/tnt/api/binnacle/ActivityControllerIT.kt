@@ -272,7 +272,7 @@ internal class ActivityControllerIT {
         )
 
         assertEquals(OK, response.status)
-        verify(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
     }
 
     @Test
@@ -328,7 +328,7 @@ internal class ActivityControllerIT {
             OrganizationResponseDTO(6, "organization"),
             ProjectResponseDTO(5, "project", true, true),
             ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
-            ApprovalState.PENDING
+            ApprovalState.ACCEPTED
         )
 
         private val ACTIVITY_PUT_JSON = """
