@@ -89,7 +89,7 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `get all activitiesby approvalState`() {
+    fun `get all activities by approvalState`() {
         val approvalState = ApprovalState.PENDING
         val activities = listOf(ACTIVITY_DATE_DTO)
         doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(Optional.empty(), Optional.empty(), Optional.of(approvalState))
@@ -110,7 +110,7 @@ internal class ActivityControllerIT {
         doReturn(activities).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
 
         val response = client.exchangeList<ActivityDateDTO>(
-            GET("/api/activities/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
+            GET("/api/activity/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
         assertEquals(OK, response.status)
