@@ -70,6 +70,7 @@ internal class ActivityController(
     internal fun delete(id: Long) =
         activityDeletionUseCase.deleteActivityById(id)
 
+
     @Error
     internal fun onOverlapAnotherActivityTimeException(request: HttpRequest<*>, e: OverlapsAnotherTimeException) =
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))

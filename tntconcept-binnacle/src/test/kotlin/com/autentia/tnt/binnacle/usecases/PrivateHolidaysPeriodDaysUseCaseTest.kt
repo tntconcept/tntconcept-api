@@ -1,25 +1,25 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.VacationService
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.whenever
 
 internal class PrivateHolidaysPeriodDaysUseCaseTest {
 
     private val holidayService = mock<HolidayService>()
-    private val vacationService = mock<VacationService>()
+    private val calendarFactory = CalendarFactory(holidayService)
 
-    private val privateHolidaysPeriodDaysUseCase = PrivateHolidaysPeriodDaysUseCase(holidayService, vacationService)
+    private val privateHolidaysPeriodDaysUseCase = PrivateHolidaysPeriodDaysUseCase(calendarFactory)
 
     @Test
-    fun `get ALL holidays between date`() {
+    fun `get workable days between dates`() {
         val startDate = LocalDate.of(2022, 7, 1)
         val endDate = LocalDate.of(2022, 8, 30)
 
@@ -27,12 +27,7 @@ internal class PrivateHolidaysPeriodDaysUseCaseTest {
 
         doReturn(holidays).whenever(holidayService).findAllBetweenDate(startDate, endDate)
 
-        doReturn(listOf(
-            LocalDate.of(2022, 7, 25),
-            LocalDate.of(2022, 8, 15)
-        )).whenever(vacationService).getVacationPeriodDays(startDate, endDate, holidays)
-
-        assertEquals(holidays.size, privateHolidaysPeriodDaysUseCase.get(startDate, endDate))
+        assertEquals(41, privateHolidaysPeriodDaysUseCase.get(startDate, endDate))
     }
 
     private companion object {

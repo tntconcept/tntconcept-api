@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.core.domain
 
+import com.autentia.tnt.binnacle.config.createHoliday
 import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -20,7 +21,7 @@ class CalendarTest {
     private val datePlusOneWeek = LocalDate.of(2023, 3, 15).plusWeeks(1)
     private val dateSaturday = LocalDate.of(2023, 3, 18)
     private val dateSunday = LocalDate.of(2023, 3, 19)
-    private val holiday = Holiday(1, "Holiday description", date.atStartOfDay())
+    private val holiday = createHoliday()
     private val holidayPlusOneDay = Holiday(2, "Holiday description", datePlusOneDay.atStartOfDay())
 
     @Test
@@ -48,6 +49,12 @@ class CalendarTest {
         doReturn(listOf(holiday, holidayPlusOneDay)).whenever(holidayService).findAllBetweenDate(date, datePlusOneWeek)
         val calendar = calendarFactory.create(DateInterval.of(date, datePlusOneWeek))
         assertEquals(4, calendar.workableDays.size)
+    }
+
+    @Test
+    fun getWorkableDays() {
+        val calendar = calendarFactory.create(DateInterval.of(date, datePlusOneWeek))
+        assertEquals(listOf(date, datePlusOneDay), calendar.getWorkableDays(DateInterval.of(date, datePlusOneDay)))
     }
 
     @Test

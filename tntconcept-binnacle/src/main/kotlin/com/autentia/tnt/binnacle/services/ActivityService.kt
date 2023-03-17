@@ -111,6 +111,4 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
-
-
 }
