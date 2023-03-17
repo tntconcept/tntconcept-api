@@ -6,8 +6,10 @@ import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.utils.myDatesUntil
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.exception.ActivityAlreadyApprovedException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -101,6 +103,18 @@ internal class ActivityService(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
                 activityRequest, projectRole, user, oldActivity.insertDate
             )
+        )
+    }
+
+    @Transactional(rollbackOn = [Exception::class])
+    fun approveActivityById(id: Long): Activity {
+        val activityToApprove = activityRepository.findById(id).orElseThrow { ActivityNotFoundException(id) }
+        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA){
+            throw ActivityAlreadyApprovedException()
+        }
+        activityToApprove.approvalState = ApprovalState.ACCEPTED
+        return activityRepository.update(
+            activityToApprove
         )
     }
 

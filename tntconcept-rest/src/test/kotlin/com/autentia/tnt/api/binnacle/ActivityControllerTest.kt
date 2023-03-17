@@ -1,33 +1,18 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.NoImageInActivityException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivitiesSummaryUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityRetrievalByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityUpdateUseCase
+import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.BDDMockito.mock
 import org.mockito.BDDMockito.willDoNothing
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.*
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
@@ -40,7 +25,7 @@ internal class ActivityControllerTest {
     private val activityUpdateUseCase = mock<ActivityUpdateUseCase>()
     private val activityDeletionUseCase = mock<ActivityDeletionUseCase>()
     private val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
-    private val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
+    private val activityApprovalUseCase = mock<ActivityApprovalUseCase>()
 
     private val activityController = ActivityController(
         activitiesBetweenDateUseCase,
@@ -49,7 +34,7 @@ internal class ActivityControllerTest {
         activityUpdateUseCase,
         activityDeletionUseCase,
         activityImageRetrievalUseCase,
-        activitiesSummaryUseCase,
+        activityApprovalUseCase
     )
 
     @Test
@@ -448,6 +433,44 @@ internal class ActivityControllerTest {
                 .isEqualTo("The period of time of the activity is closed for modifications")
         }
 
+    }
+
+    @Nested
+    inner class ApproveActivity(){
+
+        @Test
+        fun `should approve activity`(){
+            val activity = mock(ActivityResponseDTO::class.java)
+            doReturn(activity).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_ID)
+
+            activityController.approve(ACTIVITY_ID)
+
+            verify(activityApprovalUseCase, times(1)).approveActivity(ACTIVITY_ID)
+        }
+
+        @Test
+        fun `should throw approval exception when the approval state is not Pending`(){
+            doThrow(ActivityAlreadyApprovedException()).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_ID)
+
+            val exception = assertThrows<ActivityAlreadyApprovedException> {
+                activityController.approve(ACTIVITY_ID)
+            }
+
+            assertThat(exception.message)
+                .isEqualTo("Activity could not been approved.")
+        }
+
+        @Test
+        fun `throws UserPermissionException when attempting to approve an activity that does belong to the logged user`() {
+            doThrow(UserPermissionException()).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_ID)
+
+            val exception = assertThrows<UserPermissionException> {
+                activityController.approve(ACTIVITY_ID)
+            }
+
+            assertThat(exception.message).isEqualTo("You don't have permission to access the resource")
+
+        }
     }
 
     private companion object {

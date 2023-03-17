@@ -63,6 +63,9 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityImageRetrievalUseCase::class)
     internal val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
 
+    @get:MockBean(ActivityApprovalUseCase::class)
+    internal val activityApprovalUseCase = mock<ActivityApprovalUseCase>()
+
     @BeforeAll
     fun setup() {
         client = httpClient.toBlocking()
@@ -278,6 +281,45 @@ internal class ActivityControllerIT {
         assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get().code)
     }
 
+    @Test
+    fun `approve an activity`() {
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+
+        val response = client.exchangeObject<ActivityResponseDTO>(
+            POST("/api/activities/${ACTIVITY_RESPONSE_DTO.id}/approve", "")
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+    }
+
+    private fun approveFailProvider() = arrayOf(
+        arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND", null),
+        arrayOf(ActivityAlreadyApprovedException(), CONFLICT, null,"Activity could not been approved.")
+    )
+
+    @ParameterizedTest
+    @MethodSource("approveFailProvider")
+    fun `fail if try to approve an activity and exception is throw`(
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorCode: String?,
+        expectedResponseReason: String?
+    ) {
+        doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeObject<Unit>(
+                POST("/api/activities/${ACTIVITY_RESPONSE_DTO.id}/approve", ""),
+            )
+        }
+
+        assertEquals(expectedResponseStatus, ex.status)
+        if(expectedErrorCode !== null) assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get().code)
+        if(expectedResponseReason !== null) assertEquals(expectedResponseReason, ex.response.reason())
+    }
+
+
     private companion object {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
         private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 12, 0)
@@ -318,7 +360,7 @@ internal class ActivityControllerIT {
             OrganizationResponseDTO(6, "organization"),
             ProjectResponseDTO(5, "project", true, true),
             ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
-            ApprovalState.NA
+            ApprovalState.ACCEPTED
         )
 
         private val ACTIVITY_PUT_JSON = """
