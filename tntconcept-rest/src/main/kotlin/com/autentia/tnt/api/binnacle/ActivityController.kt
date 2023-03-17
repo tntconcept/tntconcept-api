@@ -4,25 +4,11 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.NoImageInActivityException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
+import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.annotation.*
-import com.autentia.tnt.binnacle.exception.*
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Delete
-import io.micronaut.http.annotation.Error
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
 import io.micronaut.http.annotation.*
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
@@ -77,7 +63,8 @@ internal class ActivityController(
 
     @Get("/summary")
     @Operation(summary = "Gets activities summary between two dates")
-    internal fun summary(startDate: LocalDate, endDate: LocalDate) = activitiesSummaryUseCase.getActivitiesSummary(startDate, endDate)
+    internal fun summary(startDate: LocalDate, endDate: LocalDate) =
+        activitiesSummaryUseCase.getActivitiesSummary(startDate, endDate)
 
     @Post("/{id}/approve")
     @Operation(summary = "Approve an existing activity by id.")
