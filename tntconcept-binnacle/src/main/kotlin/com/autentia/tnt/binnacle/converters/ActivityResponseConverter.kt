@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.converters
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import jakarta.inject.Singleton
 
@@ -62,11 +63,11 @@ class ActivityResponseConverter(
             activityResponse.approvalState
         )
 
-    fun toActivity(activityResponse: ActivityResponse) =
+    fun toActivity(activity: Activity) =
         com.autentia.tnt.binnacle.core.domain.Activity(
-            activityResponse.duration.toDuration(DurationUnit.MINUTES),
-            activityResponse.start,
-            ProjectRoleId(activityResponse.projectRole.id)
+            activity.duration.toDuration(DurationUnit.MINUTES),
+            activity.start,
+            ProjectRoleId(activity.projectRole.id)
         )
 
 }

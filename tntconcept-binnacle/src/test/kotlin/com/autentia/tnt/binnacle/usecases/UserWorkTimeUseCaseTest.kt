@@ -1,24 +1,18 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createActivityResponse
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
-import com.autentia.tnt.binnacle.core.domain.AnnualBalance
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
-import com.autentia.tnt.binnacle.core.domain.MonthlyBalance
-import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
-import com.autentia.tnt.binnacle.core.domain.PreviousAnnualBalance
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
-import com.autentia.tnt.binnacle.core.domain.TimeSummary
 import com.autentia.tnt.binnacle.core.domain.Vacation
-import com.autentia.tnt.binnacle.core.domain.YearAnnualBalance
 import com.autentia.tnt.binnacle.core.services.TimeSummaryService
 import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
-import com.autentia.tnt.binnacle.entities.Holiday
+import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
@@ -87,7 +81,7 @@ internal class UserWorkTimeUseCaseTest {
 
         vacations.add(vacation)
 
-        doReturn(listOf(LAST_YEAR_ACTIVITY)).whenever(activityService).getActivitiesBetweenDates(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR, USER.id)
+        doReturn(listOf(LAST_YEAR_ACTIVITY)).whenever(activityService).getActivitiesBetweenDates(DateInterval(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR), USER.id)
 
         doReturn(CORRESPONDING_VACATIONS).whenever(myVacationsDetailService).getCorrespondingVacationDaysSinceHiringDate(
             USER, FIRST_DAY_LAST_YEAR.year)
@@ -115,7 +109,7 @@ internal class UserWorkTimeUseCaseTest {
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), any())
-        verify(activityService, times(2)).getActivitiesBetweenDates(any(), any(), any())
+        verify(activityService, times(2)).getActivitiesBetweenDates(any(), any())
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)
     }
@@ -152,8 +146,33 @@ internal class UserWorkTimeUseCaseTest {
         )
 
         private val vacations = mutableListOf<VacationDomain>()
+        private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
+        private val PROJECT = Project(
+            1L,
+            "Dummy Project",
+            open = true,
+            billable = false,
+            ORGANIZATION,
+            listOf()
+        )
 
-        private val LAST_YEAR_ACTIVITY = createActivityResponse(1L, LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30), LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30), false)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO,
+            PROJECT, 0, true, false, TimeUnit.MINUTES)
+
+        private val LAST_YEAR_ACTIVITY = Activity(
+            1,
+            LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30),
+            LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30),
+            45,
+            "New activity",
+            PROJECT_ROLE,
+            USER.id,
+            false,
+            null,
+            null,
+            false,
+            approvalState = ApprovalState.NA
+        )
 
         val vacationsChargedThisYear = listOf(
             Vacation(

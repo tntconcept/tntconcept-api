@@ -1,11 +1,10 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.DateInterval
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -22,7 +21,6 @@ internal class ActivityService(
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
-    private val activityResponseConverter: ActivityResponseConverter
 ) {
 
     @Transactional
@@ -33,12 +31,8 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityResponse> {
-        val startDateMinHour = startDate.atTime(LocalTime.MIN)
-        val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository
-            .getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
-            .map { activityResponseConverter.mapActivityToActivityResponse(it) }
+    fun getActivitiesApprovalState(approvalState: ApprovalState, userId: Long): List<Activity> {
+        return activityRepository.getActivitiesApprovalState(approvalState, userId)
     }
 
     @Transactional

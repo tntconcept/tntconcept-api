@@ -2,18 +2,8 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -41,17 +31,12 @@ internal class ActivityServiceTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
     private val activityRequestBodyConverter = ActivityRequestBodyConverter()
-    private val activityResponseConverter = ActivityResponseConverter(
-        OrganizationResponseConverter(),
-        ProjectResponseConverter(),
-        ProjectRoleResponseConverter()
-    )
+
     private val activityService = ActivityService(
         activityRepository,
         projectRoleRepository,
         activityImageService,
-        activityRequestBodyConverter,
-        activityResponseConverter
+        activityRequestBodyConverter
     )
 
     init {
@@ -105,11 +90,11 @@ internal class ActivityServiceTest {
                 userId
             )
 
-        val actual = activityService.getActivitiesBetweenDates(startDate, endDate, userId)
+        val actual = activityService.getActivitiesBetweenDates(DateInterval(startDate, endDate), userId)
 
         assertEquals(
             listOf(
-                ActivityResponse(
+                Activity(
                     activityWithoutImageSaved.id as Long,
                     activityWithoutImageSaved.start,
                     activityWithoutImageSaved.end,
@@ -118,9 +103,42 @@ internal class ActivityServiceTest {
                     activityWithoutImageSaved.projectRole,
                     activityWithoutImageSaved.userId,
                     activityWithoutImageSaved.billable,
-                    activityWithoutImageSaved.projectRole.project.organization,
-                    activityWithoutImageSaved.projectRole.project,
-                    false,
+                    activityWithoutImageSaved.departmentId,
+                    activityWithoutImageSaved.insertDate,
+                    activityWithoutImageSaved.hasEvidences,
+                    activityWithoutImageSaved.approvalState
+                )
+            ),
+            actual
+        )
+    }
+
+    @Test
+    fun `get activities by approvalStatus`() {
+        val approvalState = ApprovalState.PENDING
+        val userId = 1L
+
+        doReturn(listOf(activityWithoutImageSaved))
+            .whenever(activityRepository).getActivitiesApprovalState(
+                approvalState, userId
+            )
+
+        val actual = activityService.getActivitiesApprovalState(approvalState, userId)
+
+        assertEquals(
+            listOf(
+                Activity(
+                    activityWithoutImageSaved.id as Long,
+                    activityWithoutImageSaved.start,
+                    activityWithoutImageSaved.end,
+                    activityWithoutImageSaved.duration,
+                    activityWithoutImageSaved.description,
+                    activityWithoutImageSaved.projectRole,
+                    activityWithoutImageSaved.userId,
+                    activityWithoutImageSaved.billable,
+                    activityWithoutImageSaved.departmentId,
+                    activityWithoutImageSaved.insertDate,
+                    activityWithoutImageSaved.hasEvidences,
                     activityWithoutImageSaved.approvalState
                 )
             ),

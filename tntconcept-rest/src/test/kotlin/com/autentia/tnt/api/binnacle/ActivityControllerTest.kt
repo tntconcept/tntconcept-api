@@ -1,6 +1,9 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
+import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
@@ -9,27 +12,18 @@ import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityRetrievalByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityUpdateUseCase
+import com.autentia.tnt.binnacle.usecases.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.BDDMockito.willDoNothing
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
+import java.util.*
 
 internal class ActivityControllerTest {
 
@@ -54,37 +48,35 @@ internal class ActivityControllerTest {
         //Given
         val startDate = LocalDate.of(2019, Month.DECEMBER, 30)
         val endDate = LocalDate.of(2020, Month.FEBRUARY, 2)
+        val approvalState = ApprovalState.PENDING
 
-        val activitiesResponse = listOf(
+        val intervalResponseDTO = IntervalResponseDTO(
+            start = startDate.atStartOfDay(),
+            end = endDate.atStartOfDay(),
+            duration = 120,
+            timeUnit = TimeUnit.MINUTES
+        )
+
+        val activitiesDateDTO = listOf(
             ActivityDateDTO(
-                date = LocalDate.of(2019, Month.DECEMBER, 30),
-                workedMinutes = 120,
-                activities = listOf(
-                    createActivityResponseDTO(1L, LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(), LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay(), false),
-                    createActivityResponseDTO(
-                        2L,
-                        LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay().plusHours(1),
-                        LocalDate.of(2019, Month.DECEMBER, 30).atStartOfDay().plusHours(1),
-                        false
-                    ),
-                )
-            ),
-            ActivityDateDTO(
-                date = LocalDate.of(2020, Month.FEBRUARY, 2),
-                workedMinutes = 120,
-                activities = listOf(
-                    createActivityResponseDTO(3L, LocalDate.of(2020, Month.FEBRUARY, 2).atStartOfDay(), LocalDate.of(2020, Month.FEBRUARY, 2).atStartOfDay(), false)
-                )
+                billable= false,
+                description = "description",
+                hasEvidences = false,
+                id = 1L,
+                projectRoleId = 1,
+                interval = intervalResponseDTO,
+                userId = 1,
+                approvalState = approvalState
             )
         )
 
-        doReturn(activitiesResponse).whenever(activitiesBetweenDateUseCase).getActivities(startDate, endDate)
+        doReturn(activitiesDateDTO).whenever(activitiesBetweenDateUseCase).getActivities(Optional.of(startDate), Optional.of(endDate), Optional.of(approvalState))
 
         //When
-        val actualActivityResponse = activityController.get(startDate, endDate)
+        val actualActivityResponse = activityController.get(Optional.of(startDate), Optional.of(endDate), Optional.of(approvalState))
 
         //Then
-        assertEquals(activitiesResponse, actualActivityResponse)
+        assertEquals(activitiesDateDTO, actualActivityResponse)
     }
 
     @Nested

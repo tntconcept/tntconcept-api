@@ -1,5 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -9,27 +10,19 @@ import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
 import com.autentia.tnt.binnacle.exception.NoImageInActivityException
 import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityImageRetrievalUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityRetrievalByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityUpdateUseCase
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Delete
-import io.micronaut.http.annotation.Error
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.*
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
+import org.apache.commons.lang3.StringUtils.split
 import java.time.LocalDate
+import java.util.*
+import javax.annotation.Nullable
 import javax.validation.Valid
 
-@Controller("/api/activities")
+@Controller("/api/activity")
 @Validated
 internal class ActivityController(
     private val activitiesBetweenDateUseCase: ActivitiesBetweenDateUseCase,
@@ -42,8 +35,9 @@ internal class ActivityController(
 
     @Get
     @Operation(summary = "Gets activities between two dates.")
-    internal fun get(startDate: LocalDate, endDate: LocalDate): List<ActivityDateDTO> =
-        activitiesBetweenDateUseCase.getActivities(startDate, endDate)
+    internal fun get(start: Optional<LocalDate>, end: Optional<LocalDate>, approvalState: Optional<ApprovalState>): List<ActivityDateDTO> {
+        return activitiesBetweenDateUseCase.getActivities(start, end, approvalState)
+    }
 
     @Get("/{id}")
     @Operation(summary = "Gets an activity by its id.")
