@@ -1,12 +1,11 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import jakarta.inject.Singleton
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.Date
 
 @Singleton
@@ -33,8 +32,8 @@ class ActivityRequestBodyConverter() {
     ) =
         Activity(
             activityRequestBody.id,
-            activityRequestBody.start,
-            activityRequestBody.end,
+            setActivityStart(activityRequestBody.start, projectRole),
+            setActivityEnd(activityRequestBody.end, projectRole),
             activityRequestBody.duration,
             activityRequestBody.description,
             projectRole,
@@ -43,6 +42,27 @@ class ActivityRequestBodyConverter() {
             user.departmentId,
             insertDate,
             activityRequestBody.hasEvidences,
-            ApprovalState.NA
+            isApprovalRequired(projectRole)
         )
+
+    private fun isApprovalRequired(projectRole: ProjectRole): ApprovalState {
+        var approvalState = ApprovalState.NA
+        if(projectRole.requireEvidence !== RequireEvidence.NO) approvalState = ApprovalState.PENDING
+        return approvalState
+    }
+
+    private fun isDailyProjectRole(projectRole: ProjectRole): Boolean {
+        return projectRole.timeUnit == TimeUnit.DAYS
+    }
+    private fun setActivityStart(start: LocalDateTime, projectRole: ProjectRole): LocalDateTime {
+        var startDateTime = start
+        if (isDailyProjectRole(projectRole)) startDateTime = start.toLocalDate().atTime(LocalTime.MIN)
+        return startDateTime
+    }
+
+    private fun setActivityEnd(end: LocalDateTime, projectRole: ProjectRole): LocalDateTime {
+        var endDateTime = end
+        if (isDailyProjectRole(projectRole)) endDateTime = end.toLocalDate().atTime(LocalTime.MAX)
+        return endDateTime
+    }
 }
