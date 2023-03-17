@@ -85,3 +85,6 @@ fun Date.takeMonth(): Int {
 fun ClosedRange<LocalDateTime>.overlaps(other: ClosedRange<LocalDateTime>): Boolean {
     return start < other.endInclusive && endInclusive > other.start
 }
+
+fun minDate(start: LocalDate, end: LocalDate) = listOf(start, end).min()
+fun maxDate(start: LocalDate, end: LocalDate) = listOf(start, end).max()

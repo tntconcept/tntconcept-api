@@ -1,9 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.DateInterval
@@ -14,7 +12,6 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.time.LocalDate
 import java.time.LocalTime
 import javax.transaction.Transactional
 
@@ -23,8 +20,7 @@ internal class ActivityService(
     private val activityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
-    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
-    private val activityResponseConverter: ActivityResponseConverter
+    private val activityRequestBodyConverter: ActivityRequestBodyConverter
 ) {
 
     @Transactional
@@ -35,20 +31,16 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityResponse> {
-        val startDateMinHour = startDate.atTime(LocalTime.MIN)
-        val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository
-            .getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
-            .map { activityResponseConverter.mapActivityToActivityResponse(it) }
+    fun getActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
+        val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
+        val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
+        return activityRepository.getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
     }
 
     @Transactional
     @ReadOnly
-    fun getActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
-        val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
-        val endDateMaxHour = dateInterval.end.atTime(23, 59, 59)
-        return activityRepository.getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
+    fun getActivitiesApprovalState(approvalState: ApprovalState, userId: Long): List<Activity> {
+        return activityRepository.getActivitiesApprovalState(approvalState, userId)
     }
 
     @Transactional(rollbackOn = [Exception::class])
@@ -81,7 +73,7 @@ internal class ActivityService(
             .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
-            .findById(activityRequest.id)
+            .findById(activityRequest.id as Long)
             .orElseThrow { ActivityNotFoundException(activityRequest.id!!) }
 
         // Update stored image
@@ -125,6 +117,4 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
-
-
 }

@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -27,17 +26,11 @@ internal class ActivityServiceTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
     private val activityRequestBodyConverter = ActivityRequestBodyConverter()
-    private val activityResponseConverter = ActivityResponseConverter(
-        OrganizationResponseConverter(),
-        ProjectResponseConverter(),
-        ProjectRoleResponseConverter()
-    )
     private val activityService = ActivityService(
         activityRepository,
         projectRoleRepository,
         activityImageService,
-        activityRequestBodyConverter,
-        activityResponseConverter
+        activityRequestBodyConverter
     )
 
     init {
@@ -87,31 +80,13 @@ internal class ActivityServiceTest {
         doReturn(listOf(activityWithoutImageSaved))
             .whenever(activityRepository).getActivitiesBetweenDate(
                 startDate.atTime(LocalTime.MIN),
-                endDate.atTime(23, 59, 59),
+                endDate.atTime(LocalTime.MAX),
                 userId
             )
 
-        val actual = activityService.getActivitiesBetweenDates(startDate, endDate, userId)
+        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
 
-        assertEquals(
-            listOf(
-                ActivityResponse(
-                    activityWithoutImageSaved.id as Long,
-                    activityWithoutImageSaved.start,
-                    activityWithoutImageSaved.end,
-                    activityWithoutImageSaved.duration,
-                    activityWithoutImageSaved.description,
-                    activityWithoutImageSaved.projectRole,
-                    activityWithoutImageSaved.userId,
-                    activityWithoutImageSaved.billable,
-                    activityWithoutImageSaved.projectRole.project.organization,
-                    activityWithoutImageSaved.projectRole.project,
-                    false,
-                    activityWithoutImageSaved.approvalState
-                )
-            ),
-            actual
-        )
+        assertEquals(listOf(activityWithoutImageSaved), actual)
     }
 
     @Test

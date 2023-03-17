@@ -9,6 +9,8 @@ import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDate
 import javax.transaction.Transactional
 
@@ -28,7 +30,9 @@ internal class ActivityCalendarService(
         return activitiesCalendar.activitiesCalendarMap.toList().map {
             DailyWorkingTime(
                 it.first,
-                (this::getActivitiesDurationSumByCountingNumberOfDays)(it.second, 1) / 60F
+                BigDecimal(this.getDurationByCountingNumberOfDays(it.second, 1)).divide(
+                    BigDecimal(60), 10, RoundingMode.HALF_UP
+                ).setScale(2, RoundingMode.DOWN)
             )
         }
     }
@@ -51,8 +55,8 @@ internal class ActivityCalendarService(
         timeInterval: TimeInterval, timeUnit: TimeUnit, workableDays: List<LocalDate>
     ) = getDurationByCountingNumberOfDays(timeInterval, timeUnit, workableDays.size)
 
-    fun getActivitiesDurationSumByCountingNumberOfDays(activities: List<Activity>, numberOfDays: Int) =
-        activities.sumOf { a -> getDurationByCountingNumberOfDays(a, numberOfDays) }
+    fun getDurationByCountingNumberOfDays(activities: List<Activity>, numberOfDays: Int) =
+        activities.sumOf { getDurationByCountingNumberOfDays(it, numberOfDays) }
 
     fun getDurationByCountingNumberOfDays(activity: Activity, numberOfDays: Int) =
         getDurationByCountingNumberOfDays(activity.getTimeInterval(), activity.projectRole.timeUnit, numberOfDays)

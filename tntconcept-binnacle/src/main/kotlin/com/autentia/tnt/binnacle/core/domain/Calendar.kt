@@ -17,4 +17,6 @@ class Calendar(private val dateInterval: DateInterval, val holidays: List<Holida
     val allDays: List<LocalDate> by lazy {
         dateInterval.start.myDatesUntil(dateInterval.end).toList()
     }
+
+    fun getWorkableDays(dateInterval: DateInterval) = workableDays.filter { dateInterval.includes(it) }
 }
