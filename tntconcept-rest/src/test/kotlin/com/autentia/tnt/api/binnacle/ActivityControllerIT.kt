@@ -45,9 +45,6 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivitiesBetweenDateUseCase::class)
     internal val activitiesBetweenDateUseCase = mock<ActivitiesBetweenDateUseCase>()
 
-    @get:MockBean(ActivitiesSummaryUseCase::class)
-    internal val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
-
     @get:MockBean(ActivityRetrievalByIdUseCase::class)
     internal val activityRetrievalUseCase = mock<ActivityRetrievalByIdUseCase>()
 
@@ -62,6 +59,9 @@ internal class ActivityControllerIT {
 
     @get:MockBean(ActivityImageRetrievalUseCase::class)
     internal val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
+
+    @get:MockBean(ActivitiesSummaryUseCase::class)
+    internal val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
 
     @get:MockBean(ActivityApprovalUseCase::class)
     internal val activityApprovalUseCase = mock<ActivityApprovalUseCase>()

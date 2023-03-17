@@ -25,6 +25,7 @@ internal class ActivityControllerTest {
     private val activityUpdateUseCase = mock<ActivityUpdateUseCase>()
     private val activityDeletionUseCase = mock<ActivityDeletionUseCase>()
     private val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
+    private val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
     private val activityApprovalUseCase = mock<ActivityApprovalUseCase>()
 
     private val activityController = ActivityController(
@@ -34,6 +35,7 @@ internal class ActivityControllerTest {
         activityUpdateUseCase,
         activityDeletionUseCase,
         activityImageRetrievalUseCase,
+        activitiesSummaryUseCase,
         activityApprovalUseCase
     )
 

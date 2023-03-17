@@ -30,6 +30,7 @@ internal class ActivityController(
     private val activityUpdateUseCase: ActivityUpdateUseCase,
     private val activityDeletionUseCase: ActivityDeletionUseCase,
     private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase,
+    private val activitiesSummaryUseCase: ActivitiesSummaryUseCase,
     private val activityApprovalUseCase: ActivityApprovalUseCase
 ) {
 

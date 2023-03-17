@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.utils.myDatesUntil
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.DateInterval
@@ -82,7 +81,7 @@ internal class ActivityService(
             .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
-            .findById(activityRequest.id)
+            .findById(activityRequest.id as Long)
             .orElseThrow { ActivityNotFoundException(activityRequest.id!!) }
 
         // Update stored image
