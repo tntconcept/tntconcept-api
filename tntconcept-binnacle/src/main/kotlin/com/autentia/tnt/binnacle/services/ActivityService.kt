@@ -51,6 +51,12 @@ internal class ActivityService(
         return activityRepository.getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
     }
 
+    @Transactional
+    @ReadOnly
+    fun getActivitiesApprovalState(approvalState: ApprovalState, userId: Long): List<Activity> {
+        return activityRepository.getActivitiesApprovalState(approvalState, userId)
+    }
+
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository

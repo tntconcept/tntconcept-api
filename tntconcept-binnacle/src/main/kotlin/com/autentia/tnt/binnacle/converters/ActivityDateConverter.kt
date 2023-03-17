@@ -1,51 +1,48 @@
 package com.autentia.tnt.binnacle.converters
 
-import com.autentia.tnt.binnacle.core.domain.ActivityDate
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.domain.ActivitySummary
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
-import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
-import com.autentia.tnt.binnacle.core.utils.myDatesUntil
+import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
+import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import jakarta.inject.Singleton
 
-import java.time.LocalDate
-
 @Singleton
-class ActivityDateConverter(
-    private val workableProjectRoleIdChecker: WorkableProjectRoleIdChecker,
-    private val activityResponseConverter: ActivityResponseConverter
-) {
+class ActivityDateConverter {
+    fun mapActivityToActivityDateDTO(activity: Activity) = ActivityDateDTO(
+        billable = activity.billable,
+        description = activity.description,
+        hasEvidences = activity.hasEvidences,
+        id = activity.id!!,
+        projectRoleId = activity.projectRole.id,
+        interval = mapActivityToIntervalResponseDTO(activity),
+        userId = activity.userId,
+        approvalState = activity.approvalState
+    )
 
-    fun toActivityDateDTO(activityDate: ActivityDate) =
-        ActivityDateDTO(
-            activityDate.date,
-            activityDate.workedMinutes,
-            activityDate.activities.map { activityResponseConverter.toActivityResponseDTO(it) }
-        )
+    fun mapActivitiesToActivitiesDateDTO(activities: List<Activity>): List<ActivityDateDTO>  {
+        val activitiesDateDTO = mutableListOf<ActivityDateDTO>()
+        activities.forEach {activity ->
 
-    fun toListActivityDate(
-        activities: List<ActivityResponse>,
-        start: LocalDate,
-        end: LocalDate,
-    ): List<ActivityDate> {
-        val activitiesByDate = activities.groupBy { it.start.toLocalDate() }
-        val allActivitiesBetweenDates = start.myDatesUntil(end)
-            .associateWith { emptyList<ActivityResponse>() }
-            .toMutableMap()
-        allActivitiesBetweenDates.putAll(activitiesByDate)
-        return allActivitiesBetweenDates.map(::toActivityDate)
+        val activityDateDTO = ActivityDateDTO(
+            billable = activity.billable,
+            description = activity.description,
+            hasEvidences = activity.hasEvidences,
+            id = activity.id!!,
+            projectRoleId = activity.projectRole.id,
+            interval = mapActivityToIntervalResponseDTO(activity),
+            userId = activity.userId,
+            approvalState = activity.approvalState
+            )
+            activitiesDateDTO.add(activityDateDTO)
+        }
+        return activitiesDateDTO
     }
 
+    fun mapActivityToIntervalResponseDTO(activity: Activity) = IntervalResponseDTO(
+        start = activity.start,
+        end = activity.end,
+        duration = activity.duration,
+        timeUnit = activity.projectRole.timeUnit
 
-
-    private fun toActivityDate(entry: Map.Entry<LocalDate, List<ActivityResponse>>): ActivityDate =
-        ActivityDate(
-            date = entry.key,
-            workedMinutes = entry.value
-                .filter { workableProjectRoleIdChecker.isWorkable(ProjectRoleId(it.projectRole.id)) }
-                .fold(0) { acc, activity -> acc + activity.duration },
-            activities = entry.value.sortedBy { it.start }
-        )
-
+    )
 }
+

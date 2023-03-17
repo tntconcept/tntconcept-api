@@ -62,11 +62,11 @@ class ActivityResponseConverter(
             activityResponse.approvalState
         )
 
-    fun toActivity(activityResponse: ActivityResponse) =
+    fun toActivity(activity: Activity) =
         com.autentia.tnt.binnacle.core.domain.Activity(
-            activityResponse.duration.toDuration(DurationUnit.MINUTES),
-            activityResponse.start,
-            ProjectRoleId(activityResponse.projectRole.id)
+            activity.duration.toDuration(DurationUnit.MINUTES),
+            activity.start,
+            ProjectRoleId(activity.projectRole.id)
         )
 
 }
