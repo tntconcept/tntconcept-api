@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -27,17 +26,11 @@ internal class ActivityServiceTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
     private val activityRequestBodyConverter = ActivityRequestBodyConverter()
-    private val activityResponseConverter = ActivityResponseConverter(
-        OrganizationResponseConverter(),
-        ProjectResponseConverter(),
-        ProjectRoleResponseConverter()
-    )
     private val activityService = ActivityService(
         activityRepository,
         projectRoleRepository,
         activityImageService,
-        activityRequestBodyConverter,
-        activityResponseConverter
+        activityRequestBodyConverter
     )
 
     init {
