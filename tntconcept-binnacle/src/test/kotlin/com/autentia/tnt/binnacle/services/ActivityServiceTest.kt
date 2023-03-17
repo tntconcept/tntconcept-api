@@ -1,19 +1,9 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -21,19 +11,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.BDDMockito.given
-import org.mockito.BDDMockito.mock
-import org.mockito.BDDMockito.verify
-import org.mockito.BDDMockito.verifyNoInteractions
-import org.mockito.BDDMockito.willDoNothing
+import org.mockito.BDDMockito.*
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.Date
-import java.util.Optional
+import java.util.*
 
 internal class ActivityServiceTest {
 
@@ -41,17 +26,11 @@ internal class ActivityServiceTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
     private val activityRequestBodyConverter = ActivityRequestBodyConverter()
-    private val activityResponseConverter = ActivityResponseConverter(
-        OrganizationResponseConverter(),
-        ProjectResponseConverter(),
-        ProjectRoleResponseConverter()
-    )
     private val activityService = ActivityService(
         activityRepository,
         projectRoleRepository,
         activityImageService,
-        activityRequestBodyConverter,
-        activityResponseConverter
+        activityRequestBodyConverter
     )
 
     init {
@@ -70,9 +49,9 @@ internal class ActivityServiceTest {
         USER
     )
 
-    private val activityWithImageSaved = activityWithImageToSave.copy(id = 101, insertDate = Date())
+    private val activityWithImageSaved = activityWithImageToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
-    private val activityWithoutImageSaved = activityWithoutImageToSave.copy(id = 100L, insertDate = Date())
+    private val activityWithoutImageSaved = activityWithoutImageToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
 
     @Test
@@ -101,31 +80,13 @@ internal class ActivityServiceTest {
         doReturn(listOf(activityWithoutImageSaved))
             .whenever(activityRepository).getActivitiesBetweenDate(
                 startDate.atTime(LocalTime.MIN),
-                endDate.atTime(23, 59, 59),
+                endDate.atTime(LocalTime.MAX),
                 userId
             )
 
-        val actual = activityService.getActivitiesBetweenDates(startDate, endDate, userId)
+        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
 
-        assertEquals(
-            listOf(
-                ActivityResponse(
-                    activityWithoutImageSaved.id as Long,
-                    activityWithoutImageSaved.start,
-                    activityWithoutImageSaved.end,
-                    activityWithoutImageSaved.duration,
-                    activityWithoutImageSaved.description,
-                    activityWithoutImageSaved.projectRole,
-                    activityWithoutImageSaved.userId,
-                    activityWithoutImageSaved.billable,
-                    activityWithoutImageSaved.projectRole.project.organization,
-                    activityWithoutImageSaved.projectRole.project,
-                    false,
-                    activityWithoutImageSaved.approvalState
-                )
-            ),
-            actual
-        )
+        assertEquals(listOf(activityWithoutImageSaved), actual)
     }
 
     @Test
@@ -276,6 +237,19 @@ internal class ActivityServiceTest {
 
         assertThat(result).isEqualTo(savedActivity)
         verify(activityImageService).deleteActivityImage(activityId, oldActivityInsertDate)
+    }
+
+    @Test
+    fun `approve activity by id`(){
+        given(activityRepository.findById(activityWithoutImageSaved.id as Long)).willReturn(Optional.of(activityWithoutImageSaved))
+        given(
+            activityRepository.update(
+                activityWithoutImageSaved
+            )
+        ).willReturn(activityWithoutImageSaved)
+
+        val approvedActivity = activityService.approveActivityById(activityWithoutImageSaved.id as Long)
+        assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
     }
 
     @Test

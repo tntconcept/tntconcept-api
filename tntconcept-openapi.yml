@@ -18,7 +18,7 @@ paths:
             application/json:
               schema:
                 type: string
-  /api/activities:
+  /api/activity:
     get:
       summary: Gets activities between two dates.
       operationId: get$tntconcept_api
@@ -81,7 +81,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponseDTO'
-  /api/activities/{id}:
+  /api/activity/{id}:
     get:
       summary: Gets an activity by its id.
       operationId: get$tntconcept_api_1
@@ -112,7 +112,7 @@ paths:
       responses:
         "200":
           description: delete$tntconcept_api 200 response
-  /api/activities/{id}/image:
+  /api/activity/{id}/image:
     get:
       summary: Retrieves an activity image by the activity id.
       operationId: getImage$tntconcept_api

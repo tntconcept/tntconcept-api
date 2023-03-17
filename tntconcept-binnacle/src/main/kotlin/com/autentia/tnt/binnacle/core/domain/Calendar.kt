@@ -7,7 +7,7 @@ import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.Holiday
 import java.time.LocalDate
 
-class Calendar(val dateInterval: DateInterval, val holidays: List<Holiday>) {
+class Calendar(private val dateInterval: DateInterval, val holidays: List<Holiday>) {
 
     val workableDays: List<LocalDate> by lazy {
         val holidaysDates = holidays.map { it.date.toLocalDate() }

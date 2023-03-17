@@ -2,6 +2,7 @@ package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
@@ -31,6 +32,7 @@ import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month.JANUARY
+import java.util.*
 
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -60,6 +62,12 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityImageRetrievalUseCase::class)
     internal val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
 
+    @get:MockBean(ActivitiesSummaryUseCase::class)
+    internal val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
+
+    @get:MockBean(ActivityApprovalUseCase::class)
+    internal val activityApprovalUseCase = mock<ActivityApprovalUseCase>()
+
     @BeforeAll
     fun setup() {
         client = httpClient.toBlocking()
@@ -70,10 +78,39 @@ internal class ActivityControllerIT {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
         val activities = listOf(ACTIVITY_DATE_DTO)
-        doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(startDate, endDate)
+        doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(Optional.of(startDate), Optional.of(endDate), Optional.empty())
 
         val response = client.exchangeList<ActivityDateDTO>(
-            GET("/api/activities?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
+            GET("/api/activity?start=${startDate.toJson()}&end=${endDate.toJson()}"),
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(activities, response.body.get())
+    }
+
+    @Test
+    fun `get all activities by approvalState`() {
+        val approvalState = ApprovalState.PENDING
+        val activities = listOf(ACTIVITY_DATE_DTO)
+        doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(Optional.empty(), Optional.empty(), Optional.of(approvalState))
+
+        val response = client.exchangeList<ActivityDateDTO>(
+            GET("/api/activity?approvalState=${approvalState}"),
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(activities, response.body.get())
+    }
+
+    @Test
+    fun `get summary activities between the start and end date`() {
+        val startDate = LocalDate.of(2018, JANUARY, 1)
+        val endDate = LocalDate.of(2018, JANUARY, 31)
+        val activities = listOf(ACTIVITY_DATE_DTO)
+        doReturn(activities).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
+
+        val response = client.exchangeList<ActivityDateDTO>(
+            GET("/api/activity/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
         assertEquals(OK, response.status)
@@ -85,7 +122,7 @@ internal class ActivityControllerIT {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityRetrievalUseCase).getActivityById(ACTIVITY_RESPONSE_DTO.id)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
-            GET("/api/activities/${ACTIVITY_RESPONSE_DTO.id}")
+            GET("/api/activity/${ACTIVITY_RESPONSE_DTO.id}")
         )
 
         assertEquals(OK, response.status)
@@ -99,7 +136,7 @@ internal class ActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                GET("/api/activities/$nonExistingId"),
+                GET("/api/activity/$nonExistingId"),
             )
         }
 
@@ -112,7 +149,7 @@ internal class ActivityControllerIT {
         doReturn(ACTIVITY_IMAGE).whenever(activityImageRetrievalUseCase).getActivityImage(userId)
 
         val response = client.exchangeObject<String>(
-            GET("/api/activities/$userId/image")
+            GET("/api/activity/$userId/image")
         )
 
         assertEquals(OK, response.status)
@@ -124,7 +161,7 @@ internal class ActivityControllerIT {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
-            POST("/api/activities", ACTIVITY_POST_JSON)
+            POST("/api/activity", ACTIVITY_POST_JSON)
         )
 
         assertEquals(OK, response.status)
@@ -140,7 +177,7 @@ internal class ActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                POST("/api/activities", tooLongDescriptionJson),
+                POST("/api/activity", tooLongDescriptionJson),
             )
         }
 
@@ -167,7 +204,7 @@ internal class ActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                POST("/api/activities", ACTIVITY_POST_JSON),
+                POST("/api/activity", ACTIVITY_POST_JSON),
             )
         }
 
@@ -187,7 +224,7 @@ internal class ActivityControllerIT {
         doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(putActivity)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
-            PUT("/api/activities", ACTIVITY_PUT_JSON),
+            PUT("/api/activity", ACTIVITY_PUT_JSON),
         )
 
         assertEquals(OK, response.status)
@@ -215,7 +252,7 @@ internal class ActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                PUT("/api/activities", ACTIVITY_POST_JSON),
+                PUT("/api/activity", ACTIVITY_POST_JSON),
             )
         }
 
@@ -228,7 +265,7 @@ internal class ActivityControllerIT {
         val activityIdToDelete = 14L
 
         val response = client.exchange<Any, Any>(
-            DELETE("/api/activities/$activityIdToDelete")
+            DELETE("/api/activity/$activityIdToDelete")
         )
 
         assertEquals(OK, response.status)
@@ -252,13 +289,52 @@ internal class ActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Unit>(
-                DELETE("/api/activities/${ACTIVITY_RESPONSE_DTO.id}"),
+                DELETE("/api/activity/${ACTIVITY_RESPONSE_DTO.id}"),
             )
         }
 
         assertEquals(expectedResponseStatus, ex.status)
         assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get().code)
     }
+
+    @Test
+    fun `approve an activity`() {
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+
+        val response = client.exchangeObject<ActivityResponseDTO>(
+            POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "")
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+    }
+
+    private fun approveFailProvider() = arrayOf(
+        arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND", null),
+        arrayOf(ActivityAlreadyApprovedException(), CONFLICT, null,"Activity could not been approved.")
+    )
+
+    @ParameterizedTest
+    @MethodSource("approveFailProvider")
+    fun `fail if try to approve an activity and exception is throw`(
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorCode: String?,
+        expectedResponseReason: String?
+    ) {
+        doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeObject<Unit>(
+                POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", ""),
+            )
+        }
+
+        assertEquals(expectedResponseStatus, ex.status)
+        if(expectedErrorCode !== null) assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get().code)
+        if(expectedResponseReason !== null) assertEquals(expectedResponseReason, ex.response.reason())
+    }
+
 
     private companion object {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
@@ -300,7 +376,7 @@ internal class ActivityControllerIT {
             OrganizationResponseDTO(6, "organization"),
             ProjectResponseDTO(5, "project", true, true),
             ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
-            ApprovalState.NA
+            ApprovalState.ACCEPTED
         )
 
         private val ACTIVITY_PUT_JSON = """
@@ -317,11 +393,25 @@ internal class ActivityControllerIT {
             }
         """.trimIndent()
 
-        private val ACTIVITY_DATE_DTO = ActivityDateDTO(
-            ACTIVITY_REQUEST_BODY_DTO.interval.start.toLocalDate(),
-            240,
-            listOf(ACTIVITY_RESPONSE_DTO)
+        private val INTERVAL_RESPONSE_DTO = IntervalResponseDTO(
+            START_DATE,
+            END_DATE,
+            45,
+            TimeUnit.MINUTES
         )
+
+        private val ACTIVITY_DATE_DTO = ActivityDateDTO(
+            false,
+            "description",
+            false,
+            1L,
+            1L,
+            INTERVAL_RESPONSE_DTO,
+            1,
+            ApprovalState.NA)
+
+
+
 
         private val ACTIVITY_IMAGE = "base64image"
     }

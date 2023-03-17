@@ -36,6 +36,7 @@ import java.time.Month.DECEMBER
 import java.time.Month.JANUARY
 import java.time.Month.SEPTEMBER
 import java.time.temporal.TemporalAdjusters
+import java.util.Date
 
 @TestInstance(PER_CLASS)
 internal class VacationServiceTest {

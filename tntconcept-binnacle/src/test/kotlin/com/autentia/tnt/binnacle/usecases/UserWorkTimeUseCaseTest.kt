@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createActivityResponse
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
@@ -18,12 +17,20 @@ import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.core.domain.YearAnnualBalance
 import com.autentia.tnt.binnacle.core.services.TimeSummaryService
 import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.Holiday
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
-import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
 import com.autentia.tnt.binnacle.entities.dto.AnnualBalanceDTO
 import com.autentia.tnt.binnacle.entities.dto.MonthlyBalanceDTO
+import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
 import com.autentia.tnt.binnacle.entities.dto.PreviousAnnualBalanceDTO
 import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
 import com.autentia.tnt.binnacle.entities.dto.YearAnnualBalanceDTO
@@ -35,19 +42,19 @@ import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.VacationService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.whenever
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import kotlin.time.Duration
-import java.math.BigDecimal
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 internal class UserWorkTimeUseCaseTest {
@@ -87,7 +94,8 @@ internal class UserWorkTimeUseCaseTest {
 
         vacations.add(vacation)
 
-        doReturn(listOf(LAST_YEAR_ACTIVITY)).whenever(activityService).getActivitiesBetweenDates(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR, USER.id)
+        doReturn(listOf(LAST_YEAR_ACTIVITY)).whenever(activityService)
+            .getActivitiesBetweenDates(DateInterval.of(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR), USER.id)
 
         doReturn(CORRESPONDING_VACATIONS).whenever(myVacationsDetailService).getCorrespondingVacationDaysSinceHiringDate(
             USER, FIRST_DAY_LAST_YEAR.year)
@@ -115,7 +123,7 @@ internal class UserWorkTimeUseCaseTest {
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), any())
-        verify(activityService, times(2)).getActivitiesBetweenDates(any(), any(), any())
+        verify(activityService, times(2)).getActivitiesBetweenDates(any(), any())
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)
     }
@@ -149,11 +157,38 @@ internal class UserWorkTimeUseCaseTest {
                 state = ACCEPT,
                 days = listOf(TODAY, TOMORROW),
                 chargeYear = TODAY
-        )
+            )
 
         private val vacations = mutableListOf<VacationDomain>()
+        private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
+        private val PROJECT = Project(
+            1L,
+            "Dummy Project",
+            open = true,
+            billable = false,
+            ORGANIZATION,
+            listOf()
+        )
 
-        private val LAST_YEAR_ACTIVITY = createActivityResponse(1L, LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30), LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30), false)
+        private val PROJECT_ROLE = ProjectRole(
+            10L, "Dummy Project role", RequireEvidence.NO,
+            PROJECT, 0, true, false, TimeUnit.MINUTES
+        )
+
+        private val LAST_YEAR_ACTIVITY = Activity(
+            1,
+            LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30),
+            LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30),
+            45,
+            "New activity",
+            PROJECT_ROLE,
+            USER.id,
+            false,
+            null,
+            null,
+            false,
+            approvalState = ApprovalState.NA
+        )
 
         val vacationsChargedThisYear = listOf(
             Vacation(

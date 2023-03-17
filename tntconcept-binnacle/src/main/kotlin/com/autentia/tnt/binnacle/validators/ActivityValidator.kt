@@ -3,10 +3,6 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.core.utils.overlaps
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
@@ -15,6 +11,10 @@ import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -137,6 +137,18 @@ internal class ActivityValidator(
             !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
             !userHasAccess(activityDb, user) -> throw UserPermissionException()
         }
+    }
+
+    @Transactional
+    @ReadOnly
+    fun checkIfUserCanApproveActivity(user: User, activityId: Long): Boolean{
+        //TODO: Use JWT to know if user have staff role
+        val activity = activityRepository.findById(activityId).orElse(null)
+        when {
+            activity === null -> throw ActivityNotFoundException(activityId)
+            !userHasAccess(activity, user) -> throw UserPermissionException()
+        }
+        return true
     }
 
     fun userHasAccess(activityDb: Activity, user: User): Boolean {
