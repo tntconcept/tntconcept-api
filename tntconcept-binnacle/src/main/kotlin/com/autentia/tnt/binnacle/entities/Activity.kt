@@ -67,7 +67,7 @@ data class Activity(
     var hasEvidences: Boolean = false,
 
     @Enumerated(EnumType.STRING)
-    val approvalState: ApprovalState
+    var approvalState: ApprovalState = ApprovalState.PENDING
 ) {
 
     companion object {

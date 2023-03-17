@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.converters
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import jakarta.inject.Singleton
 
