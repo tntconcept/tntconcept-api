@@ -1,7 +1,5 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
