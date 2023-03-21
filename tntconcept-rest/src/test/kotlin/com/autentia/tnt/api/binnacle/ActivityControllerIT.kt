@@ -81,7 +81,7 @@ internal class ActivityControllerIT {
         doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(Optional.of(startDate), Optional.of(endDate), Optional.empty())
 
         val response = client.exchangeList<ActivityDateDTO>(
-            GET("/api/activity?start=${startDate.toJson()}&end=${endDate.toJson()}"),
+            GET("/api/activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
         assertEquals(OK, response.status)
