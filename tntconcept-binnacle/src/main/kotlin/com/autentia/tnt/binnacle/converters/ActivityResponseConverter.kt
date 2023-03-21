@@ -13,20 +13,19 @@ import kotlin.time.toDuration
 class ActivityResponseConverter(
     private val organizationResponseConverter: OrganizationResponseConverter,
     private val projectResponseConverter: ProjectResponseConverter,
-    private val projectRoleResponseConverter: ProjectRoleResponseConverter
+    private val projectRoleResponseConverter: ProjectRoleResponseConverter,
+    private val activityIntervalResponseConverter: ActivityIntervalResponseConverter
 ) {
 
     fun mapActivityToActivityResponseDTO(activity: Activity) = ActivityResponseDTO(
         id = activity.id!!,
-        start = activity.start,
-        end = activity.end,
+        interval = activityIntervalResponseConverter.mapActivityToIntervalResponseDTO(activity),
         billable = activity.billable,
         userId = activity.userId,
         description = activity.description,
         organization = organizationResponseConverter.toOrganizationResponseDTO(activity.projectRole.project.organization),
         project = projectResponseConverter.toProjectResponseDTO(activity.projectRole.project),
         projectRole = projectRoleResponseConverter.toProjectRoleResponseDTO(activity.projectRole),
-        duration = activity.duration,
         hasEvidences = activity.hasEvidences,
         approvalState = activity.approvalState
     )
@@ -49,9 +48,7 @@ class ActivityResponseConverter(
     fun toActivityResponseDTO(activityResponse: ActivityResponse) =
         ActivityResponseDTO(
             activityResponse.id,
-            activityResponse.start,
-            activityResponse.end,
-            activityResponse.duration,
+            activityIntervalResponseConverter.mapActivityResponseToIntervalResponseDTO(activityResponse),
             activityResponse.description,
             projectRoleResponseConverter.toProjectRoleResponseDTO(activityResponse.projectRole),
             activityResponse.userId,

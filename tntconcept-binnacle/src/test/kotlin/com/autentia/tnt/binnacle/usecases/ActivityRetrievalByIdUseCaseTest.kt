@@ -1,10 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
@@ -12,10 +9,7 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -42,7 +36,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
             ActivityResponseConverter(
                 OrganizationResponseConverter(),
                 ProjectResponseConverter(),
-                ProjectRoleResponseConverter()
+                ProjectRoleResponseConverter(),
+                ActivityIntervalResponseConverter()
             )
     )
 
@@ -125,9 +120,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
         )
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
             2L,
-            YESTERDAY.atStartOfDay(),
-            YESTERDAY.atStartOfDay().plusMinutes(540L),
-            540,
+            IntervalResponseDTO(YESTERDAY.atStartOfDay(),
+                YESTERDAY.atStartOfDay().plusMinutes(540L), 540, PROJECT_ROLE.timeUnit),
             "Dummy description",
             PROJECT_ROLE_RESPONSE_DTO,
             USER.id,

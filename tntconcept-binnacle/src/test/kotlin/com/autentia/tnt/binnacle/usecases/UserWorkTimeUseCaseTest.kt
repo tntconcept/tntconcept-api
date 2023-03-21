@@ -1,11 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
+import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.AnnualBalance
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
 import com.autentia.tnt.binnacle.core.domain.MonthlyBalance
@@ -77,7 +73,8 @@ internal class UserWorkTimeUseCaseTest {
         ActivityResponseConverter(
             OrganizationResponseConverter(),
             ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
+            ProjectRoleResponseConverter(),
+            ActivityIntervalResponseConverter()
         ),
         TimeSummaryConverter()
     )

@@ -1,6 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
@@ -364,11 +365,11 @@ internal class ActivityControllerIT {
             }
         """.trimIndent()
 
-        private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
+        private val  ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             42,
-            ACTIVITY_REQUEST_BODY_DTO.interval.start,
-            ACTIVITY_REQUEST_BODY_DTO.interval.end,
-            240,
+            IntervalResponseDTO(ACTIVITY_REQUEST_BODY_DTO.interval.start,
+                ACTIVITY_REQUEST_BODY_DTO.interval.end,
+                240, TimeUnit.MINUTES),
             ACTIVITY_REQUEST_BODY_DTO.description,
             ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", RequireEvidence.WEEKLY),
             2,
@@ -383,8 +384,8 @@ internal class ActivityControllerIT {
             {
                 "id": ${ACTIVITY_RESPONSE_DTO.id},
                 "interval": {
-                    "start": "${ACTIVITY_RESPONSE_DTO.start.toJson()}",
-                    "end": "${ACTIVITY_RESPONSE_DTO.end.toJson()}"
+                    "start": "${ACTIVITY_RESPONSE_DTO.interval.start.toJson()}",
+                    "end": "${ACTIVITY_RESPONSE_DTO.interval.end.toJson()}"
                 },                                    
                 "description": "Updated activity description",
                 "billable": ${ACTIVITY_RESPONSE_DTO.billable},

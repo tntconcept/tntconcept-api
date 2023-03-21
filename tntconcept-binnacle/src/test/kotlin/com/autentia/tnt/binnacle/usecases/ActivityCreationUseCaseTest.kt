@@ -1,12 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
@@ -14,11 +9,7 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -54,7 +45,8 @@ internal class ActivityCreationUseCaseTest {
         ActivityResponseConverter(
             OrganizationResponseConverter(),
             ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
+            ProjectRoleResponseConverter(),
+            ActivityIntervalResponseConverter()
         ),
         TimeIntervalConverter()
     )
@@ -159,9 +151,8 @@ internal class ActivityCreationUseCaseTest {
         ): ActivityResponseDTO =
             ActivityResponseDTO(
                 id,
-                start,
-                end,
-                duration,
+                IntervalResponseDTO(start,end,duration, PROJECT_ROLE.timeUnit),
+
                 description,
                 projectRole,
                 userId,

@@ -16,6 +16,7 @@ import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
@@ -147,6 +148,14 @@ internal fun createActivity() = Activity(
     ApprovalState.NA
 )
 
+internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =
+    ProjectRoleResponseDTO(
+        id = id,
+        name = "Dummy Project Role",
+        requireEvidence = requireEvidence
+    )
+
+
 internal fun createActivityResponse(
     id: Long,
     start: LocalDateTime,
@@ -167,6 +176,42 @@ internal fun createActivityResponse(
     hasEvidences = hasEvidences,
     approvalState = approvalState
 )
+
+internal fun createActivityResponseDTO(
+    id: Long,
+    start: LocalDateTime,
+    end: LocalDateTime,
+    hasEvidences: Boolean,
+    approvalState: ApprovalState = ApprovalState.NA
+) = ActivityResponseDTO(
+    id = id,
+    interval = IntervalResponseDTO(start, end,45, TimeUnit.MINUTES),
+    description = "Dummy description",
+    userId = 1L,
+    billable = true,
+    hasEvidences = hasEvidences,
+    organization = createOrganizationResponseDTO(),
+    project = createProjectResponseDTO(),
+    projectRole = createProjectRoleResponseDTO(),
+    approvalState = approvalState
+)
+
+internal fun createActivityRequestBodyDTO(
+    id: Long,
+    start: LocalDateTime,
+    end: LocalDateTime,
+    projectRoleId: Long,
+    hasEvidences: Boolean
+) =
+    ActivityRequestBodyDTO(
+        id,
+        start,
+        end,
+        "New activity",
+        false,
+        projectRoleId,
+        hasEvidences,
+    )
 
 
 

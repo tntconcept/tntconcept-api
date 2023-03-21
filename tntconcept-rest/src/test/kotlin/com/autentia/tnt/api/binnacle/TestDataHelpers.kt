@@ -10,12 +10,7 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
 import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
@@ -136,11 +131,9 @@ internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: Requir
     requireEvidence
 )
 
-internal fun createActivityResponseDTO(id: Long,start: LocalDateTime, end: LocalDateTime, hasEvidences: Boolean, approvalState: ApprovalState = ApprovalState.PENDING) = ActivityResponseDTO(
+internal fun createActivityResponseDTO(id: Long, start: LocalDateTime, end: LocalDateTime, hasEvidences: Boolean, approvalState: ApprovalState = ApprovalState.PENDING) = ActivityResponseDTO(
     id = id,
-    start = start,
-    end = end,
-    duration = 540,
+    interval = IntervalResponseDTO(start, end, 540, TimeUnit.MINUTES),
     description = "Dummy description",
     userId = 1L,
     billable = true,
