@@ -4,7 +4,7 @@
 
 CREATE TABLE archimedes_security_role
 (
-    role             varchar(32) NOT NULL PRIMARY KEY,
+    name             varchar(32) NOT NULL PRIMARY KEY,
 
     audit_created_at datetime    NOT NULL DEFAULT NOW(),
     audit_updated_at datetime    NOT NULL DEFAULT NOW()
@@ -35,12 +35,12 @@ CREATE TRIGGER archimedes_security_subject_audit
 CREATE TABLE archimedes_security_subject_role_relation
 (
     subject_id       integer     NOT NULL REFERENCES archimedes_security_subject (id),
-    role             varchar(32) NOT NULL REFERENCES archimedes_security_role (role),
+    role_name        varchar(32) NOT NULL REFERENCES archimedes_security_role (name),
 
     audit_created_at datetime    NOT NULL DEFAULT NOW(),
     audit_updated_at datetime    NOT NULL DEFAULT NOW(),
 
-    PRIMARY KEY (subject_id, role),
+    PRIMARY KEY (subject_id, role_name),
     INDEX (subject_id)
 );
 
