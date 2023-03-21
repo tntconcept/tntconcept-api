@@ -42,12 +42,12 @@ class ActivityRequestBodyConverter() {
             user.departmentId,
             insertDate,
             activityRequestBody.hasEvidences,
-            isApprovalRequired(projectRole)
+            setApprovalState(projectRole)
         )
 
-    private fun isApprovalRequired(projectRole: ProjectRole): ApprovalState {
+    private fun setApprovalState(projectRole: ProjectRole): ApprovalState {
         var approvalState = ApprovalState.NA
-        if(projectRole.requireEvidence !== RequireEvidence.NO) approvalState = ApprovalState.PENDING
+        if(projectRole.isApprovalRequired) approvalState = ApprovalState.PENDING
         return approvalState
     }
 
