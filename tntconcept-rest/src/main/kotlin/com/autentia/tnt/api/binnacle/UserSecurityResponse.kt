@@ -7,6 +7,6 @@ internal data class UserSecurityResponse(
     private val roles: List<String>
 ) {
 
-    internal constructor(subject: Subject) : this(subject.principal.name, subject.roles.map { it.role })
+    internal constructor(subject: Subject) : this(subject.principal.name, subject.roles.map { it.name })
 
 }

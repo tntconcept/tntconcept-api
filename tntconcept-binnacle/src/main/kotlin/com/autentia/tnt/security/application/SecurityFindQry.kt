@@ -2,7 +2,7 @@ package com.autentia.tnt.security.application
 
 import io.archimedesfw.security.auth.Subject
 import io.archimedesfw.security.auth.SubjectService
-import io.archimedesfw.security.auth.Username
+import io.archimedesfw.security.auth.UsernamePrincipal
 import io.micronaut.security.utils.SecurityService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -22,7 +22,7 @@ class SecurityFindQry(
     }
 
     fun find(username: String): Subject? {
-        return subjectService.find(Username(username))
+        return subjectService.find(UsernamePrincipal(username))
     }
 
 }
