@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -40,7 +41,7 @@ internal class ActivityRepositoryIT {
     }
 
     @Test
-    fun `should get activities filtered by `() {
+    fun `should get activities filtered by period of time`() {
         val todayActivity = Activity(
             start = today.atTime(10, 0, 0),
             end = today.atTime(12, 0, 0),
@@ -61,7 +62,7 @@ internal class ActivityRepositoryIT {
             userId = userId,
             billable = false,
             hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+            approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
             start = yesterday.minusDays(2).atTime(0, 0, 0),
@@ -90,9 +91,115 @@ internal class ActivityRepositoryIT {
         assertTrue(activitiesBetweenDate.contains(savedActivities.elementAt(2)))
     }
 
+    @Test
+    fun `should get pending activities`() {
+        val todayActivity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = createProjectRole(),
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val yesterdayActivity = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = createProjectRole(),
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityForTwoDays = Activity(
+            start = yesterday.minusDays(2).atTime(0, 0, 0),
+            end = yesterday.minusDays(1).atTime(23, 59, 59),
+            duration = 960,
+            description = "Test activity 3",
+            projectRole = createProjectRole(),
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val savedActivities = activityRepository.saveAll(
+            listOf(
+                todayActivity, yesterdayActivity, activityForTwoDays
+            )
+        )
+        var retrievedActivities = activityRepository.getActivitiesApprovalState(ApprovalState.PENDING, userId)
+
+        assertEquals(2, retrievedActivities.size)
+        assertTrue(retrievedActivities.contains(savedActivities.elementAt(1)))
+        assertTrue(retrievedActivities.contains(savedActivities.elementAt(2)))
+
+        retrievedActivities = activityRepository.getActivitiesApprovalState(ApprovalState.ACCEPTED, userId)
+        assertEquals(1, retrievedActivities.size)
+        assertTrue(retrievedActivities.contains(savedActivities.elementAt(0)))
+    }
+
+    @Test
+    fun `should get worked minutes between date`() {
+        val todayActivity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val yesterdayActivity = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityForTwoDays = Activity(
+            start = today.plusDays(2).atTime(0, 0, 0),
+            end = today.plusDays(3).atTime(23, 59, 59),
+            duration = 960,
+            description = "Test activity 3",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        activityRepository.saveAll(
+            listOf(
+                todayActivity, yesterdayActivity
+            )
+        )
+        val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
+        val end = today.atTime(LocalTime.MAX)
+
+        var workedTimeActivities = activityRepository.workedMinutesBetweenDate(start, end, userId)
+
+        val expectedWorkedMinutesActivities = listOf(
+            ActivityTimeOnly(todayActivity.start, todayActivity.end, todayActivity.duration, projectRole.id),
+            ActivityTimeOnly(yesterdayActivity.start, yesterdayActivity.end, yesterdayActivity.duration, projectRole.id)
+        )
+
+        assertEquals(2, workedTimeActivities.size)
+        assertEquals(expectedWorkedMinutesActivities, workedTimeActivities)
+    }
+
     private companion object {
         private val today = LocalDate.now()
         private val yesterday = LocalDate.now().minusDays(1)
         private val userId = 1L
+        private val projectRole = createProjectRole()
     }
 }
