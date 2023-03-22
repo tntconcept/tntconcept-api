@@ -184,15 +184,13 @@ internal fun createActivityResponseDTO(
     hasEvidences: Boolean,
     approvalState: ApprovalState = ApprovalState.NA
 ) = ActivityResponseDTO(
-    id = id,
-    interval = IntervalResponseDTO(start, end,45, TimeUnit.MINUTES),
-    description = "Dummy description",
-    userId = 1L,
     billable = true,
+    description = "Dummy description",
     hasEvidences = hasEvidences,
-    organization = createOrganizationResponseDTO(),
-    project = createProjectResponseDTO(),
-    projectRole = createProjectRoleResponseDTO(),
+    id = id,
+    projectRoleId = 1L,
+    interval = IntervalResponseDTO(start, end,45, TimeUnit.MINUTES),
+    userId = 1L,
     approvalState = approvalState
 )
 

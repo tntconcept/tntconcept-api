@@ -1,9 +1,9 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.converters.ActivityDateConverter
+import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.DateInterval
-import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import jakarta.inject.Singleton
@@ -14,12 +14,12 @@ import java.util.Optional
 class ActivitiesBetweenDateUseCase internal constructor(
     private val activityService: ActivityService,
     private val userService: UserService,
-    private val activityDateConverter: ActivityDateConverter
+    private val activityResponseConverter: ActivityResponseConverter
 ) {
 
     fun getActivities(
         start: Optional<LocalDate>, end: Optional<LocalDate>, approvalState: Optional<ApprovalState>
-    ): List<ActivityDateDTO> {
+    ): List<ActivityResponseDTO> {
         val user = userService.getAuthenticatedUser()
 
         val activities = if (start.isPresent && end.isPresent) {
@@ -27,6 +27,6 @@ class ActivitiesBetweenDateUseCase internal constructor(
         } else {
             activityService.getActivitiesApprovalState(approvalState.get(), user.id)
         }
-        return activityDateConverter.mapActivitiesToActivitiesDateDTO(activities)
+        return activityResponseConverter.mapActivitiesToActivitiesDateDTO(activities)
     }
 }

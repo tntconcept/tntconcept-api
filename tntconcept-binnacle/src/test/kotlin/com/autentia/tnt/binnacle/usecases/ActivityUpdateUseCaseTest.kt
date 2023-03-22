@@ -32,7 +32,6 @@ internal class ActivityUpdateUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val activityValidator = mock<ActivityValidator>()
-    private val projectRoleService = mock<ProjectRoleService>()
     private val userService = mock<UserService>()
 
     private val activityUpdateUseCase = ActivityUpdateUseCase(
@@ -42,9 +41,6 @@ internal class ActivityUpdateUseCaseTest {
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter(),
             ActivityIntervalResponseConverter()
         ),
         TimeIntervalConverter()
@@ -72,7 +68,6 @@ internal class ActivityUpdateUseCaseTest {
         private val USER = createUser()
         private val TODAY = LocalDateTime.now()
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
-        private val ORGANIZATION_DTO = OrganizationResponseDTO(1L, "Dummy Organization")
 
         private val PROJECT = Project(
             1L,
@@ -114,15 +109,13 @@ internal class ActivityUpdateUseCaseTest {
             approvalState = ApprovalState.NA
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
-            1,
-            IntervalResponseDTO(TODAY, TODAY.plusMinutes(75L), 75, PROJECT_ROLE.timeUnit),
+            false,
             "New activity",
-            PROJECT_ROLE_RESPONSE_DTO,
+            false,
+            1,
+            PROJECT_ROLE_RESPONSE_DTO.id,
+            IntervalResponseDTO(TODAY, TODAY.plusMinutes(75L), 75, PROJECT_ROLE.timeUnit),
             USER.id,
-            false,
-            ORGANIZATION_DTO,
-            PROJECT_RESPONSE_DTO,
-            false,
             approvalState = ApprovalState.NA
         )
         private val activityToUpdate = ActivityRequestBody(

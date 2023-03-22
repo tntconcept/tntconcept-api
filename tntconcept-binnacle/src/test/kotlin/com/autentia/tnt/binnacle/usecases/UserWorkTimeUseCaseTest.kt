@@ -71,9 +71,6 @@ internal class UserWorkTimeUseCaseTest {
         myVacationsDetailService,
         workTimeService,
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter(),
             ActivityIntervalResponseConverter()
         ),
         TimeSummaryConverter()

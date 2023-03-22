@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
@@ -31,7 +30,7 @@ internal class ActivityController(
 
     @Get
     @Operation(summary = "Gets activities between two dates.")
-    internal fun get(startDate: Optional<LocalDate>, endDate: Optional<LocalDate>, approvalState: Optional<ApprovalState>): List<ActivityDateDTO> {
+    internal fun get(startDate: Optional<LocalDate>, endDate: Optional<LocalDate>, approvalState: Optional<ApprovalState>): List<ActivityResponseDTO> {
         return activitiesBetweenDateUseCase.getActivities(startDate, endDate, approvalState)
     }
 

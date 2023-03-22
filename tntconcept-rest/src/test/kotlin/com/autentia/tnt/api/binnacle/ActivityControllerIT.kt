@@ -1,8 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.*
@@ -78,10 +76,10 @@ internal class ActivityControllerIT {
     fun `get all activities between the start and end date`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
-        val activities = listOf(ACTIVITY_DATE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE_DTO)
         doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(Optional.of(startDate), Optional.of(endDate), Optional.empty())
 
-        val response = client.exchangeList<ActivityDateDTO>(
+        val response = client.exchangeList<ActivityResponseDTO>(
             GET("/api/activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
@@ -92,10 +90,10 @@ internal class ActivityControllerIT {
     @Test
     fun `get all activities by approvalState`() {
         val approvalState = ApprovalState.PENDING
-        val activities = listOf(ACTIVITY_DATE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE_DTO)
         doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(Optional.empty(), Optional.empty(), Optional.of(approvalState))
 
-        val response = client.exchangeList<ActivityDateDTO>(
+        val response = client.exchangeList<ActivityResponseDTO>(
             GET("/api/activity?approvalState=${approvalState}"),
         )
 
@@ -107,10 +105,10 @@ internal class ActivityControllerIT {
     fun `get summary activities between the start and end date`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
-        val activities = listOf(ACTIVITY_DATE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE_DTO)
         doReturn(activities).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
 
-        val response = client.exchangeList<ActivityDateDTO>(
+        val response = client.exchangeList<ActivityResponseDTO>(
             GET("/api/activity/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
@@ -341,10 +339,21 @@ internal class ActivityControllerIT {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
         private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 12, 0)
 
-        private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
-            null,
+        private val INTERVAL_RESPONSE_DTO = IntervalResponseDTO(
             START_DATE,
             END_DATE,
+            240,
+            TimeUnit.MINUTES
+        )
+
+        private val INTERVAL_REQUEST_DTO = TimeIntervalRequestDTO(
+            START_DATE,
+            END_DATE
+        )
+
+        private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
+            null,
+            INTERVAL_REQUEST_DTO,
             "Activity description",
             true,
             3,
@@ -365,20 +374,19 @@ internal class ActivityControllerIT {
             }
         """.trimIndent()
 
-        private val  ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
-            42,
+
+
+        private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
+            ACTIVITY_REQUEST_BODY_DTO.billable,
+            ACTIVITY_REQUEST_BODY_DTO.description,
+            ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
+            2L,
+            ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
             IntervalResponseDTO(ACTIVITY_REQUEST_BODY_DTO.interval.start,
                 ACTIVITY_REQUEST_BODY_DTO.interval.end,
                 240, TimeUnit.MINUTES),
-            ACTIVITY_REQUEST_BODY_DTO.description,
-            ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", RequireEvidence.WEEKLY),
-            2,
-            ACTIVITY_REQUEST_BODY_DTO.billable,
-            OrganizationResponseDTO(6, "organization"),
-            ProjectResponseDTO(5, "project", true, true),
-            ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
-            ApprovalState.ACCEPTED
-        )
+            42,
+            ApprovalState.ACCEPTED)
 
         private val ACTIVITY_PUT_JSON = """
             {
@@ -389,30 +397,10 @@ internal class ActivityControllerIT {
                 },                                    
                 "description": "Updated activity description",
                 "billable": ${ACTIVITY_RESPONSE_DTO.billable},
-                "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRole.id},
+                "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRoleId},
                 "hasEvidences": ${ACTIVITY_RESPONSE_DTO.hasEvidences}
             }
         """.trimIndent()
-
-        private val INTERVAL_RESPONSE_DTO = IntervalResponseDTO(
-            START_DATE,
-            END_DATE,
-            45,
-            TimeUnit.MINUTES
-        )
-
-        private val ACTIVITY_DATE_DTO = ActivityDateDTO(
-            false,
-            "description",
-            false,
-            1L,
-            1L,
-            INTERVAL_RESPONSE_DTO,
-            1,
-            ApprovalState.NA)
-
-
-
 
         private val ACTIVITY_IMAGE = "base64image"
     }

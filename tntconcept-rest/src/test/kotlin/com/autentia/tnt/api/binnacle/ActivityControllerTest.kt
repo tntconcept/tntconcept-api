@@ -2,7 +2,6 @@ package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
@@ -65,8 +64,8 @@ internal class ActivityControllerTest {
             timeUnit = TimeUnit.MINUTES
         )
 
-        val activitiesDateDTO = listOf(
-            ActivityDateDTO(
+        val activitiesResponseDTO = listOf(
+            ActivityResponseDTO(
                 billable= false,
                 description = "description",
                 hasEvidences = false,
@@ -78,13 +77,13 @@ internal class ActivityControllerTest {
             )
         )
 
-        doReturn(activitiesDateDTO).whenever(activitiesBetweenDateUseCase).getActivities(Optional.of(startDate), Optional.of(endDate), Optional.of(approvalState))
+        doReturn(activitiesResponseDTO).whenever(activitiesBetweenDateUseCase).getActivities(Optional.of(startDate), Optional.of(endDate), Optional.of(approvalState))
 
         //When
         val actualActivityResponse = activityController.get(Optional.of(startDate), Optional.of(endDate), Optional.of(approvalState))
 
         //Then
-        assertEquals(activitiesDateDTO, actualActivityResponse)
+        assertEquals(activitiesResponseDTO, actualActivityResponse)
     }
 
     @Nested

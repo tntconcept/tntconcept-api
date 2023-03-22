@@ -34,9 +34,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
             userService,
             activityValidator,
             ActivityResponseConverter(
-                OrganizationResponseConverter(),
-                ProjectResponseConverter(),
-                ProjectRoleResponseConverter(),
                 ActivityIntervalResponseConverter()
             )
     )
@@ -119,16 +116,14 @@ internal class ActivityRetrievalByIdUseCaseTest {
             approvalState = ApprovalState.NA
         )
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
+            true,
+            "Dummy description",
+            false,
             2L,
+            PROJECT_ROLE_RESPONSE_DTO.id,
             IntervalResponseDTO(YESTERDAY.atStartOfDay(),
                 YESTERDAY.atStartOfDay().plusMinutes(540L), 540, PROJECT_ROLE.timeUnit),
-            "Dummy description",
-            PROJECT_ROLE_RESPONSE_DTO,
             USER.id,
-            true,
-            ORGANIZATION_DTO,
-            PROJECT_RESPONSE_DTO,
-            false,
             approvalState = ApprovalState.NA
         )
 

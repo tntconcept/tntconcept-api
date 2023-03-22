@@ -43,9 +43,6 @@ internal class ActivityCreationUseCaseTest {
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter(),
             ActivityIntervalResponseConverter()
         ),
         TimeIntervalConverter()
@@ -144,22 +141,17 @@ internal class ActivityCreationUseCaseTest {
             duration: Int = 75,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
-            projectRole: ProjectRoleResponseDTO = PROJECT_ROLE_RESPONSE_DTO,
-            organization: OrganizationResponseDTO = ORGANIZATION_DTO,
-            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO,
+            projectRoleId:  Long = 10L,
             approvalState: ApprovalState = ApprovalState.NA
         ): ActivityResponseDTO =
             ActivityResponseDTO(
-                id,
-                IntervalResponseDTO(start,end,duration, PROJECT_ROLE.timeUnit),
-
-                description,
-                projectRole,
-                userId,
                 billable,
-                organization,
-                project,
+                description,
                 hasEvidences,
+                id,
+                projectRoleId,
+                IntervalResponseDTO(start,end,duration, PROJECT_ROLE.timeUnit),
+                userId,
                 approvalState
             )
 
