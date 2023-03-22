@@ -10,7 +10,7 @@
 
     <groupId>com.autentia.tnt</groupId>
     <artifactId>tntconcept-api</artifactId>
-    <version>1.8.0</version>
+    <version>1.9.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -187,7 +187,7 @@
     <scm>
         <connection>scm:git:https://github.com/autentia/tntconcept-api.git</connection>
         <developerConnection>scm:git:https://github.com/autentia/tntconcept-api.git</developerConnection>
-        <tag>1.8.0</tag>
+        <tag>main</tag>
         <url>https://github.com/autentia/tntconcept-api</url>
     </scm>
 
