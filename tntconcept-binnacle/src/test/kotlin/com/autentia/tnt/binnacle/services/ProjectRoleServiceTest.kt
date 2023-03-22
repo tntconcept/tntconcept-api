@@ -26,4 +26,16 @@ internal class ProjectRoleServiceTest {
         assertEquals(projectRoles, actual)
     }
 
+    @Test
+    fun `return the expected project roles by list of project ids`() {
+        val projectRoles = listOf(mock<ProjectRole>())
+        val projectIds = listOf(1, 2)
+
+        doReturn(projectRoles).whenever(projectRoleRepository).getAllByProjectIdIn(projectIds.map(Int::toLong))
+
+        val actual = projectRoleService.getAllByProjectIds(projectIds)
+
+        assertEquals(projectRoles, actual)
+    }
+
 }
