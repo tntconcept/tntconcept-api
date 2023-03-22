@@ -179,13 +179,13 @@ internal class ActivityRepositoryIT {
         )
         activityRepository.saveAll(
             listOf(
-                todayActivity, yesterdayActivity
+                todayActivity, yesterdayActivity, activityForTwoDays
             )
         )
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
         val end = today.atTime(LocalTime.MAX)
 
-        var workedTimeActivities = activityRepository.workedMinutesBetweenDate(start, end, userId)
+        val workedTimeActivities = activityRepository.workedMinutesBetweenDate(start, end, userId)
 
         val expectedWorkedMinutesActivities = listOf(
             ActivityTimeOnly(todayActivity.start, todayActivity.end, todayActivity.duration, projectRole.id),
