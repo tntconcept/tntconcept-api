@@ -4,16 +4,12 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import java.time.LocalDateTime
 
 data class ActivityResponseDTO(
-        val id: Long,
-        val start: LocalDateTime,
-        val end: LocalDateTime,
-        val duration: Int,
-        val description: String,
-        val projectRole: ProjectRoleResponseDTO,
-        val userId: Long,
         val billable: Boolean,
-        val organization: OrganizationResponseDTO,
-        val project: ProjectResponseDTO,
+        val description: String,
         val hasEvidences: Boolean?,
+        val id: Long,
+        val projectRoleId: Long,
+        val interval: IntervalResponseDTO,
+        val userId: Long,
         val approvalState: ApprovalState
 ) {}

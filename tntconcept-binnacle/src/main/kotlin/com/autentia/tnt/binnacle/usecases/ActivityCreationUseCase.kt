@@ -22,7 +22,7 @@ class ActivityCreationUseCase internal constructor(
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val timeIntervalConverter: TimeIntervalConverter,
+    private val timeIntervalConverter: TimeIntervalConverter
 ) {
 
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyDTO): ActivityResponseDTO {

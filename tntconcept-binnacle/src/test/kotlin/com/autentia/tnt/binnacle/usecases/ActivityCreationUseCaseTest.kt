@@ -1,12 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
@@ -14,11 +9,7 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -52,9 +43,7 @@ internal class ActivityCreationUseCaseTest {
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
+            ActivityIntervalResponseConverter()
         ),
         TimeIntervalConverter()
     )
@@ -152,23 +141,17 @@ internal class ActivityCreationUseCaseTest {
             duration: Int = 75,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
-            projectRole: ProjectRoleResponseDTO = PROJECT_ROLE_RESPONSE_DTO,
-            organization: OrganizationResponseDTO = ORGANIZATION_DTO,
-            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO,
+            projectRoleId:  Long = 10L,
             approvalState: ApprovalState = ApprovalState.NA
         ): ActivityResponseDTO =
             ActivityResponseDTO(
-                id,
-                start,
-                end,
-                duration,
-                description,
-                projectRole,
-                userId,
                 billable,
-                organization,
-                project,
+                description,
                 hasEvidences,
+                id,
+                projectRoleId,
+                IntervalResponseDTO(start,end,duration, PROJECT_ROLE.timeUnit),
+                userId,
                 approvalState
             )
 

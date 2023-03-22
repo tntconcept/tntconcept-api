@@ -1,12 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -15,11 +10,7 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
@@ -41,7 +32,6 @@ internal class ActivityUpdateUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val activityValidator = mock<ActivityValidator>()
-    private val projectRoleService = mock<ProjectRoleService>()
     private val userService = mock<UserService>()
 
     private val activityUpdateUseCase = ActivityUpdateUseCase(
@@ -51,9 +41,7 @@ internal class ActivityUpdateUseCaseTest {
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
+            ActivityIntervalResponseConverter()
         ),
         TimeIntervalConverter()
     )
@@ -80,7 +68,6 @@ internal class ActivityUpdateUseCaseTest {
         private val USER = createUser()
         private val TODAY = LocalDateTime.now()
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
-        private val ORGANIZATION_DTO = OrganizationResponseDTO(1L, "Dummy Organization")
 
         private val PROJECT = Project(
             1L,
@@ -122,17 +109,13 @@ internal class ActivityUpdateUseCaseTest {
             approvalState = ApprovalState.NA
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
-            1,
-            TODAY,
-            TODAY.plusMinutes(75L),
-            75,
+            false,
             "New activity",
-            PROJECT_ROLE_RESPONSE_DTO,
+            false,
+            1,
+            PROJECT_ROLE_RESPONSE_DTO.id,
+            IntervalResponseDTO(TODAY, TODAY.plusMinutes(75L), 75, PROJECT_ROLE.timeUnit),
             USER.id,
-            false,
-            ORGANIZATION_DTO,
-            PROJECT_RESPONSE_DTO,
-            false,
             approvalState = ApprovalState.NA
         )
         private val activityToUpdate = ActivityRequestBody(
