@@ -10,7 +10,6 @@ import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.VacationService
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -22,13 +21,12 @@ import java.util.Optional
 internal class VacationValidatorTest {
 
     private val vacationRepository = mock(VacationRepository::class.java)
-    private val vacationService = mock(VacationService::class.java)
     private val holidayService = mock(HolidayService::class.java)
     private val calendarFactory = CalendarFactory(holidayService)
     private val user = mock(User::class.java)
 
     private val vacationValidator =
-        VacationValidator(vacationRepository, vacationService, holidayService, calendarFactory)
+        VacationValidator(vacationRepository, calendarFactory)
 
     // Characterized use cases objects
     private val today = LocalDate.now()

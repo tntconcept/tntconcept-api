@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.DateInterval
@@ -117,4 +118,9 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
+
+    @Transactional
+    @ReadOnly
+    fun getActivitiesIntervals(timeInterval: TimeInterval, projectRoleId: Long, userId: Long) =
+        activityRepository.getActivitiesIntervals(timeInterval.start, timeInterval.end, projectRoleId, userId)
 }

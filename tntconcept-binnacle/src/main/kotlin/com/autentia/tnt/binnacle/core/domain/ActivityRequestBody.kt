@@ -16,4 +16,6 @@ data class ActivityRequestBody(
     val projectRoleId: Long,
     val hasEvidences: Boolean,
     val imageFile: String? = null
-)
+) {
+    fun getTimeInterval() = TimeInterval.of(start, end)
+}

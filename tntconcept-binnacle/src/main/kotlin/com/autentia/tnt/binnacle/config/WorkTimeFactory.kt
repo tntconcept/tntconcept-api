@@ -15,7 +15,7 @@ import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
 @Factory
-internal class WorkTimeConfig {
+internal class WorkTimeFactory {
 
     @Singleton
     fun targetWorkService(): TargetWorkService = TargetWorkService()

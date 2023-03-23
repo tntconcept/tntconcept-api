@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -10,7 +11,7 @@
 
     <groupId>com.autentia.tnt</groupId>
     <artifactId>tntconcept-api</artifactId>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.8.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -30,6 +31,7 @@
         <commons-io.version>2.11.0</commons-io.version>
         <jsoup.version>1.15.3</jsoup.version>
         <mysql-connector-j.version>8.0.32</mysql-connector-j.version>
+        <archimedes.version>0.2.0</archimedes.version>
 
         <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
         <docker.image.from>gcr.io/distroless/java17-debian11</docker.image.from>
@@ -54,6 +56,14 @@
                 <groupId>com.autentia.tnt</groupId>
                 <artifactId>tntconcept-rest</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.archimedesfw</groupId>
+                <artifactId>archimedes-bom</artifactId>
+                <version>${archimedes.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

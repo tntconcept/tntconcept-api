@@ -1,8 +1,11 @@
 package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.core.utils.overlaps
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
@@ -11,22 +14,19 @@ import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.Month
 import javax.transaction.Transactional
 
 @Singleton
 internal class ActivityValidator(
     private val activityRepository: ActivityRepository,
+    private val activityCalendarService: ActivityCalendarService,
     private val projectRoleRepository: ProjectRoleRepository
 ) {
     @Transactional
@@ -51,33 +51,44 @@ internal class ActivityValidator(
 
     private fun checkIfIsExceedingMaxHoursForRole(
         currentActivity: Activity,
-        activityRequest: ActivityRequestBody,
+        requestActivity: ActivityRequestBody,
         projectRole: ProjectRole,
         user: User
     ) {
         if (projectRole.maxAllowed > 0) {
-            val year = activityRequest.start.year
-            val activitiesSinceStartOfYear = getActivitiesInYear(year, user)
+
+            val year = requestActivity.start.year
+            val yearTimeInterval = TimeInterval.ofYear(year)
+
+            val calendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
+
+            val currentActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
+                calendar, currentActivity.getTimeInterval(), currentActivity.projectRole
+            )
+
+            val requestActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
+                calendar, requestActivity.getTimeInterval(), projectRole
+            )
+
             val totalRegisteredDurationForThisRole =
-                getTotalDurationPerRole(activitiesSinceStartOfYear, activityRequest)
+                activityCalendarService.getSumActivitiesDuration(
+                    calendar, TimeInterval.ofYear(year), projectRole.id, user.id
+                )
+
             var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 
-            if (currentActivity.projectRole.id == activityRequest.projectRoleId) {
+            if (currentActivity.projectRole.id == requestActivity.projectRoleId) {
                 totalRegisteredDurationForThisRoleAfterDiscount =
-                    totalRegisteredDurationForThisRole - currentActivity.duration
+                    totalRegisteredDurationForThisRole - currentActivityDuration
             }
 
             val totalRegisteredDurationAfterSaveRequested =
-                totalRegisteredDurationForThisRoleAfterDiscount + activityRequest.duration
+                totalRegisteredDurationForThisRoleAfterDiscount + requestActivityDuration
 
             if (totalRegisteredDurationAfterSaveRequested > projectRole.maxAllowed) {
                 val remainingTime =
                     (projectRole.maxAllowed - totalRegisteredDurationForThisRole.toDouble()) / DECIMAL_HOUR
-
-                throw MaxHoursPerRoleException(
-                    projectRole.maxAllowed / DECIMAL_HOUR,
-                    remainingTime
-                )
+                throw MaxHoursPerRoleException(projectRole.maxAllowed / DECIMAL_HOUR, remainingTime, year)
             }
         }
     }
@@ -89,21 +100,6 @@ internal class ActivityValidator(
     private fun isOpenPeriod(startDate: LocalDateTime): Boolean {
         return startDate.year >= LocalDateTime.now().year - 1
     }
-
-    private fun getTotalDurationPerRole(
-        activitiesInYear: List<ActivityTimeOnly>,
-        activityRequest: ActivityRequestBody
-    ) =
-        activitiesInYear
-            .filter { it.projectRoleId == activityRequest.projectRoleId }
-            .sumOf { it.duration }
-
-    private fun getActivitiesInYear(year: Int, user: User) =
-        activityRepository.workedMinutesBetweenDate(
-            LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
-            LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
-            user.id
-        )
 
     @Transactional
     @ReadOnly
@@ -119,6 +115,7 @@ internal class ActivityValidator(
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
+
             isBeforeHiringDate(
                 activityRequest.start.toLocalDate(),
                 user
@@ -159,27 +156,18 @@ internal class ActivityValidator(
         return project.open
     }
 
-    private fun isOverlappingAnotherActivityTime(activityRequest: ActivityRequestBody, user: User): Boolean {
+    private fun isOverlappingAnotherActivityTime(
+        activityRequest: ActivityRequestBody,
+        user: User
+    ): Boolean {
         if (activityRequest.duration == 0) {
             return false
         }
-
-        val startDate = activityRequest.start.withHour(0).withMinute(0).withSecond(0)
-        val endDate = activityRequest.start.withHour(23).withMinute(59).withSecond(59)
-        val activities = activityRepository.getActivitiesBetweenDate(startDate, endDate, user.id)
-
-        return checkTimeOverlapping(activityRequest, activities)
-    }
-
-    private fun checkTimeOverlapping(activityRequest: ActivityRequestBody, activities: List<Activity>): Boolean {
-        val startDate = activityRequest.start
-        val endDate = activityRequest.end
-
-        return activities.any {
-            val otherStartDate = it.start
-            val otherEndDate = it.end
-            activityRequest.id != it.id && it.duration > 0 && (startDate..endDate).overlaps(otherStartDate..otherEndDate)
-        }
+        val activities =
+            activityRepository.getOverlappingActivities(
+                activityRequest.start, activityRequest.end, user.id
+            )
+        return activities.size > 1 || activities.size == 1 && activities[0].id != activityRequest.id
     }
 
     private companion object {

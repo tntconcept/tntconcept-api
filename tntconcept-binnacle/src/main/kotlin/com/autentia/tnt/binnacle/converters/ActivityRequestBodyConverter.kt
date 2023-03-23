@@ -1,7 +1,11 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
@@ -11,11 +15,13 @@ import java.util.Date
 @Singleton
 class ActivityRequestBodyConverter() {
 
-    fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyDTO, duration: Int) =
+    fun mapActivityRequestBodyDTOToActivityRequestBody(
+        activityRequestBodyDTO: ActivityRequestBodyDTO, projectRole: ProjectRole, duration: Int
+    ) =
         ActivityRequestBody(
             activityRequestBodyDTO.id,
-            activityRequestBodyDTO.interval.start,
-            activityRequestBodyDTO.interval.end,
+            getDateAtTimeIfNecessary(activityRequestBodyDTO.interval.start, projectRole, LocalTime.MIN),
+            getDateAtTimeIfNecessary(activityRequestBodyDTO.interval.end, projectRole, LocalTime.of(23, 59, 59)),
             duration,
             activityRequestBodyDTO.description,
             activityRequestBodyDTO.billable,
@@ -32,8 +38,8 @@ class ActivityRequestBodyConverter() {
     ) =
         Activity(
             activityRequestBody.id,
-            setActivityStart(activityRequestBody.start, projectRole),
-            setActivityEnd(activityRequestBody.end, projectRole),
+            activityRequestBody.start,
+            activityRequestBody.end,
             activityRequestBody.duration,
             activityRequestBody.description,
             projectRole,
@@ -42,27 +48,13 @@ class ActivityRequestBodyConverter() {
             user.departmentId,
             insertDate,
             activityRequestBody.hasEvidences,
-            isApprovalRequired(projectRole)
+            getApprovalState(projectRole)
         )
 
-    private fun isApprovalRequired(projectRole: ProjectRole): ApprovalState {
-        var approvalState = ApprovalState.NA
-        if(projectRole.requireEvidence !== RequireEvidence.NO) approvalState = ApprovalState.PENDING
-        return approvalState
-    }
+    private fun getDateAtTimeIfNecessary(
+        date: LocalDateTime, projectRole: ProjectRole, localTime: LocalTime
+    ): LocalDateTime = if (projectRole.timeUnit === TimeUnit.DAYS) date.toLocalDate().atTime(localTime) else date
 
-    private fun isDailyProjectRole(projectRole: ProjectRole): Boolean {
-        return projectRole.timeUnit == TimeUnit.DAYS
-    }
-    private fun setActivityStart(start: LocalDateTime, projectRole: ProjectRole): LocalDateTime {
-        var startDateTime = start
-        if (isDailyProjectRole(projectRole)) startDateTime = start.toLocalDate().atTime(LocalTime.MIN)
-        return startDateTime
-    }
-
-    private fun setActivityEnd(end: LocalDateTime, projectRole: ProjectRole): LocalDateTime {
-        var endDateTime = end
-        if (isDailyProjectRole(projectRole)) endDateTime = end.toLocalDate().atTime(LocalTime.MAX)
-        return endDateTime
-    }
+    private fun getApprovalState(projectRole: ProjectRole) =
+        if (projectRole.isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
 }

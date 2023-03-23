@@ -32,16 +32,23 @@ micronaut:
     basic-auth:
       enabled: false
     authentication: cookie
+
     token:
       jwt:
         signatures:
           secret:
             generator:
-              secret: '${TNT_TOKEN_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne_73ZidnJh8EaR%qWRwFpo}'
+              secret: '${TNT_TOKEN_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne_nzp9g9QiAqE8L9VsKuTX!v4WVWqX}'
               jws-algorithm: HS256
         generator:
           access-token:
             expiration: 3600
+          refresh-token:
+            secret: '${TNT_REFRESH_TOKEN_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne_kLWc@fTf!TDgZ-NuymUTkCX.jCB4}'
+      refresh:
+        cookie:
+          cookie-http-only: true
+
     oauth2:
       clients:
         google:
@@ -55,8 +62,10 @@ micronaut:
       endpoints:
         logout:
           get-allowed: true
+
     redirect:
       login-success: 'http://localhost:3000/tnt/binnacle'
+
     intercept-url-map:
       - pattern: /
         access:

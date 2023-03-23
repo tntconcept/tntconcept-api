@@ -1,11 +1,10 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
+import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.entities.Activity
@@ -17,7 +16,7 @@ import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -47,20 +46,23 @@ internal class ActivityUpdateUseCaseTest {
     private val activityUpdateUseCase = ActivityUpdateUseCase(
         activityService,
         activityCalendarService,
+        projectRoleService,
         userService,
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
+            ActivityIntervalResponseConverter()
         ),
         TimeIntervalConverter()
     )
 
+    private val projectRole = createProjectRole().copy(id = 10L)
+
     @Test
     fun `return updated activity for the authenticated user when it is valid`() {
         doReturn(USER).whenever(userService).getAuthenticatedUser()
+
+        doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
 
         doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(USER))
 
@@ -80,7 +82,6 @@ internal class ActivityUpdateUseCaseTest {
         private val USER = createUser()
         private val TODAY = LocalDateTime.now()
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
-        private val ORGANIZATION_DTO = OrganizationResponseDTO(1L, "Dummy Organization")
 
         private val PROJECT = Project(
             1L,
@@ -122,17 +123,13 @@ internal class ActivityUpdateUseCaseTest {
             approvalState = ApprovalState.NA
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
-            1,
-            TODAY,
-            TODAY.plusMinutes(75L),
-            75,
+            false,
             "New activity",
-            PROJECT_ROLE_RESPONSE_DTO,
+            false,
+            1,
+            PROJECT_ROLE_RESPONSE_DTO.id,
+            IntervalResponseDTO(TODAY, TODAY.plusMinutes(75L), 75, PROJECT_ROLE.timeUnit),
             USER.id,
-            false,
-            ORGANIZATION_DTO,
-            PROJECT_RESPONSE_DTO,
-            false,
             approvalState = ApprovalState.NA
         )
         private val activityToUpdate = ActivityRequestBody(

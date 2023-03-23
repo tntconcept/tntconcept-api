@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
+import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.annotation.Query
@@ -20,14 +20,25 @@ internal interface ActivityRepository : CrudRepository<Activity, Long> {
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun getActivitiesApprovalState(approvalState: ApprovalState, userId: Long): List<Activity>
 
-    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND (a.start BETWEEN :start AND :end OR a.end BETWEEN :start AND :end)")
+    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.start <= :end AND a.end >= :start ")
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun getActivitiesBetweenDate(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity>
 
+    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.start < :end AND a.end > :start ")
+    @EntityGraph(value = "fetch-activity-with-project-and-organization")
+    fun getOverlappingActivities(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity>
+
     @Query(
-        "SELECT a.start AS start, a.end AS end, a.duration AS duration, a.projectRole.id AS projectRoleId " +
-                "FROM Activity a WHERE a.userId= :userId AND a.start BETWEEN :start AND :end"
+        "SELECT a.start AS start, a.end AS end, pr.timeUnit as timeUnit " +
+                "FROM Activity a " +
+                "JOIN a.projectRole pr " +
+                "WHERE a.userId= :userId " +
+                "AND pr.id = :projectRoleId " +
+                "AND a.start <= :end AND a.end >= :start " +
+                "ORDER BY a.start "
     )
-    fun workedMinutesBetweenDate(start: LocalDateTime, end: LocalDateTime, userId: Long): List<ActivityTimeOnly>
+    fun getActivitiesIntervals(
+        start: LocalDateTime, end: LocalDateTime, projectRoleId: Long, userId: Long
+    ): List<ActivityInterval>
 
 }

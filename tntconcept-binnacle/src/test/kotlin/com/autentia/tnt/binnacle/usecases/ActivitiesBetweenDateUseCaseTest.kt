@@ -1,9 +1,9 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityDateConverter
+import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
@@ -19,7 +19,7 @@ internal class ActivitiesBetweenDateUseCaseTest {
     private val user = createUser()
     private val activityService = mock<ActivityService>()
     private val userService = mock<UserService>()
-    private val activityDateConverter = mock<ActivityDateConverter>()
+    private val activityDateConverter = mock<ActivityResponseConverter>()
 
     private val activitiesBetweenDateUseCase = ActivitiesBetweenDateUseCase(
         activityService,
@@ -33,10 +33,10 @@ internal class ActivitiesBetweenDateUseCaseTest {
         doReturn(user).whenever(userService).getAuthenticatedUser()
         doReturn(listOf(activity)).whenever(activityService).getActivitiesBetweenDates(any(), any())
 
-        doReturn(activitiesDateDTO).whenever(activityDateConverter).mapActivitiesToActivitiesDateDTO(listOf(activity))
+        doReturn(activitiesResponseDTO).whenever(activityDateConverter).mapActivitiesToActivitiesDateDTO(listOf(activity))
 
         val actual = activitiesBetweenDateUseCase.getActivities(Optional.of(startDate), Optional.of(endDate), Optional.empty())
-        assertEquals(activitiesDateDTO, actual)
+        assertEquals(activitiesResponseDTO, actual)
 
     }
 
@@ -46,10 +46,10 @@ internal class ActivitiesBetweenDateUseCaseTest {
         doReturn(user).whenever(userService).getAuthenticatedUser()
         doReturn(listOf(activity)).whenever(activityService).getActivitiesApprovalState(approvalState, user.id)
 
-        doReturn(activitiesDateDTO).whenever(activityDateConverter).mapActivitiesToActivitiesDateDTO(listOf(activity))
+        doReturn(activitiesResponseDTO).whenever(activityDateConverter).mapActivitiesToActivitiesDateDTO(listOf(activity))
 
         val actual = activitiesBetweenDateUseCase.getActivities(Optional.empty(), Optional.empty(), Optional.of(approvalState))
-        assertEquals(activitiesDateDTO, actual)
+        assertEquals(activitiesResponseDTO, actual)
 
     }
 
@@ -95,8 +95,8 @@ internal class ActivitiesBetweenDateUseCaseTest {
                 approvalState = ApprovalState.PENDING
             )
 
-        val activitiesDateDTO = listOf(
-            ActivityDateDTO(
+        val activitiesResponseDTO = listOf(
+            ActivityResponseDTO(
                 billable= false,
                 description = "description",
                 hasEvidences = false,

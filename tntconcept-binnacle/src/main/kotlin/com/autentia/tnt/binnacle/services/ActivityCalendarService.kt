@@ -1,11 +1,13 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
+import com.autentia.tnt.binnacle.core.domain.Calendar
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.DailyWorkingTime
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.DateInterval
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -17,32 +19,65 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivityCalendarService(
     private val activityService: ActivityService,
-    private val projectRoleService: ProjectRoleService,
     private val calendarFactory: CalendarFactory,
     private val activitiesCalendarFactory: ActivitiesCalendarFactory,
 ) {
+
+    @Transactional
+    @ReadOnly
+    fun createCalendar(dateInterval: DateInterval) = calendarFactory.create(dateInterval)
+
     @Transactional
     @ReadOnly
     fun getActivityDurationSummaryInHours(dateInterval: DateInterval, userId: Long): List<DailyWorkingTime> {
-
-        val activitiesCalendar = activitiesCalendarFactory.create(dateInterval)
-        activitiesCalendar.addAllActivities(activityService.getActivitiesBetweenDates(dateInterval, userId))
-        return activitiesCalendar.activitiesCalendarMap.toList().map {
-            DailyWorkingTime(
-                it.first,
-                BigDecimal(this.getDurationByCountingNumberOfDays(it.second, 1)).divide(
-                    BigDecimal(60), 10, RoundingMode.HALF_UP
-                ).setScale(2, RoundingMode.DOWN)
-            )
+        val activities = activityService.getActivitiesBetweenDates(dateInterval, userId)
+        return if (activities.isEmpty()) {
+            emptyList()
+        } else {
+            val activitiesCalendar = activitiesCalendarFactory.create(dateInterval)
+            activitiesCalendar.addAllActivities(activities)
+            activitiesCalendar.activitiesCalendarMap.toList().map {
+                DailyWorkingTime(
+                    it.first,
+                    BigDecimal(this.getDurationByCountingNumberOfDays(it.second, 1)).divide(
+                        BigDecimal(60), 10, RoundingMode.HALF_UP
+                    ).setScale(2, RoundingMode.DOWN)
+                )
+            }
         }
     }
 
     @Transactional
     @ReadOnly
-    fun getDurationByCountingWorkingDays(timeInterval: TimeInterval, projectRoleId: Long): Int {
-        val projectRole = projectRoleService.getByProjectRoleId(projectRoleId)
-        return getDurationByCountingWorkingDays(timeInterval, projectRole.timeUnit)
+    fun getSumActivitiesDuration(timeInterval: TimeInterval, projectRoleId: Long, userId: Long) =
+        getSumActivitiesDuration(createCalendar(timeInterval.getDateInterval()), timeInterval, projectRoleId, userId)
+
+    @Transactional
+    @ReadOnly
+    fun getSumActivitiesDuration(
+        calendar: Calendar, timeInterval: TimeInterval, projectRoleId: Long, userId: Long
+    ): Int {
+        val activitiesIntervals = activityService.getActivitiesIntervals(
+            timeInterval, projectRoleId, userId
+        )
+        return if (activitiesIntervals.isEmpty()) {
+            0
+        } else {
+            activitiesIntervals.sumOf {
+                getDurationByCountingWorkingDays(
+                    TimeInterval.of(it.start, it.end), it.timeUnit, calendar.getWorkableDays(
+                        DateInterval.of(it.start.toLocalDate(), it.end.toLocalDate())
+                    )
+                )
+            }
+        }
     }
+
+
+    @Transactional
+    @ReadOnly
+    fun getDurationByCountingWorkingDays(timeInterval: TimeInterval, projectRole: ProjectRole) =
+        getDurationByCountingWorkingDays(timeInterval, projectRole.timeUnit)
 
     @Transactional
     @ReadOnly
@@ -50,6 +85,12 @@ internal class ActivityCalendarService(
         val calendar = calendarFactory.create(timeInterval.getDateInterval())
         return getDurationByCountingWorkingDays(timeInterval, timeUnit, calendar.workableDays)
     }
+
+    fun getDurationByCountingWorkingDays(
+        calendar: Calendar, timeInterval: TimeInterval, projectRole: ProjectRole
+    ) = getDurationByCountingWorkingDays(
+        timeInterval, projectRole.timeUnit, calendar.getWorkableDays(timeInterval.getDateInterval())
+    )
 
     fun getDurationByCountingWorkingDays(
         timeInterval: TimeInterval, timeUnit: TimeUnit, workableDays: List<LocalDate>

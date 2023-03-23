@@ -8,26 +8,18 @@ import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
-internal class UserService(
+@Transactional
+@ReadOnly
+class UserService internal constructor(
     private val userRepository: UserRepository,
     private val principalProviderService: PrincipalProviderService
 ) {
 
-    @Transactional
-    @ReadOnly
-    fun findByUsername(username: String): User =
-        userRepository.findByUsername(username)
-            ?: error("User with username $username not found")
-
-    @Transactional
-    @ReadOnly
     fun getAuthenticatedUser(): User =
         principalProviderService.getAuthenticatedPrincipal()
-            .map { findByUsername(it.name) }
-            .orElseThrow { error("There is no authenticated user") }
+            .flatMap { userRepository.findById(it.name.toLong()) }
+            .orElseThrow { IllegalStateException("There isn't authenticated user") }
 
-    @Transactional
-    @ReadOnly
     fun findActive(): List<User> =
         userRepository.findByActiveTrue()
 

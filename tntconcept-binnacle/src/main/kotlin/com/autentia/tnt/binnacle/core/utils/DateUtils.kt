@@ -88,3 +88,6 @@ fun ClosedRange<LocalDateTime>.overlaps(other: ClosedRange<LocalDateTime>): Bool
 
 fun minDate(start: LocalDate, end: LocalDate) = listOf(start, end).min()
 fun maxDate(start: LocalDate, end: LocalDate) = listOf(start, end).max()
+
+fun minDateTime(start: LocalDateTime, end: LocalDateTime) = listOf(start, end).min()
+fun maxDateTime(start: LocalDateTime, end: LocalDateTime) = listOf(start, end).max()
