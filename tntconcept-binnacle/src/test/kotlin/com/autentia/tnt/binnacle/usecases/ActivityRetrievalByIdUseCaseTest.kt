@@ -15,7 +15,8 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -34,6 +35,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
     private val userService = mock<UserService>()
     private val activityValidator = mock<ActivityValidator>()
 
+
     private val activityRetrievalByIdUseCase =
         ActivityRetrievalByIdUseCase(
             activityService,
@@ -42,7 +44,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
             ActivityResponseConverter(
                 OrganizationResponseConverter(),
                 ProjectResponseConverter(),
-                ProjectRoleResponseConverter()
+                ProjectRoleResponseConverter(activityService)
             )
     )
 
@@ -98,7 +100,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
             TimeUnit.MINUTES
         )
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleDTO(10L, "Dummy Project role", RequireEvidence.NO)
 
         val yesterdayActivity = Activity(
             2L,

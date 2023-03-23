@@ -4,9 +4,10 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleRecentConverter
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
+import com.autentia.tnt.binnacle.usecases.ProjectRoleByUserIdsUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
@@ -19,10 +20,12 @@ internal class ProjectRoleControllerTest {
     private val projectRoleByIdUseCase = mock<ProjectRoleByIdUseCase>()
     private val latestProjectRolesForAuthenticatedUserUseCase = mock<LatestProjectRolesForAuthenticatedUserUseCase>()
     private val projectRoleRecentConverter = ProjectRoleRecentConverter()
+    private val projectRoleByUserIdsUseCase = mock<ProjectRoleByUserIdsUseCase>()
 
     private val projectRoleController = ProjectRoleController(
         projectRoleByIdUseCase,
         latestProjectRolesForAuthenticatedUserUseCase,
+        projectRoleByUserIdsUseCase,
         projectRoleRecentConverter
     )
 
@@ -30,7 +33,7 @@ internal class ProjectRoleControllerTest {
     fun `find the project role by id`() {
 
         val roleId = 1
-        val role = ProjectRoleResponseDTO(
+        val role = ProjectRoleDTO(
             1,
             "Dummy Project Role",
             RequireEvidence.WEEKLY,

@@ -1,7 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRolesByProjectIdUseCase
 import io.micronaut.http.annotation.Controller
@@ -22,7 +22,7 @@ internal class ProjectController(
 
     @Operation(summary = "Retrieves a list of project roles from a project ID")
     @Get("/{id}/roles")
-    fun getProjectRolesByProjectId(id: Int): List<ProjectRoleResponseDTO> {
+    fun getProjectRolesByProjectId(id: Int): List<ProjectRoleDTO> {
         return projectRolesByProjectIdUseCase.get(id)
     }
 }

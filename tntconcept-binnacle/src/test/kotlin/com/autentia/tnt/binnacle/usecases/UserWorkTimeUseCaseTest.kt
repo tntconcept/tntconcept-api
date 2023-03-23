@@ -34,6 +34,7 @@ import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
 import com.autentia.tnt.binnacle.entities.dto.PreviousAnnualBalanceDTO
 import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
 import com.autentia.tnt.binnacle.entities.dto.YearAnnualBalanceDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.AnnualWorkSummaryService
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -77,7 +78,7 @@ internal class UserWorkTimeUseCaseTest {
         ActivityResponseConverter(
             OrganizationResponseConverter(),
             ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
+            ProjectRoleResponseConverter(activityService)
         ),
         TimeSummaryConverter()
     )

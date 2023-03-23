@@ -2,7 +2,7 @@ package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRolesByProjectIdUseCase
@@ -76,7 +76,7 @@ internal class ProjectControllerIT {
 
         val projectId = 1
 
-        val projectRoleRequestBody = ProjectRoleResponseDTO(
+        val projectRoleRequestBody = ProjectRoleDTO(
             1L,
             "Vacaciones",
             RequireEvidence.NO
@@ -84,7 +84,7 @@ internal class ProjectControllerIT {
 
         doReturn(listOf(projectRoleRequestBody)).whenever(projectRolesByProjectIdUseCase).get(projectId)
 
-        val response = client.exchangeList<ProjectRoleResponseDTO>(GET("/api/projects/$projectId/roles"))
+        val response = client.exchangeList<ProjectRoleDTO>(GET("/api/projects/$projectId/roles"))
 
         assertEquals(OK, response.status)
         assertEquals(listOf(projectRoleRequestBody), response.body.get())

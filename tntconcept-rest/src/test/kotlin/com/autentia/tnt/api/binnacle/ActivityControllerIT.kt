@@ -370,7 +370,7 @@ internal class ActivityControllerIT {
             ACTIVITY_REQUEST_BODY_DTO.interval.end,
             240,
             ACTIVITY_REQUEST_BODY_DTO.description,
-            ProjectRoleResponseDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", RequireEvidence.WEEKLY),
+            ProjectRoleDTO(ACTIVITY_REQUEST_BODY_DTO.projectRoleId, "role", RequireEvidence.WEEKLY),
             2,
             ACTIVITY_REQUEST_BODY_DTO.billable,
             OrganizationResponseDTO(6, "organization"),

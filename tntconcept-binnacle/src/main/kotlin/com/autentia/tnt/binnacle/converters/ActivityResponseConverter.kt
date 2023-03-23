@@ -25,7 +25,7 @@ class ActivityResponseConverter(
         description = activity.description,
         organization = organizationResponseConverter.toOrganizationResponseDTO(activity.projectRole.project.organization),
         project = projectResponseConverter.toProjectResponseDTO(activity.projectRole.project),
-        projectRole = projectRoleResponseConverter.toProjectRoleResponseDTO(activity.projectRole),
+        projectRole = projectRoleResponseConverter.toProjectRoleDTO(activity.projectRole),
         duration = activity.duration,
         hasEvidences = activity.hasEvidences,
         approvalState = activity.approvalState
@@ -53,7 +53,7 @@ class ActivityResponseConverter(
             activityResponse.end,
             activityResponse.duration,
             activityResponse.description,
-            projectRoleResponseConverter.toProjectRoleResponseDTO(activityResponse.projectRole),
+            projectRoleResponseConverter.toProjectRoleDTO(activityResponse.projectRole),
             activityResponse.userId,
             activityResponse.billable,
             organizationResponseConverter.toOrganizationResponseDTO(activityResponse.organization),

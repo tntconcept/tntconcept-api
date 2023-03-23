@@ -30,4 +30,9 @@ internal interface ActivityRepository : CrudRepository<Activity, Long> {
     )
     fun workedMinutesBetweenDate(start: LocalDateTime, end: LocalDateTime, userId: Long): List<ActivityTimeOnly>
 
+    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.projectRole.id = :projectRoleId")
+    @EntityGraph(value = "fetch-activity-with-project-and-organization")
+    fun getActivitiesForAGivenProjectRoleAndUser(projectRoleId: Long, userId: Long): List<Activity>
+
+
 }

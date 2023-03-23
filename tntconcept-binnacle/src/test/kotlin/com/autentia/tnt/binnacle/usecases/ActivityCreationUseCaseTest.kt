@@ -18,7 +18,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -54,7 +54,7 @@ internal class ActivityCreationUseCaseTest {
         ActivityResponseConverter(
             OrganizationResponseConverter(),
             ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
+            ProjectRoleResponseConverter(activityService)
         ),
         TimeIntervalConverter()
     )
@@ -97,7 +97,7 @@ internal class ActivityCreationUseCaseTest {
         )
         private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleDTO(10L, "Dummy Project role", RequireEvidence.NO)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
@@ -152,7 +152,7 @@ internal class ActivityCreationUseCaseTest {
             duration: Int = 75,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
-            projectRole: ProjectRoleResponseDTO = PROJECT_ROLE_RESPONSE_DTO,
+            projectRole: ProjectRoleDTO = PROJECT_ROLE_RESPONSE_DTO,
             organization: OrganizationResponseDTO = ORGANIZATION_DTO,
             project: ProjectResponseDTO = PROJECT_RESPONSE_DTO,
             approvalState: ApprovalState = ApprovalState.NA
