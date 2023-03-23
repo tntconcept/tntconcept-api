@@ -12,7 +12,6 @@ import javax.transaction.Transactional
 @ReadOnly
 class UserService internal constructor(
     private val userRepository: UserRepository,
-    private val micronautPrincipalProviderService: MicronautPrincipalProviderService,
     private val securityService: SecurityService
 ) {
 
