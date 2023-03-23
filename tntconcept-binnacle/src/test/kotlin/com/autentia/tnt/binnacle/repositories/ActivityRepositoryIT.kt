@@ -196,6 +196,59 @@ internal class ActivityRepositoryIT {
         assertEquals(expectedWorkedMinutesActivities, workedTimeActivities)
     }
 
+    @Test
+    fun `should get overlapping activities`() {
+        val todayActivity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val yesterdayActivity = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityForTwoDays = Activity(
+            start = today.plusDays(2).atTime(0, 0, 0),
+            end = today.plusDays(3).atTime(23, 59, 59),
+            duration = 960,
+            description = "Test activity 3",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        activityRepository.saveAll(
+            listOf(
+                todayActivity, yesterdayActivity, activityForTwoDays
+            )
+        )
+        val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
+        val end = today.atTime(LocalTime.MAX)
+
+        val workedTimeActivities = activityRepository.getOverlappingActivities(start, end, userId)
+
+        val expectedWorkedMinutesActivities = listOf(
+            todayActivity, yesterdayActivity
+        )
+
+        assertEquals(2, workedTimeActivities.size)
+        assertEquals(expectedWorkedMinutesActivities, workedTimeActivities)
+    }
+
     private companion object {
         private val today = LocalDate.now()
         private val yesterday = LocalDate.now().minusDays(1)

@@ -30,11 +30,7 @@ internal class ActivityController(
 
     @Get
     @Operation(summary = "Gets activities between two dates.")
-    internal fun get(
-        startDate: Optional<LocalDate>,
-        endDate: Optional<LocalDate>,
-        approvalState: Optional<ApprovalState>
-    ): List<ActivityResponseDTO> {
+    internal fun get(startDate: Optional<LocalDate>, endDate: Optional<LocalDate>, approvalState: Optional<ApprovalState>): List<ActivityResponseDTO> {
         return activitiesBetweenDateUseCase.getActivities(startDate, endDate, approvalState)
     }
 

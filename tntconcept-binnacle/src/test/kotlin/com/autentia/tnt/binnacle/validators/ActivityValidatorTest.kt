@@ -150,7 +150,7 @@ internal class ActivityValidatorTest {
                         approvalState = ApprovalState.NA
                     )
                 )
-            ).whenever(activityRepository).getActivitiesBetweenDate(
+            ).whenever(activityRepository).getOverlappingActivities(
                 newActivity.start, newActivity.end, user.id
             )
 
@@ -390,7 +390,7 @@ internal class ActivityValidatorTest {
             given(activityRepository.findById(1L)).willReturn(Optional.of(currentActivity))
 
             given(
-                activityRepository.getActivitiesBetweenDate(
+                activityRepository.getOverlappingActivities(
                     newActivity.start, newActivity.end, user.id
                 )
             ).willReturn(
@@ -550,7 +550,7 @@ internal class ActivityValidatorTest {
             given(activityRepository.findById(1L)).willReturn(Optional.of(currentActivity))
 
             given(
-                activityRepository.getActivitiesBetweenDate(
+                activityRepository.getOverlappingActivities(
                     LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
                     LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
                     user.id
