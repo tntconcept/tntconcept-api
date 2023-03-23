@@ -47,6 +47,7 @@ internal class ActivityValidator(
 
         }
         checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user)
+
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
@@ -55,9 +56,26 @@ internal class ActivityValidator(
         projectRole: ProjectRole,
         user: User
     ) {
+        checkIfIsExceedingMaxHoursForRole(
+            currentActivity, requestActivity, requestActivity.start.year, projectRole, user
+        )
+        if (requestActivity.start.year != requestActivity.end.year) {
+            checkIfIsExceedingMaxHoursForRole(
+                currentActivity, requestActivity, requestActivity.end.year, projectRole, user
+            )
+        }
+    }
+
+
+    private fun checkIfIsExceedingMaxHoursForRole(
+        currentActivity: Activity,
+        requestActivity: ActivityRequestBody,
+        year: Int,
+        projectRole: ProjectRole,
+        user: User
+    ) {
         if (projectRole.maxAllowed > 0) {
 
-            val year = requestActivity.start.year
             val yearTimeInterval = TimeInterval.ofYear(year)
 
             val calendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
@@ -72,7 +90,7 @@ internal class ActivityValidator(
 
             val totalRegisteredDurationForThisRole =
                 activityCalendarService.getSumActivitiesDuration(
-                    calendar, TimeInterval.ofYear(year), projectRole.id, user.id
+                    calendar, yearTimeInterval, projectRole.id, user.id
                 )
 
             var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
