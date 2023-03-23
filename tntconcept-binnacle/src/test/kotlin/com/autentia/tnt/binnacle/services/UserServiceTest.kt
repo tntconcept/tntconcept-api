@@ -21,16 +21,15 @@ import java.util.*
 internal class UserServiceTest {
 
     private val userRepository =  mock<UserRepository>()
-    private val micronautPrincipalProviderService =  mock<MicronautPrincipalProviderService>()
     private val securityService = mock<SecurityService>()
 
-    private var userService = UserService(userRepository, micronautPrincipalProviderService, securityService)
+    private var userService = UserService(userRepository, securityService)
 
     @Test
     fun `get authenticated user`() {
         val authentication = ClientAuthentication("1", emptyMap())
         val user = createUser()
-        doReturn(Optional.of(authentication)).whenever(micronautPrincipalProviderService).getAuthenticatedPrincipal()
+        doReturn(Optional.of(authentication)).whenever(securityService).authentication
         doReturn(Optional.of(user)).whenever(userRepository).findById(1)
 
         val authenticatedUser = userService.getAuthenticatedUser()
@@ -40,7 +39,7 @@ internal class UserServiceTest {
 
     @Test
     fun `fail if there isn't authenticated user`() {
-        whenever(micronautPrincipalProviderService.getAuthenticatedPrincipal()).thenReturn(Optional.empty())
+        whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> { userService.getAuthenticatedUser() }
 
@@ -50,7 +49,7 @@ internal class UserServiceTest {
     @Test
     fun `fail if cannot find t authenticated user`() {
         val authentication = ClientAuthentication("1", emptyMap())
-        doReturn(Optional.of(authentication)).whenever(micronautPrincipalProviderService).getAuthenticatedPrincipal()
+        doReturn(Optional.of(authentication)).whenever(securityService).authentication
         doReturn(Optional.empty<User>()).whenever(userRepository).findById(any())
 
         assertThrows<IllegalStateException> { userService.getAuthenticatedUser() }
