@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.daos.ActivityDao
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.security.application.checkAuthentication
@@ -35,5 +36,19 @@ internal class SecuredActivityRepository(
         }
         return activityDao.getActivitiesBetweenDate(startDate, endDate, userId)
     }
+
+    fun workedMinutesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>{
+        val authentication = securityService.checkAuthentication()
+
+        if(userId != authentication.id()){
+            return if (authentication.isAdmin()) {
+                activityDao.workedMinutesBetweenDate(startDate, endDate, userId)
+            } else {
+                emptyList()
+            }
+        }
+        return activityDao.workedMinutesBetweenDate(startDate, endDate, userId)
+    }
+
 
 }
