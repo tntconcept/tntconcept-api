@@ -11,10 +11,6 @@ import java.time.LocalDateTime
 @Repository
 internal interface ActivityRepository : CrudRepository<Activity, Long> {
 
-    @Query("SELECT a FROM Activity a WHERE a.id= :id")
-    @EntityGraph(value = "fetch-activity-with-project-and-organization")
-    fun findByIdEager(id: Long): Activity?
-
     @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.startDate BETWEEN :startDate AND :endDate")
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun getActivitiesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>

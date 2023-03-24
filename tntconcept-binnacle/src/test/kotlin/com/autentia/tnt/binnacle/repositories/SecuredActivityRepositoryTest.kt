@@ -8,9 +8,13 @@ import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalTime
+import java.util.*
 
 internal class SecuredActivityRepositoryTest {
 
@@ -20,7 +24,7 @@ internal class SecuredActivityRepositoryTest {
     private var securedActivityRepository = SecuredActivityRepository(activityDao, securityService)
 
     @Test
-    fun `get activity by id`() {
+    fun `get activity should throw illegal state exception`() {
         val activityId = 1L
         val activity = Activity(
             id = activityId,
@@ -33,17 +37,151 @@ internal class SecuredActivityRepositoryTest {
             hasImage = false,
         )
         whenever(activityDao.findByIdAndUserId(activityId, userId)).thenReturn(activity)
+        whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        val result = securedActivityRepository.findById(activityId, userId)
+        assertThrows<IllegalStateException> { securedActivityRepository.findById(activityId) }
+    }
+
+    @Test
+    fun `get activity by id for user with admin role permission`() {
+        val activityId = 1L
+        val activity = Activity(
+            id = activityId,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = 2L,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(activityDao.findById(activityId)).thenReturn(Optional.of(activity))
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+
+        val result = securedActivityRepository.findById(activityId)
 
         assertEquals(activity, result)
     }
 
+    @Test
+    fun `get activity by id for user without admin role permission should return null`() {
+        val activityId = 1L
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+
+        val result = securedActivityRepository.findById(activityId)
+
+        assertNull(result)
+        verify(activityDao).findByIdAndUserId(activityId, userId)
+    }
+
+    @Test
+    fun `get activities between dates should retrieve authenticated user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        ))
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, userId)).thenReturn(activities)
+
+        val result: List<Activity> = securedActivityRepository.getActivitiesBetweenDate(
+            startDate, endDate, userId
+        )
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `get activities between dates should retrieve other user activities if is admin`() {
+        val otherUserId = 2L
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        ))
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, otherUserId)).thenReturn(activities)
+
+        val result: List<Activity> = securedActivityRepository.getActivitiesBetweenDate(
+            startDate, endDate, otherUserId
+        )
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `should return empty activities between range if requested activities belong to other user and logged user is not admin`() {
+        val otherUserId = 2L
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+
+        val result: List<Activity> = securedActivityRepository.getActivitiesBetweenDate(
+            startDate, endDate, otherUserId
+        )
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `get activities between dates should retrieve logged user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        ))
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, userId)).thenReturn(activities)
+
+        val result: List<Activity> = securedActivityRepository.getActivitiesBetweenDate(
+            startDate, endDate, userId
+        )
+
+        assertEquals(activities, result)
+    }
+
     private companion object {
-        private val USER = createUser()
         private val today = LocalDate.now()
         private const val userId = 1L
         private val projectRole = createProjectRole()
-        private val authentication = ClientAuthentication(userId.toString(), emptyMap())
+        private val authenticationWithAdminRole =
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("admin")))
+        private val authenticationWithoutAdminRole =
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
+
     }
 }

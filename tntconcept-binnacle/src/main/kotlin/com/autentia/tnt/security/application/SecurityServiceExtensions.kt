@@ -4,7 +4,6 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.utils.SecurityService
 
 private const val ADMIN_ROLE = "admin"
-private const val USER_ROLE = "user"
 
 
 fun SecurityService.checkAuthentication(): Authentication =
@@ -16,5 +15,10 @@ fun SecurityService.checkRole(role: String): Authentication {
     return authentication
 }
 
+fun SecurityService.hasRole(role: String): Boolean {
+    val authentication = checkAuthentication()
+    return authentication.roles.contains(role)
+}
+
 fun Authentication.isAdmin(): Boolean = roles.contains(ADMIN_ROLE)
-fun Authentication.isUser(): Boolean = roles.contains(USER_ROLE)
+fun Authentication.id(): Long = name.toLong()
