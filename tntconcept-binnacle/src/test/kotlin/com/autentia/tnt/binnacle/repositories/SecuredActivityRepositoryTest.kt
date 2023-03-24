@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.config.createUser
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.daos.ActivityDao
 import com.autentia.tnt.binnacle.entities.Activity
 import io.micronaut.security.authentication.ClientAuthentication
@@ -76,30 +76,93 @@ internal class SecuredActivityRepositoryTest {
     }
 
     @Test
-    fun `get activities between dates should retrieve authenticated user activities`() {
+    fun `get worked minutes between dates should retrieve authenticated user worked minutes`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
         )
-        val activities = listOf(Activity(
-            id = 1L,
-            startDate = today.atTime(10, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasImage = false,
-        ))
+        val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, userId)).thenReturn(activities)
+        whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
 
-        val result: List<Activity> = securedActivityRepository.getActivitiesBetweenDate(
+        val result: List<ActivityTimeOnly> = securedActivityRepository.workedMinutesBetweenDate(
             startDate, endDate, userId
         )
 
-        assertEquals(activities, result)
+        assertEquals(workedTime, result)
+    }
+
+    @Test
+    fun `get worked minutes between dates should retrieve other user activities if is admin`() {
+        val otherUserId = 2L
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, otherUserId)).thenReturn(workedTime)
+
+        val result: List<ActivityTimeOnly> = securedActivityRepository.workedMinutesBetweenDate(
+            startDate, endDate, otherUserId
+        )
+
+        assertEquals(workedTime, result)
+    }
+
+    @Test
+    fun `should return empty worked minutes between range if requested activities belong to other user and logged user is not admin`() {
+        val otherUserId = 2L
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+
+        val result: List<ActivityTimeOnly> = securedActivityRepository.workedMinutesBetweenDate(
+            startDate, endDate, otherUserId
+        )
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `get worked minutes between dates should retrieve logged user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
+
+        val result: List<ActivityTimeOnly> = securedActivityRepository.workedMinutesBetweenDate(
+            startDate, endDate, userId
+        )
+
+        assertEquals(workedTime, result)
+    }
+
+    @Test
+    fun `get worked minutes between dates should retrieve authenticated user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
+
+        val result: List<ActivityTimeOnly> = securedActivityRepository.workedMinutesBetweenDate(
+            startDate, endDate, userId
+        )
+
+        assertEquals(workedTime, result)
     }
 
     @Test
@@ -109,16 +172,18 @@ internal class SecuredActivityRepositoryTest {
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
         )
-        val activities = listOf(Activity(
-            id = 1L,
-            startDate = today.atTime(10, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasImage = false,
-        ))
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                startDate = today.atTime(10, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasImage = false,
+            )
+        )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
         whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, otherUserId)).thenReturn(activities)
@@ -153,16 +218,18 @@ internal class SecuredActivityRepositoryTest {
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
         )
-        val activities = listOf(Activity(
-            id = 1L,
-            startDate = today.atTime(10, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasImage = false,
-        ))
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                startDate = today.atTime(10, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasImage = false,
+            )
+        )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, userId)).thenReturn(activities)
