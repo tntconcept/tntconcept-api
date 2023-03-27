@@ -113,7 +113,7 @@ internal class SecuredActivityRepositoryTest {
     }
 
     @Test
-    fun `should return empty worked minutes between range if requested activities belong to other user and logged user is not admin`() {
+    fun `should return empty worked minutes between range if logged user is not admin and requested activities belong to other user`() {
         val otherUserId = 2L
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
@@ -242,11 +242,12 @@ internal class SecuredActivityRepositoryTest {
     }
 
     private companion object {
-        private val today = LocalDate.now()
         private const val userId = 1L
+        private const val adminUserId = 3L
+        private val today = LocalDate.now()
         private val projectRole = createProjectRole()
         private val authenticationWithAdminRole =
-            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("admin")))
+            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin")))
         private val authenticationWithoutAdminRole =
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
 
