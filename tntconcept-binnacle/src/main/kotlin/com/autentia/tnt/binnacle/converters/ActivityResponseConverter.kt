@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.converters
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.entities.Activity
+
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import jakarta.inject.Singleton
 
@@ -11,23 +12,17 @@ import kotlin.time.toDuration
 
 @Singleton
 class ActivityResponseConverter(
-    private val organizationResponseConverter: OrganizationResponseConverter,
-    private val projectResponseConverter: ProjectResponseConverter,
-    private val projectRoleResponseConverter: ProjectRoleResponseConverter
+    private val activityIntervalResponseConverter: ActivityIntervalResponseConverter
 ) {
 
     fun mapActivityToActivityResponseDTO(activity: Activity) = ActivityResponseDTO(
-        id = activity.id!!,
-        start = activity.start,
-        end = activity.end,
         billable = activity.billable,
-        userId = activity.userId,
         description = activity.description,
-        organization = organizationResponseConverter.toOrganizationResponseDTO(activity.projectRole.project.organization),
-        project = projectResponseConverter.toProjectResponseDTO(activity.projectRole.project),
-        projectRole = projectRoleResponseConverter.toProjectRoleDTO(activity.projectRole),
-        duration = activity.duration,
         hasEvidences = activity.hasEvidences,
+        id = activity.id!!,
+        projectRoleId = activity.projectRole.id,
+        interval = activityIntervalResponseConverter.mapActivityToIntervalResponseDTO(activity),
+        userId = activity.userId,
         approvalState = activity.approvalState
     )
 
@@ -48,17 +43,13 @@ class ActivityResponseConverter(
 
     fun toActivityResponseDTO(activityResponse: ActivityResponse) =
         ActivityResponseDTO(
-            activityResponse.id,
-            activityResponse.start,
-            activityResponse.end,
-            activityResponse.duration,
-            activityResponse.description,
-            projectRoleResponseConverter.toProjectRoleDTO(activityResponse.projectRole),
-            activityResponse.userId,
             activityResponse.billable,
-            organizationResponseConverter.toOrganizationResponseDTO(activityResponse.organization),
-            projectResponseConverter.toProjectResponseDTO(activityResponse.project),
+            activityResponse.description,
             activityResponse.hasEvidences,
+            activityResponse.id,
+            activityResponse.projectRole.id,
+            activityIntervalResponseConverter.mapActivityResponseToIntervalResponseDTO(activityResponse),
+            activityResponse.userId,
             activityResponse.approvalState
         )
 
@@ -68,5 +59,24 @@ class ActivityResponseConverter(
             activity.start,
             ProjectRoleId(activity.projectRole.id)
         )
+
+    fun mapActivitiesToActivitiesDateDTO(activities: List<Activity>): List<ActivityResponseDTO>  {
+        val activitiesResponseDTO = mutableListOf<ActivityResponseDTO>()
+        activities.forEach {activity ->
+
+            val activityResponseDTO = ActivityResponseDTO(
+                billable = activity.billable,
+                description = activity.description,
+                hasEvidences = activity.hasEvidences,
+                id = activity.id!!,
+                projectRoleId = activity.projectRole.id,
+                interval = activityIntervalResponseConverter.mapActivityToIntervalResponseDTO(activity),
+                userId = activity.userId,
+                approvalState = activity.approvalState
+            )
+            activitiesResponseDTO.add(activityResponseDTO)
+        }
+        return activitiesResponseDTO
+    }
 
 }

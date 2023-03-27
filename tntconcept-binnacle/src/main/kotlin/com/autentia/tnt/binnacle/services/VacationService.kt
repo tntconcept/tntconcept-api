@@ -23,7 +23,6 @@ import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 @Singleton
 internal class VacationService(
     private val vacationRepository: VacationRepository,
-    private val holidayService: HolidayService,
     private val myVacationsDetailService: MyVacationsDetailService,
     private val vacationConverter: VacationConverter,
     private val calendarFactory: CalendarFactory

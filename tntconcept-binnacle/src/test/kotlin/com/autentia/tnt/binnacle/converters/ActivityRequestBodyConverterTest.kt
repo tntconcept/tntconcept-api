@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.converters
 
+import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.entities.Activity
@@ -23,7 +24,7 @@ internal class ActivityRequestBodyConverterTest {
     fun `given ActivityRequestBodyDTO should return domain ActivityRequestBody with converted values`() {
 
         val result = activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(
-            ACTIVITY_REQUEST_BODY_DTO, 75
+            ACTIVITY_REQUEST_BODY_DTO, createProjectRole(), 75
         )
 
         assertEquals(ACTIVITY_REQUEST_BODY, result)

@@ -1,18 +1,31 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
 
 internal class ActivityUpdateUseCaseTest {
@@ -20,26 +33,29 @@ internal class ActivityUpdateUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val activityValidator = mock<ActivityValidator>()
+    private val projectRoleService = mock<ProjectRoleService>()
     private val userService = mock<UserService>()
-
 
     private val activityUpdateUseCase = ActivityUpdateUseCase(
         activityService,
         activityCalendarService,
+        projectRoleService,
         userService,
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter(activityService)
+            ActivityIntervalResponseConverter()
         ),
         TimeIntervalConverter()
     )
 
+    private val projectRole = createProjectRole().copy(id = 10L)
+
     @Test
     fun `return updated activity for the authenticated user when it is valid`() {
         doReturn(USER).whenever(userService).getAuthenticatedUser()
+
+        doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
 
         doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(USER))
 
@@ -59,7 +75,6 @@ internal class ActivityUpdateUseCaseTest {
         private val USER = createUser()
         private val TODAY = LocalDateTime.now()
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
-        private val ORGANIZATION_DTO = OrganizationResponseDTO(1L, "Dummy Organization")
 
         private val PROJECT = Project(
             1L,
@@ -76,7 +91,7 @@ internal class ActivityUpdateUseCaseTest {
             billable = false
         )
         private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleDTO(10L, "Dummy Project role", RequireEvidence.NO)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
         private val NEW_ACTIVITY_DTO = ActivityRequestBodyDTO(
             1L,
             TODAY,
@@ -101,17 +116,13 @@ internal class ActivityUpdateUseCaseTest {
             approvalState = ApprovalState.NA
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
-            1,
-            TODAY,
-            TODAY.plusMinutes(75L),
-            75,
+            false,
             "New activity",
-            PROJECT_ROLE_RESPONSE_DTO,
+            false,
+            1,
+            PROJECT_ROLE_RESPONSE_DTO.id,
+            IntervalResponseDTO(TODAY, TODAY.plusMinutes(75L), 75, PROJECT_ROLE.timeUnit),
             USER.id,
-            false,
-            ORGANIZATION_DTO,
-            PROJECT_RESPONSE_DTO,
-            false,
             approvalState = ApprovalState.NA
         )
         private val activityToUpdate = ActivityRequestBody(

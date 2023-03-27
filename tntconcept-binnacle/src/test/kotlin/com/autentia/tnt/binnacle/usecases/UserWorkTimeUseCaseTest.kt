@@ -1,11 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
+import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.AnnualBalance
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
 import com.autentia.tnt.binnacle.core.domain.MonthlyBalance
@@ -34,7 +30,6 @@ import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
 import com.autentia.tnt.binnacle.entities.dto.PreviousAnnualBalanceDTO
 import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
 import com.autentia.tnt.binnacle.entities.dto.YearAnnualBalanceDTO
-import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.AnnualWorkSummaryService
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -76,9 +71,7 @@ internal class UserWorkTimeUseCaseTest {
         myVacationsDetailService,
         workTimeService,
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter(activityService)
+            ActivityIntervalResponseConverter()
         ),
         TimeSummaryConverter()
     )

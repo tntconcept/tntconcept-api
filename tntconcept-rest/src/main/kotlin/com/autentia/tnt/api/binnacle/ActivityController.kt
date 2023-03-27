@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
@@ -31,7 +30,7 @@ internal class ActivityController(
 
     @Get
     @Operation(summary = "Gets activities between two dates.")
-    internal fun get(startDate: Optional<LocalDate>, endDate: Optional<LocalDate>, approvalState: Optional<ApprovalState>): List<ActivityDateDTO> {
+    internal fun get(startDate: Optional<LocalDate>, endDate: Optional<LocalDate>, approvalState: Optional<ApprovalState>): List<ActivityResponseDTO> {
         return activitiesBetweenDateUseCase.getActivities(startDate, endDate, approvalState)
     }
 
@@ -72,6 +71,10 @@ internal class ActivityController(
         activityApprovalUseCase.approveActivity(id)
 
     @Error
+    internal fun onTimeIntervalException(request: HttpRequest<*>, e: TimeIntervalException) =
+        HttpResponse.badRequest(ErrorResponse("INVALID_DATE_RANGE", e.message))
+
+    @Error
     internal fun onOverlapAnotherActivityTimeException(request: HttpRequest<*>, e: OverlapsAnotherTimeException) =
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
 
@@ -81,7 +84,7 @@ internal class ActivityController(
             ErrorResponseMaxHoursLimit(
                 "MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",
                 e.message,
-                ErrorValues(e.maxAllowedHours, e.remainingHours)
+                ErrorValues(e.maxAllowedHours, e.remainingHours, e.year)
             )
         )
 
