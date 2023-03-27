@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.core.domain.ActivityInterval
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.annotation.Query
@@ -40,5 +41,9 @@ internal interface ActivityRepository : CrudRepository<Activity, Long> {
     fun getActivitiesIntervals(
         start: LocalDateTime, end: LocalDateTime, projectRoleId: Long, userId: Long
     ): List<ActivityInterval>
+
+    @Deprecated("Used in the deprecated Activities Controller")
+    @Query("SELECT new com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly(a.start, a.duration, a.projectRole.id) FROM Activity a WHERE a.userId= :userId AND a.start BETWEEN :startDate AND :endDate")
+    fun workedMinutesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
 
 }
