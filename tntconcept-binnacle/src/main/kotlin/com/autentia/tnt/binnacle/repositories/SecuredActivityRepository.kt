@@ -20,7 +20,7 @@ internal class SecuredActivityRepository(
         return if(authentication.isAdmin()){
             activityDao.findById(id).orElse(null)
         } else{
-            activityDao.findByIdAndUserId(id, authentication.name.toLong())
+            activityDao.findByIdAndUserId(id, authentication.id())
         }
     }
 
