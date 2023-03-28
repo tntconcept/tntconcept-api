@@ -13,6 +13,8 @@ internal interface ProjectRoleRepository : CrudRepository<ProjectRole, Long> {
 
     fun getAllByProjectId(id: Long): List<ProjectRole>
 
+    fun getAllByProjectIdIn(ids: List<Long>): List<ProjectRole>
+
     fun getAllByIdIn(ids: List<Long>): List<ProjectRole>
 
     @Query("SELECT new com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent(pr.id, pr.name, pr.project.organization.id, pr.project.id, pr.project.open, ac.start, pr.maxAllowed, pr.timeUnit, pr.requireEvidence, pr.isApprovalRequired, ac.userId) FROM ProjectRole pr LEFT JOIN Activity ac ON pr.id = ac.projectRole.id WHERE ac.userId = :userId AND ac.start BETWEEN :startDate AND :endDate")

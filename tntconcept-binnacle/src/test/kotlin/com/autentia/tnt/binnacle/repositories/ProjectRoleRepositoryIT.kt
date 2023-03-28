@@ -26,6 +26,17 @@ internal class ProjectRoleRepositoryIT {
     }
 
     @Test
+    fun `should get the roles by project ids in`() {
+        val projectIds = listOf(1L, 3L)
+
+        val result = projectRoleRepository.getAllByProjectIdIn(projectIds)
+
+        assertEquals("vacaciones", result[0].name)
+        checkProjectRole(result[0], 1L, "vacaciones", projectIds[0])
+        checkProjectRole(result[1], 3L, "baja", projectIds[1])
+    }
+
+    @Test
     fun `should get the roles by project ids`() {
         val projectRoleIds = listOf(1L, 2L)
 
@@ -34,7 +45,6 @@ internal class ProjectRoleRepositoryIT {
         assertEquals(projectRoleIds.size, result.size)
         checkProjectRole(result[0], projectRoleIds[0], "vacaciones", 1L)
         checkProjectRole(result[1], projectRoleIds[1], "permiso", 2L)
-
     }
 
     private fun checkProjectRole(projectRole: ProjectRole, expectedProjectRoleId: Long, expectedProjectRoleName: String, expectedProjectId: Long) {
