@@ -15,8 +15,8 @@ import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -110,7 +110,7 @@ internal class ActivityValidator(
     fun checkActivityIsValidForUpdate(activityRequest: ActivityRequestBody, user: User) {
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
-        val activityDb = activityRepository.findById(activityRequest.id).orElse(null)
+        val activityDb = activityRepository.findById(activityRequest.id)
         val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
         when {
             activityDb == null -> throw ActivityNotFoundException(activityRequest.id!!)
@@ -124,14 +124,14 @@ internal class ActivityValidator(
                 user
             ) -> throw ActivityBeforeHiringDateException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb, activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb, user)
     }
 
 
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long, user: User) {
-        val activityDb = activityRepository.findById(id).orElse(null)
+        val activityDb = activityRepository.findById(id)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
             !isOpenPeriod(activityDb.startDate) -> throw ActivityPeriodClosedException()

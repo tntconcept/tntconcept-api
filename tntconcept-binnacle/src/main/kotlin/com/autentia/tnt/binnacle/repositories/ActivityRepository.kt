@@ -1,21 +1,67 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
+import com.autentia.tnt.binnacle.daos.ActivityDao
 import com.autentia.tnt.binnacle.entities.Activity
-import io.micronaut.data.annotation.Query
-import io.micronaut.data.annotation.Repository
-import io.micronaut.data.jpa.annotation.EntityGraph
-import io.micronaut.data.repository.CrudRepository
+import com.autentia.tnt.security.application.checkAuthentication
+import com.autentia.tnt.security.application.id
+import com.autentia.tnt.security.application.isAdmin
+import io.micronaut.security.utils.SecurityService
+import jakarta.inject.Singleton
 import java.time.LocalDateTime
 
-@Repository
-internal interface ActivityRepository : CrudRepository<Activity, Long> {
+@Singleton
+internal class ActivityRepository(
+    private val activityDao: ActivityDao,
+    private val securityService: SecurityService,
+) {
 
-    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.startDate BETWEEN :startDate AND :endDate")
-    @EntityGraph(value = "fetch-activity-with-project-and-organization")
-    fun getActivitiesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
+    fun findById(id: Long): Activity? {
+        val authentication = securityService.checkAuthentication()
 
-    @Query("SELECT new com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly(a.startDate, a.duration, a.projectRole.id) FROM Activity a WHERE a.userId= :userId AND a.startDate BETWEEN :startDate AND :endDate")
-    fun workedMinutesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
+        return if(authentication.isAdmin()){
+            activityDao.findById(id).orElse(null)
+        } else{
+            activityDao.findByIdAndUserId(id, authentication.id())
+        }
+    }
+
+    fun getActivitiesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+
+        if(userId != authentication.id()){
+            return if (authentication.isAdmin()) {
+                activityDao.getActivitiesBetweenDate(startDate, endDate, userId)
+            } else {
+                emptyList()
+            }
+        }
+        return activityDao.getActivitiesBetweenDate(startDate, endDate, userId)
+    }
+
+    fun workedMinutesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>{
+        val authentication = securityService.checkAuthentication()
+
+        if(userId != authentication.id()){
+            return if (authentication.isAdmin()) {
+                activityDao.workedMinutesBetweenDate(startDate, endDate, userId)
+            } else {
+                emptyList()
+            }
+        }
+        return activityDao.workedMinutesBetweenDate(startDate, endDate, userId)
+    }
+
+    fun save(activity: Activity): Activity {
+        return activityDao.save(activity)
+    }
+
+    fun update(activity: Activity): Activity {
+        return activityDao.update(activity)
+    }
+
+    fun deleteById(id: Long) {
+        activityDao.deleteById(id)
+    }
 
 }
