@@ -8,8 +8,8 @@ import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.repositories.SecuredActivityRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -18,7 +18,7 @@ import javax.transaction.Transactional
 
 @Singleton
 internal class ActivityService(
-    private val activityRepository: ActivityRepository,
+    private val securedActivityRepository: SecuredActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
@@ -28,7 +28,7 @@ internal class ActivityService(
     @Transactional
     @ReadOnly
     fun getActivityById(id: Long): Activity {
-        return activityRepository.findById(id).orElseThrow { ActivityNotFoundException(id) }
+        return securedActivityRepository.findById(id) ?: throw ActivityNotFoundException(id)
     }
 
     @Transactional
@@ -36,7 +36,7 @@ internal class ActivityService(
     fun getActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityResponse> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository
+        return securedActivityRepository
             .getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
     }
@@ -46,7 +46,7 @@ internal class ActivityService(
     fun workedMinutesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityTimeOnly> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository.workedMinutesBetweenDate(startDateMinHour, endDateMaxHour, userId)
+        return securedActivityRepository.workedMinutesBetweenDate(startDateMinHour, endDateMaxHour, userId)
     }
 
     @Transactional(rollbackOn = [Exception::class])
@@ -55,7 +55,7 @@ internal class ActivityService(
             .findById(activityRequest.projectRoleId)
             .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
-        val savedActivity = activityRepository.save(
+        val savedActivity = securedActivityRepository.save(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
                 activityRequest,
                 projectRole,
@@ -80,9 +80,9 @@ internal class ActivityService(
             .findById(activityRequest.projectRoleId)
             .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
-        val oldActivity = activityRepository
-            .findById(activityRequest.id)
-            .orElseThrow { ActivityNotFoundException(activityRequest.id!!) }
+        val oldActivity = securedActivityRepository
+            .findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
+
 
         // Update stored image
         if (activityRequest.hasImage) {
@@ -98,7 +98,7 @@ internal class ActivityService(
             activityImageService.deleteActivityImage(activityRequest.id!!, oldActivity.insertDate!!)
         }
 
-        return activityRepository.update(
+        return securedActivityRepository.update(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
                 activityRequest,
                 projectRole,
@@ -110,11 +110,13 @@ internal class ActivityService(
 
     @Transactional
     fun deleteActivityById(id: Long) {
-        val activityToDelete = activityRepository.findById(id).orElseThrow() // TODO handle exception
+        val activityToDelete =
+            securedActivityRepository
+            .findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasImage) {
             activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
         }
-        activityRepository.deleteById(id)
+        securedActivityRepository.deleteById(id)
     }
 
 }

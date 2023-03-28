@@ -16,6 +16,7 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.repositories.SecuredActivityRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -36,7 +37,7 @@ import java.util.Optional
 
 internal class ActivityServiceTest {
 
-    private val activityRepository = mock<ActivityRepository>()
+    private val securedActivityRepository = mock<SecuredActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
     private val activityRequestBodyConverter = ActivityRequestBodyConverter()
@@ -47,7 +48,7 @@ internal class ActivityServiceTest {
     )
 
     private val activityService = ActivityService(
-        activityRepository,
+        securedActivityRepository,
         projectRoleRepository,
         activityImageService,
         activityRequestBodyConverter,
@@ -77,8 +78,9 @@ internal class ActivityServiceTest {
 
     @Test
     fun `get activity by id`() {
-        doReturn(Optional.of(activityWithoutImageSaved)).whenever(activityRepository)
-            .findById(activityWithoutImageSaved.id as Long)
+        whenever(securedActivityRepository.findById(activityWithoutImageSaved.id as Long)).thenReturn(
+            activityWithoutImageSaved
+        )
 
         val actual = activityService.getActivityById(activityWithoutImageSaved.id as Long)
 
@@ -98,12 +100,13 @@ internal class ActivityServiceTest {
         val endDate = LocalDate.of(2019, 1, 31)
         val userId = 1L
 
-        doReturn(listOf(activityWithoutImageSaved))
-            .whenever(activityRepository).getActivitiesBetweenDate(
+        whenever(
+            securedActivityRepository.getActivitiesBetweenDate(
                 startDate.atTime(LocalTime.MIN),
                 endDate.atTime(23, 59, 59),
                 userId
             )
+        ).thenReturn(listOf(activityWithoutImageSaved))
 
         val actual = activityService.getActivitiesBetweenDates(startDate, endDate, userId)
 
@@ -136,13 +139,13 @@ internal class ActivityServiceTest {
             activityWithoutImageSaved.duration,
             activityWithoutImageSaved.projectRole.id
         )
-
-        doReturn(listOf(activityTimeOnly))
-            .whenever(activityRepository).workedMinutesBetweenDate(
+        whenever(
+            securedActivityRepository.workedMinutesBetweenDate(
                 startDate.atTime(LocalTime.MIN),
                 endDate.atTime(23, 59, 59),
                 userId
             )
+        ).thenReturn(listOf(activityTimeOnly))
 
         val actual = activityService.workedMinutesBetweenDates(startDate, endDate, userId)
 
@@ -151,7 +154,7 @@ internal class ActivityServiceTest {
 
     @Test
     fun `create activity`() {
-        doReturn(activityWithoutImageSaved).whenever(activityRepository).save(activityWithoutImageToSave)
+        whenever(securedActivityRepository.save(activityWithoutImageToSave)).thenReturn(activityWithoutImageSaved)
 
         val result = activityService.createActivity(activityWithoutImageRequest, USER)
 
@@ -161,7 +164,7 @@ internal class ActivityServiceTest {
 
     @Test
     fun `create activity and store image file`() {
-        doReturn(activityWithImageSaved).whenever(activityRepository).save(activityWithImageToSave)
+        whenever(securedActivityRepository.save(activityWithImageToSave)).thenReturn(activityWithImageSaved)
 
         val result = activityService.createActivity(activityWithImageRequest, USER)
 
@@ -185,8 +188,7 @@ internal class ActivityServiceTest {
             false
         )
 
-        doReturn(Optional.of(activityWithoutImageSaved))
-            .whenever(activityRepository).findById(activityWithoutImageSaved.id!!)
+        whenever(securedActivityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(activityWithoutImageSaved)
 
         val savedActivity = mock(Activity::class.java)
 
@@ -196,7 +198,7 @@ internal class ActivityServiceTest {
             USER,
             activityWithoutImageSaved.insertDate
         )
-        doReturn(savedActivity).whenever(activityRepository).update(activityToSave)
+        whenever(securedActivityRepository.update(activityToSave)).thenReturn(savedActivity)
 
         val result = activityService.updateActivity(activityRequest, USER)
 
@@ -217,12 +219,20 @@ internal class ActivityServiceTest {
             true,
             "Base64 format..."
         )
-
-        val oldActivity = mock(Activity::class.java)
         val oldActivityInsertDate = Date()
-        doReturn(oldActivityInsertDate).whenever(oldActivity).insertDate
+        val oldActivity = Activity(
+            id = activityId,
+            startDate = activityRequest.startDate,
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = USER.id,
+            billable = false,
+            hasImage = true,
+            insertDate = oldActivityInsertDate,
+        )
 
-        doReturn(Optional.of(oldActivity)).whenever(activityRepository).findById(activityId)
+        whenever(securedActivityRepository.findById(activityId)).thenReturn(oldActivity)
 
         // Store the new image in the same old activity path
         willDoNothing().given(activityImageService)
@@ -231,7 +241,7 @@ internal class ActivityServiceTest {
         val activityToReturn = mock(Activity::class.java)
 
         given(
-            activityRepository.update(
+            securedActivityRepository.update(
                 activityRequestBodyConverter.mapActivityRequestBodyToActivity(
                     activityRequest,
                     projectRole,
@@ -254,6 +264,7 @@ internal class ActivityServiceTest {
     @Test
     fun `update activity and delete the stored image`() {
         val activityId = 90L
+        val oldActivityInsertDate = Date()
         val activityRequest = ActivityRequestBody(
             activityId,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
@@ -264,13 +275,19 @@ internal class ActivityServiceTest {
             false
         )
 
-        val oldActivity = mock(Activity::class.java)
-        // The old activity has an image but the new activity body does not
-        val oldActivityHasImage = true
-        val oldActivityInsertDate = Date()
-        given(oldActivity.hasImage).willReturn(oldActivityHasImage)
-        given(oldActivity.insertDate).willReturn(oldActivityInsertDate)
-        given(activityRepository.findById(activityId)).willReturn(Optional.of(oldActivity))
+        val oldActivity = Activity(
+            id = activityId,
+            startDate = activityRequest.startDate,
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = USER.id,
+            billable = false,
+            hasImage = true,
+            insertDate = oldActivityInsertDate,
+        )
+
+        given(securedActivityRepository.findById(activityId)).willReturn(oldActivity)
 
         // Delete the old activity image
         given(activityImageService.deleteActivityImage(activityId, oldActivityInsertDate)).willReturn(true)
@@ -278,7 +295,7 @@ internal class ActivityServiceTest {
         val savedActivity = mock(Activity::class.java)
 
         given(
-            activityRepository.update(
+            securedActivityRepository.update(
                 activityRequestBodyConverter.mapActivityRequestBodyToActivity(
                     activityRequest,
                     projectRole,
@@ -296,30 +313,30 @@ internal class ActivityServiceTest {
 
     @Test
     fun `delete activity by id`() {
-        doReturn(Optional.of(activityWithoutImageSaved))
-            .whenever(activityRepository).findById(activityWithoutImageSaved.id!!)
+        whenever(securedActivityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(activityWithoutImageSaved)
 
         activityService.deleteActivityById(activityWithoutImageSaved.id as Long)
 
-        verify(activityRepository).deleteById(activityWithoutImageSaved.id!!)
+        verify(securedActivityRepository).deleteById(activityWithoutImageSaved.id!!)
         verifyNoInteractions(activityImageService)
     }
 
     @Test
     fun `delete activity by id and its image`() {
-        doReturn(Optional.of(activityWithImageSaved))
-            .whenever(activityRepository).findById(activityWithImageSaved.id!!)
+        whenever(securedActivityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(activityWithImageSaved)
+
+        whenever(securedActivityRepository.findById(activityWithImageSaved.id!!)).thenReturn(activityWithImageSaved)
 
         activityService.deleteActivityById(activityWithImageSaved.id!!)
 
-        verify(activityRepository).deleteById(activityWithImageSaved.id!!)
+        verify(securedActivityRepository).deleteById(activityWithImageSaved.id!!)
         verify(activityImageService).deleteActivityImage(
             activityWithImageSaved.id!!,
             activityWithImageSaved.insertDate!!
         )
     }
 
-    private companion object{
+    private companion object {
         private val USER = createUser()
 
         private val organization = Organization(1L, "Autentia", emptyList())
