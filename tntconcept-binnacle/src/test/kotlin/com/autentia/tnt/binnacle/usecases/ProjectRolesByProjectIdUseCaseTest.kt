@@ -23,7 +23,7 @@ internal class ProjectRolesByProjectIdUseCaseTest {
 
         doReturn(listOf(PROJECT_ROLE)).whenever(projectRoleRepository).getAllByProjectId(PROJECT_ID)
 
-        assertEquals(listOf(ProjectRoleDTO( PROJECT_ID, "Dummy Role", RequireEvidence.NO)), projectRolesByProjectIdUseCase.get(
+        assertEquals(listOf(ProjectRoleDTO( PROJECT_ID, "Dummy Role", ORGANIZATION.id, PROJECT_ID, PROJECT_ROLE.maxAllowed, PROJECT_ROLE.timeUnit, PROJECT_ROLE.requireEvidence, PROJECT_ROLE.isApprovalRequired)), projectRolesByProjectIdUseCase.get(
             PROJECT_ID.toInt()))
     }
 

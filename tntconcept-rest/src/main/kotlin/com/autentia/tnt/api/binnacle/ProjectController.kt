@@ -20,6 +20,7 @@ internal class ProjectController(
         return projectByIdUseCase.get(id)
     }
 
+    @Deprecated("Use ProjectRoleControllerInstead")
     @Operation(summary = "Retrieves a list of project roles from a project ID")
     @Get("/{id}/roles")
     fun getProjectRolesByProjectId(id: Int): List<ProjectRoleDTO> {

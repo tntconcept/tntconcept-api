@@ -149,10 +149,17 @@ internal fun createActivity() = Activity(
 )
 
 internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =
-    ProjectRoleResponseDTO(
+    ProjectRoleUserDTO(
         id = id,
         name = "Dummy Project Role",
-        requireEvidence = requireEvidence
+        1L,
+        1L,
+        10,
+        5,
+        TimeUnit.MINUTES,
+        requireEvidence = requireEvidence,
+        false,
+        1L
     )
 
 

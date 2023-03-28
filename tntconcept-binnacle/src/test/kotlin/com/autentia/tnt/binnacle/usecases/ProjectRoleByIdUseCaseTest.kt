@@ -27,7 +27,7 @@ internal class ProjectRoleByIdUseCaseTest {
 
         doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(id)
 
-        assertEquals(ProjectRoleDTO(projectRole.id, projectRole.name, projectRole.requireEvidence), projectRoleByIdUseCase.get(id))
+        assertEquals(ProjectRoleDTO(projectRole.id, projectRole.name, projectRole.project.organization.id, projectRole.project.id, projectRole.maxAllowed, projectRole.timeUnit, projectRole.requireEvidence, projectRole.isApprovalRequired), projectRoleByIdUseCase.get(id))
     }
 
     @Test

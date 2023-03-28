@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleResponse
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -23,6 +23,6 @@ internal class ProjectRoleService(private val projectRoleRepository: ProjectRole
 
     @Transactional
     @ReadOnly
-    fun getByUserIds(userIds: List<Long>): List<ProjectRoleResponse> =
+    fun getByUserIds(userIds: List<Long>): List<ProjectRoleUser> =
         projectRoleRepository.findDistinctRolesByUserIds(userIds)
 }

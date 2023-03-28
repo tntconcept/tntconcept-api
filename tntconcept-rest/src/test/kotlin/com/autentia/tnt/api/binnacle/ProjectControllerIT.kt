@@ -1,6 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
@@ -79,7 +80,12 @@ internal class ProjectControllerIT {
         val projectRoleRequestBody = ProjectRoleDTO(
             1L,
             "Vacaciones",
-            RequireEvidence.NO
+            1L,
+            1L,
+            0,
+            TimeUnit.MINUTES,
+            RequireEvidence.NO,
+            true
         )
 
         doReturn(listOf(projectRoleRequestBody)).whenever(projectRolesByProjectIdUseCase).get(projectId)

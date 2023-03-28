@@ -1,9 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.converters.ProjectRoleRecentConverter
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByUserIdsUseCase
@@ -16,7 +14,6 @@ internal class ProjectRoleController(
     private val projectRoleByIdUseCase: ProjectRoleByIdUseCase,
     private val latestProjectRolesForAuthenticatedUserUseCase: LatestProjectRolesForAuthenticatedUserUseCase,
     private val projectRoleByUserIdsUseCase: ProjectRoleByUserIdsUseCase,
-    private val projectRoleRecentConverter: ProjectRoleRecentConverter,
 ) {
 
     @Operation(summary = "Retrieves a project role by a given ID")
@@ -26,13 +23,11 @@ internal class ProjectRoleController(
 
     @Operation(summary = "Retrieves recent used roles")
     @Get("/recents")
-    fun getLatestRoles(): List<ProjectRoleRecentDTO> =
-        latestProjectRolesForAuthenticatedUserUseCase
-            .get()
-            .map { projectRoleRecentConverter.toProjectRoleRecentDTO(it) }
+    fun getLatestRoles(): List<ProjectRoleUserDTO> =
+        latestProjectRolesForAuthenticatedUserUseCase.get()
 
     @Operation(summary = "Retrieves a project roles list by given user IDs")
     @Get
-    fun getProjectRoleByUserIds(userIds: List<Long>): List<ProjectRoleResponseDTO> =
+    fun getProjectRoleByUserIds(userIds: List<Long>): List<ProjectRoleUserDTO> =
         projectRoleByUserIdsUseCase.get(userIds)
 }

@@ -1,12 +1,12 @@
 package com.autentia.tnt.binnacle.converters
 
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleResponse
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
-import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import jakarta.inject.Singleton
 import java.time.temporal.ChronoUnit
@@ -19,9 +19,27 @@ class ProjectRoleResponseConverter internal constructor(
     fun toProjectRoleDTO(projectRole: ProjectRole): ProjectRoleDTO = ProjectRoleDTO(
         id = projectRole.id,
         name = projectRole.name,
+        organizationId = projectRole.project.organization.id,
+        projectId = projectRole.project.id,
+        maxAllowed = projectRole.maxAllowed,
+        timeUnit = projectRole.timeUnit,
         requireEvidence = projectRole.requireEvidence,
+        requireApproval = projectRole.isApprovalRequired
     )
-    fun toProjectRoleResponseDTO(projectRole: ProjectRoleResponse): ProjectRoleResponseDTO = ProjectRoleResponseDTO(
+    fun toProjectRoleUserDTO(projectRole: ProjectRoleUser): ProjectRoleUserDTO = ProjectRoleUserDTO(
+        id = projectRole.id,
+        name = projectRole.name,
+        organizationId = projectRole.organizationId,
+        projectId = projectRole.projectId,
+        maxAllowed = projectRole.maxAllowed,
+        remaining = setRemainingTime(projectRole.userId, projectRole.id, projectRole.timeUnit, projectRole.maxAllowed),
+        timeUnit = projectRole.timeUnit,
+        requireEvidence = projectRole.requireEvidence,
+        requireApproval = projectRole.requireApproval,
+        userId = projectRole.userId
+    )
+
+    fun toProjectRoleUserDTO(projectRole: ProjectRoleRecent): ProjectRoleUserDTO = ProjectRoleUserDTO(
         id = projectRole.id,
         name = projectRole.name,
         organizationId = projectRole.organizationId,

@@ -39,7 +39,7 @@ internal class ProjectControllerTest {
         val projectId = 1
 
         val rolesDTO = listOf(
-            createProjectRoleResponseDTO()
+            createProjectRoleUserDTO()
         )
 
         doReturn(rolesDTO).whenever(projectRolesByProjectIdUseCase).get(projectId)

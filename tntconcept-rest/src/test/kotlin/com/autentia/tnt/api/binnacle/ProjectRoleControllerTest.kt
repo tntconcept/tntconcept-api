@@ -1,10 +1,9 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.converters.ProjectRoleRecentConverter
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
 import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByUserIdsUseCase
@@ -13,20 +12,16 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.time.LocalDateTime
-import java.time.Month
 
 internal class ProjectRoleControllerTest {
     private val projectRoleByIdUseCase = mock<ProjectRoleByIdUseCase>()
     private val latestProjectRolesForAuthenticatedUserUseCase = mock<LatestProjectRolesForAuthenticatedUserUseCase>()
-    private val projectRoleRecentConverter = ProjectRoleRecentConverter()
     private val projectRoleByUserIdsUseCase = mock<ProjectRoleByUserIdsUseCase>()
 
     private val projectRoleController = ProjectRoleController(
         projectRoleByIdUseCase,
         latestProjectRolesForAuthenticatedUserUseCase,
-        projectRoleByUserIdsUseCase,
-        projectRoleRecentConverter
+        projectRoleByUserIdsUseCase
     )
 
     @Test
@@ -36,7 +31,12 @@ internal class ProjectRoleControllerTest {
         val role = ProjectRoleDTO(
             1,
             "Dummy Project Role",
+            1,
+            1,
+            10,
+            TimeUnit.DAYS,
             RequireEvidence.WEEKLY,
+            true,
         )
 
         doReturn(role).whenever(projectRoleByIdUseCase).get(roleId.toLong())
@@ -54,31 +54,35 @@ internal class ProjectRoleControllerTest {
 
         val projectRolesRecentResponseDTO = projectRoleController.getLatestRoles()
 
-        assertEquals(listOf(PROJECT_ROLE_RECENT_DTO), projectRolesRecentResponseDTO)
+        assertEquals(listOf(PROJECT_ROLE_USER_DTO), projectRolesRecentResponseDTO)
     }
 
     private companion object {
 
-        private val PROJECT_ROLE_RECENT = ProjectRoleRecent(
+        private val PROJECT_ROLE_RECENT = ProjectRoleUserDTO(
             1L,
             "Dummy Project Role",
-            "Dummy Project",
-            "Dummy Organization",
-            false,
+            1L,
+            1L,
+            10,
+            5,
+            TimeUnit.DAYS,
+            RequireEvidence.NO,
             true,
-            LocalDateTime.of(2020, Month.JANUARY, 1, 0, 0, 0),
-            RequireEvidence.NO
+            1L
         )
 
-        private val PROJECT_ROLE_RECENT_DTO = ProjectRoleRecentDTO(
+        private val PROJECT_ROLE_USER_DTO = ProjectRoleUserDTO(
             PROJECT_ROLE_RECENT.id,
             PROJECT_ROLE_RECENT.name,
-            PROJECT_ROLE_RECENT.projectName,
-            PROJECT_ROLE_RECENT.organizationName,
-            PROJECT_ROLE_RECENT.projectBillable,
-            PROJECT_ROLE_RECENT.projectOpen,
-            PROJECT_ROLE_RECENT.date,
-            PROJECT_ROLE_RECENT.requireEvidence
+            PROJECT_ROLE_RECENT.organizationId,
+            PROJECT_ROLE_RECENT.projectId,
+            PROJECT_ROLE_RECENT.maxAllowed,
+            PROJECT_ROLE_RECENT.remaining,
+            PROJECT_ROLE_RECENT.timeUnit,
+            PROJECT_ROLE_RECENT.requireEvidence,
+            PROJECT_ROLE_RECENT.requireApproval,
+            PROJECT_ROLE_RECENT.userId
         )
 
     }

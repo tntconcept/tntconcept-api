@@ -2,13 +2,12 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
-import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 
-internal class ProjectRoleResponseConverterTest {
+internal class ProjectRoleUserConverterTest {
 
     private val activityService = mock<ActivityService>()
 
@@ -33,8 +32,8 @@ internal class ProjectRoleResponseConverterTest {
         val projectRoleResponseDTOList = projectRoleList.map { projectRoleResponseConverter.toProjectRoleDTO(it) }
 
         val expectedProjectRoleDTOLists = listOf(
-            ProjectRoleDTO(1, "First Role", RequireEvidence.NO),
-            ProjectRoleDTO(2, "Second Role", RequireEvidence.WEEKLY)
+            ProjectRoleDTO(1, "First Role", 2,1, 0, TimeUnit.MINUTES, RequireEvidence.NO, false),
+            ProjectRoleDTO(2, "Second Role", 2, 1, 0, TimeUnit.MINUTES, RequireEvidence.WEEKLY, false)
         )
         assertEquals(expectedProjectRoleDTOLists, projectRoleResponseDTOList)
     }

@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.core.domain
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 
-data class ProjectRoleResponse (
+data class ProjectRoleUser (
     val id: Long,
     val name: String,
     val organizationId: Long,
