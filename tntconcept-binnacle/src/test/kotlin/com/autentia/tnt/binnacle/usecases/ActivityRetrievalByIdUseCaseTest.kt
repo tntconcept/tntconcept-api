@@ -34,14 +34,12 @@ internal class ActivityRetrievalByIdUseCaseTest {
     private val activityRetrievalByIdUseCase =
         ActivityRetrievalByIdUseCase(
             activityService,
-            userService,
-            activityValidator,
             ActivityResponseConverter(
                 OrganizationResponseConverter(),
                 ProjectResponseConverter(),
                 ProjectRoleResponseConverter()
             )
-    )
+        )
 
     @Test
     fun `return the activity`() {
@@ -52,17 +50,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
         doReturn(true).whenever(activityValidator).userHasAccess(yesterdayActivity, USER)
 
         assertEquals(yesterdayActivityResponseDTO, activityRetrievalByIdUseCase.getActivityById(2L))
-    }
-
-    @Test
-    fun `return null when authenticated user cannot access the activity`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-
-        doReturn(savedActivity).whenever(activityService).getActivityById(2L)
-
-        doReturn(false).whenever(activityValidator).userHasAccess(savedActivity, USER)
-
-        assertNull(activityRetrievalByIdUseCase.getActivityById(2L))
     }
 
 
@@ -104,15 +91,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
             true
         )
 
-        val savedActivity = Activity(
-            2L,
-            LocalDate.of(2020, Month.JULY, 2).atStartOfDay(),
-            540,
-            "Dummy description",
-            PROJECT_ROLE,
-            33L,
-            true
-        )
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
             2L,
             YESTERDAY.atStartOfDay(),
