@@ -7,11 +7,13 @@ import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import com.autentia.tnt.security.application.isAdmin
 import io.micronaut.security.utils.SecurityService
+import jakarta.inject.Singleton
 import java.time.LocalDateTime
 
+@Singleton
 internal class SecuredActivityRepository(
     private val activityDao: ActivityDao,
-    private val securityService: SecurityService
+    private val securityService: SecurityService,
 ) {
 
     fun findById(id: Long): Activity? {
@@ -50,5 +52,16 @@ internal class SecuredActivityRepository(
         return activityDao.workedMinutesBetweenDate(startDate, endDate, userId)
     }
 
+    fun save(activity: Activity): Activity {
+        return activityDao.save(activity)
+    }
+
+    fun update(activity: Activity): Activity {
+        return activityDao.update(activity)
+    }
+
+    fun deleteById(id: Long) {
+        activityDao.deleteById(id)
+    }
 
 }
