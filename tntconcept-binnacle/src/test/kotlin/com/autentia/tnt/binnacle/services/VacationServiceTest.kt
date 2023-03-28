@@ -36,7 +36,6 @@ import java.time.Month.DECEMBER
 import java.time.Month.JANUARY
 import java.time.Month.SEPTEMBER
 import java.time.temporal.TemporalAdjusters
-import java.util.Date
 
 @TestInstance(PER_CLASS)
 internal class VacationServiceTest {
@@ -48,8 +47,7 @@ internal class VacationServiceTest {
     private val calendarFactory = CalendarFactory(holidayService)
 
     private val vacationService = VacationService(
-        vacationRepository, holidayService, myVacationsDetailService,
-        vacationConverter, calendarFactory
+        vacationRepository, myVacationsDetailService, vacationConverter, calendarFactory
     )
 
     @Test

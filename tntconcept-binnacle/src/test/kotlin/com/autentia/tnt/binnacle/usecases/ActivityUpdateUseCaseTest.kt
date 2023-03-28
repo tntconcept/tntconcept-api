@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
@@ -32,11 +33,13 @@ internal class ActivityUpdateUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val activityValidator = mock<ActivityValidator>()
+    private val projectRoleService = mock<ProjectRoleService>()
     private val userService = mock<UserService>()
 
     private val activityUpdateUseCase = ActivityUpdateUseCase(
         activityService,
         activityCalendarService,
+        projectRoleService,
         userService,
         activityValidator,
         ActivityRequestBodyConverter(),
@@ -46,9 +49,13 @@ internal class ActivityUpdateUseCaseTest {
         TimeIntervalConverter()
     )
 
+    private val projectRole = createProjectRole().copy(id = 10L)
+
     @Test
     fun `return updated activity for the authenticated user when it is valid`() {
         doReturn(USER).whenever(userService).getAuthenticatedUser()
+
+        doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
 
         doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(USER))
 

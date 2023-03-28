@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
+import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -185,11 +185,64 @@ internal class ActivityRepositoryIT {
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
         val end = today.atTime(LocalTime.MAX)
 
-        val workedTimeActivities = activityRepository.workedMinutesBetweenDate(start, end, userId)
+        val workedTimeActivities = activityRepository.getActivitiesIntervals(start, end, createProjectRole().id, userId)
 
         val expectedWorkedMinutesActivities = listOf(
-            ActivityTimeOnly(todayActivity.start, todayActivity.end, todayActivity.duration, projectRole.id),
-            ActivityTimeOnly(yesterdayActivity.start, yesterdayActivity.end, yesterdayActivity.duration, projectRole.id)
+            ActivityInterval(yesterdayActivity.start, yesterdayActivity.end, projectRole.timeUnit),
+            ActivityInterval(todayActivity.start, todayActivity.end, projectRole.timeUnit)
+        )
+
+        assertEquals(2, workedTimeActivities.size)
+        assertEquals(expectedWorkedMinutesActivities, workedTimeActivities)
+    }
+
+    @Test
+    fun `should get overlapping activities`() {
+        val todayActivity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val yesterdayActivity = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityForTwoDays = Activity(
+            start = today.plusDays(2).atTime(0, 0, 0),
+            end = today.plusDays(3).atTime(23, 59, 59),
+            duration = 960,
+            description = "Test activity 3",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        activityRepository.saveAll(
+            listOf(
+                todayActivity, yesterdayActivity, activityForTwoDays
+            )
+        )
+        val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
+        val end = today.atTime(LocalTime.MAX)
+
+        val workedTimeActivities = activityRepository.getOverlappingActivities(start, end, userId)
+
+        val expectedWorkedMinutesActivities = listOf(
+            todayActivity, yesterdayActivity
         )
 
         assertEquals(2, workedTimeActivities.size)

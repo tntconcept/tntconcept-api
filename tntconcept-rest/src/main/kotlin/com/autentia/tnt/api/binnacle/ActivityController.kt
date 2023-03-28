@@ -71,6 +71,10 @@ internal class ActivityController(
         activityApprovalUseCase.approveActivity(id)
 
     @Error
+    internal fun onTimeIntervalException(request: HttpRequest<*>, e: TimeIntervalException) =
+        HttpResponse.badRequest(ErrorResponse("INVALID_DATE_RANGE", e.message))
+
+    @Error
     internal fun onOverlapAnotherActivityTimeException(request: HttpRequest<*>, e: OverlapsAnotherTimeException) =
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
 
@@ -80,7 +84,7 @@ internal class ActivityController(
             ErrorResponseMaxHoursLimit(
                 "MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",
                 e.message,
-                ErrorValues(e.maxAllowedHours, e.remainingHours)
+                ErrorValues(e.maxAllowedHours, e.remainingHours, e.year)
             )
         )
 

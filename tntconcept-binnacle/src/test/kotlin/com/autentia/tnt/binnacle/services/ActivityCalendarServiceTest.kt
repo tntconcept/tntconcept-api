@@ -4,8 +4,10 @@ import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
+import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -25,14 +27,20 @@ class ActivityCalendarServiceTest {
     private val activitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
 
     private val activityCalendarService =
-        ActivityCalendarService(activityService, projectRoleService, calendarFactory, activitiesCalendarFactory)
+        ActivityCalendarService(activityService, calendarFactory, activitiesCalendarFactory)
 
     private val dateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25)
     private val dateTimePlusOneHour = dateTime.plusHours(1L)
     private val dateTimePlusTwoDays = dateTimePlusOneHour.plusDays(2)
 
+    private val todayDateTime = LocalDateTime.of(2023, 3, 21, 0, 0)
+    private val todayDateTimePlusOneMonth = todayDateTime.plusMonths(1)
+    private val lastYearDateTime = todayDateTime.minusMonths(3)
+    private val lastYearDateTimePlusOneMonth = lastYearDateTime.plusMonths(1)
+
     private val date = dateTime.toLocalDate()
     private val datePlusTwoDays = dateTimePlusTwoDays.toLocalDate()
+
     private val projectRole = createProjectRole().copy(timeUnit = TimeUnit.DAYS)
     private val user = createUser()
     private val activityInMinutes = createActivity()
@@ -46,6 +54,29 @@ class ActivityCalendarServiceTest {
             projectRole = projectRole
         )
     private val activities = listOf(activityInMinutes, activityWithDecimals, activityInDays)
+
+    private val monthLongActivity = ActivityInterval(
+        todayDateTime,
+        todayDateTimePlusOneMonth,
+        TimeUnit.DAYS
+    )
+
+    private val lastYearActivity = ActivityInterval(
+        lastYearDateTime,
+        lastYearDateTimePlusOneMonth,
+        TimeUnit.DAYS
+    )
+
+    @Test
+    fun `getActivityDurationSummaryInHours dateInterval, userId shoud return 0`() {
+        doReturn(emptyList<Activity>()).whenever(activityService)
+            .getActivitiesBetweenDates(DateInterval.of(date, datePlusTwoDays), user.id)
+
+        val timeSummary =
+            activityCalendarService.getActivityDurationSummaryInHours(DateInterval.of(date, datePlusTwoDays), user.id)
+
+        assert(timeSummary.isEmpty())
+    }
 
     @Test
     fun `getActivityDurationSummaryInHours dateInterval, userId`() {
@@ -66,12 +97,35 @@ class ActivityCalendarServiceTest {
     }
 
     @Test
+    fun getZeroDuration() {
+        val timeInterval = TimeInterval.ofYear(2023)
+
+        doReturn(emptyList<ActivityInterval>()).whenever(activityService)
+            .getActivitiesIntervals(timeInterval, projectRole.id, user.id)
+
+        val actualDuration = activityCalendarService.getSumActivitiesDuration(timeInterval, projectRole.id, user.id)
+
+        assertEquals(0, actualDuration)
+    }
+
+    @Test
+    fun getDuration() {
+        val timeInterval = TimeInterval.ofYear(2023)
+        doReturn(listOf(monthLongActivity, lastYearActivity)).whenever(activityService)
+            .getActivitiesIntervals(timeInterval, projectRole.id, user.id)
+
+        val actualDuration = activityCalendarService.getSumActivitiesDuration(timeInterval, projectRole.id, user.id)
+
+        assertEquals(18720, actualDuration)
+    }
+
+    @Test
     fun `getDurationByCountingWorkingDays by passing timeInterval, projectRoleId`() {
 
         doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
 
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            TimeInterval.of(dateTime, dateTimePlusTwoDays), projectRole.id
+            TimeInterval.of(dateTime, dateTimePlusTwoDays), projectRole
         )
         assertEquals(1440, duration)
     }

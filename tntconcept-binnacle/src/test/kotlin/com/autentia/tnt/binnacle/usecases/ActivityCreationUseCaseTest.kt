@@ -14,6 +14,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,13 +33,16 @@ internal class ActivityCreationUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
+    private val projectRoleService = ProjectRoleService(projectRoleRepository)
     private val activityRepository = mock<ActivityRepository>()
-    private val activityValidator = ActivityValidator(activityRepository, projectRoleRepository)
+    private val activityValidator =
+        ActivityValidator(activityRepository, activityCalendarService, projectRoleRepository)
     private val userService = mock<UserService>()
 
     private val activityCreationUseCase = ActivityCreationUseCase(
         activityService,
         activityCalendarService,
+        projectRoleService,
         userService,
         activityValidator,
         ActivityRequestBodyConverter(),

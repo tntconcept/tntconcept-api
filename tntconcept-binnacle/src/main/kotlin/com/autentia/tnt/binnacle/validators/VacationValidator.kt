@@ -9,8 +9,6 @@ import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.repositories.VacationRepository
-import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.VacationService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -19,8 +17,6 @@ import javax.transaction.Transactional
 @Singleton
 internal class VacationValidator(
     private val vacationRepository: VacationRepository,
-    private val vacationService: VacationService,
-    private val holidayService: HolidayService,
     private val calendarFactory: CalendarFactory
 ) {
 
@@ -61,7 +57,6 @@ internal class VacationValidator(
     private fun isPastAndAcceptedVacation(startDate: LocalDate, state: VacationState): Boolean {
         return ((startDate <= LocalDate.now()) && (state == ACCEPT))
     }
-
 
     private fun isVacationOverlaps(startDate: LocalDate, endDate: LocalDate, userId: Long, id: Long?): Boolean {
         return vacationRepository.getVacationsBetweenDate(startDate, endDate, userId)

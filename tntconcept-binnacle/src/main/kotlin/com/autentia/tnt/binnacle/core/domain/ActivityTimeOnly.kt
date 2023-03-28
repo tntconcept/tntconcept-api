@@ -1,12 +1,9 @@
 package com.autentia.tnt.binnacle.core.domain
 
-import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
-
-@Introspected
-data class ActivityTimeOnly(
-    val start: LocalDateTime,
-    val end: LocalDateTime,
+@Deprecated("Used in the deprecated Activities Controller")
+data class ActivityTimeOnly (
+    val startDate: LocalDateTime,
     val duration: Int,
-    val projectRoleId: Long,
+    val projectRoleId: Long
 )

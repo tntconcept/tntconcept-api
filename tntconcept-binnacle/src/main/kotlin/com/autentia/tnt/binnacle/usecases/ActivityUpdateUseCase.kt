@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import jakarta.inject.Singleton
@@ -15,6 +16,7 @@ import jakarta.inject.Singleton
 class ActivityUpdateUseCase internal constructor(
     private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
+    private val projectRoleService: ProjectRoleService,
     private val userService: UserService,
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
@@ -23,13 +25,15 @@ class ActivityUpdateUseCase internal constructor(
 ) {
     fun updateActivity(activityRequest: ActivityRequestBodyDTO): ActivityResponseDTO {
         val user = userService.getAuthenticatedUser()
-
+        val projectRole = projectRoleService.getByProjectRoleId(activityRequest.projectRoleId)
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            timeIntervalConverter.toTimeInterval(activityRequest.interval), activityRequest.projectRoleId
+            timeIntervalConverter.toTimeInterval(activityRequest.interval), projectRole
         )
 
         val activityRequestBody =
-            activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(activityRequest, duration)
+            activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(
+                activityRequest, projectRole, duration
+            )
         activityValidator.checkActivityIsValidForUpdate(activityRequestBody, user)
         return activityResponseConverter.mapActivityToActivityResponseDTO(
             activityService.updateActivity(activityRequestBody, user)
