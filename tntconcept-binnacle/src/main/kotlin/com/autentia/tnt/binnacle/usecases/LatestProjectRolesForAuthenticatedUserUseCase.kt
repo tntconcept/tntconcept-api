@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.core.domain.StartEndLocalDateTime
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -34,6 +35,25 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
             .sortedByDescending { it.date }
             .distinctBy { it.id }
             .map { projectRoleResponseConverter.toProjectRoleUserDTO(it) }
+    }
+
+    @Deprecated("Use get method instead")
+    @Transactional
+    @ReadOnly
+    fun getProjectRolesRecent(): List<ProjectRolesRecent> {
+        val userId = userService.getAuthenticatedUser().id
+        val oneMonthDateRange = oneMonthDateRangeFromCurrentDate()
+
+        val roles = projectRoleRepository.findDistinctProjectRolesBetweenDate(
+            oneMonthDateRange.startDate,
+            oneMonthDateRange.endDate,
+            userId
+        )
+
+        return roles
+            .filter { it.projectOpen }
+            .sortedByDescending { it.date }
+            .distinctBy { it.id }
     }
 
     private fun oneMonthDateRangeFromCurrentDate(): StartEndLocalDateTime {
