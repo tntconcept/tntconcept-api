@@ -68,14 +68,23 @@ class ActivityCalendarServiceTest {
     )
 
     @Test
-    fun `getActivityDurationSummaryInHours dateInterval, userId shoud return 0`() {
-        doReturn(emptyList<Activity>()).whenever(activityService)
-            .getActivitiesBetweenDates(DateInterval.of(date, datePlusTwoDays), user.id)
+    fun `getActivityDurationSummaryInHours dateInterval, userId should return empty summary with all dates and workedTime set to zero`() {
+        whenever(activityService.getActivitiesBetweenDates(DateInterval.of(date, datePlusTwoDays), user.id)).thenReturn(
+            emptyList()
+        )
 
+        val expectedDuration = BigDecimal.ZERO.setScale(2)
         val timeSummary =
             activityCalendarService.getActivityDurationSummaryInHours(DateInterval.of(date, datePlusTwoDays), user.id)
 
-        assert(timeSummary.isEmpty())
+        assertEquals(date, timeSummary[0].date)
+        assertEquals(expectedDuration, timeSummary[0].workedHours)
+
+        assertEquals(date.plusDays(1), timeSummary[1].date)
+        assertEquals(expectedDuration, timeSummary[1].workedHours)
+
+        assertEquals(datePlusTwoDays, timeSummary[2].date)
+        assertEquals(expectedDuration, timeSummary[2].workedHours)
     }
 
     @Test
@@ -87,13 +96,13 @@ class ActivityCalendarServiceTest {
             activityCalendarService.getActivityDurationSummaryInHours(DateInterval.of(date, datePlusTwoDays), user.id)
 
         assertEquals(date, timeSummary[0].date)
-        assertEquals(0, BigDecimal("10.33").compareTo(timeSummary[0].workedHours))
+        assertEquals(BigDecimal("10.33"), timeSummary[0].workedHours)
 
         assertEquals(date.plusDays(1), timeSummary[1].date)
-        assertEquals(0, BigDecimal(8).compareTo(timeSummary[1].workedHours))
+        assertEquals(BigDecimal("8.00"), timeSummary[1].workedHours)
 
         assertEquals(datePlusTwoDays, timeSummary[2].date)
-        assertEquals(0, BigDecimal(8).compareTo(timeSummary[2].workedHours))
+        assertEquals(BigDecimal("8.00"), timeSummary[2].workedHours)
     }
 
     @Test
