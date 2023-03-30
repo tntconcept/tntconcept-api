@@ -18,7 +18,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -158,10 +158,17 @@ internal fun createDomainActivity() = com.autentia.tnt.binnacle.core.domain.Acti
 )
 
 internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =
-    ProjectRoleResponseDTO(
+    ProjectRoleUserDTO(
         id = id,
         name = "Dummy Project Role",
-        requireEvidence = requireEvidence
+        1L,
+        1L,
+        10,
+        5,
+        TimeUnit.MINUTES,
+        requireEvidence = requireEvidence,
+        false,
+        1L
     )
 
 

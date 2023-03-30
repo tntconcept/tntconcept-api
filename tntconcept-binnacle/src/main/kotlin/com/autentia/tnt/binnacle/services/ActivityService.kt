@@ -43,6 +43,10 @@ internal class ActivityService(
     fun getActivitiesApprovalState(approvalState: ApprovalState, userId: Long): List<Activity> {
         return activityRepository.getActivitiesApprovalState(approvalState, userId)
     }
+    @Transactional
+    @ReadOnly
+    fun getActivitiesForAGivenProjectRoleAndUser(projectRoleId: Long, userId: Long): List<Activity> =
+        activityRepository.getActivitiesForAGivenProjectRoleAndUser(projectRoleId, userId)
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {

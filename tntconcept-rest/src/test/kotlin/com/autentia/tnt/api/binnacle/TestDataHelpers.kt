@@ -125,10 +125,17 @@ internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
     TimeUnit.MINUTES
 )
 
-internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) = ProjectRoleResponseDTO(
+internal fun createProjectRoleUserDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) = ProjectRoleUserDTO(
     id,
     "Dummy Project Role",
-    requireEvidence
+    id,
+    id,
+    10,
+    5,
+    TimeUnit.DAYS,
+    requireEvidence,
+    true,
+    id
 )
 
 internal fun createActivityResponseDTO(id: Long, start: LocalDateTime, end: LocalDateTime, hasEvidences: Boolean, approvalState: ApprovalState = ApprovalState.PENDING) = ActivityResponseDTO(
@@ -136,7 +143,7 @@ internal fun createActivityResponseDTO(id: Long, start: LocalDateTime, end: Loca
     description = "Dummy description",
     hasEvidences = hasEvidences,
     id = id,
-    projectRoleId = createProjectRoleResponseDTO().id,
+    projectRoleId = createProjectRoleUserDTO().id,
     interval = IntervalResponseDTO(start, end, 540, TimeUnit.MINUTES),
     userId = 1L,
     approvalState = approvalState

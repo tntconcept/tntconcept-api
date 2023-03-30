@@ -90,7 +90,7 @@ internal class ActivityCreationUseCaseTest {
         )
         private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(10L, "Dummy Project role", ORGANIZATION_DTO.id, PROJECT.id, PROJECT_ROLE.maxAllowed, 5, PROJECT_ROLE.timeUnit, RequireEvidence.NO, PROJECT_ROLE.isApprovalRequired,1L)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,

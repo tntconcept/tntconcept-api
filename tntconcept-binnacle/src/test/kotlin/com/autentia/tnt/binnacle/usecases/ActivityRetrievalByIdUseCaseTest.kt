@@ -90,7 +90,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
             TimeUnit.MINUTES
         )
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", RequireEvidence.NO)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(10L, "Dummy Project role", PROJECT_ROLE.project.organization.id, PROJECT_ROLE.project.id, PROJECT_ROLE.maxAllowed, PROJECT_ROLE.maxAllowed, PROJECT_ROLE.timeUnit, PROJECT_ROLE.requireEvidence, PROJECT_ROLE.isApprovalRequired, USER.id)
 
         val yesterdayActivity = Activity(
             2L,

@@ -39,7 +39,7 @@ internal class WorkTimeFactory {
         val projectRoleIds =
             if (appProperties.binnacle.notWorkableProjects.isEmpty()) emptyList()
             else projectRoleService
-                .getAllByIds(appProperties.binnacle.notWorkableProjects)
+                .getAllByProjectIds(appProperties.binnacle.notWorkableProjects)
                 .map { ProjectRoleId(it.id) }
         return WorkableProjectRoleIdChecker(projectRoleIds)
     }

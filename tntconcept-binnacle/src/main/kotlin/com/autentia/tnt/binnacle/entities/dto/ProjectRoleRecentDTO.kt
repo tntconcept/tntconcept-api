@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.entities.dto
 
-import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDateTime
 
@@ -14,5 +13,5 @@ data class ProjectRoleRecentDTO(
 
     @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss'Z'")
     val date: LocalDateTime,
-    val requireEvidence: RequireEvidence
+    val requireEvidence: Boolean
 )

@@ -33,18 +33,33 @@ internal class ActivityCalendarService(
     @Transactional
     @ReadOnly
     fun getActivityDurationSummaryInHours(
-        activities: List<Activity>, dateInterval: DateInterval
+        activities: List<Activity>,
+        dateInterval: DateInterval
     ): List<DailyWorkingTime> {
         val activitiesCalendarMap = getActivityCalendarMap(activities, dateInterval)
         return activitiesCalendarMap.toList().map {
+            toDailyWorkingTime(it)
+        }
+    }
+
+    private fun toDailyWorkingTime(activitiesInDate: Pair<LocalDate, List<Activity>>): DailyWorkingTime {
+        return if (activitiesInDate.second.isNotEmpty()) {
             DailyWorkingTime(
-                it.first,
-                BigDecimal(this.getDurationByCountingNumberOfDays(it.second, 1)).divide(
-                    BigDecimal(60), 10, RoundingMode.HALF_UP
-                ).setScale(2, RoundingMode.DOWN)
+                activitiesInDate.first,
+                getActivitiesDurationInHours(activitiesInDate.second)
+            )
+        } else {
+            DailyWorkingTime(
+                activitiesInDate.first,
+                BigDecimal.ZERO.setScale(2)
             )
         }
     }
+
+    private fun getActivitiesDurationInHours(activity: List<Activity>): BigDecimal =
+        BigDecimal(this.getDurationByCountingNumberOfDays(activity, 1)).divide(
+            MINUTES_IN_HOUR, 10, RoundingMode.HALF_UP
+        ).setScale(2, RoundingMode.DOWN)
 
     @Transactional
     @ReadOnly
@@ -53,10 +68,7 @@ internal class ActivityCalendarService(
     ): Map<Month, Duration> {
         val activityCalendarMap = getActivityCalendarMap(activities, dateInterval)
         return activityCalendarMap.toList().filter { it.second.isNotEmpty() }.groupBy { it.first.month }.mapValues {
-            this.getDurationByCountingNumberOfDays(
-                it.value.flatMap { dateActivityPair -> dateActivityPair.second },
-                1
-            ).minutes
+            getActivitiesDuration(it.value.flatMap { dateActivityPair -> dateActivityPair.second })
         }
     }
 
@@ -70,14 +82,15 @@ internal class ActivityCalendarService(
         return activityCalendarMap.toList().filter { it.second.isNotEmpty() }.groupBy { it.first.month }.mapValues {
             it.value.flatMap { dateActivityPair -> dateActivityPair.second }
                 .groupBy { activity -> activity.projectRole.id }
-                .map { projectRole ->
-                    MonthlyRoles(
-                        projectRole.key,
-                        this.getDurationByCountingNumberOfDays(projectRole.value, 1).minutes
-                    )
-                }
+                .map { projectRole -> toMonthlyRoles(projectRole.key, projectRole.value) }
         }
     }
+
+    private fun toMonthlyRoles(projectRoleId: Long, activities: List<Activity>) =
+        MonthlyRoles(projectRoleId, getActivitiesDuration(activities))
+
+    private fun getActivitiesDuration(activities: List<Activity>) =
+        this.getDurationByCountingNumberOfDays(activities, 1).minutes
 
     @Transactional
     @ReadOnly
@@ -142,4 +155,8 @@ internal class ActivityCalendarService(
         } else {
             numberOfDays * 8 * 60
         }
+
+    private companion object {
+        private val MINUTES_IN_HOUR = BigDecimal(60)
+    }
 }

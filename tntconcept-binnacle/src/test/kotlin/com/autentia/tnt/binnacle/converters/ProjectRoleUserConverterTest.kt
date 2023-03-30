@@ -1,17 +1,21 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.services.ActivityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 
-internal class ProjectRoleResponseConverterTest {
+internal class ProjectRoleUserConverterTest {
 
-    private val projectRoleResponseConverter  =  ProjectRoleResponseConverter()
+    private val activityService = mock<ActivityService>()
+
+    private val projectRoleResponseConverter  =  ProjectRoleResponseConverter(activityService)
 
     @Test
     fun `given entity ProjectRole should return ProjectRoleResponseDTO with converted values`() {
-        val projectRoleResponseDTO = projectRoleResponseConverter.toProjectRoleResponseDTO(role)
+        val projectRoleResponseDTO = projectRoleResponseConverter.toProjectRoleDTO(role)
 
         assertEquals(role.id, projectRoleResponseDTO.id)
         assertEquals(role.name, projectRoleResponseDTO.name)
@@ -25,13 +29,13 @@ internal class ProjectRoleResponseConverterTest {
             ProjectRole(2, "Second Role", RequireEvidence.WEEKLY, project, 0, true, false, TimeUnit.MINUTES)
         )
 
-        val projectRoleResponseDTOList = projectRoleList.map { projectRoleResponseConverter.toProjectRoleResponseDTO(it) }
+        val projectRoleResponseDTOList = projectRoleList.map { projectRoleResponseConverter.toProjectRoleDTO(it) }
 
-        val expectedProjectRoleResponseDTOList = listOf(
-            ProjectRoleResponseDTO(1, "First Role", RequireEvidence.NO),
-            ProjectRoleResponseDTO(2, "Second Role", RequireEvidence.WEEKLY)
+        val expectedProjectRoleDTOLists = listOf(
+            ProjectRoleDTO(1, "First Role", 2,1, 0, TimeUnit.MINUTES, RequireEvidence.NO, false),
+            ProjectRoleDTO(2, "Second Role", 2, 1, 0, TimeUnit.MINUTES, RequireEvidence.WEEKLY, false)
         )
-        assertEquals(expectedProjectRoleResponseDTOList, projectRoleResponseDTOList)
+        assertEquals(expectedProjectRoleDTOLists, projectRoleResponseDTOList)
     }
 
     private companion object {

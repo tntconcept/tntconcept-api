@@ -2,8 +2,9 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.ActivityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
@@ -13,15 +14,16 @@ import org.mockito.kotlin.whenever
 internal class ProjectRolesByProjectIdUseCaseTest {
 
     private val projectRoleRepository = mock<ProjectRoleRepository>()
+    private val activityService = mock<ActivityService>()
 
-    private val projectRolesByProjectIdUseCase = ProjectRolesByProjectIdUseCase(projectRoleRepository, ProjectRoleResponseConverter())
+    private val projectRolesByProjectIdUseCase = ProjectRolesByProjectIdUseCase(projectRoleRepository, ProjectRoleResponseConverter(activityService))
 
     @Test
     fun `return the expected project role`() {
 
         doReturn(listOf(PROJECT_ROLE)).whenever(projectRoleRepository).getAllByProjectId(PROJECT_ID)
 
-        assertEquals(listOf(ProjectRoleResponseDTO( PROJECT_ID, "Dummy Role", RequireEvidence.NO)), projectRolesByProjectIdUseCase.get(
+        assertEquals(listOf(ProjectRoleDTO( PROJECT_ID, "Dummy Role", ORGANIZATION.id, PROJECT_ID, PROJECT_ROLE.maxAllowed, PROJECT_ROLE.timeUnit, PROJECT_ROLE.requireEvidence, PROJECT_ROLE.isApprovalRequired)), projectRolesByProjectIdUseCase.get(
             PROJECT_ID.toInt()))
     }
 

@@ -4,10 +4,10 @@ import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
-import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.TimeUnit
@@ -17,7 +17,12 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Month
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class ActivityCalendarServiceTest {
 
@@ -49,8 +54,8 @@ class ActivityCalendarServiceTest {
         activityInMinutes.copy(start = dateTime, end = dateTime.plusMinutes(80))
     private val activityInDays =
         activityInMinutes.copy(
-            start = dateTime,
-            end = dateTimePlusTwoDays,
+            start = LocalDateTime.of(2023, 4, 3, 0, 0, 0),
+            end = LocalDateTime.of(2023, 4, 4, 0, 0, 0),
             projectRole = ProjectRole(2L, TimeUnit.DAYS)
         )
     private val activities = listOf(activityInMinutes, activityWithDecimals, activityInDays)
@@ -68,15 +73,23 @@ class ActivityCalendarServiceTest {
     )
 
     @Test
-    fun `getActivityDurationSummaryInHours dateInterval, userId should return 0`() {
-        doReturn(emptyList<Activity>()).whenever(activityService)
-            .getActivitiesBetweenDates(DateInterval.of(date, datePlusTwoDays), user.id)
+    fun `getActivityDurationSummaryInHours dateInterval, userId should return empty summary with all dates and workedTime set to zero`() {
 
+        val expectedDuration = BigDecimal.ZERO.setScale(2)
         val timeSummary =
             activityCalendarService.getActivityDurationSummaryInHours(
-                emptyList<Activity>(),
+                emptyList(),
                 DateInterval.of(date, datePlusTwoDays)
             )
+
+        assertEquals(date, timeSummary[0].date)
+        assertEquals(expectedDuration, timeSummary[0].workedHours)
+
+        assertEquals(date.plusDays(1), timeSummary[1].date)
+        assertEquals(expectedDuration, timeSummary[1].workedHours)
+
+        assertEquals(datePlusTwoDays, timeSummary[2].date)
+        assertEquals(expectedDuration, timeSummary[2].workedHours)
     }
 
     @Test
@@ -84,17 +97,47 @@ class ActivityCalendarServiceTest {
 
         val timeSummary =
             activityCalendarService.getActivityDurationSummaryInHours(
-                activities, DateInterval.of(date, datePlusTwoDays)
+                activities, DateInterval.of(date, todayDateTime.plusWeeks(2).toLocalDate())
             )
 
         assertEquals(date, timeSummary[0].date)
-        assertEquals(0, BigDecimal("10.33").compareTo(timeSummary[0].workedHours))
+        assertEquals(BigDecimal("2.33"), timeSummary[0].workedHours)
 
-        assertEquals(date.plusDays(1), timeSummary[1].date)
-        assertEquals(0, BigDecimal(8).compareTo(timeSummary[1].workedHours))
+        assertEquals(LocalDate.of(2023, 4, 3), timeSummary[33].date)
+        assertEquals(BigDecimal("8.00"), timeSummary[33].workedHours)
 
-        assertEquals(datePlusTwoDays, timeSummary[2].date)
-        assertEquals(0, BigDecimal(8).compareTo(timeSummary[2].workedHours))
+        assertEquals(LocalDate.of(2023, 4, 4), timeSummary[34].date)
+        assertEquals(BigDecimal("8.00"), timeSummary[34].workedHours)
+    }
+
+    @Test
+    fun getActivityDurationByMonth() {
+        val activityDurationByMonth =
+            activityCalendarService.getActivityDurationByMonth(activities, DateInterval.ofYear(2023))
+
+        val expectedResult: Map<Month, Duration> =
+            mapOf(
+                Month.MARCH to 2.toDuration(DurationUnit.HOURS) + 20.toDuration(DurationUnit.MINUTES),
+                Month.APRIL to 16.toDuration(DurationUnit.HOURS),
+            )
+
+        assertEquals(expectedResult, activityDurationByMonth)
+    }
+
+    @Test
+    fun getActivityDurationByMonthlyRoles() {
+        val activityDurationByMonthlyRoles =
+            activityCalendarService.getActivityDurationByMonthlyRoles(activities, DateInterval.ofYear(2023))
+
+        val expectedResult: Map<Month, List<MonthlyRoles>> =
+            mapOf(
+                Month.MARCH to listOf(
+                    MonthlyRoles(1, 2.toDuration(DurationUnit.HOURS) + 20.toDuration(DurationUnit.MINUTES)),
+                ),
+                Month.APRIL to listOf(MonthlyRoles(2, 16.toDuration(DurationUnit.HOURS)))
+            )
+
+        assertEquals(activityDurationByMonthlyRoles, expectedResult)
     }
 
     @Test
