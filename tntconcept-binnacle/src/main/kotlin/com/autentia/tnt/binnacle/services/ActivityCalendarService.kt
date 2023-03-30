@@ -31,21 +31,32 @@ internal class ActivityCalendarService(
     @ReadOnly
     fun getActivityDurationSummaryInHours(dateInterval: DateInterval, userId: Long): List<DailyWorkingTime> {
         val activities = activityService.getActivitiesBetweenDates(dateInterval, userId)
-        return if (activities.isEmpty()) {
-            emptyList()
-        } else {
-            val activitiesCalendar = activitiesCalendarFactory.create(dateInterval)
-            activitiesCalendar.addAllActivities(activities)
-            activitiesCalendar.activitiesCalendarMap.toList().map {
-                DailyWorkingTime(
-                    it.first,
-                    BigDecimal(this.getDurationByCountingNumberOfDays(it.second, 1)).divide(
-                        BigDecimal(60), 10, RoundingMode.HALF_UP
-                    ).setScale(2, RoundingMode.DOWN)
-                )
-            }
+        val activitiesCalendar = activitiesCalendarFactory.create(dateInterval)
+
+        activitiesCalendar.addAllActivities(activities)
+        return activitiesCalendar.activitiesCalendarMap.toList().map {
+            toDailyWorkingTime(it)
         }
     }
+
+    private fun toDailyWorkingTime(activitiesInDate: Pair<LocalDate, List<Activity>>): DailyWorkingTime {
+        return if (activitiesInDate.second.isNotEmpty()) {
+            DailyWorkingTime(
+                activitiesInDate.first,
+                getActivitiesDuration(activitiesInDate.second)
+            )
+        } else{
+            DailyWorkingTime(
+                activitiesInDate.first,
+                BigDecimal.ZERO.setScale(2)
+            )
+        }
+    }
+
+    private fun getActivitiesDuration(activity: List<Activity>): BigDecimal =
+        BigDecimal(this.getDurationByCountingNumberOfDays(activity, 1)).divide(
+            MINUTES_IN_HOUR, 10, RoundingMode.HALF_UP
+        ).setScale(2, RoundingMode.DOWN)
 
     @Transactional
     @ReadOnly
@@ -72,7 +83,6 @@ internal class ActivityCalendarService(
             }
         }
     }
-
 
     @Transactional
     @ReadOnly
@@ -108,4 +118,8 @@ internal class ActivityCalendarService(
         } else {
             numberOfDays * 8 * 60
         }
+
+    private companion object {
+        private val MINUTES_IN_HOUR = BigDecimal(60)
+    }
 }
