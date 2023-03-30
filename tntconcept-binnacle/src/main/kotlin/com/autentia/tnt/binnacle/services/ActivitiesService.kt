@@ -42,14 +42,6 @@ internal class ActivitiesService(
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
     }
 
-    @Transactional
-    @ReadOnly
-    fun workedMinutesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityTimeOnly> {
-        val startDateMinHour = startDate.atTime(LocalTime.MIN)
-        val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository.workedMinutesBetweenDate(startDateMinHour, endDateMaxHour, userId)
-    }
-
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivitiesRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository

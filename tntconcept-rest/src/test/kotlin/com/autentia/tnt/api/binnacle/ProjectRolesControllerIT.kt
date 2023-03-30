@@ -1,9 +1,11 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
+import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
@@ -105,34 +107,29 @@ internal class ProjectRolesControllerIT {
     @Test
     fun `get the recent project roles`() {
 
-        val projectRoleRecent = ProjectRoleRecent(
+        val projectRolesRecent = ProjectRolesRecent(
             1L,
             "desarrollador",
-            1L,
-            1L,
+            "project",
+            "organization",
+            false,
             false,
             LocalDateTime.now(),
-            10,
-            TimeUnit.MINUTES,
-            RequireEvidence.WEEKLY,
-            true,
-            1L
+            RequireEvidence.NO
         )
 
-        val projectRoleUserDTO = ProjectRoleUserDTO(
+        val projectRoleUserDTO = ProjectRoleRecentDTO(
             1L,
             "desarrollador",
-            1L,
-            1L,
-            10,
-            0,
-            TimeUnit.MINUTES,
-            RequireEvidence.WEEKLY,
-            true,
-            1L
+            "project",
+            "organization",
+            false,
+            false,
+            LocalDateTime.now(),
+            false,
         )
 
-        doReturn(listOf(projectRoleRecent)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get()
+        whenever(latestProjectRolesForAuthenticatedUserUseCase.getProjectRolesRecent()).thenReturn(listOf(projectRolesRecent))
 
         val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-roles/recents"))
 
