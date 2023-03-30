@@ -1,14 +1,15 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.config.createActivity
+import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
+import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
+import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -43,15 +44,14 @@ class ActivityCalendarServiceTest {
 
     private val projectRole = createProjectRole().copy(timeUnit = TimeUnit.DAYS)
     private val user = createUser()
-    private val activityInMinutes = createActivity()
+    private val activityInMinutes = createDomainActivity()
     private val activityWithDecimals =
-        activityInMinutes.copy(start = dateTime, end = dateTime.plusMinutes(80), duration = 80)
+        activityInMinutes.copy(start = dateTime, end = dateTime.plusMinutes(80))
     private val activityInDays =
         activityInMinutes.copy(
             start = dateTime,
             end = dateTimePlusTwoDays,
-            duration = 960,
-            projectRole = projectRole
+            projectRole = ProjectRole(2L, TimeUnit.DAYS)
         )
     private val activities = listOf(activityInMinutes, activityWithDecimals, activityInDays)
 
@@ -68,23 +68,24 @@ class ActivityCalendarServiceTest {
     )
 
     @Test
-    fun `getActivityDurationSummaryInHours dateInterval, userId shoud return 0`() {
+    fun `getActivityDurationSummaryInHours dateInterval, userId should return 0`() {
         doReturn(emptyList<Activity>()).whenever(activityService)
             .getActivitiesBetweenDates(DateInterval.of(date, datePlusTwoDays), user.id)
 
         val timeSummary =
-            activityCalendarService.getActivityDurationSummaryInHours(DateInterval.of(date, datePlusTwoDays), user.id)
-
-        assert(timeSummary.isEmpty())
+            activityCalendarService.getActivityDurationSummaryInHours(
+                emptyList<Activity>(),
+                DateInterval.of(date, datePlusTwoDays)
+            )
     }
 
     @Test
     fun `getActivityDurationSummaryInHours dateInterval, userId`() {
-        doReturn(activities).whenever(activityService)
-            .getActivitiesBetweenDates(DateInterval.of(date, datePlusTwoDays), user.id)
 
         val timeSummary =
-            activityCalendarService.getActivityDurationSummaryInHours(DateInterval.of(date, datePlusTwoDays), user.id)
+            activityCalendarService.getActivityDurationSummaryInHours(
+                activities, DateInterval.of(date, datePlusTwoDays)
+            )
 
         assertEquals(date, timeSummary[0].date)
         assertEquals(0, BigDecimal("10.33").compareTo(timeSummary[0].workedHours))
@@ -125,7 +126,7 @@ class ActivityCalendarServiceTest {
         doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
 
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            TimeInterval.of(dateTime, dateTimePlusTwoDays), projectRole
+            TimeInterval.of(dateTime, dateTimePlusTwoDays), projectRole.timeUnit
         )
         assertEquals(1440, duration)
     }

@@ -81,11 +81,11 @@ internal class ActivityValidator(
             val calendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
 
             val currentActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
-                calendar, currentActivity.getTimeInterval(), currentActivity.projectRole
+                calendar, currentActivity.getTimeInterval(), currentActivity.projectRole.timeUnit
             )
 
             val requestActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
-                calendar, requestActivity.getTimeInterval(), projectRole
+                calendar, requestActivity.getTimeInterval(), projectRole.timeUnit
             )
 
             val totalRegisteredDurationForThisRole =

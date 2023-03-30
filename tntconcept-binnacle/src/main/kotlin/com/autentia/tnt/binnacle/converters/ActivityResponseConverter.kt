@@ -1,14 +1,10 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
+import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.entities.Activity
-
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import jakarta.inject.Singleton
-
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @Singleton
 class ActivityResponseConverter(
@@ -55,9 +51,9 @@ class ActivityResponseConverter(
 
     fun toActivity(activity: Activity) =
         com.autentia.tnt.binnacle.core.domain.Activity(
-            activity.duration.toDuration(DurationUnit.MINUTES),
             activity.start,
-            ProjectRoleId(activity.projectRole.id)
+            activity.end,
+            ProjectRole(activity.projectRole.id, activity.projectRole.timeUnit)
         )
 
     fun mapActivitiesToActivitiesDateDTO(activities: List<Activity>): List<ActivityResponseDTO>  {

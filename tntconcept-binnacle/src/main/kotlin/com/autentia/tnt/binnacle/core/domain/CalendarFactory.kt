@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.core.domain
 
-import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.services.HolidayService
 import jakarta.inject.Singleton
 
