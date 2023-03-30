@@ -1,9 +1,12 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.binnacle.converters.ProjectRoleRecentConverter
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
+import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
@@ -30,6 +33,8 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+
 @Deprecated("Use ProjectRoleControllerIT instead")
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -44,11 +49,11 @@ internal class ProjectRolesControllerIT {
     @get:MockBean(ProjectRoleByIdUseCase::class)
     internal val projectRoleByIdUseCase = mock<ProjectRoleByIdUseCase>()
 
-    @get:MockBean(ProjectRoleByUserIdsUseCase::class)
-    internal val projectRoleByUserIdsUseCase = mock<ProjectRoleByUserIdsUseCase>()
-
     @get:MockBean(LatestProjectRolesForAuthenticatedUserUseCase::class)
     internal val latestProjectRolesForAuthenticatedUserUseCase = mock<LatestProjectRolesForAuthenticatedUserUseCase>()
+
+    @get:MockBean(ProjectRoleRecentConverter::class)
+    internal val projectRoleRecentConverter = mock<ProjectRoleRecentConverter>()
 
 
     @BeforeAll
@@ -105,55 +110,36 @@ internal class ProjectRolesControllerIT {
     @Test
     fun `get the recent project roles`() {
 
-        val projectRoleRecent = ProjectRoleRecent(
+        val projectRoleRecent = ProjectRolesRecent(
             1L,
             "desarrollador",
-            1L,
-            1L,
-            false,
+            "Project",
+            "Organization",
+            true,
+            true,
             LocalDateTime.now(),
-            10,
-            TimeUnit.MINUTES,
             RequireEvidence.WEEKLY,
-            true,
-            1L
         )
 
-        val projectRoleUserDTO = ProjectRoleUserDTO(
+        val projectRoleRecentDTO = ProjectRoleRecentDTO(
             1L,
             "desarrollador",
-            1L,
-            1L,
-            10,
-            0,
-            TimeUnit.MINUTES,
-            RequireEvidence.WEEKLY,
+            "Project",
+            "Organization",
             true,
-            1L
+            true,
+            LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS),
+            true,
         )
 
-        doReturn(listOf(projectRoleRecent)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get()
+        doReturn(listOf(projectRoleRecent)).whenever(latestProjectRolesForAuthenticatedUserUseCase).getProjectRolesRecent()
+        doReturn(projectRoleRecentDTO).whenever(projectRoleRecentConverter).toProjectRoleRecentDTO(projectRoleRecent)
 
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-roles/recents"))
-
-        assertEquals(OK, response.status)
-        assertEquals(listOf(projectRoleUserDTO), response.body.get())
-
-    }
-
-    @Test
-    fun `get the project roles of a list of user Ids`() {
-
-        val userIds = listOf<Long>(1,2)
-
-        val projectRoleResponse = listOf<ProjectRoleUserDTO>()
-
-        doReturn(projectRoleResponse).whenever(projectRoleByUserIdsUseCase).get(userIds)
-
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-roles?userIds=1,2"))
+        val response = client.exchangeList<ProjectRoleRecentDTO>(GET("/api/project-roles/recents"))
 
         assertEquals(OK, response.status)
-        assertEquals(projectRoleResponse, response.body.get())
+        assertEquals(listOf(projectRoleRecentDTO), response.body.get())
+
     }
 
     private fun getFailProvider() = arrayOf(
