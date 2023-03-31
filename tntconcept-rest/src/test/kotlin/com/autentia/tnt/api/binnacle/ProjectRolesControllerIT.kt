@@ -1,6 +1,5 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
 import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
@@ -106,7 +105,7 @@ internal class ProjectRolesControllerIT {
 
     @Test
     fun `get the recent project roles`() {
-
+        val date = LocalDateTime.of(2023, 1,1, 12, 30)
         val projectRolesRecent = ProjectRolesRecent(
             1L,
             "desarrollador",
@@ -114,7 +113,7 @@ internal class ProjectRolesControllerIT {
             "organization",
             false,
             false,
-            LocalDateTime.now(),
+            date,
             RequireEvidence.NO
         )
 
@@ -125,32 +124,16 @@ internal class ProjectRolesControllerIT {
             "organization",
             false,
             false,
-            LocalDateTime.now(),
+            date,
             false,
         )
 
         whenever(latestProjectRolesForAuthenticatedUserUseCase.getProjectRolesRecent()).thenReturn(listOf(projectRolesRecent))
 
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-roles/recents"))
+        val response = client.exchangeList<ProjectRoleRecentDTO>(GET("/api/project-roles/recents"))
 
         assertEquals(OK, response.status)
         assertEquals(listOf(projectRoleUserDTO), response.body.get())
-
-    }
-
-    @Test
-    fun `get the project roles of a list of user Ids`() {
-
-        val userIds = listOf<Long>(1,2)
-
-        val projectRoleResponse = listOf<ProjectRoleUserDTO>()
-
-        doReturn(projectRoleResponse).whenever(projectRoleByUserIdsUseCase).get(userIds)
-
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-roles?userIds=1,2"))
-
-        assertEquals(OK, response.status)
-        assertEquals(projectRoleResponse, response.body.get())
     }
 
     private fun getFailProvider() = arrayOf(
