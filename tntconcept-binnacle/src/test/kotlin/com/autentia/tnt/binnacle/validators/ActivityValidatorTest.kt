@@ -6,15 +6,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.BinnacleException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
+import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -81,6 +73,13 @@ internal class ActivityValidatorTest {
                 projectRole,
                 userHiredLastYear,
                 ActivityBeforeHiringDateException()
+            ),
+            arrayOf(
+                "ActivityInvalidPeriodException",
+                newActivityInvalidPeriodForMinutesProjectRole,
+                projectRole,
+                user,
+                ActivityPeriodNotValidException()
             ),
         )
 
@@ -336,6 +335,18 @@ internal class ActivityValidatorTest {
             }
             assertEquals(1L, exception.id)
         }
+
+        @Test
+        fun `throw ActivityPeriodInvalidException when TimeInterval is longer than a day for a Minutes TimeUnit project role`() {
+
+            doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
+            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(any())
+
+            assertThrows<ActivityPeriodNotValidException> {
+                activityValidator.checkActivityIsValidForUpdate(activityInvalidPeriodForMinutesProjectRole, user)
+            }
+        }
+
 
         @Test
         fun `throw ProjectRoleNotFoundException with role id when project role is not in the database`() {
@@ -1006,6 +1017,17 @@ internal class ActivityValidatorTest {
             false
         )
 
+        private val activityInvalidPeriodForMinutesProjectRole = ActivityRequestBody(
+            1,
+            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
+            LocalDateTime.of(2022, Month.MARCH, 26, 10, 0, 0).plusMinutes(HOUR.toLong()),
+            HOUR,
+            "description",
+            false,
+            projectRole.id,
+            false
+        )
+
         private val currentActivity = Activity(
             1L,
             LocalDateTime.of(2020, Month.JANUARY, 3, 2, 1),
@@ -1066,6 +1088,17 @@ internal class ActivityValidatorTest {
             LocalDateTime.of(userHiredLastYear.hiringDate.year, userHiredLastYear.hiringDate.month.minus(1), 3, 11, 45),
             LocalDateTime.of(userHiredLastYear.hiringDate.year, userHiredLastYear.hiringDate.month.minus(1), 3, 11, 45)
                 .plusMinutes(HOUR.toLong()),
+            HOUR,
+            "description",
+            false,
+            projectRole.id,
+            false
+        )
+
+        private val newActivityInvalidPeriodForMinutesProjectRole = ActivityRequestBody(
+            null,
+            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
+            LocalDateTime.of(2022, Month.MARCH, 26, 10, 0, 0).plusMinutes(HOUR.toLong()),
             HOUR,
             "description",
             false,

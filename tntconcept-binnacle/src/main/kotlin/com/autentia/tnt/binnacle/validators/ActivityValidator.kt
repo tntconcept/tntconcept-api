@@ -2,23 +2,14 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
+import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
+import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.transaction.Transactional
@@ -44,7 +35,7 @@ internal class ActivityValidator(
                 activityRequest.start.toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
-
+            isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
         checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user)
 
@@ -138,6 +129,8 @@ internal class ActivityValidator(
                 activityRequest.start.toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
+
+            isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
         checkIfIsExceedingMaxHoursForRole(activityDb, activityRequest, projectRoleDb, user)
     }
@@ -186,6 +179,15 @@ internal class ActivityValidator(
                 activityRequest.start, activityRequest.end, user.id
             )
         return activities.size > 1 || activities.size == 1 && activities[0].id != activityRequest.id
+    }
+
+    private fun isMoreThanADay(activityTimeInterval: TimeInterval, projectRole: ProjectRole): Boolean {
+        var moreThanADay = false
+        val isMinutesTimeUnit = projectRole.timeUnit == TimeUnit.MINUTES
+        if (isMinutesTimeUnit){
+            moreThanADay = activityTimeInterval.getDuration().toDays().toInt() > 0
+        }
+        return moreThanADay
     }
 
     private companion object {
