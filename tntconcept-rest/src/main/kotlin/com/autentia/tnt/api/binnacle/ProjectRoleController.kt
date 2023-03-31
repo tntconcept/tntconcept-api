@@ -22,7 +22,7 @@ internal class ProjectRoleController(
         projectRoleByIdUseCase.get(id)
 
     @Operation(summary = "Retrieves recent used roles")
-    @Get("/recents")
+    @Get("/latest")
     fun getLatestRoles(): List<ProjectRoleUserDTO> =
         latestProjectRolesForAuthenticatedUserUseCase.get()
 

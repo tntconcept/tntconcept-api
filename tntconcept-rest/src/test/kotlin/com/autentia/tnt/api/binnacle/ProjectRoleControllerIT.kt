@@ -134,7 +134,7 @@ internal class ProjectRoleControllerIT {
 
         doReturn(listOf(projectRoleRecent)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get()
 
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role/recents"))
+        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role/latest"))
 
         assertEquals(OK, response.status)
         assertEquals(listOf(projectRoleUserDTO), response.body.get())

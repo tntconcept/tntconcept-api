@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
