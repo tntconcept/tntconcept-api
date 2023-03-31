@@ -24,7 +24,7 @@ internal class ActivityRepositorySecuredTest {
     private var activityRepositorySecured = ActivityRepositorySecured(activityDao, securityService)
 
     @Test
-    fun `get activity should throw illegal state exception`() {
+    fun `find activity should throw illegal state exception`() {
         val activityId = 1L
         val activity = Activity(
             id = activityId,
@@ -43,7 +43,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `get activity by id for user with admin role permission`() {
+    fun `find activity by id for user with admin role permission`() {
         val activityId = 1L
         val activity = Activity(
             id = activityId,
@@ -64,7 +64,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `get activity by id for user without admin role permission should return null`() {
+    fun `find activity by id for user without admin role permission should return null`() {
         val activityId = 1L
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
@@ -76,7 +76,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `get worked minutes between dates should retrieve authenticated user worked minutes`() {
+    fun `find worked minutes should retrieve authenticated user worked minutes`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
@@ -87,86 +87,31 @@ internal class ActivityRepositorySecuredTest {
         whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
 
         val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
-            startDate, endDate, userId
+            startDate, endDate
         )
 
         assertEquals(workedTime, result)
     }
 
     @Test
-    fun `get worked minutes between dates should retrieve other user activities if is admin`() {
-        val otherUserId = 2L
+    fun `find worked minutes should throw IllegalStateException if there is not logged user`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
         )
         val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, otherUserId)).thenReturn(workedTime)
+        whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
-            startDate, endDate, otherUserId
-        )
-
-        assertEquals(workedTime, result)
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findWorkedMinutes(
+                startDate, endDate, userId
+            )
+        }
     }
 
     @Test
-    fun `should return empty worked minutes between range if logged user is not admin and requested activities belong to other user`() {
-        val otherUserId = 2L
-        val startDate = today.atTime(LocalTime.MIN)
-        val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
-        )
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-
-        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
-            startDate, endDate, otherUserId
-        )
-
-        assertTrue(result.isEmpty())
-    }
-
-    @Test
-    fun `get worked minutes between dates should retrieve logged user activities`() {
-        val startDate = today.atTime(LocalTime.MIN)
-        val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
-        )
-        val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
-
-        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
-            startDate, endDate, userId
-        )
-
-        assertEquals(workedTime, result)
-    }
-
-    @Test
-    fun `get worked minutes between dates should retrieve authenticated user activities`() {
-        val startDate = today.atTime(LocalTime.MIN)
-        val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
-        )
-        val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
-
-        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
-            startDate, endDate, userId
-        )
-
-        assertEquals(workedTime, result)
-    }
-
-    @Test
-    fun `get activities between dates should retrieve other user activities if is admin`() {
+    fun `find activities between dates should retrieve user logged activities`() {
         val otherUserId = 2L
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
@@ -186,34 +131,17 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, otherUserId)).thenReturn(activities)
+        whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, adminUserId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.find(
-            startDate, endDate, otherUserId
+            startDate, endDate
         )
 
         assertEquals(activities, result)
     }
 
     @Test
-    fun `should return empty activities between range if requested activities belong to other user and logged user is not admin`() {
-        val otherUserId = 2L
-        val startDate = today.atTime(LocalTime.MIN)
-        val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
-        )
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-
-        val result: List<Activity> = activityRepositorySecured.find(
-            startDate, endDate, otherUserId
-        )
-
-        assertTrue(result.isEmpty())
-    }
-
-    @Test
-    fun `get activities between dates should retrieve logged user activities`() {
+    fun `find activities should throw IllegalStateException`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
@@ -231,14 +159,14 @@ internal class ActivityRepositorySecuredTest {
             )
         )
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.empty())
         whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, userId)).thenReturn(activities)
 
-        val result: List<Activity> = activityRepositorySecured.find(
-            startDate, endDate, userId
-        )
-
-        assertEquals(activities, result)
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findWorkedMinutes(
+                startDate, endDate, userId
+            )
+        }
     }
 
     private companion object {
