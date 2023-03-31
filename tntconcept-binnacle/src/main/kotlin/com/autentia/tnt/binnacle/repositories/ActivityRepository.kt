@@ -12,6 +12,10 @@ internal interface ActivityRepository {
 
     fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
 
+    fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
+
+    fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly>
+
     fun save(activity: Activity): Activity
 
     fun update(activity: Activity): Activity

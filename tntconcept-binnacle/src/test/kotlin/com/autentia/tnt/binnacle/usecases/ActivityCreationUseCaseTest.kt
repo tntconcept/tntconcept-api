@@ -35,8 +35,8 @@ internal class ActivityCreationUseCaseTest {
     private val user = createUser()
     private val activityService = mock<ActivityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val activityRepositorySecured = mock<ActivityRepository>()
-    private val activityValidator = ActivityValidator(activityRepositorySecured, projectRoleRepository)
+    private val activityRepository = mock<ActivityRepository>()
+    private val activityValidator = ActivityValidator(activityRepository, projectRoleRepository)
     private val userService = mock<UserService>()
 
     private val activityCreationUseCase = ActivityCreationUseCase(

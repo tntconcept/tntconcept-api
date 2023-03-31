@@ -26,7 +26,7 @@ import javax.transaction.Transactional
 
 @Singleton
 internal class ActivityValidator(
-    private val activityRepositorySecured: ActivityRepository,
+    private val activityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository
 ) {
     @Transactional
@@ -99,7 +99,7 @@ internal class ActivityValidator(
             .sumOf { it.duration }
 
     private fun getActivitiesInYear(year: Int, user: User) =
-        activityRepositorySecured.findWorkedMinutes(
+        activityRepository.findWorkedMinutes(
             LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
             LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
             user.id
@@ -110,7 +110,7 @@ internal class ActivityValidator(
     fun checkActivityIsValidForUpdate(activityRequest: ActivityRequestBody, user: User) {
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
-        val activityDb = activityRepositorySecured.findById(activityRequest.id)
+        val activityDb = activityRepository.findById(activityRequest.id)
         val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
         when {
             activityDb == null -> throw ActivityNotFoundException(activityRequest.id!!)
@@ -131,7 +131,7 @@ internal class ActivityValidator(
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long, user: User) {
-        val activityDb = activityRepositorySecured.findById(id)
+        val activityDb = activityRepository.findById(id)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
             !isOpenPeriod(activityDb.startDate) -> throw ActivityPeriodClosedException()
@@ -154,7 +154,7 @@ internal class ActivityValidator(
 
         val startDate = activityRequest.startDate.withHour(0).withMinute(0).withSecond(0)
         val endDate = activityRequest.startDate.withHour(23).withMinute(59).withSecond(59)
-        val activities = activityRepositorySecured.find(startDate, endDate, user.id)
+        val activities = activityRepository.find(startDate, endDate, user.id)
 
         return checkTimeOverlapping(activityRequest, activities)
     }
