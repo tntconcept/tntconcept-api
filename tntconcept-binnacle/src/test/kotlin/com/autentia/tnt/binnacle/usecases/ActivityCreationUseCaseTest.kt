@@ -15,8 +15,8 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
-import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -35,8 +35,8 @@ internal class ActivityCreationUseCaseTest {
     private val user = createUser()
     private val activityService = mock<ActivityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val activityRepository = mock<ActivityRepository>()
-    private val activityValidator = ActivityValidator(activityRepository, projectRoleRepository)
+    private val activityRepositorySecured = mock<ActivityRepository>()
+    private val activityValidator = ActivityValidator(activityRepositorySecured, projectRoleRepository)
     private val userService = mock<UserService>()
 
     private val activityCreationUseCase = ActivityCreationUseCase(

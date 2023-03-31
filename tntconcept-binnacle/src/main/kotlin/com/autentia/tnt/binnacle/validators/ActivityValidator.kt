@@ -15,8 +15,8 @@ import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -26,7 +26,7 @@ import javax.transaction.Transactional
 
 @Singleton
 internal class ActivityValidator(
-    private val activityRepository: ActivityRepository,
+    private val activityRepositorySecured: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository
 ) {
     @Transactional
@@ -99,7 +99,7 @@ internal class ActivityValidator(
             .sumOf { it.duration }
 
     private fun getActivitiesInYear(year: Int, user: User) =
-        activityRepository.workedMinutesBetweenDate(
+        activityRepositorySecured.findWorkedMinutes(
             LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
             LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
             user.id
@@ -110,12 +110,12 @@ internal class ActivityValidator(
     fun checkActivityIsValidForUpdate(activityRequest: ActivityRequestBody, user: User) {
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
-        val activityDb = activityRepository.findById(activityRequest.id)
+        val activityDb = activityRepositorySecured.findById(activityRequest.id)
         val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
         when {
             activityDb == null -> throw ActivityNotFoundException(activityRequest.id!!)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
-            !userHasAccess(activityDb, user) -> throw UserPermissionException()
+            !userHasAccess(activityDb, user) -> throw UserPermissionException() //TODO: Remove this method!
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
@@ -131,7 +131,7 @@ internal class ActivityValidator(
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long, user: User) {
-        val activityDb = activityRepository.findById(id)
+        val activityDb = activityRepositorySecured.findById(id)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
             !isOpenPeriod(activityDb.startDate) -> throw ActivityPeriodClosedException()
@@ -154,7 +154,7 @@ internal class ActivityValidator(
 
         val startDate = activityRequest.startDate.withHour(0).withMinute(0).withSecond(0)
         val endDate = activityRequest.startDate.withHour(23).withMinute(59).withSecond(59)
-        val activities = activityRepository.getActivitiesBetweenDate(startDate, endDate, user.id)
+        val activities = activityRepositorySecured.find(startDate, endDate, user.id)
 
         return checkTimeOverlapping(activityRequest, activities)
     }

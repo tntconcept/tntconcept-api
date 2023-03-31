@@ -16,12 +16,12 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
 
-internal class ActivityRepositoryTest {
+internal class ActivityRepositorySecuredTest {
 
     private val securityService = mock<SecurityService>()
     private val activityDao = mock<ActivityDao>()
 
-    private var activityRepository = ActivityRepository(activityDao, securityService)
+    private var activityRepositorySecured = ActivityRepositorySecured(activityDao, securityService)
 
     @Test
     fun `get activity should throw illegal state exception`() {
@@ -39,7 +39,7 @@ internal class ActivityRepositoryTest {
         whenever(activityDao.findByIdAndUserId(activityId, userId)).thenReturn(activity)
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        assertThrows<IllegalStateException> { activityRepository.findById(activityId) }
+        assertThrows<IllegalStateException> { activityRepositorySecured.findById(activityId) }
     }
 
     @Test
@@ -58,7 +58,7 @@ internal class ActivityRepositoryTest {
         whenever(activityDao.findById(activityId)).thenReturn(Optional.of(activity))
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
 
-        val result = activityRepository.findById(activityId)
+        val result = activityRepositorySecured.findById(activityId)
 
         assertEquals(activity, result)
     }
@@ -69,7 +69,7 @@ internal class ActivityRepositoryTest {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
 
-        val result = activityRepository.findById(activityId)
+        val result = activityRepositorySecured.findById(activityId)
 
         assertNull(result)
         verify(activityDao).findByIdAndUserId(activityId, userId)
@@ -86,7 +86,7 @@ internal class ActivityRepositoryTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
 
-        val result: List<ActivityTimeOnly> = activityRepository.workedMinutesBetweenDate(
+        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
             startDate, endDate, userId
         )
 
@@ -105,7 +105,7 @@ internal class ActivityRepositoryTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
         whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, otherUserId)).thenReturn(workedTime)
 
-        val result: List<ActivityTimeOnly> = activityRepository.workedMinutesBetweenDate(
+        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
             startDate, endDate, otherUserId
         )
 
@@ -122,7 +122,7 @@ internal class ActivityRepositoryTest {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
 
-        val result: List<ActivityTimeOnly> = activityRepository.workedMinutesBetweenDate(
+        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
             startDate, endDate, otherUserId
         )
 
@@ -140,7 +140,7 @@ internal class ActivityRepositoryTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
 
-        val result: List<ActivityTimeOnly> = activityRepository.workedMinutesBetweenDate(
+        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
             startDate, endDate, userId
         )
 
@@ -158,7 +158,7 @@ internal class ActivityRepositoryTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
 
-        val result: List<ActivityTimeOnly> = activityRepository.workedMinutesBetweenDate(
+        val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
             startDate, endDate, userId
         )
 
@@ -188,7 +188,7 @@ internal class ActivityRepositoryTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
         whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, otherUserId)).thenReturn(activities)
 
-        val result: List<Activity> = activityRepository.getActivitiesBetweenDate(
+        val result: List<Activity> = activityRepositorySecured.find(
             startDate, endDate, otherUserId
         )
 
@@ -205,7 +205,7 @@ internal class ActivityRepositoryTest {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
 
-        val result: List<Activity> = activityRepository.getActivitiesBetweenDate(
+        val result: List<Activity> = activityRepositorySecured.find(
             startDate, endDate, otherUserId
         )
 
@@ -234,7 +234,7 @@ internal class ActivityRepositoryTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, userId)).thenReturn(activities)
 
-        val result: List<Activity> = activityRepository.getActivitiesBetweenDate(
+        val result: List<Activity> = activityRepositorySecured.find(
             startDate, endDate, userId
         )
 
