@@ -3,11 +3,10 @@ package com.autentia.tnt.binnacle.core.domain
 import com.autentia.tnt.binnacle.core.utils.isHoliday
 import com.autentia.tnt.binnacle.core.utils.isWeekend
 import com.autentia.tnt.binnacle.core.utils.myDatesUntil
-import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.Holiday
 import java.time.LocalDate
 
-class Calendar(private val dateInterval: DateInterval, val holidays: List<Holiday>) {
+class Calendar(private val dateInterval: DateInterval, private val holidays: List<Holiday>) {
 
     val workableDays: List<LocalDate> by lazy {
         val holidaysDates = holidays.map { it.date.toLocalDate() }

@@ -4,10 +4,10 @@ import com.autentia.tnt.binnacle.converters.VacationConverter
 import com.autentia.tnt.binnacle.core.domain.Calendar
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CreateVacationResponse
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
 import com.autentia.tnt.binnacle.core.utils.maxDate
 import com.autentia.tnt.binnacle.core.utils.minDate
-import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState

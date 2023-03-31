@@ -1,8 +1,5 @@
 package com.autentia.tnt.binnacle.core.domain
 
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.DateInterval
-
 class ActivitiesCalendar(val calendar: Calendar) {
 
     val activitiesCalendarMap = calendar.allDays.associateWith { mutableListOf<Activity>() }

@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.entities.dto
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDateTime
 
+@Deprecated("Use ProjectRoleUserDTO instead")
 data class ProjectRoleRecentDTO(
     val id: Long,
     val name: String,

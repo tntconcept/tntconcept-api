@@ -59,13 +59,7 @@ class ActivitiesResponseConverter(
 
             )
 
-    fun toActivity(activityResponse: ActivitiesResponse) =
-        com.autentia.tnt.binnacle.core.domain.Activity(
-            activityResponse.duration.toDuration(DurationUnit.MINUTES),
-            activityResponse.startDate,
-            ProjectRoleId(activityResponse.projectRole.id)
-        )
-    fun toProjectRoleDTOOld(projectRole: ProjectRole): ProjectRoleResponseDTOOld{
+    fun toProjectRoleDTOOld(projectRole: ProjectRole): ProjectRoleResponseDTOOld {
         val requireEvidence = projectRole.requireEvidence != RequireEvidence.NO
         return ProjectRoleResponseDTOOld(projectRole.id, projectRole.name, requireEvidence)
     }

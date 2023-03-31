@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.config.createHoliday
-import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.services.HolidayService
 import org.junit.jupiter.api.Assertions.assertEquals

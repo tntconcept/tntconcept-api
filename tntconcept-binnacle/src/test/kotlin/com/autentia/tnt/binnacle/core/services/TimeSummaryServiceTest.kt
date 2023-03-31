@@ -4,18 +4,26 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.config.getHolidaysFrom2022
 import com.autentia.tnt.binnacle.config.getVacationsInOneMonth2022
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
+import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.AnnualBalance
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.PreviousAnnualBalance
+import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.core.domain.YearAnnualBalance
 import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.VacationState
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.HolidayService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.mock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
@@ -30,7 +38,12 @@ internal class TimeSummaryServiceTest {
     private val workableProjectRoleIdChecker = WorkableProjectRoleIdChecker(listOf(ProjectRoleId(2)))
     private val targetWorkService = TargetWorkService()
     private val timeWorkableService = TimeWorkableService()
-    private val workedTimeService = WorkedTimeService(workableProjectRoleIdChecker)
+    private val activityService = mock<ActivityService>()
+    private val holidayService = mock<HolidayService>()
+    private val calendarFactory = CalendarFactory(holidayService)
+    private val activityCalendarService =
+        ActivityCalendarService(activityService, calendarFactory, ActivitiesCalendarFactory(calendarFactory))
+    private val workedTimeService = WorkedTimeService(activityCalendarService, workableProjectRoleIdChecker)
     private val workRecommendationService = WorkRecommendationCurrentMonthAccumulationService()
     private val timeSummaryConverter = TimeSummaryConverter()
     private val timeSummaryService = TimeSummaryService(
@@ -159,16 +172,44 @@ internal class TimeSummaryServiceTest {
     }
 
     @Test
-    fun `return roles list grouped by month, projectRole and worked time for that role`(){
-        val act1 = Activity(Duration.parse("5h"),LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0), ProjectRoleId(10L) )
-        val act2 = Activity(Duration.parse("6h"), LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0), ProjectRoleId(10L) )
-        val act3 = Activity(Duration.parse("6h"), LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0), ProjectRoleId(3L) )
+    fun `return roles list grouped by month, projectRole and worked time for that role`() {
+        val act1 = Activity(
+            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
+            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(5),
+            ProjectRole(10L, TimeUnit.MINUTES)
+        )
+        val act2 = Activity(
+            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
+            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(6),
+            ProjectRole(10L, TimeUnit.MINUTES)
+        )
+        val act3 = Activity(
+            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
+            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(6),
+            ProjectRole(3L, TimeUnit.MINUTES)
+        )
 
-        val act4 = Activity(Duration.parse("10h"), LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0), ProjectRoleId(5L) )
-        val act5 = Activity(Duration.parse("6h"), LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0), ProjectRoleId(1L) )
+        val act4 = Activity(
+            LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0),
+            LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0).plusHours(10),
+            ProjectRole(5L, TimeUnit.MINUTES)
+        )
+        val act5 = Activity(
+            LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0),
+            LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0).plusHours(6),
+            ProjectRole(1L, TimeUnit.MINUTES)
+        )
 
-        val act6 = Activity(Duration.parse("10h"), LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0), ProjectRoleId(5L) )
-        val act7 = Activity(Duration.parse("10h"), LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0), ProjectRoleId(5L) )
+        val act6 = Activity(
+            LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0),
+            LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0).plusHours(10),
+            ProjectRole(5L, TimeUnit.MINUTES)
+        )
+        val act7 = Activity(
+            LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0),
+            LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0).plusHours(10),
+            ProjectRole(5L, TimeUnit.MINUTES)
+        )
 
         val activities = listOf(act1, act2, act3, act4, act5, act6, act7)
         val workingTime = timeSummaryService.getTimeSummaryBalance(
@@ -242,15 +283,39 @@ internal class TimeSummaryServiceTest {
         val correspondingVacations = 23
 
         val activities = listOf(
-            Activity(Duration.parse("8h"), LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0), ProjectRoleId(1)),
-            Activity(Duration.parse("8h"), LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0), ProjectRoleId(2)),
-            Activity(Duration.parse("8h"), LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0), ProjectRoleId(3)),
+            Activity(
+                LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0),
+                LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0).plusHours(8),
+                ProjectRole(1, TimeUnit.MINUTES)
+            ),
+            Activity(
+                LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0),
+                LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0).plusHours(8),
+                ProjectRole(2, TimeUnit.MINUTES)
+            ),
+            Activity(
+                LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0),
+                LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0).plusHours(8),
+                ProjectRole(3, TimeUnit.MINUTES)
+            ),
         )
 
         val previousActivities = listOf(
-            Activity(Duration.parse("8h"), LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0), ProjectRoleId(1)),
-            Activity(Duration.parse("8h"), LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0), ProjectRoleId(2)),
-            Activity(Duration.parse("8h"), LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0), ProjectRoleId(3)),
+            Activity(
+                LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0),
+                LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0).plusHours(8),
+                ProjectRole(1, TimeUnit.MINUTES)
+            ),
+            Activity(
+                LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0),
+                LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0).plusHours(8),
+                ProjectRole(2, TimeUnit.MINUTES)
+            ),
+            Activity(
+                LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0),
+                LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0).plusHours(8),
+                ProjectRole(3, TimeUnit.MINUTES)
+            ),
         )
 
         val WORKED = 16.toDuration(HOURS)

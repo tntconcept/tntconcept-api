@@ -252,7 +252,11 @@ internal class ActivityValidatorTest {
                 .getSumActivitiesDuration(calendar, timeInterval, projectRoleLimited.id, user.id)
 
             doReturn(activityRequestBody.duration).whenever(activityCalendarService)
-                .getDurationByCountingWorkingDays(calendar, activityRequestBody.getTimeInterval(), projectRoleLimited)
+                .getDurationByCountingWorkingDays(
+                    calendar,
+                    activityRequestBody.getTimeInterval(),
+                    projectRoleLimited.timeUnit
+                )
 
             val exception = assertThrows<MaxHoursPerRoleException> {
                 activityValidator.checkActivityIsValidForCreation(activityRequestBody, user)
@@ -296,7 +300,7 @@ internal class ActivityValidatorTest {
                 .getDurationByCountingWorkingDays(
                     calendar2023,
                     activityRequestBody.getTimeInterval(),
-                    projectRole
+                    projectRole.timeUnit
                 )
 
             val exception = assertThrows<MaxHoursPerRoleException> {
@@ -550,11 +554,11 @@ internal class ActivityValidatorTest {
 
             doReturn(activityRequestBodyToUpdate.duration).whenever(activityCalendarService)
                 .getDurationByCountingWorkingDays(
-                    calendar, activityRequestBodyToUpdate.getTimeInterval(), projectRoleLimited
+                    calendar, activityRequestBodyToUpdate.getTimeInterval(), projectRoleLimited.timeUnit
                 )
             doReturn(currentActivity.duration).whenever(activityCalendarService)
                 .getDurationByCountingWorkingDays(
-                    calendar, currentActivity.getTimeInterval(), currentActivity.projectRole
+                    calendar, currentActivity.getTimeInterval(), currentActivity.projectRole.timeUnit
                 )
 
             doReturn(duration)
@@ -614,7 +618,7 @@ internal class ActivityValidatorTest {
                 .getDurationByCountingWorkingDays(
                     calendar2023,
                     activityRequestBody.getTimeInterval(),
-                    projectRole
+                    projectRole.timeUnit
                 )
 
             val exception = assertThrows<MaxHoursPerRoleException> {

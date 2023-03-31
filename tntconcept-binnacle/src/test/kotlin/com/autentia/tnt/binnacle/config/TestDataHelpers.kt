@@ -13,10 +13,13 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
 import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
-import com.autentia.tnt.binnacle.entities.dto.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
@@ -146,6 +149,12 @@ internal fun createActivity() = Activity(
     null,
     false,
     ApprovalState.NA
+)
+
+internal fun createDomainActivity() = com.autentia.tnt.binnacle.core.domain.Activity(
+    LocalDateTime.of(2023, 3, 1, 13, 5, 25),
+    LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
+    com.autentia.tnt.binnacle.core.domain.ProjectRole(1L, TimeUnit.MINUTES)
 )
 
 internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =

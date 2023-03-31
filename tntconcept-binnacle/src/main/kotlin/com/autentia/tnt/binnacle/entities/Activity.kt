@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.entities
 
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.micronaut.data.annotation.DateCreated
@@ -79,5 +80,5 @@ data class Activity(
 
     fun getDateInterval() = DateInterval.of(start.toLocalDate(), end.toLocalDate())
     fun getTimeInterval() = TimeInterval.of(start, end)
-    fun isOneDay() = start.toLocalDate().isEqual(end.toLocalDate())
+
 }

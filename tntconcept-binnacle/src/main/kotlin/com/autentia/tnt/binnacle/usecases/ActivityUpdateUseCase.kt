@@ -21,13 +21,13 @@ class ActivityUpdateUseCase internal constructor(
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val timeIntervalConverter: TimeIntervalConverter,
+    private val timeIntervalConverter: TimeIntervalConverter
 ) {
     fun updateActivity(activityRequest: ActivityRequestBodyDTO): ActivityResponseDTO {
         val user = userService.getAuthenticatedUser()
         val projectRole = projectRoleService.getByProjectRoleId(activityRequest.projectRoleId)
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            timeIntervalConverter.toTimeInterval(activityRequest.interval), projectRole
+            timeIntervalConverter.toTimeInterval(activityRequest.interval), projectRole.timeUnit
         )
 
         val activityRequestBody =

@@ -1,9 +1,12 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.*
+import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
+import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
 import com.autentia.tnt.binnacle.core.domain.AnnualBalance
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.MonthlyBalance
 import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.PreviousAnnualBalance
@@ -15,7 +18,6 @@ import com.autentia.tnt.binnacle.core.services.TimeSummaryService
 import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.DateInterval
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project

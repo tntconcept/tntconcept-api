@@ -1,7 +1,14 @@
 package com.autentia.tnt.binnacle.converters
 
 
-import com.autentia.tnt.binnacle.core.domain.*
+import com.autentia.tnt.binnacle.core.domain.AnnualBalance
+import com.autentia.tnt.binnacle.core.domain.MonthlyBalance
+import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
+import com.autentia.tnt.binnacle.core.domain.PreviousAnnualBalance
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
+import com.autentia.tnt.binnacle.core.domain.TimeSummary
+import com.autentia.tnt.binnacle.core.domain.Vacation
+import com.autentia.tnt.binnacle.core.domain.YearAnnualBalance
 import com.autentia.tnt.binnacle.entities.VacationState
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -115,7 +122,8 @@ internal class TimeSummaryConverterTest {
         val QA_ROLE = ProjectRoleId(3L)
         val DEV_OPS_ROLE = ProjectRoleId(5L)
 
-        val rolesJanuary = listOf(MonthlyRoles(DEV_ROLE.id, Duration.parse("5h")), MonthlyRoles(QA_ROLE.id, Duration.parse("6h")))
+        val rolesJanuary =
+            listOf(MonthlyRoles(DEV_ROLE.id, Duration.parse("5h")), MonthlyRoles(QA_ROLE.id, Duration.parse("6h")))
         val rolesFebruary = listOf(MonthlyRoles(DEV_OPS_ROLE.id, Duration.parse("12h")))
 
         val ROLES = mapOf(JANUARY to rolesJanuary, FEBRUARY to rolesFebruary)
@@ -123,10 +131,25 @@ internal class TimeSummaryConverterTest {
         val timeSummary = TimeSummary(
             YearAnnualBalance(
                 PreviousAnnualBalance(worked, annualTargetWork, balance),
-                AnnualBalance(worked, annualTargetWork, notRequestedVacations, balance)),
+                AnnualBalance(worked, annualTargetWork, notRequestedVacations, balance)
+            ),
             mapOf(
-                JANUARY to MonthlyBalance(workable, workedJanuary, recommended, balanceJanuary, rolesJanuary, vacationHoursJanuary),
-                FEBRUARY to MonthlyBalance(workable, workedFebruary, recommended, balanceFebruary, rolesFebruary, vacationHoursFebruary),
+                JANUARY to MonthlyBalance(
+                    workable,
+                    workedJanuary,
+                    recommended,
+                    balanceJanuary,
+                    rolesJanuary,
+                    vacationHoursJanuary
+                ),
+                FEBRUARY to MonthlyBalance(
+                    workable,
+                    workedFebruary,
+                    recommended,
+                    balanceFebruary,
+                    rolesFebruary,
+                    vacationHoursFebruary
+                ),
             )
         )
 
