@@ -105,7 +105,7 @@ internal class ActivityRepositorySecuredTest {
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findWorkedMinutes(
-                startDate, endDate, userId
+                startDate, endDate
             )
         }
     }
@@ -164,9 +164,203 @@ internal class ActivityRepositorySecuredTest {
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findWorkedMinutes(
-                startDate, endDate, userId
+                startDate, endDate
             )
         }
+    }
+
+    @Test
+    fun `save activity should throw IllegalStateException if user is not authenticated`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.save(mock())
+        }
+    }
+
+    @Test
+    fun `save activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
+        val activity = Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.save(activity)
+        }
+    }
+
+    @Test
+    fun `save activity should call dao to save activity`() {
+        val activity = Activity(
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        val expectedActivity = Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.save(activity)).thenReturn(expectedActivity)
+
+        val result = activityRepositorySecured.save(activity)
+
+        assertEquals(expectedActivity, result)
+    }
+
+    @Test
+    fun `update activity should throw IllegalStateException if user is not authenticated`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.update(mock())
+        }
+    }
+
+    @Test
+    fun `update activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
+        val activity = Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.update(activity)
+        }
+    }
+
+    @Test
+    fun `update activity should throw IllegalArgumentException if activity does not exist`() {
+        val activity = Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findById(activity.id)).thenReturn(Optional.empty())
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.update(activity)
+        }
+    }
+
+    @Test
+    fun `update activity should call dao`() {
+        val activity = Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Updated test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findById(activity.id)).thenReturn(Optional.of(activity))
+        whenever(activityDao.update(activity)).thenReturn(activity)
+
+        val result = activityRepositorySecured.update(activity)
+
+        assertEquals(activity, result)
+    }
+
+    @Test
+    fun `delete activity should throw IllegalStateException if user is not authenticated`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.deleteById(1L)
+        }
+    }
+
+    @Test
+    fun `delete activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
+        val activity = Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.deleteById(1L)
+        }
+    }
+
+    @Test
+    fun `delete activity should throw IllegalArgumentException if activity does not exist`() {
+        val activity = Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findById(activity.id)).thenReturn(Optional.empty())
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.deleteById(1L)
+        }
+    }
+
+    @Test
+    fun `delete activity should call dao`() {
+        val activity = Activity(
+            id = 1L,
+            startDate = today.atTime(10, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasImage = false,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findById(activity.id)).thenReturn(Optional.of(activity))
+
+        activityRepositorySecured.deleteById(1L)
+
+        verify(activityDao).deleteById(1L)
     }
 
     private companion object {

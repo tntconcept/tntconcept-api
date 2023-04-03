@@ -37,16 +37,16 @@ internal class ActivityService(
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
         return activityRepository
-            .find(startDateMinHour, endDateMaxHour, userId)
+            .find(startDateMinHour, endDateMaxHour)
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
     }
 
     @Transactional
     @ReadOnly
-    fun workedMinutesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivityTimeOnly> {
+    fun workedMinutesBetweenDates(startDate: LocalDate, endDate: LocalDate): List<ActivityTimeOnly> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository.findWorkedMinutes(startDateMinHour, endDateMaxHour, userId)
+        return activityRepository.findWorkedMinutes(startDateMinHour, endDateMaxHour)
     }
 
     @Transactional(rollbackOn = [Exception::class])

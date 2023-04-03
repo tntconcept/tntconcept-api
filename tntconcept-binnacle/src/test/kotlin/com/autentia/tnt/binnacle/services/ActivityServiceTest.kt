@@ -97,8 +97,7 @@ internal class ActivityServiceTest {
         whenever(
             activityRepository.find(
                 startDate.atTime(LocalTime.MIN),
-                endDate.atTime(23, 59, 59),
-                userId
+                endDate.atTime(23, 59, 59)
             )
         ).thenReturn(listOf(activityWithoutImageSaved))
 
@@ -137,11 +136,10 @@ internal class ActivityServiceTest {
             activityRepository.findWorkedMinutes(
                 startDate.atTime(LocalTime.MIN),
                 endDate.atTime(23, 59, 59),
-                userId
             )
         ).thenReturn(listOf(activityTimeOnly))
 
-        val actual = activityService.workedMinutesBetweenDates(startDate, endDate, userId)
+        val actual = activityService.workedMinutesBetweenDates(startDate, endDate)
 
         assertEquals(listOf(activityTimeOnly), actual)
     }
