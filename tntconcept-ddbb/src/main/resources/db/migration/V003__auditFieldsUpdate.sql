@@ -623,7 +623,7 @@ SET `updateDate` = NOW()
 WHERE `updateDate` IS NULL;
 
 ALTER TABLE `Inventory`
-    MODIFY COLUMN `updateDate` datetime NOT NULL;
+    MODIFY COLUMN `updateDate` datetime NOT NULL DEFAULT NOW();
 
 /* Objective Table */
 UPDATE `Objective`
