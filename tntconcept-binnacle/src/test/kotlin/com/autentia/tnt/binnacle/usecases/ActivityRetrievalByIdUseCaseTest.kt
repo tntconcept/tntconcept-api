@@ -15,21 +15,17 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
-import com.autentia.tnt.binnacle.validators.ActivityValidator
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
-import java.time.Month
 import org.junit.jupiter.api.Assertions.assertEquals
 
 internal class ActivityRetrievalByIdUseCaseTest {
 
     private val activityService = mock<ActivityService>()
     private val userService = mock<UserService>()
-    private val activityValidator = mock<ActivityValidator>()
 
     private val activityRetrievalByIdUseCase =
         ActivityRetrievalByIdUseCase(
