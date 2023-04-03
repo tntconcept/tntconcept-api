@@ -1,4 +1,4 @@
-package com.autentia.tnt.binnacle.daos
+package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
@@ -16,9 +16,9 @@ internal interface ActivityDao : CrudRepository<Activity, Long> {
 
     @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.startDate BETWEEN :startDate AND :endDate")
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
-    fun getActivitiesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
+    fun find(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
     @Query("SELECT new com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly(a.startDate, a.duration, a.projectRole.id) FROM Activity a WHERE a.userId= :userId AND a.startDate BETWEEN :startDate AND :endDate")
-    fun workedMinutesBetweenDate(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
+    fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
 
 }

@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.daos.ActivityDao
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
@@ -28,7 +27,7 @@ internal class ActivityRepositorySecured(
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.getActivitiesBetweenDate(startDate, endDate, authentication.id())
+        return activityDao.find(startDate, endDate, authentication.id())
     }
 
     override fun findWorkedMinutes(
@@ -36,19 +35,19 @@ internal class ActivityRepositorySecured(
         endDate: LocalDateTime
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.workedMinutesBetweenDate(startDate, endDate, authentication.id())
+        return activityDao.findWorkedMinutes(startDate, endDate, authentication.id())
     }
 
     override fun save(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
-        require(activity.userId == authentication.id()) { "Activity user id should be the same as authenticated user" }
+        require(activity.userId == authentication.id()) { "User cannot save activity" }
 
         return activityDao.save(activity)
     }
 
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
-        require(activity.userId == authentication.id()) { "Activity user id should be the same as authenticated user" }
+        require(activity.userId == authentication.id()) { "User cannot update activity" }
 
         val activityToUpdate = activityDao.findById(activity.id)
         require(activityToUpdate.isPresent) { "Activity to update does not exist" }
@@ -61,7 +60,7 @@ internal class ActivityRepositorySecured(
         val activityToDelete = activityDao.findById(id)
 
         require(activityToDelete.isPresent) { "Activity with id $id does not exist" }
-        require(activityToDelete.get().userId == authentication.id()) { "Activity user id should be the same as authenticated user" }
+        require(activityToDelete.get().userId == authentication.id()) { "User cannot delete activity" }
 
         activityDao.deleteById(id)
     }
