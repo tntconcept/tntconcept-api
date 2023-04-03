@@ -98,8 +98,6 @@ internal class ActivityRepositorySecuredTest {
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
         )
-        val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
-
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> {
@@ -111,7 +109,6 @@ internal class ActivityRepositorySecuredTest {
 
     @Test
     fun `find activities between dates should retrieve user logged activities`() {
-        val otherUserId = 2L
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
@@ -305,16 +302,6 @@ internal class ActivityRepositorySecuredTest {
 
     @Test
     fun `delete activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
-        val activity = Activity(
-            id = 1L,
-            startDate = today.atTime(10, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasImage = false,
-        )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
 
         assertThrows<IllegalArgumentException> {

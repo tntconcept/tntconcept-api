@@ -110,7 +110,7 @@ internal class ActivityValidator(
         val activityDb = activityRepository.findById(activityRequest.id)
         val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
         when {
-            activityDb == null -> throw ActivityNotFoundException(activityRequest.id!!)
+            activityDb == null -> throw ActivityNotFoundException(activityRequest.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
