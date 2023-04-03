@@ -14,7 +14,6 @@ import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
 import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -46,14 +45,13 @@ internal class ActivityValidator(
             ) -> throw ActivityBeforeHiringDateException()
 
         }
-        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb)
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
         currentActivity: Activity,
         activityRequest: ActivityRequestBody,
-        projectRole: ProjectRole,
-        user: User
+        projectRole: ProjectRole
     ) {
         if (projectRole.maxAllowed > 0) {
             val year = activityRequest.startDate.year
@@ -114,7 +112,6 @@ internal class ActivityValidator(
         when {
             activityDb == null -> throw ActivityNotFoundException(activityRequest.id!!)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
-            !userHasAccess(activityDb, user) -> throw UserPermissionException() //TODO: Remove this method!
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
@@ -123,7 +120,7 @@ internal class ActivityValidator(
                 user
             ) -> throw ActivityBeforeHiringDateException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb)
     }
 
 
@@ -134,7 +131,6 @@ internal class ActivityValidator(
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
             !isOpenPeriod(activityDb.startDate) -> throw ActivityPeriodClosedException()
-            !userHasAccess(activityDb, user) -> throw UserPermissionException()
         }
     }
 

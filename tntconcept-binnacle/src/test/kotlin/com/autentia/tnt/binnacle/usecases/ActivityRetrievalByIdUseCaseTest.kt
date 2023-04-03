@@ -47,8 +47,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
 
         doReturn(yesterdayActivity).whenever(activityService).getActivityById(2L)
 
-        doReturn(true).whenever(activityValidator).userHasAccess(yesterdayActivity, USER)
-
         assertEquals(yesterdayActivityResponseDTO, activityRetrievalByIdUseCase.getActivityById(2L))
     }
 
