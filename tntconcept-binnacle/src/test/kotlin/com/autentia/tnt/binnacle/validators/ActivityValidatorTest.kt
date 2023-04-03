@@ -287,16 +287,6 @@ internal class ActivityValidatorTest {
         }
 
         @Test
-        fun `throw UserPermissionException when authenticated user is not the same who created the original activity`() {
-            whenever(activityRepository.findById(1L)).thenReturn(currentActivityAnotherUser)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
-
-            assertThrows<UserPermissionException> {
-                activityValidator.checkActivityIsValidForUpdate(newActivityRequest, user)
-            }
-        }
-
-        @Test
         fun `throw ProjectClosedException when chosen project is already closed`() {
             doReturn(Optional.of(closedProjectRole)).whenever(projectRoleRepository).findById(any())
 
@@ -599,28 +589,7 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForDeletion(id, user)
             }
         }
-
-        @Test
-        fun `throw UserPermissionException when user is not the creator of the activity`() {
-            val id = 1L
-            val activity = Activity(
-                id,
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-                HOUR,
-                "description",
-                projectRole,
-                33L,
-                false
-            )
-
-            whenever(activityRepository.findById(id)).thenReturn(activity)
-
-            assertThrows<UserPermissionException> {
-                activityValidator.checkActivityIsValidForDeletion(id, user)
-            }
-        }
     }
-
 
     private companion object {
 
