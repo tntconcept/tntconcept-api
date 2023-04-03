@@ -149,8 +149,8 @@ internal class ActivityValidatorTest {
                         approvalState = ApprovalState.NA
                     )
                 )
-            ).whenever(activityRepository).getOverlappingActivities(
-                newActivity.start, newActivity.end, user.id
+            ).whenever(activityRepository).findOverlapped(
+                newActivity.start, newActivity.end
             )
 
             doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(projectRole.id)
@@ -317,18 +317,16 @@ internal class ActivityValidatorTest {
     inner class CheckActivityIsValidForUpdate {
         @Test
         fun `do nothing when activity is valid`() {
-            doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
-
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(any())
+            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
 
             activityValidator.checkActivityIsValidForUpdate(validActivityToUpdate, user)
         }
 
         @Test
         fun `throw ActivityNotFoundException with activity id when the activity to be replaced does not exist`() {
-
-            doReturn(Optional.empty<Activity>()).whenever(activityRepository).findById(1L)
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(any())
+            whenever(activityRepository.findById(1L)).thenReturn(null)
+            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
 
             val exception = assertThrows<ActivityNotFoundException> {
                 activityValidator.checkActivityIsValidForUpdate(activityUpdateNonexistentID, user)
@@ -372,8 +370,8 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            doReturn(Optional.empty<ProjectRole>()).whenever(projectRoleRepository).findById(projectRole.id)
-            doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.empty())
+            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
 
             val exception = assertThrows<ProjectRoleNotFoundException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, user)
@@ -408,8 +406,8 @@ internal class ActivityValidatorTest {
                 false,
             )
 
-            doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
-            doReturn(Optional.of(closedProjectRole)).whenever(projectRoleRepository).findById(any())
+            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(closedProjectRole))
 
             assertThrows<ProjectClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, user)
@@ -418,18 +416,16 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `do nothing when updated activity started last year`() {
-
-            doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(any())
+            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
 
             activityValidator.checkActivityIsValidForUpdate(activityLastYear, user)
         }
 
         @Test
         fun `throw ActivityPeriodClosedException when updated activity started more than one year ago`() {
-            doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
-
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(any())
+            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
 
             assertThrows<ActivityPeriodClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(activityUpdateTwoYearsAgo, user)
@@ -448,11 +444,11 @@ internal class ActivityValidatorTest {
                 projectRole.id,
                 false,
             )
-            given(activityRepository.findById(1L)).willReturn(Optional.of(currentActivity))
+            given(activityRepository.findById(1L)).willReturn(currentActivity)
 
             given(
-                activityRepository.getOverlappingActivities(
-                    newActivity.start, newActivity.end, user.id
+                activityRepository.findOverlapped(
+                    newActivity.start, newActivity.end
                 )
             ).willReturn(
                 listOf(
@@ -470,7 +466,7 @@ internal class ActivityValidatorTest {
                     )
                 )
             )
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(projectRole.id)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
 
             assertThrows<OverlapsAnotherTimeException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, user)
@@ -615,7 +611,7 @@ internal class ActivityValidatorTest {
                 .findById(projectRole.id)
 
             doReturn(Optional.of(activity)).whenever(activityRepository)
-                .findById(activity.id)
+                .findById(activity.id!!)
 
             doReturn(calendar2022).whenever(activityCalendarService).createCalendar(timeInterval2022.getDateInterval())
             doReturn(calendar2023).whenever(activityCalendarService).createCalendar(timeInterval2023.getDateInterval())
@@ -664,13 +660,12 @@ internal class ActivityValidatorTest {
                 false,
                 approvalState = ApprovalState.NA
             )
-            given(activityRepository.findById(1L)).willReturn(Optional.of(currentActivity))
+            given(activityRepository.findById(1L)).willReturn(currentActivity)
 
             given(
-                activityRepository.getOverlappingActivities(
+                activityRepository.findOverlapped(
                     LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
                     LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
-                    user.id
                 )
             ).willReturn(
                 listOf(
@@ -732,8 +727,8 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            doReturn(Optional.of(currentActivity)).whenever(activityRepository).findById(1L)
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(any())
+            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
 
             assertThrows<ActivityBeforeHiringDateException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, userHiredLastYear)
@@ -760,7 +755,7 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            doReturn(Optional.of(activity)).whenever(activityRepository).findById(id)
+            whenever(activityRepository.findById(id)).thenReturn(activity)
 
             activityValidator.checkActivityIsValidForDeletion(id, user)
         }
@@ -769,7 +764,7 @@ internal class ActivityValidatorTest {
         fun `throw ActivityNotFoundException with id when activity is not in the database`() {
             val id = 1L
 
-            given(activityRepository.findById(id)).willReturn(Optional.empty())
+            given(activityRepository.findById(id)).willReturn(null)
 
             val exception = assertThrows<ActivityNotFoundException> {
                 activityValidator.checkActivityIsValidForDeletion(id, user)
@@ -792,7 +787,7 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            doReturn(Optional.of(activity)).whenever(activityRepository).findById(id)
+            whenever(activityRepository.findById(id)).thenReturn(activity)
 
             activityValidator.checkActivityIsValidForDeletion(id, user)
         }
@@ -811,8 +806,7 @@ internal class ActivityValidatorTest {
                 false,
                 approvalState = ApprovalState.NA
             )
-
-            doReturn(Optional.of(activity)).whenever(activityRepository).findById(id)
+            whenever(activityRepository.findById(id)).thenReturn(activity)
 
             assertThrows<ActivityPeriodClosedException> {
                 activityValidator.checkActivityIsValidForDeletion(id, user)
@@ -841,7 +835,6 @@ internal class ActivityValidatorTest {
             }
         }
     }
-
 
     private companion object {
 

@@ -1,6 +1,8 @@
 package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
+import com.autentia.tnt.binnacle.core.utils.overlaps
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.*
@@ -12,6 +14,7 @@ import jakarta.inject.Singleton
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Month
 import javax.transaction.Transactional
 
 @Singleton
@@ -30,7 +33,7 @@ internal class ActivityValidator(
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
-            isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
+            isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
                 activityRequest.start.toLocalDate(),
                 user
@@ -38,7 +41,6 @@ internal class ActivityValidator(
             isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
         checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user)
-
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
@@ -57,10 +59,9 @@ internal class ActivityValidator(
         }
     }
 
-
     private fun checkIfIsExceedingMaxHoursForRole(
         currentActivity: Activity,
-        requestActivity: ActivityRequestBody,
+        activityRequest: ActivityRequestBody,
         year: Int,
         projectRole: ProjectRole,
         user: User
@@ -76,7 +77,7 @@ internal class ActivityValidator(
             )
 
             val requestActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
-                calendar, requestActivity.getTimeInterval(), projectRole.timeUnit
+                calendar, activityRequest.getTimeInterval(), projectRole.timeUnit
             )
 
             val totalRegisteredDurationForThisRole =
@@ -86,7 +87,7 @@ internal class ActivityValidator(
 
             var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 
-            if (currentActivity.projectRole.id == requestActivity.projectRoleId) {
+            if (currentActivity.projectRole.id == activityRequest.projectRoleId) {
                 totalRegisteredDurationForThisRoleAfterDiscount =
                     totalRegisteredDurationForThisRole - currentActivityDuration
             }
@@ -110,21 +111,33 @@ internal class ActivityValidator(
         return startDate.year >= LocalDateTime.now().year - 1
     }
 
+    private fun getTotalHoursPerRole(
+        activitiesInYear: List<ActivityTimeOnly>,
+        activityRequest: ActivityRequestBody
+    ) =
+        activitiesInYear
+            .filter { it.projectRoleId == activityRequest.projectRoleId }
+            .sumOf { it.duration }
+
+    private fun getActivitiesInYear(year: Int) =
+        activityRepository.findWorkedMinutes(
+            LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
+            LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
+        )
+
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForUpdate(activityRequest: ActivityRequestBody, user: User) {
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
-        val activityDb = activityRepository.findById(activityRequest.id).orElse(null)
+        val activityDb = activityRepository.findById(activityRequest.id)
         val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
         when {
-            activityDb == null -> throw ActivityNotFoundException(activityRequest.id!!)
+            activityDb == null -> throw ActivityNotFoundException(activityRequest.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
-            !userHasAccess(activityDb, user) -> throw UserPermissionException()
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
-            isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
-
+            isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
                 activityRequest.start.toLocalDate(),
                 user
@@ -132,18 +145,17 @@ internal class ActivityValidator(
 
             isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb, activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb, user)
     }
 
 
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long, user: User) {
-        val activityDb = activityRepository.findById(id).orElse(null)
+        val activityDb = activityRepository.findById(id)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
             !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
-            !userHasAccess(activityDb, user) -> throw UserPermissionException()
         }
     }
 
@@ -151,7 +163,7 @@ internal class ActivityValidator(
     @ReadOnly
     fun checkIfUserCanApproveActivity(user: User, activityId: Long): Boolean{
         //TODO: Use JWT to know if user have staff role
-        val activity = activityRepository.findById(activityId).orElse(null)
+        val activity = activityRepository.findById(activityId)
         when {
             activity === null -> throw ActivityNotFoundException(activityId)
             !userHasAccess(activity, user) -> throw UserPermissionException()
@@ -168,15 +180,14 @@ internal class ActivityValidator(
     }
 
     private fun isOverlappingAnotherActivityTime(
-        activityRequest: ActivityRequestBody,
-        user: User
+        activityRequest: ActivityRequestBody
     ): Boolean {
         if (activityRequest.duration == 0) {
             return false
         }
         val activities =
-            activityRepository.getOverlappingActivities(
-                activityRequest.start, activityRequest.end, user.id
+            activityRepository.findOverlapped(
+                activityRequest.start, activityRequest.end
             )
         return activities.size > 1 || activities.size == 1 && activities[0].id != activityRequest.id
     }

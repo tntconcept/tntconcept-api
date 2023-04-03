@@ -41,4 +41,8 @@ internal class RestExceptionHandler {
     internal fun onIllegalArgumentException(request: HttpRequest<*>, e: IllegalArgumentException) =
         HttpResponse.badRequest<ErrorResponse>().body(ErrorResponse("ILLEGAL_ARGUMENT", e.message))
 
+    @Error(global = true)
+    internal fun onIllegalStateException(request: HttpRequest<*>, e: IllegalStateException) =
+        HttpResponse.serverError<ErrorResponse>().body(ErrorResponse("ILLEGAL_STATE", e.message))
+
 }

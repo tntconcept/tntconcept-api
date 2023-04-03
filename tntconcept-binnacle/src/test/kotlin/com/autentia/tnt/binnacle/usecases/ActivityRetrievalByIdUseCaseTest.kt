@@ -21,22 +21,20 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.Month
+import org.junit.jupiter.api.Assertions.assertEquals
 
 internal class ActivityRetrievalByIdUseCaseTest {
 
     private val activityService = mock<ActivityService>()
     private val userService = mock<UserService>()
-    private val activityValidator = mock<ActivityValidator>()
 
     private val activityRetrievalByIdUseCase =
         ActivityRetrievalByIdUseCase(
             activityService,
-            userService,
-            activityValidator,
             ActivityResponseConverter(
                 ActivityIntervalResponseConverter()
             )
-    )
+        )
 
     @Test
     fun `return the activity`() {
@@ -44,20 +42,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
 
         doReturn(yesterdayActivity).whenever(activityService).getActivityById(2L)
 
-        doReturn(true).whenever(activityValidator).userHasAccess(yesterdayActivity, USER)
-
         assertEquals(yesterdayActivityResponseDTO, activityRetrievalByIdUseCase.getActivityById(2L))
-    }
-
-    @Test
-    fun `return null when authenticated user cannot access the activity`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-
-        doReturn(savedActivity).whenever(activityService).getActivityById(2L)
-
-        doReturn(false).whenever(activityValidator).userHasAccess(savedActivity, USER)
-
-        assertNull(activityRetrievalByIdUseCase.getActivityById(2L))
     }
 
 

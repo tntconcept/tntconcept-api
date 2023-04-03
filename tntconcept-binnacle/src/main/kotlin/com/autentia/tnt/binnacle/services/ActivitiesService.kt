@@ -29,7 +29,7 @@ internal class ActivitiesService(
     @Transactional
     @ReadOnly
     fun getActivityById(id: Long): Activity {
-        return activityRepository.findById(id).orElseThrow { ActivityNotFoundException(id) }
+        return activityRepository.findById(id)?: throw ActivityNotFoundException(id)
     }
 
     @Transactional
@@ -38,7 +38,7 @@ internal class ActivitiesService(
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
         return activityRepository
-            .getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
+            .find(startDateMinHour, endDateMaxHour)
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
     }
 
@@ -74,8 +74,7 @@ internal class ActivitiesService(
             .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
-            .findById(activityRequest.id)
-            .orElseThrow { ActivityNotFoundException(activityRequest.id!!) }
+            .findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id!!)
 
         // Update stored image
         if (activityRequest.hasImage) {
@@ -103,7 +102,7 @@ internal class ActivitiesService(
 
     @Transactional
     fun deleteActivityById(id: Long) {
-        val activityToDelete = activityRepository.findById(id).orElseThrow() // TODO handle exception
+        val activityToDelete = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasEvidences) {
             activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
         }

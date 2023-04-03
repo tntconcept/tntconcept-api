@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
@@ -13,6 +14,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
+import java.time.LocalDate
 import java.time.LocalTime
 import javax.transaction.Transactional
 
@@ -27,7 +29,7 @@ internal class ActivityService(
     @Transactional
     @ReadOnly
     fun getActivityById(id: Long): Activity {
-        return activityRepository.findById(id).orElseThrow { ActivityNotFoundException(id) }
+        return activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
     }
 
     @Transactional
@@ -35,18 +37,27 @@ internal class ActivityService(
     fun getActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
         val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
-        return activityRepository.getActivitiesBetweenDate(startDateMinHour, endDateMaxHour, userId)
+        return activityRepository.find(startDateMinHour, endDateMaxHour)
     }
 
     @Transactional
     @ReadOnly
     fun getActivitiesApprovalState(approvalState: ApprovalState, userId: Long): List<Activity> {
-        return activityRepository.getActivitiesApprovalState(approvalState, userId)
+        return activityRepository.find(approvalState)
     }
+
+    @Transactional
+    @ReadOnly
+    fun workedMinutesBetweenDates(startDate: LocalDate, endDate: LocalDate): List<ActivityTimeOnly> {
+        val startDateMinHour = startDate.atTime(LocalTime.MIN)
+        val endDateMaxHour = endDate.atTime(23, 59, 59)
+        return activityRepository.findWorkedMinutes(startDateMinHour, endDateMaxHour)
+    }
+
     @Transactional
     @ReadOnly
     fun getActivitiesForAGivenProjectRoleAndUser(projectRoleId: Long, userId: Long): List<Activity> =
-        activityRepository.getActivitiesForAGivenProjectRoleAndUser(projectRoleId, userId)
+        activityRepository.find(projectRoleId)
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
@@ -78,8 +89,8 @@ internal class ActivityService(
             .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
-            .findById(activityRequest.id as Long)
-            .orElseThrow { ActivityNotFoundException(activityRequest.id!!) }
+            .findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
+
 
         // Update stored image
         if (activityRequest.hasEvidences) {
@@ -104,7 +115,7 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun approveActivityById(id: Long): Activity {
-        val activityToApprove = activityRepository.findById(id).orElseThrow { ActivityNotFoundException(id) }
+        val activityToApprove = activityRepository.findById(id)?: throw ActivityNotFoundException(id)
         if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA){
             throw ActivityAlreadyApprovedException()
         }
@@ -116,7 +127,9 @@ internal class ActivityService(
 
     @Transactional
     fun deleteActivityById(id: Long) {
-        val activityToDelete = activityRepository.findById(id).orElseThrow() // TODO handle exception
+        val activityToDelete =
+            activityRepository
+            .findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasEvidences) {
             activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
         }
@@ -126,5 +139,5 @@ internal class ActivityService(
     @Transactional
     @ReadOnly
     fun getActivitiesIntervals(timeInterval: TimeInterval, projectRoleId: Long, userId: Long) =
-        activityRepository.getActivitiesIntervals(timeInterval.start, timeInterval.end, projectRoleId, userId)
+        activityRepository.findIntervals(timeInterval.start, timeInterval.end, projectRoleId)
 }

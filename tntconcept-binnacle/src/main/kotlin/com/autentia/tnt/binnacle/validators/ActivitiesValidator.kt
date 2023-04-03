@@ -94,10 +94,9 @@ internal class ActivitiesValidator(
             .sumOf { it.duration }
 
     private fun getActivitiesInYear(year: Int, user: User) =
-        activityRepository.workedMinutesBetweenDate(
+        activityRepository.findWorkedMinutes(
             LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
             LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
-            user.id
         )
 
     @Transactional
@@ -105,7 +104,7 @@ internal class ActivitiesValidator(
     fun checkActivityIsValidForUpdate(activityRequest: ActivitiesRequestBody, user: User) {
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
-        val activityDb = activityRepository.findById(activityRequest.id).orElse(null)
+        val activityDb = activityRepository.findById(activityRequest.id)
         val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
         when {
             activityDb == null -> throw ActivityNotFoundException(activityRequest.id!!)
@@ -119,14 +118,14 @@ internal class ActivitiesValidator(
                 user
             ) -> throw ActivityBeforeHiringDateException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb, activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb, user)
     }
 
 
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long, user: User) {
-        val activityDb = activityRepository.findById(id).orElse(null)
+        val activityDb = activityRepository.findById(id)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
             !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
@@ -149,7 +148,7 @@ internal class ActivitiesValidator(
 
         val startDate = activityRequest.startDate.withHour(0).withMinute(0).withSecond(0)
         val endDate = activityRequest.startDate.withHour(23).withMinute(59).withSecond(59)
-        val activities = activityRepository.getActivitiesBetweenDate(startDate, endDate, user.id)
+        val activities = activityRepository.find(startDate, endDate)
 
         return checkTimeOverlapping(activityRequest, activities)
     }
