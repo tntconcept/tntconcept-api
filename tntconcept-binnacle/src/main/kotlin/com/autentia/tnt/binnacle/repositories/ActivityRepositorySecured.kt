@@ -9,7 +9,6 @@ import com.autentia.tnt.security.application.isAdmin
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
-import kotlin.jvm.optionals.getOrDefault
 
 @Singleton
 internal class ActivityRepositorySecured(
@@ -27,19 +26,9 @@ internal class ActivityRepositorySecured(
         }
     }
 
-    override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
-        val authentication = securityService.checkAuthentication()
-        return activityDao.getActivitiesBetweenDate(startDate, endDate, userId)
-    }
-
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return activityDao.getActivitiesBetweenDate(startDate, endDate, authentication.id())
-    }
-
-    override fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>{
-        val authentication = securityService.checkAuthentication()
-        return activityDao.workedMinutesBetweenDate(startDate, endDate, authentication.id())
     }
 
     override fun findWorkedMinutes(
@@ -71,7 +60,7 @@ internal class ActivityRepositorySecured(
         val authentication = securityService.checkAuthentication()
         val activityToDelete = activityDao.findById(id)
 
-        require(activityToDelete.isPresent) { "Activity to delete does not exist" }
+        require(activityToDelete.isPresent) { "Activity with id $id does not exist" }
         require(activityToDelete.get().userId == authentication.id()) { "Activity user id should be the same as authenticated user" }
 
         activityDao.deleteById(id)

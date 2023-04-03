@@ -39,7 +39,7 @@ internal class ActivityValidator(
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
-            isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
+            isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
                 activityRequest.startDate.toLocalDate(),
                 user
@@ -57,7 +57,7 @@ internal class ActivityValidator(
     ) {
         if (projectRole.maxAllowed > 0) {
             val year = activityRequest.startDate.year
-            val activitiesSinceStartOfYear = getActivitiesInYear(year, user)
+            val activitiesSinceStartOfYear = getActivitiesInYear(year)
             val totalRegisteredHoursForThisRole =
                 getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
             var totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole
@@ -98,11 +98,10 @@ internal class ActivityValidator(
             .filter { it.projectRoleId == activityRequest.projectRoleId }
             .sumOf { it.duration }
 
-    private fun getActivitiesInYear(year: Int, user: User) =
+    private fun getActivitiesInYear(year: Int) =
         activityRepository.findWorkedMinutes(
             LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
             LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
-            user.id
         )
 
     @Transactional
@@ -118,7 +117,7 @@ internal class ActivityValidator(
             !userHasAccess(activityDb, user) -> throw UserPermissionException() //TODO: Remove this method!
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
-            isOverlappingAnotherActivityTime(activityRequest, user) -> throw OverlapsAnotherTimeException()
+            isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
                 activityRequest.startDate.toLocalDate(),
                 user
@@ -147,14 +146,14 @@ internal class ActivityValidator(
         return project.open
     }
 
-    private fun isOverlappingAnotherActivityTime(activityRequest: ActivityRequestBody, user: User): Boolean {
+    private fun isOverlappingAnotherActivityTime(activityRequest: ActivityRequestBody): Boolean {
         if (activityRequest.duration == 0) {
             return false
         }
 
         val startDate = activityRequest.startDate.withHour(0).withMinute(0).withSecond(0)
         val endDate = activityRequest.startDate.withHour(23).withMinute(59).withSecond(59)
-        val activities = activityRepository.find(startDate, endDate, user.id)
+        val activities = activityRepository.find(startDate, endDate)
 
         return checkTimeOverlapping(activityRequest, activities)
     }

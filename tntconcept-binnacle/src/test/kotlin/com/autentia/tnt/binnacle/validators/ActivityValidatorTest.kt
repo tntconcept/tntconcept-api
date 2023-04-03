@@ -149,8 +149,7 @@ internal class ActivityValidatorTest {
                 )
             ).whenever(activityRepository).find(
                 LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
-                LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
-                user.id
+                LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59)
             )
 
             doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(projectRole.id)
@@ -223,7 +222,7 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(projectRoleLimited)).whenever(projectRoleRepository).findById(projectRoleLimited.id)
 
             doReturn(activitiesInTheYear)
-                .whenever(activityRepository).findWorkedMinutes(firstDay, lastDay, user.id)
+                .whenever(activityRepository).findWorkedMinutes(firstDay, lastDay)
 
             val exception = assertThrows<MaxHoursPerRoleException> {
                 activityValidator.checkActivityIsValidForCreation(activityRequestBody, user)
@@ -354,7 +353,6 @@ internal class ActivityValidatorTest {
                 activityRepository.find(
                     LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
                     LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
-                    user.id
                 )
             ).willReturn(
                 listOf(
@@ -435,7 +433,7 @@ internal class ActivityValidatorTest {
             lastDay: LocalDateTime
         ) {
 
-            whenever(activityRepository.findWorkedMinutes(firstDay, lastDay, user.id)).thenReturn(activitiesInYear)
+            whenever(activityRepository.findWorkedMinutes(firstDay, lastDay)).thenReturn(activitiesInYear)
             whenever(activityRepository.findById(currentActivity.id!!)).thenReturn(currentActivity)
             whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(Optional.of(projectRoleLimited))
 
@@ -474,7 +472,6 @@ internal class ActivityValidatorTest {
                 activityRepository.find(
                     LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
                     LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
-                    user.id
                 )
             ).willReturn(
                 listOf(

@@ -8,10 +8,6 @@ internal interface ActivityRepository {
 
     fun findById(id: Long): Activity?
 
-    fun find(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
-
-    fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
-
     fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
 
     fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly>
