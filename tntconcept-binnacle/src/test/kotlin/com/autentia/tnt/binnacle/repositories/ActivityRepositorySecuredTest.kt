@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.daos.ActivityDao
 import com.autentia.tnt.binnacle.entities.Activity
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -84,7 +83,7 @@ internal class ActivityRepositorySecuredTest {
         val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.workedMinutesBetweenDate(startDate, endDate, userId)).thenReturn(workedTime)
+        whenever(activityDao.findWorkedMinutes(startDate, endDate, userId)).thenReturn(workedTime)
 
         val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
             startDate, endDate
@@ -131,7 +130,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, adminUserId)).thenReturn(activities)
+        whenever(activityDao.find(startDate, endDate, adminUserId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.find(
             startDate, endDate
@@ -160,7 +159,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.empty())
-        whenever(activityDao.getActivitiesBetweenDate(startDate, endDate, userId)).thenReturn(activities)
+        whenever(activityDao.find(startDate, endDate, userId)).thenReturn(activities)
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findWorkedMinutes(
