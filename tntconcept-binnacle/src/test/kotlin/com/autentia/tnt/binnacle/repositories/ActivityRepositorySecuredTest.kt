@@ -1,9 +1,11 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.*
@@ -372,6 +374,167 @@ internal class ActivityRepositorySecuredTest {
         activityRepositorySecured.deleteById(1L)
 
         verify(activityDao).deleteById(1L)
+    }
+
+    @Test
+    fun `find by approval state should return activities`() {
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.find(ApprovalState.NA, adminUserId)).thenReturn(activities)
+
+        val result: List<Activity> = activityRepositorySecured.find(
+            ApprovalState.NA
+        )
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find activities by approval state should throw IllegalStateException`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.find(
+                ApprovalState.NA
+            )
+        }
+    }
+
+    @Test
+    fun `find by project role should return activities`() {
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.findByProjectRoleIdAndUserId(projectRole.id, adminUserId)).thenReturn(activities)
+
+        val result: List<Activity> = activityRepositorySecured.find(
+            projectRole.id
+        )
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find activities by project role should throw IllegalStateException`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.find(
+                projectRole.id
+            )
+        }
+    }
+
+    @Test
+    fun `find overlapped should return activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.findOverlapped(startDate, endDate, adminUserId)).thenReturn(activities)
+
+        val result: List<Activity> = activityRepositorySecured.findOverlapped(
+            startDate, endDate
+        )
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find overlapped should throw IllegalStateException`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findOverlapped(
+                startDate, endDate
+            )
+        }
+    }
+
+    @Test
+    fun `find intervals should return activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val intervals = listOf(
+            ActivityInterval(
+                today.atTime(10, 0, 0),
+                today.atTime(12, 0, 0),
+                TimeUnit.MINUTES
+            )
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.findIntervals(startDate, endDate, projectRole.id, adminUserId)).thenReturn(intervals)
+
+        val result: List<ActivityInterval> = activityRepositorySecured.findIntervals(
+            startDate, endDate, projectRole.id
+        )
+
+        assertEquals(intervals, result)
+    }
+
+    @Test
+    fun `find intervals should throw IllegalStateException`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findIntervals(
+                startDate, endDate, projectRole.id
+            )
+        }
     }
 
     private companion object {

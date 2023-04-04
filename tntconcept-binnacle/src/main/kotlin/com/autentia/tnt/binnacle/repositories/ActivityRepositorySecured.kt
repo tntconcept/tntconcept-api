@@ -33,11 +33,13 @@ internal class ActivityRepositorySecured(
     }
 
     override fun find(approvalState: ApprovalState): List<Activity> {
-        TODO("Not yet implemented")
+        val authentication = securityService.checkAuthentication()
+        return activityDao.find(approvalState, authentication.id())
     }
 
     override fun find(projectRoleId: Long): List<Activity> {
-        TODO("Not yet implemented")
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findByProjectRoleIdAndUserId(projectRoleId, authentication.id())
     }
 
     override fun findWorkedMinutes(
@@ -49,11 +51,13 @@ internal class ActivityRepositorySecured(
     }
 
     override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
-        TODO("Not yet implemented")
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findOverlapped(startDate, endDate, authentication.id())
     }
 
     override fun findIntervals(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<ActivityInterval> {
-        TODO("Not yet implemented")
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findIntervals(start, end, projectRoleId, authentication.id())
     }
 
     override fun save(activity: Activity): Activity {
