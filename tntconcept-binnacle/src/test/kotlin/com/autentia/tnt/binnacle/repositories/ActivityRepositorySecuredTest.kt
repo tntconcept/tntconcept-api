@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.repositories
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.*
@@ -27,13 +28,15 @@ internal class ActivityRepositorySecuredTest {
         val activityId = 1L
         val activity = Activity(
             id = activityId,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA
         )
         whenever(activityDao.findByIdAndUserId(activityId, userId)).thenReturn(activity)
         whenever(securityService.authentication).thenReturn(Optional.empty())
@@ -46,13 +49,15 @@ internal class ActivityRepositorySecuredTest {
         val activityId = 1L
         val activity = Activity(
             id = activityId,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = 2L,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         whenever(activityDao.findById(activityId)).thenReturn(Optional.of(activity))
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
@@ -116,13 +121,15 @@ internal class ActivityRepositorySecuredTest {
         val activities = listOf(
             Activity(
                 id = 1L,
-                startDate = today.atTime(10, 0, 0),
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
                 duration = 120,
                 description = "Test activity",
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasImage = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
             )
         )
 
@@ -145,13 +152,15 @@ internal class ActivityRepositorySecuredTest {
         val activities = listOf(
             Activity(
                 id = 1L,
-                startDate = today.atTime(10, 0, 0),
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
                 duration = 120,
                 description = "Test activity",
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasImage = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
             )
         )
 
@@ -178,13 +187,15 @@ internal class ActivityRepositorySecuredTest {
     fun `save activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
         val activity = Activity(
             id = 1L,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
 
@@ -196,23 +207,27 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `save activity should call dao to save activity`() {
         val activity = Activity(
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         val expectedActivity = Activity(
             id = 1L,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.save(activity)).thenReturn(expectedActivity)
@@ -235,13 +250,15 @@ internal class ActivityRepositorySecuredTest {
     fun `update activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
         val activity = Activity(
             id = 1L,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
 
@@ -254,13 +271,15 @@ internal class ActivityRepositorySecuredTest {
     fun `update activity should throw IllegalArgumentException if activity does not exist`() {
         val activity = Activity(
             id = 1L,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.findById(activity.id)).thenReturn(Optional.empty())
@@ -274,13 +293,15 @@ internal class ActivityRepositorySecuredTest {
     fun `update activity should call dao`() {
         val activity = Activity(
             id = 1L,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Updated test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.findById(activity.id)).thenReturn(Optional.of(activity))
@@ -313,13 +334,15 @@ internal class ActivityRepositorySecuredTest {
     fun `delete activity should throw IllegalArgumentException if activity does not exist`() {
         val activity = Activity(
             id = 1L,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.findById(activity.id)).thenReturn(Optional.empty())
@@ -333,13 +356,15 @@ internal class ActivityRepositorySecuredTest {
     fun `delete activity should call dao`() {
         val activity = Activity(
             id = 1L,
-            startDate = today.atTime(10, 0, 0),
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasImage = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.findById(activity.id)).thenReturn(Optional.of(activity))

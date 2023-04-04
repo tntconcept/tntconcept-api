@@ -14,10 +14,10 @@ import java.time.LocalTime
 
 @MicronautTest()
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class ActivityRepositoryIT {
+internal class ActivityDaoIT {
 
     @Inject
-    private lateinit var activityRepository: ActivityRepository
+    private lateinit var activityDao: ActivityDao
 
     @Test
     fun `should get activity by id`() {
@@ -32,9 +32,9 @@ internal class ActivityRepositoryIT {
             hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
-        val savedActivity = activityRepository.save(activity)
+        val savedActivity = activityDao.save(activity)
 
-        val result = activityRepository.findByIdEager(savedActivity.id!!)
+        val result = activityDao.findById(savedActivity.id!!)
 
         assertEquals(savedActivity, result)
 
@@ -75,7 +75,7 @@ internal class ActivityRepositoryIT {
             hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
-        val savedActivities = activityRepository.saveAll(
+        val savedActivities = activityDao.saveAll(
             listOf(
                 todayActivity, yesterdayActivity, activityForTwoDays
             )
@@ -83,7 +83,7 @@ internal class ActivityRepositoryIT {
 
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
         val end = today.atTime(LocalTime.MAX)
-        val activitiesBetweenDate = activityRepository.getActivitiesBetweenDate(start, end, userId)
+        val activitiesBetweenDate = activityDao.find(start, end, userId)
 
         assertEquals(3, activitiesBetweenDate.size)
         assertTrue(activitiesBetweenDate.contains(savedActivities.elementAt(0)))
@@ -126,18 +126,18 @@ internal class ActivityRepositoryIT {
             hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
-        val savedActivities = activityRepository.saveAll(
+        val savedActivities = activityDao.saveAll(
             listOf(
                 todayActivity, yesterdayActivity, activityForTwoDays
             )
         )
-        var retrievedActivities = activityRepository.getActivitiesApprovalState(ApprovalState.PENDING, userId)
+        var retrievedActivities = activityDao.find(ApprovalState.PENDING, userId)
 
         assertEquals(2, retrievedActivities.size)
         assertTrue(retrievedActivities.contains(savedActivities.elementAt(1)))
         assertTrue(retrievedActivities.contains(savedActivities.elementAt(2)))
 
-        retrievedActivities = activityRepository.getActivitiesApprovalState(ApprovalState.ACCEPTED, userId)
+        retrievedActivities = activityDao.find(ApprovalState.ACCEPTED, userId)
         assertEquals(1, retrievedActivities.size)
         assertTrue(retrievedActivities.contains(savedActivities.elementAt(0)))
     }
@@ -177,7 +177,7 @@ internal class ActivityRepositoryIT {
             hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
-        activityRepository.saveAll(
+        activityDao.saveAll(
             listOf(
                 todayActivity, yesterdayActivity, activityForTwoDays
             )
@@ -185,7 +185,7 @@ internal class ActivityRepositoryIT {
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
         val end = today.atTime(LocalTime.MAX)
 
-        val workedTimeActivities = activityRepository.getActivitiesIntervals(start, end, createProjectRole().id, userId)
+        val workedTimeActivities = activityDao.findIntervals(start, end, createProjectRole().id, userId)
 
         val expectedWorkedMinutesActivities = listOf(
             ActivityInterval(yesterdayActivity.start, yesterdayActivity.end, projectRole.timeUnit),
@@ -231,7 +231,7 @@ internal class ActivityRepositoryIT {
             hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
-        activityRepository.saveAll(
+        activityDao.saveAll(
             listOf(
                 todayActivity, yesterdayActivity, activityForTwoDays
             )
@@ -239,7 +239,7 @@ internal class ActivityRepositoryIT {
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
         val end = today.atTime(LocalTime.MAX)
 
-        val workedTimeActivities = activityRepository.getOverlappingActivities(start, end, userId)
+        val workedTimeActivities = activityDao.findOverlapped(start, end, userId)
 
         val expectedWorkedMinutesActivities = listOf(
             todayActivity, yesterdayActivity
