@@ -20,7 +20,7 @@ internal class ActivityDaoIT {
     private lateinit var activityDao: ActivityDao
 
     @Test
-    fun `should get activity by id`() {
+    fun `should find activity by id`() {
         val activity = Activity(
             start = today.atTime(10, 0, 0),
             end = today.atTime(12, 0, 0),
@@ -37,11 +37,30 @@ internal class ActivityDaoIT {
         val result = activityDao.findById(savedActivity.id!!)
 
         assertEquals(savedActivity, result.get())
-
     }
 
     @Test
-    fun `should get activities filtered by period of time`() {
+    fun `should find activity by id and user id`() {
+        val activity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = createProjectRole(),
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val savedActivity = activityDao.save(activity)
+
+        val result = activityDao.findByIdAndUserId(savedActivity.id!!, activity.userId)
+
+        assertEquals(savedActivity, result)
+    }
+
+    @Test
+    fun `should find activities filtered by period of time`() {
         val todayActivity = Activity(
             start = today.atTime(10, 0, 0),
             end = today.atTime(12, 0, 0),
@@ -92,7 +111,7 @@ internal class ActivityDaoIT {
     }
 
     @Test
-    fun `should get pending activities`() {
+    fun `should find pending activities`() {
         val todayActivity = Activity(
             start = today.atTime(10, 0, 0),
             end = today.atTime(12, 0, 0),
@@ -143,7 +162,7 @@ internal class ActivityDaoIT {
     }
 
     @Test
-    fun `should get worked minutes between date`() {
+    fun `should find worked minutes between date`() {
         val todayActivity = Activity(
             start = today.atTime(10, 0, 0),
             end = today.atTime(12, 0, 0),
@@ -197,7 +216,7 @@ internal class ActivityDaoIT {
     }
 
     @Test
-    fun `should get overlapping activities`() {
+    fun `should find overlapped activities`() {
         val todayActivity = Activity(
             start = today.atTime(10, 0, 0),
             end = today.atTime(12, 0, 0),
@@ -249,10 +268,116 @@ internal class ActivityDaoIT {
         assertEquals(expectedWorkedMinutesActivities, workedTimeActivities)
     }
 
+    @Test
+    fun `should find intervals`() {
+        val todayActivity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val yesterdayActivity = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val theDayBeforeYesterdayActivity = Activity(
+            start = yesterday.minusDays(1L).atTime(8, 0, 0),
+            end = yesterday.minusDays(1L).atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        activityDao.saveAll(
+            listOf(
+                todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
+            )
+        )
+
+        val expectedActivityIntervals = listOf(
+            ActivityInterval(yesterdayActivity.start, yesterdayActivity.end, projectRole.timeUnit),
+            ActivityInterval(todayActivity.start, todayActivity.end, projectRole.timeUnit),
+        )
+
+        val start = yesterday.atTime(LocalTime.MIN)
+        val end = today.atTime(LocalTime.MAX)
+
+        val activityIntervals = activityDao.findIntervals(start, end, projectRole.id, userId)
+
+        assertEquals(expectedActivityIntervals, activityIntervals)
+    }
+
+    @Test
+    fun `should find by project role and user id`() {
+        val todayActivity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val yesterdayActivity = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = createProjectRole(2L),
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val theDayBeforeYesterdayActivity = Activity(
+            start = yesterday.minusDays(1L).atTime(8, 0, 0),
+            end = yesterday.minusDays(1L).atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = otherUserId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        activityDao.saveAll(
+            listOf(
+                todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
+            )
+        )
+
+        val expectedActivities = listOf(todayActivity)
+
+        val start = yesterday.atTime(LocalTime.MIN)
+        val end = today.atTime(LocalTime.MAX)
+
+        val result = activityDao.findByProjectRoleIdAndUserId(projectRole.id, userId)
+
+        assertEquals(expectedActivities, result)
+    }
+
     private companion object {
         private val today = LocalDate.now()
         private val yesterday = LocalDate.now().minusDays(1)
-        private val userId = 1L
+        private const val userId = 1L
+        private const val otherUserId = 2L
         private val projectRole = createProjectRole()
     }
 }
