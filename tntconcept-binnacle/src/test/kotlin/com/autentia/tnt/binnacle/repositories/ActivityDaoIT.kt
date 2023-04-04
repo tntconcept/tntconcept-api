@@ -36,7 +36,7 @@ internal class ActivityDaoIT {
 
         val result = activityDao.findById(savedActivity.id!!)
 
-        assertEquals(savedActivity, result)
+        assertEquals(savedActivity, result.get())
 
     }
 

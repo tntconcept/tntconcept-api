@@ -16,7 +16,7 @@ internal interface ActivityDao : CrudRepository<Activity, Long> {
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun findByIdAndUserId(id: Long, userId: Long): Activity?
 
-    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.start BETWEEN :startDate AND :endDate")
+    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.start <= :endDate AND a.end >= :startDate")
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun find(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
