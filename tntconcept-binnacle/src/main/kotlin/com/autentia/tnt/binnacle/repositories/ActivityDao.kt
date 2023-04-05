@@ -20,9 +20,11 @@ internal interface ActivityDao : CrudRepository<Activity, Long> {
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun find(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
-    @Query("SELECT a FROM Activity a WHERE a.userId= :userId AND a.approvalState= :approvalState")
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
-    fun find(approvalState: ApprovalState, userId: Long): List<Activity>
+    fun findByApprovalStateAndUserId(approvalState: ApprovalState, userId: Long): List<Activity>
+
+    @EntityGraph(value = "fetch-activity-with-project-and-organization")
+    fun findByApprovalState(approvalState: ApprovalState): List<Activity>
 
     @Deprecated("Used in the deprecated Activities Controller")
     @Query("SELECT new com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly(a.start, a.duration, a.projectRole.id) FROM Activity a WHERE a.userId= :userId AND a.start BETWEEN :startDate AND :endDate")

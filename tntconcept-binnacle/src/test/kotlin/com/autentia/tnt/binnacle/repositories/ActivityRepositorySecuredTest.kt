@@ -377,7 +377,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `find by approval state should return activities`() {
+    fun `find by approval state should return activities of all users`() {
         val activities = listOf(
             Activity(
                 id = 1L,
@@ -394,7 +394,34 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.find(ApprovalState.NA, adminUserId)).thenReturn(activities)
+        whenever(activityDao.findByApprovalState(ApprovalState.NA)).thenReturn(activities)
+
+        val result: List<Activity> = activityRepositorySecured.find(
+            ApprovalState.NA
+        )
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find by approval state should return activities of the authenticated user`() {
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findByApprovalStateAndUserId(ApprovalState.NA, userId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.find(
             ApprovalState.NA

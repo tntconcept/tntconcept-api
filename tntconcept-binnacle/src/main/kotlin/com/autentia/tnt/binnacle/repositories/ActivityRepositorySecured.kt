@@ -34,7 +34,11 @@ internal class ActivityRepositorySecured(
 
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.find(approvalState, authentication.id())
+        return if (authentication.isAdmin()) {
+           return activityDao.findByApprovalState(approvalState)
+        } else {
+            return activityDao.findByApprovalStateAndUserId(approvalState, authentication.id())
+        }
     }
 
     override fun find(projectRoleId: Long): List<Activity> {
