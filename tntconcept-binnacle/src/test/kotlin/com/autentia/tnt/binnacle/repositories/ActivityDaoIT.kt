@@ -180,7 +180,7 @@ internal class ActivityDaoIT {
             duration = 540,
             description = "Test activity 2",
             projectRole = createProjectRole(),
-            userId = otherUserId,
+            userId = userId,
             billable = false,
             hasEvidences = false,
             approvalState = ApprovalState.PENDING
@@ -399,7 +399,7 @@ internal class ActivityDaoIT {
             duration = 540,
             description = "Test activity 2",
             projectRole = projectRole,
-            userId = otherUserId,
+            userId = userId,
             billable = false,
             hasEvidences = false,
             approvalState = ApprovalState.PENDING
@@ -410,11 +410,7 @@ internal class ActivityDaoIT {
             )
         )
 
-        val expectedActivities = listOf(todayActivity)
-
-        val start = yesterday.atTime(LocalTime.MIN)
-        val end = today.atTime(LocalTime.MAX)
-
+        val expectedActivities = listOf(todayActivity, theDayBeforeYesterdayActivity)
         val result = activityDao.findByProjectRoleIdAndUserId(projectRole.id, userId)
 
         assertEquals(expectedActivities, result)
