@@ -56,7 +56,7 @@ class ActivityResponseConverter(
             ProjectRole(activity.projectRole.id, activity.projectRole.timeUnit)
         )
 
-    fun mapActivitiesToActivitiesDateDTO(activities: List<Activity>): List<ActivityResponseDTO>  {
+    fun mapActivitiesToActivitiesResponseDTO(activities: List<Activity>): List<ActivityResponseDTO>  {
         val activitiesResponseDTO = mutableListOf<ActivityResponseDTO>()
         activities.forEach {activity ->
 

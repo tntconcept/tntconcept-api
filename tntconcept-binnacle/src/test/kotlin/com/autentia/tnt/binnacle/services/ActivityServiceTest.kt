@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.Activity
@@ -97,7 +96,7 @@ internal class ActivityServiceTest {
             )
         ).thenReturn(listOf(activityWithoutImageSaved))
 
-        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
+        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate))
 
         assertEquals(listOf(activityWithoutImageSaved), actual)
     }

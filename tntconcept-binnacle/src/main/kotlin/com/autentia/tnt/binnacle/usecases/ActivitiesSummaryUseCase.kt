@@ -23,7 +23,7 @@ class ActivitiesSummaryUseCase internal constructor(
         val user = userService.getAuthenticatedUser()
         val dateInterval = DateInterval.of(startDate, endDate)
         val activities =
-            activityService.getActivitiesBetweenDates(dateInterval, user.id).map(activityResponseConverter::toActivity)
+            activityService.getActivitiesBetweenDates(dateInterval).map(activityResponseConverter::toActivity)
         val activityDurationSummaryInHours =
             activityCalendarService.getActivityDurationSummaryInHours(activities, dateInterval)
         return activitiesSummaryConverter.toListActivitySummaryDTO(activityDurationSummaryInHours)

@@ -67,6 +67,9 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityApprovalUseCase::class)
     internal val activityApprovalUseCase = mock<ActivityApprovalUseCase>()
 
+    @get:MockBean(ActivitiesByApprovalStateUseCase::class)
+    internal val activitiesByApprovalStateUseCase = mock<ActivitiesByApprovalStateUseCase>()
+
     @BeforeAll
     fun setup() {
         client = httpClient.toBlocking()
@@ -77,7 +80,8 @@ internal class ActivityControllerIT {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
         val activities = listOf(ACTIVITY_RESPONSE_DTO)
-        doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(Optional.of(startDate), Optional.of(endDate), Optional.empty())
+
+        doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(startDate, endDate)
 
         val response = client.exchangeList<ActivityResponseDTO>(
             GET("/api/activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
@@ -91,7 +95,8 @@ internal class ActivityControllerIT {
     fun `get all activities by approvalState`() {
         val approvalState = ApprovalState.PENDING
         val activities = listOf(ACTIVITY_RESPONSE_DTO)
-        doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(Optional.empty(), Optional.empty(), Optional.of(approvalState))
+
+        whenever(activitiesByApprovalStateUseCase.getActivities(approvalState)).thenReturn(activities)
 
         val response = client.exchangeList<ActivityResponseDTO>(
             GET("/api/activity?approvalState=${approvalState}"),
@@ -99,6 +104,19 @@ internal class ActivityControllerIT {
 
         assertEquals(OK, response.status)
         assertEquals(activities, response.body.get())
+    }
+
+    @Test
+    fun `get all activities should return bad request response`() {
+        val expectedErrorCode = ErrorResponse("ILLEGAL_ARGUMENT", "Invalid parameters")
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeList<ActivityResponseDTO>(
+                GET("/api/activity"),
+            )
+        }
+
+        assertEquals(BAD_REQUEST, ex.status)
+        assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get())
     }
 
     @Test

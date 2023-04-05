@@ -57,13 +57,12 @@ class UserTimeSummaryUseCase internal constructor(
             myVacationsDetailService.getCorrespondingVacationDaysSinceHiringDate(user, startYearDate.year)
 
         val activities = activityService.getActivitiesBetweenDates(
-            DateInterval.of(startYearDate, endYearDate), user.id
+            DateInterval.of(startYearDate, endYearDate)
         )
             .map(activityResponseConverter::toActivity)
 
         val previousActivities = activityService.getActivitiesBetweenDates(
-            DateInterval.of(startYearDate.minusYears(1), endYearDate.minusYears(1)),
-            user.id
+            DateInterval.of(startYearDate.minusYears(1), endYearDate.minusYears(1))
         )
             .map(activityResponseConverter::toActivity)
 

@@ -91,7 +91,7 @@ internal class UserWorkTimeUseCaseTest {
         vacations.add(vacation)
 
         doReturn(listOf(LAST_YEAR_ACTIVITY)).whenever(activityService)
-            .getActivitiesBetweenDates(DateInterval.of(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR), USER.id)
+            .getActivitiesBetweenDates(DateInterval.of(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR))
 
         doReturn(CORRESPONDING_VACATIONS).whenever(myVacationsDetailService).getCorrespondingVacationDaysSinceHiringDate(
             USER, FIRST_DAY_LAST_YEAR.year)
@@ -119,7 +119,7 @@ internal class UserWorkTimeUseCaseTest {
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), any())
-        verify(activityService, times(2)).getActivitiesBetweenDates(any(), any())
+        verify(activityService, times(2)).getActivitiesBetweenDates(any())
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)
     }

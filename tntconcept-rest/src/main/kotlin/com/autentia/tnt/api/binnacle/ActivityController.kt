@@ -19,19 +19,29 @@ import javax.validation.Valid
 @Validated
 internal class ActivityController(
     private val activitiesBetweenDateUseCase: ActivitiesBetweenDateUseCase,
+    private val activitiesByApprovalStateUseCase: ActivitiesByApprovalStateUseCase,
     private val activityRetrievalUseCase: ActivityRetrievalByIdUseCase,
     private val activityCreationUseCase: ActivityCreationUseCase,
     private val activityUpdateUseCase: ActivityUpdateUseCase,
     private val activityDeletionUseCase: ActivityDeletionUseCase,
     private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase,
     private val activitiesSummaryUseCase: ActivitiesSummaryUseCase,
-    private val activityApprovalUseCase: ActivityApprovalUseCase
+    private val activityApprovalUseCase: ActivityApprovalUseCase,
 ) {
 
     @Get
     @Operation(summary = "Gets activities between two dates.")
-    internal fun get(startDate: Optional<LocalDate>, endDate: Optional<LocalDate>, approvalState: Optional<ApprovalState>): List<ActivityResponseDTO> {
-        return activitiesBetweenDateUseCase.getActivities(startDate, endDate, approvalState)
+    internal fun get(
+        startDate: LocalDate?,
+        endDate: LocalDate?,
+        approvalState: ApprovalState?
+    ): List<ActivityResponseDTO> {
+        require((startDate != null && endDate != null) || approvalState != null) { "Invalid parameters" }
+        when{
+            startDate != null && endDate != null -> return activitiesBetweenDateUseCase.getActivities(startDate, endDate)
+            approvalState != null -> return activitiesByApprovalStateUseCase.getActivities(approvalState)
+        }
+        return emptyList()
     }
 
     @Get("/{id}")

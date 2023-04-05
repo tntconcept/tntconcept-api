@@ -1,56 +1,35 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.UserService
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.*
-
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDate
-import java.util.*
 
 internal class ActivitiesBetweenDateUseCaseTest {
 
-    private val user = createUser()
     private val activityService = mock<ActivityService>()
-    private val userService = mock<UserService>()
-    private val activityDateConverter = mock<ActivityResponseConverter>()
+    private val activityConverter = mock<ActivityResponseConverter>()
 
     private val activitiesBetweenDateUseCase = ActivitiesBetweenDateUseCase(
         activityService,
-        userService,
-        activityDateConverter
+        activityConverter
     )
 
     @Test
     fun `get activities between start and end date`() {
+        whenever(activityService.getActivitiesBetweenDates(any())).thenReturn(listOf(activity))
+        whenever(activityConverter.mapActivitiesToActivitiesResponseDTO(listOf(activity))).thenReturn(activitiesResponseDTO)
 
-        doReturn(user).whenever(userService).getAuthenticatedUser()
-        doReturn(listOf(activity)).whenever(activityService).getActivitiesBetweenDates(any(), any())
+        val actual = activitiesBetweenDateUseCase.getActivities(startDate, endDate)
 
-        doReturn(activitiesResponseDTO).whenever(activityDateConverter).mapActivitiesToActivitiesDateDTO(listOf(activity))
-
-        val actual = activitiesBetweenDateUseCase.getActivities(Optional.of(startDate), Optional.of(endDate), Optional.empty())
         assertEquals(activitiesResponseDTO, actual)
-
-    }
-
-    @Test
-    fun `get activities by ApprovalState`() {
-
-        doReturn(user).whenever(userService).getAuthenticatedUser()
-        doReturn(listOf(activity)).whenever(activityService).getActivitiesApprovalState(approvalState, user.id)
-
-        doReturn(activitiesResponseDTO).whenever(activityDateConverter).mapActivitiesToActivitiesDateDTO(listOf(activity))
-
-        val actual = activitiesBetweenDateUseCase.getActivities(Optional.empty(), Optional.empty(), Optional.of(approvalState))
-        assertEquals(activitiesResponseDTO, actual)
-
     }
 
     private companion object{
