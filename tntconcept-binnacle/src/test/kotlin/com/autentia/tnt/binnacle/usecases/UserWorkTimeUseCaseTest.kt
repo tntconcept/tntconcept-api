@@ -36,7 +36,6 @@ import com.autentia.tnt.binnacle.services.VacationService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.whenever
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.verify
@@ -77,26 +76,16 @@ internal class UserWorkTimeUseCaseTest {
 
     @Test
     fun `given date should return working time`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-
-        doReturn(annualWorkSummary).whenever(annualWorkSummaryService).getAnnualWorkSummary(USER, TODAY_LAST_YEAR.minusYears(1).year)
-
-        doReturn(HOLIDAYS).whenever(holidayService).findAllBetweenDate(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR)
-
-        doReturn(vacations).whenever(vacationService).getVacationsBetweenDates(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR, USER)
-
+        whenever(userService.getAuthenticatedUser()).thenReturn(USER)
+        whenever(annualWorkSummaryService.getAnnualWorkSummary(USER, TODAY_LAST_YEAR.minusYears(1).year)).thenReturn(annualWorkSummary)
+        whenever(holidayService.findAllBetweenDate(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR)).thenReturn(HOLIDAYS)
+        whenever(vacationService.getVacationsBetweenDates(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR)).thenReturn(vacations)
         vacations.add(vacation)
-
-        doReturn(listOf(LAST_YEAR_ACTIVITY)).whenever(activityService).getActivitiesBetweenDates(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR, USER.id)
-
-        doReturn(CORRESPONDING_VACATIONS).whenever(myVacationsDetailService).getCorrespondingVacationDaysSinceHiringDate(
-            USER, FIRST_DAY_LAST_YEAR.year)
-
-        doReturn(vacationDaysRequestedThisYear).whenever(vacationService).getVacationsByChargeYear(FIRST_DAY_LAST_YEAR.year, USER)
-
-        doReturn(vacationsChargedThisYear).whenever(vacationService).getVacationsByChargeYear(FIRST_DAY_LAST_YEAR.year, USER)
-
-        doReturn(TIME_SUMMARY).whenever(workTimeService).getTimeSummaryBalance( eq(TODAY_LAST_YEAR),
+        whenever(activityService.getActivitiesBetweenDates(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR, USER.id)).thenReturn(listOf(LAST_YEAR_ACTIVITY))
+        whenever(myVacationsDetailService.getCorrespondingVacationDaysSinceHiringDate(USER, FIRST_DAY_LAST_YEAR.year)).thenReturn(CORRESPONDING_VACATIONS)
+        whenever(vacationService.getVacationsByChargeYear(FIRST_DAY_LAST_YEAR.year)).thenReturn(vacationsChargedThisYear)
+        whenever(vacationService.getVacationsByChargeYear(FIRST_DAY_LAST_YEAR.year)).thenReturn(vacationsChargedThisYear)
+        whenever(workTimeService.getTimeSummaryBalance( eq(TODAY_LAST_YEAR),
             eq(USER),
             eq(annualWorkSummary),
             eq(listOf(CHRISTMAS_DATE)),
@@ -105,7 +94,7 @@ internal class UserWorkTimeUseCaseTest {
             eq(CORRESPONDING_VACATIONS),
             any(),
             any(),
-        )
+        )).thenReturn(TIME_SUMMARY)
 
         //When
         val actualWorkingTime = userWorkTimeUseCase.getTimeSummary(TODAY_LAST_YEAR)
@@ -114,7 +103,7 @@ internal class UserWorkTimeUseCaseTest {
         verify(userService).getAuthenticatedUser()
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
-        verify(vacationService).getVacationsBetweenDates(any(), any(), any())
+        verify(vacationService).getVacationsBetweenDates(any(), any())
         verify(activityService, times(2)).getActivitiesBetweenDates(any(), any(), any())
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)

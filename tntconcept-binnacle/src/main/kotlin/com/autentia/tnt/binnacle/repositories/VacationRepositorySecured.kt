@@ -1,0 +1,53 @@
+package com.autentia.tnt.binnacle.repositories
+
+import com.autentia.tnt.binnacle.entities.Vacation
+import com.autentia.tnt.security.application.checkAuthentication
+import com.autentia.tnt.security.application.id
+import com.autentia.tnt.security.application.isAdmin
+import io.micronaut.security.utils.SecurityService
+import jakarta.inject.Singleton
+import java.time.LocalDate
+
+@Singleton
+internal class VacationRepositorySecured(
+    private val vacationDao: VacationDao,
+    private val securityService: SecurityService
+) : VacationRepository {
+    override fun findVacationsBetweenDate(startDate: LocalDate, endDate: LocalDate): List<Vacation> {
+        val authentication = securityService.checkAuthentication()
+        return vacationDao.getVacationsBetweenDate(startDate, endDate, authentication.id())
+    }
+
+    override fun filterBetweenChargeYears(startYear: LocalDate, endYear: LocalDate): List<Vacation> {
+        val authentication = securityService.checkAuthentication()
+        return vacationDao.filterBetweenChargeYears(startYear, endYear, authentication.id())
+    }
+
+    override fun findById(vacationId: Long): Vacation? {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.isAdmin()) {
+            vacationDao.findById(vacationId).orElse(null)
+        } else {
+            vacationDao.findByIdAndUserId(vacationId, authentication.id())
+        }
+    }
+
+    override fun saveAll(vacations: Iterable<Vacation>): Iterable<Vacation> {
+        val authentication = securityService.checkAuthentication()
+        vacations.forEach { require(it.userId == authentication.id()) { "User cannot save vacation" } }
+        return vacationDao.saveAll(vacations)
+    }
+
+    override fun update(vacation: Vacation): Vacation {
+        val authentication = securityService.checkAuthentication()
+        require(vacation.userId == authentication.id()) { "User cannot update vacation" }
+        require(vacation.id?.let { findById(it) } != null) { "Vacation to update does not exist" }
+        return vacationDao.update(vacation)
+    }
+
+    override fun deleteById(vacationId: Long) {
+        securityService.checkAuthentication()
+        require(findById(vacationId) != null) { "Vacation to delete does not exist" }
+        return vacationDao.deleteById(vacationId)
+    }
+}

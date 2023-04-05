@@ -25,17 +25,6 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `find activity should throw illegal state exception`() {
         val activityId = 1L
-        val activity = Activity(
-            id = activityId,
-            startDate = today.atTime(10, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasImage = false,
-        )
-        whenever(activityDao.findByIdAndUserId(activityId, userId)).thenReturn(activity)
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> { activityRepositorySecured.findById(activityId) }

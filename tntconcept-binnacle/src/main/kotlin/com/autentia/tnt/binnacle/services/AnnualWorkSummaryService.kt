@@ -29,7 +29,7 @@ internal class AnnualWorkSummaryService(
 
     fun getAnnualWorkSummary(user: User, year: Int): AnnualWorkSummary {
         val workSummaryEntity = getAnnualWorkSummaryFromRepository(user, year)
-        val consumedVacations = getConsumedVacations(year, user)
+        val consumedVacations = getConsumedVacations(year)
         val earnedVacations = getEarnedVacations(user, year)
         return buildAnnualWorkSummaryResponse(year, earnedVacations, consumedVacations, workSummaryEntity)
     }
@@ -46,7 +46,7 @@ internal class AnnualWorkSummaryService(
             annualWorkSummaryRepository.saveOrUpdate(workSummaryEntity)
         }
 
-        val consumedVacations = getConsumedVacations(year, user)
+        val consumedVacations = getConsumedVacations(year)
         val earnedVacations = getEarnedVacations(user, year)
         val annualWorkSummary = annualWorkSummaryConverter.toAnnualWorkSummary(
             year,
@@ -72,10 +72,9 @@ internal class AnnualWorkSummaryService(
     }
 
     private fun getConsumedVacations(
-        year: Int,
-        user: User,
+        year: Int
     ): Int {
-        return vacationService.getVacationsByChargeYear(year, user)
+        return vacationService.getVacationsByChargeYear(year)
             .filter { VacationState.ACCEPT === it.state }
             .flatMap { it.days }
             .size

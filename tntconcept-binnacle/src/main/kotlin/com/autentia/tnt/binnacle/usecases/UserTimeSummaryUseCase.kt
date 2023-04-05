@@ -44,13 +44,13 @@ class UserTimeSummaryUseCase internal constructor(
         val holidays: List<Holiday> = holidayService.findAllBetweenDate(startYearDate, endYearDate)
         val holidaysDates = holidays.map { it.date.toLocalDate() }
 
-        val vacationsRequestedThisYear = vacationService.getVacationsBetweenDates(startYearDate, endYearDate, user)
+        val vacationsRequestedThisYear = vacationService.getVacationsBetweenDates(startYearDate, endYearDate)
             .filter { it.isRequestedVacation() }
 
         val vacationDaysRequestedThisYear =
             vacationsRequestedThisYear.flatMap { it.days }.filter { it.year == startYearDate.year }
 
-        val vacationsChargedThisYear = vacationService.getVacationsByChargeYear(startYearDate.year, user)
+        val vacationsChargedThisYear = vacationService.getVacationsByChargeYear(startYearDate.year)
 
         val correspondingVacations =
             myVacationsDetailService.getCorrespondingVacationDaysSinceHiringDate(user, startYearDate.year)

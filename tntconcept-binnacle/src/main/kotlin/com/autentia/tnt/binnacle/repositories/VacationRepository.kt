@@ -1,26 +1,21 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.Vacation
-import io.micronaut.data.annotation.Query
-import io.micronaut.data.annotation.Repository
-import io.micronaut.data.repository.CrudRepository
 import java.time.LocalDate
 
-@Repository
-internal interface VacationRepository : CrudRepository<Vacation, Long> {
-    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND (h.startDate >= :startDate AND h.endDate <= :endDate OR h.endDate >= :startDate AND h.startDate <= :endDate)")
-    fun getVacationsBetweenDate(
+internal interface VacationRepository {
+    fun findVacationsBetweenDate(
         startDate: LocalDate,
-        endDate: LocalDate,
-        userId: Long
+        endDate: LocalDate
     ): List<Vacation>
 
-    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND h.chargeYear BETWEEN :startYear AND :endYear")
     fun filterBetweenChargeYears(
         startYear: LocalDate,
-        endYear: LocalDate,
-        userId: Long
+        endYear: LocalDate
     ): List<Vacation>
 
-
+    fun findById(vacationId : Long) : Vacation?
+    fun saveAll(vacations : Iterable<Vacation>) : Iterable<Vacation>
+    fun update(vacation: Vacation) : Vacation
+    fun deleteById(vacationId : Long)
 }
