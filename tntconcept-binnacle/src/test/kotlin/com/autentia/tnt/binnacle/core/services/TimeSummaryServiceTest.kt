@@ -42,7 +42,7 @@ internal class TimeSummaryServiceTest {
     private val holidayService = mock<HolidayService>()
     private val calendarFactory = CalendarFactory(holidayService)
     private val activityCalendarService =
-        ActivityCalendarService(activityService, calendarFactory, ActivitiesCalendarFactory(calendarFactory))
+        ActivityCalendarService(calendarFactory, ActivitiesCalendarFactory(calendarFactory))
     private val workedTimeService = WorkedTimeService(activityCalendarService, workableProjectRoleIdChecker)
     private val workRecommendationService = WorkRecommendationCurrentMonthAccumulationService()
     private val timeSummaryConverter = TimeSummaryConverter()

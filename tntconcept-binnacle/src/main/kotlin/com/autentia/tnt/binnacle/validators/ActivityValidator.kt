@@ -1,8 +1,6 @@
 package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.core.utils.overlaps
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.*
@@ -11,10 +9,8 @@ import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.Month
 import javax.transaction.Transactional
 
 @Singleton
@@ -50,11 +46,11 @@ internal class ActivityValidator(
         user: User
     ) {
         checkIfIsExceedingMaxHoursForRole(
-            currentActivity, requestActivity, requestActivity.start.year, projectRole, user
+            currentActivity, requestActivity, requestActivity.start.year, projectRole
         )
         if (requestActivity.start.year != requestActivity.end.year) {
             checkIfIsExceedingMaxHoursForRole(
-                currentActivity, requestActivity, requestActivity.end.year, projectRole, user
+                currentActivity, requestActivity, requestActivity.end.year, projectRole
             )
         }
     }
@@ -63,8 +59,7 @@ internal class ActivityValidator(
         currentActivity: Activity,
         activityRequest: ActivityRequestBody,
         year: Int,
-        projectRole: ProjectRole,
-        user: User
+        projectRole: ProjectRole
     ) {
         if (projectRole.maxAllowed > 0) {
 
@@ -80,9 +75,12 @@ internal class ActivityValidator(
                 calendar, activityRequest.getTimeInterval(), projectRole.timeUnit
             )
 
+            val activityIntervals =
+                activityRepository.findIntervals(yearTimeInterval.start, yearTimeInterval.end, projectRole.id)
+
             val totalRegisteredDurationForThisRole =
                 activityCalendarService.getSumActivitiesDuration(
-                    calendar, yearTimeInterval, projectRole.id, user.id
+                    calendar, activityIntervals
                 )
 
             var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
@@ -110,20 +108,6 @@ internal class ActivityValidator(
     private fun isOpenPeriod(startDate: LocalDateTime): Boolean {
         return startDate.year >= LocalDateTime.now().year - 1
     }
-
-    private fun getTotalHoursPerRole(
-        activitiesInYear: List<ActivityTimeOnly>,
-        activityRequest: ActivityRequestBody
-    ) =
-        activitiesInYear
-            .filter { it.projectRoleId == activityRequest.projectRoleId }
-            .sumOf { it.duration }
-
-    private fun getActivitiesInYear(year: Int) =
-        activityRepository.findWorkedMinutes(
-            LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
-            LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
-        )
 
     @Transactional
     @ReadOnly

@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
@@ -10,6 +9,7 @@ import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -33,7 +33,7 @@ class ActivityCalendarServiceTest {
     private val activitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
 
     private val activityCalendarService =
-        ActivityCalendarService(activityService, calendarFactory, activitiesCalendarFactory)
+        ActivityCalendarService(calendarFactory, activitiesCalendarFactory)
 
     private val dateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25)
     private val dateTimePlusOneHour = dateTime.plusHours(1L)
@@ -48,7 +48,6 @@ class ActivityCalendarServiceTest {
     private val datePlusTwoDays = dateTimePlusTwoDays.toLocalDate()
 
     private val projectRole = createProjectRole().copy(timeUnit = TimeUnit.DAYS)
-    private val user = createUser()
     private val activityInMinutes = createDomainActivity()
     private val activityWithDecimals =
         activityInMinutes.copy(start = dateTime, end = dateTime.plusMinutes(80))
@@ -141,29 +140,6 @@ class ActivityCalendarServiceTest {
     }
 
     @Test
-    fun getZeroDuration() {
-        val timeInterval = TimeInterval.ofYear(2023)
-
-        doReturn(emptyList<ActivityInterval>()).whenever(activityService)
-            .getActivitiesIntervals(timeInterval, projectRole.id, user.id)
-
-        val actualDuration = activityCalendarService.getSumActivitiesDuration(timeInterval, projectRole.id, user.id)
-
-        assertEquals(0, actualDuration)
-    }
-
-    @Test
-    fun getDuration() {
-        val timeInterval = TimeInterval.ofYear(2023)
-        doReturn(listOf(monthLongActivity, lastYearActivity)).whenever(activityService)
-            .getActivitiesIntervals(timeInterval, projectRole.id, user.id)
-
-        val actualDuration = activityCalendarService.getSumActivitiesDuration(timeInterval, projectRole.id, user.id)
-
-        assertEquals(18720, actualDuration)
-    }
-
-    @Test
     fun `getDurationByCountingWorkingDays by passing timeInterval, projectRoleId`() {
 
         doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
@@ -219,5 +195,42 @@ class ActivityCalendarServiceTest {
             TimeInterval.of(dateTime, dateTimePlusTwoDays), TimeUnit.DAYS, 1
         )
         assertEquals(480, duration)
+    }
+
+    @Test
+    fun `getSumActivitiesDuration should return duration of zero`() {
+        val calendar = calendarFactory.create(DateInterval.of(date, datePlusTwoDays))
+        val duration = activityCalendarService.getSumActivitiesDuration(calendar, emptyList())
+
+        assertEquals(0, duration)
+    }
+
+    @Test
+    fun `getSumActivitiesDuration should return duration counting working days if there are not holidays`() {
+        val calendar = calendarFactory.create(DateInterval.of(date, datePlusTwoDays))
+        val activitiesIntervals = listOf(
+            ActivityInterval(dateTimePlusOneHour, dateTimePlusOneHour.plusHours(2L), TimeUnit.MINUTES),
+            ActivityInterval(dateTime.plusDays(1L), dateTime.plusDays(2L), TimeUnit.DAYS)
+        )
+        val duration = activityCalendarService.getSumActivitiesDuration(calendar, activitiesIntervals)
+
+        assertEquals(1080, duration)
+    }
+
+    @Test
+    fun `getSumActivitiesDuration should return duration counting working days if there are holidays`() {
+        val holidays = listOf(
+            Holiday(1, "Holiday", date.plusDays(1L).atStartOfDay())
+        )
+        whenever(holidayService.findAllBetweenDate(date, datePlusTwoDays)).thenReturn(holidays)
+
+        val calendar = calendarFactory.create(DateInterval.of(date, datePlusTwoDays))
+        val activitiesIntervals = listOf(
+            ActivityInterval(dateTimePlusOneHour, dateTimePlusOneHour.plusHours(2L), TimeUnit.MINUTES),
+            ActivityInterval(dateTime.plusDays(1L), dateTime.plusDays(2L), TimeUnit.DAYS)
+        )
+        val duration = activityCalendarService.getSumActivitiesDuration(calendar, activitiesIntervals)
+
+        assertEquals(600, duration)
     }
 }

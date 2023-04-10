@@ -6,7 +6,6 @@ import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.dto.ActivitySummaryDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.UserService
 import jakarta.inject.Singleton
 import java.time.LocalDate
 
@@ -16,11 +15,9 @@ class ActivitiesSummaryUseCase internal constructor(
     private val activityService: ActivityService,
     private val activitiesSummaryConverter: ActivitySummaryConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val userService: UserService,
 ) {
 
     fun getActivitiesSummary(startDate: LocalDate, endDate: LocalDate): List<ActivitySummaryDTO> {
-        val user = userService.getAuthenticatedUser()
         val dateInterval = DateInterval.of(startDate, endDate)
         val activities =
             activityService.getActivitiesBetweenDates(dateInterval).map(activityResponseConverter::toActivity)

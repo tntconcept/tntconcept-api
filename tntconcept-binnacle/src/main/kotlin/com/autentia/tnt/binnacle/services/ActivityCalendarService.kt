@@ -1,13 +1,8 @@
 package com.autentia.tnt.binnacle.services
 
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
-import com.autentia.tnt.binnacle.core.domain.Activity
-import com.autentia.tnt.binnacle.core.domain.Calendar
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.DailyWorkingTime
-import com.autentia.tnt.binnacle.core.domain.DateInterval
-import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -21,7 +16,6 @@ import kotlin.time.Duration.Companion.minutes
 
 @Singleton
 internal class ActivityCalendarService(
-    private val activityService: ActivityService,
     private val calendarFactory: CalendarFactory,
     private val activitiesCalendarFactory: ActivitiesCalendarFactory,
 ) {
@@ -102,17 +96,9 @@ internal class ActivityCalendarService(
 
     @Transactional
     @ReadOnly
-    fun getSumActivitiesDuration(timeInterval: TimeInterval, projectRoleId: Long, userId: Long) =
-        getSumActivitiesDuration(createCalendar(timeInterval.getDateInterval()), timeInterval, projectRoleId, userId)
-
-    @Transactional
-    @ReadOnly
     fun getSumActivitiesDuration(
-        calendar: Calendar, timeInterval: TimeInterval, projectRoleId: Long, userId: Long
+        calendar: Calendar, activitiesIntervals: List<ActivityInterval>
     ): Int {
-        val activitiesIntervals = activityService.getActivitiesIntervals(
-            timeInterval, projectRoleId, userId
-        )
         return if (activitiesIntervals.isEmpty()) {
             0
         } else {

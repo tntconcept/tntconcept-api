@@ -73,7 +73,7 @@ internal class WorkedTimeServiceTest {
         holidayService = mock()
         calendarFactory = CalendarFactory(holidayService)
         activityCalendarService =
-            ActivityCalendarService(activityService, calendarFactory, ActivitiesCalendarFactory(calendarFactory))
+            ActivityCalendarService(calendarFactory, ActivitiesCalendarFactory(calendarFactory))
         sut = WorkedTimeService(activityCalendarService, workableProjectRoleIdChecker)
     }
 
