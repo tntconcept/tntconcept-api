@@ -1,34 +1,24 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import java.time.LocalDateTime
-import java.util.Optional
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
+import java.time.LocalDateTime
 
 internal class ActivityCreationUseCaseTest {
 
@@ -53,18 +43,14 @@ internal class ActivityCreationUseCaseTest {
 
     @Test
     fun `created activity`() {
-        doReturn(user).whenever(userService).getAuthenticatedUser()
-
         val activity = createActivity(userId = user.id)
-
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
-
-        doReturn(activity).whenever(activityService).createActivity(any(), eq(user))
-
-        doReturn(Optional.of(activity.projectRole)).whenever(projectRoleRepository).findById(any())
+        whenever(userService.getAuthenticatedUser()).thenReturn(user)
+        whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
+        whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_REQUEST_BODY_DTO)
 
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         assertEquals(expectedResponseDTO, result)
     }
 

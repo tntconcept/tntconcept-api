@@ -10,13 +10,13 @@ import javax.transaction.Transactional
 
 @Singleton
 class ProjectRolesByProjectIdUseCase internal constructor(
-    private val projectRoleRepository: ProjectRoleRepository,
+    private val projectRoleRepositorySecured: ProjectRoleRepository,
     private val projectRoleResponseConverter: ProjectRoleResponseConverter
 ) {
     @Transactional
     @ReadOnly
     fun get(id: Int): List<ProjectRoleResponseDTO> =
-        projectRoleRepository
+        projectRoleRepositorySecured
             .getAllByProjectId(id.toLong())
             .map { projectRoleResponseConverter.toProjectRoleResponseDTO(it) }
 

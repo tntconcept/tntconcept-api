@@ -10,16 +10,14 @@ import javax.transaction.Transactional
 
 @Singleton
 class ProjectRoleByIdUseCase internal constructor(
-    private val projectRoleRepository: ProjectRoleRepository,
+    private val projectRoleRepositorySecured: ProjectRoleRepository,
     private val projectRoleResponseConverter: ProjectRoleResponseConverter
 ) {
 
     @Transactional
     @ReadOnly
-    fun get(id: Long): ProjectRoleResponseDTO =
-        projectRoleRepository
-            .findById(id)
-            .map { projectRoleResponseConverter.toProjectRoleResponseDTO(it) }
-            .orElseThrow { ProjectRoleNotFoundException(id) }
-
+    fun get(id: Long): ProjectRoleResponseDTO {
+        val projectRole = projectRoleRepositorySecured.findById(id) ?: throw ProjectRoleNotFoundException(id)
+        return projectRoleResponseConverter.toProjectRoleResponseDTO(projectRole)
+    }
 }

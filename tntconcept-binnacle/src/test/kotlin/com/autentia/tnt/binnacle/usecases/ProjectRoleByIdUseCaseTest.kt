@@ -9,8 +9,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
-import java.util.Optional
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 
 internal class ProjectRoleByIdUseCaseTest {
@@ -22,15 +20,17 @@ internal class ProjectRoleByIdUseCaseTest {
     @Test
     fun `find project role by id`() {
         val projectRole = createProjectRole()
+        whenever(projectRoleRepository.findById(id)).thenReturn(projectRole)
 
-        doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(id)
-
-        assertEquals(ProjectRoleResponseDTO(projectRole.id, projectRole.name, projectRole.requireEvidence), projectRoleByIdUseCase.get(id))
+        assertEquals(
+            ProjectRoleResponseDTO(projectRole.id, projectRole.name, projectRole.requireEvidence),
+            projectRoleByIdUseCase.get(id)
+        )
     }
 
     @Test
     fun `throw role was not found exception`() {
-        doReturn(Optional.ofNullable(null)).whenever(projectRoleRepository).findById(id)
+        whenever(projectRoleRepository.findById(id)).thenReturn(null)
 
         assertThrows<ProjectRoleNotFoundException> { projectRoleByIdUseCase.get(id) }
     }

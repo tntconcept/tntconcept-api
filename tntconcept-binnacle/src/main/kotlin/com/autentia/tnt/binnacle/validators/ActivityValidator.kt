@@ -7,13 +7,7 @@ import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
+import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -26,16 +20,16 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivityValidator(
     private val activityRepository: ActivityRepository,
-    private val projectRoleRepository: ProjectRoleRepository
+    private val projectRoleRepositorySecured: ProjectRoleRepository
 ) {
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForCreation(activityRequest: ActivityRequestBody, user: User) {
         require(activityRequest.id == null) { "Cannot create a new activity with id ${activityRequest.id}." }
 
-        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
+        val projectRoleDb = projectRoleRepositorySecured.findById(activityRequest.projectRoleId)
         when {
-            projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
+            projectRoleDb == null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
@@ -45,7 +39,7 @@ internal class ActivityValidator(
             ) -> throw ActivityBeforeHiringDateException()
 
         }
-        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb)
+        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb!!), activityRequest, projectRoleDb)
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
@@ -108,9 +102,9 @@ internal class ActivityValidator(
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
         val activityDb = activityRepository.findById(activityRequest.id)
-        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
+        val projectRoleDb = projectRoleRepositorySecured.findById(activityRequest.projectRoleId)
         when {
-            activityDb == null -> throw ActivityNotFoundException(activityRequest.id)
+            activityDb === null -> throw ActivityNotFoundException(activityRequest.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
@@ -120,7 +114,7 @@ internal class ActivityValidator(
                 user
             ) -> throw ActivityBeforeHiringDateException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb!!)
     }
 
 

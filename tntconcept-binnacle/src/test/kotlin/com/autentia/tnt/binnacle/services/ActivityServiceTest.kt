@@ -21,7 +21,6 @@ import org.mockito.BDDMockito.mock
 import org.mockito.BDDMockito.verify
 import org.mockito.BDDMockito.verifyNoInteractions
 import org.mockito.BDDMockito.willDoNothing
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -50,8 +49,7 @@ internal class ActivityServiceTest {
     )
 
     init {
-        doReturn(Optional.of(projectRole))
-            .whenever(projectRoleRepository).findById(projectRole.id)
+        whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
     }
 
     private val activityWithImageToSave = activityRequestBodyConverter.mapActivityRequestBodyToActivity(
@@ -126,7 +124,6 @@ internal class ActivityServiceTest {
     fun `get worked minutes between start and end date`() {
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)
-        val userId = 2L
         val activityTimeOnly = ActivityTimeOnly(
             activityWithoutImageSaved.startDate,
             activityWithoutImageSaved.duration,

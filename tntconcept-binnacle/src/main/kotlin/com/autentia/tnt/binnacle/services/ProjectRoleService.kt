@@ -7,15 +7,15 @@ import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
-internal class ProjectRoleService(private val projectRoleRepository: ProjectRoleRepository) {
+internal class ProjectRoleService(private val projectRoleRepositorySecured: ProjectRoleRepository) {
 
     @Transactional
     @ReadOnly
     fun getAllByIds(ids: List<Int>): List<ProjectRole> =
-        projectRoleRepository.getAllByIdIn(ids.map(Int::toLong))
+        projectRoleRepositorySecured.getAllByIdIn(ids.map(Int::toLong))
 
     @Transactional
     @ReadOnly
     fun getAllByProjectIds(projectIds: List<Int>): List<ProjectRole> =
-        projectRoleRepository.getAllByProjectIdIn(projectIds.map(Int::toLong))
+        projectRoleRepositorySecured.getAllByProjectIdIn(projectIds.map(Int::toLong))
 }

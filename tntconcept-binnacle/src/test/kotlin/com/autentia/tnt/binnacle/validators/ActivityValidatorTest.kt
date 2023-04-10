@@ -3,49 +3,36 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.BinnacleException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
+import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
-import org.mockito.ArgumentMatchers.any
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.BDDMockito.given
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
-import java.util.Optional
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.whenever
+import java.util.*
 
 @TestInstance(PER_CLASS)
 internal class ActivityValidatorTest {
 
-    private val activityRepository = mock<ActivityRepository>()
+    private val activityRepositorySecure = mock<ActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
 
     private val activityValidator = ActivityValidator(
-        activityRepository,
+        activityRepositorySecure,
         projectRoleRepository
     )
 
@@ -55,7 +42,7 @@ internal class ActivityValidatorTest {
         @Test
         fun `do nothing when activity is valid`() {
 
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(projectRole.id)
+            doReturn(projectRole).whenever(projectRoleRepository).findById(projectRole.id)
 
             activityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
         }
@@ -93,8 +80,7 @@ internal class ActivityValidatorTest {
             user: User,
             expectedException: BinnacleException,
         ) {
-
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(projectRole.id)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             val exception = assertThrows<BinnacleException> {
                 activityValidator.checkActivityIsValidForCreation(activityRequestBody, user)
@@ -106,8 +92,7 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `throw ProjectRoleNotFoundException with role id when project role is not in the database`() {
-
-            doReturn(Optional.empty<ProjectRole>()).whenever(projectRoleRepository).findById(projectRole.id)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(null)
 
             val exception = assertThrows<ProjectRoleNotFoundException> {
                 activityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
@@ -117,8 +102,7 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `do nothing when activity started last year`() {
-
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(projectRole.id)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForCreation(newActivityLastYear, user)
         }
@@ -135,7 +119,12 @@ internal class ActivityValidatorTest {
                 false
             )
 
-            doReturn(
+            whenever(
+                activityRepositorySecure.find(
+                    LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
+                    LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59)
+                )
+            ).thenReturn(
                 listOf(
                     Activity(
                         1,
@@ -147,12 +136,9 @@ internal class ActivityValidatorTest {
                         false,
                     )
                 )
-            ).whenever(activityRepository).find(
-                LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
-                LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59)
             )
 
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(projectRole.id)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             assertThrows<OverlapsAnotherTimeException> {
                 activityValidator.checkActivityIsValidForCreation(newActivity, user)
@@ -218,11 +204,8 @@ internal class ActivityValidatorTest {
             firstDay: LocalDateTime,
             lastDay: LocalDateTime
         ) {
-
-            doReturn(Optional.of(projectRoleLimited)).whenever(projectRoleRepository).findById(projectRoleLimited.id)
-
-            doReturn(activitiesInTheYear)
-                .whenever(activityRepository).findWorkedMinutes(firstDay, lastDay)
+            whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(projectRoleLimited)
+            whenever(activityRepositorySecure.findWorkedMinutes(firstDay, lastDay)).thenReturn(activitiesInTheYear)
 
             val exception = assertThrows<MaxHoursPerRoleException> {
                 activityValidator.checkActivityIsValidForCreation(activityRequestBody, user)
@@ -239,16 +222,16 @@ internal class ActivityValidatorTest {
     inner class CheckActivityIsValidForUpdate {
         @Test
         fun `do nothing when activity is valid`() {
-            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(activityRepositorySecure.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForUpdate(validActivityToUpdate, user)
         }
 
         @Test
         fun `throw ActivityNotFoundException with activity id when the activity to be replaced does not exist`() {
-            whenever(activityRepository.findById(1L)).thenReturn(null)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(activityRepositorySecure.findById(1L)).thenReturn(null)
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             val exception = assertThrows<ActivityNotFoundException> {
                 activityValidator.checkActivityIsValidForUpdate(activityUpdateNonexistentID, user)
@@ -277,8 +260,8 @@ internal class ActivityValidatorTest {
                 false
             )
 
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.empty())
-            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(null)
+            whenever(activityRepositorySecure.findById(1L)).thenReturn(currentActivity)
 
             val exception = assertThrows<ProjectRoleNotFoundException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, user)
@@ -288,8 +271,6 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `throw ProjectClosedException when chosen project is already closed`() {
-            doReturn(Optional.of(closedProjectRole)).whenever(projectRoleRepository).findById(any())
-
             val newActivity = ActivityRequestBody(
                 1L,
                 LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
@@ -299,9 +280,9 @@ internal class ActivityValidatorTest {
                 2L,
                 false
             )
-
-            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(closedProjectRole))
+            whenever(activityRepositorySecure.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(1L)).thenReturn(closedProjectRole)
+            whenever(projectRoleRepository.findById(1L)).thenReturn(closedProjectRole)
 
             assertThrows<ProjectClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, user)
@@ -310,16 +291,16 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `do nothing when updated activity started last year`() {
-            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(activityRepositorySecure.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForUpdate(activityLastYear, user)
         }
 
         @Test
         fun `throw ActivityPeriodClosedException when updated activity started more than one year ago`() {
-            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(activityRepositorySecure.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             assertThrows<ActivityPeriodClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(activityUpdateTwoYearsAgo, user)
@@ -337,10 +318,10 @@ internal class ActivityValidatorTest {
                 user.id,
                 false
             )
-            given(activityRepository.findById(1L)).willReturn(currentActivity)
+            given(activityRepositorySecure.findById(1L)).willReturn(currentActivity)
 
             given(
-                activityRepository.find(
+                activityRepositorySecure.find(
                     LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
                     LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
                 )
@@ -358,7 +339,7 @@ internal class ActivityValidatorTest {
                     )
                 )
             )
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             assertThrows<OverlapsAnotherTimeException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, user)
@@ -366,49 +347,49 @@ internal class ActivityValidatorTest {
         }
 
         private fun maxHoursRoleLimitProviderUpdate() = arrayOf(
-                arrayOf(
-                    "reached limit no remaining hours for activity related to the year before",
-                    listOf(activityForLimitedProjectRoleAYearAgo, otherActivityForLimitedProjectRoleAYearAgo),
-                    createProjectRoleWithLimit(maxAllowed = HOUR * 8),
-                    activityAYearAgoUpdated,
-                    createActivityRequestBodyToUpdate(
-                        id = activityAYearAgoUpdated.id!!,
-                        startDate = todayDateTime.minusYears(1L),
-                        duration = HOUR * 9
-                    ),
-                    0.0,
-                    firstDayOfYear.minusYears(1L),
-                    lastDayOfYear.minusYears(1L)
+            arrayOf(
+                "reached limit no remaining hours for activity related to the year before",
+                listOf(activityForLimitedProjectRoleAYearAgo, otherActivityForLimitedProjectRoleAYearAgo),
+                createProjectRoleWithLimit(maxAllowed = HOUR * 8),
+                activityAYearAgoUpdated,
+                createActivityRequestBodyToUpdate(
+                    id = activityAYearAgoUpdated.id!!,
+                    startDate = todayDateTime.minusYears(1L),
+                    duration = HOUR * 9
                 ),
-                arrayOf(
-                    "reached limit remaining hours left related to the year before",
-                    listOf(activityForLimitedProjectRoleAYearAgo, activityNoLimitTimeOnlyAYearAgo),
-                    createProjectRoleWithLimit(maxAllowed = HOUR * 8),
-                    activityAYearAgoUpdated,
-                    createActivityRequestBodyToUpdate(
-                        id = activityNotReachedLimitUpdate.id!!,
-                        startDate = todayDateTime.minusYears(1L),
-                        duration = HOUR * 10
-                    ),
-                    2.0,
-                    firstDayOfYear.minusYears(1L),
-                    lastDayOfYear.minusYears(1L)
+                0.0,
+                firstDayOfYear.minusYears(1L),
+                lastDayOfYear.minusYears(1L)
+            ),
+            arrayOf(
+                "reached limit remaining hours left related to the year before",
+                listOf(activityForLimitedProjectRoleAYearAgo, activityNoLimitTimeOnlyAYearAgo),
+                createProjectRoleWithLimit(maxAllowed = HOUR * 8),
+                activityAYearAgoUpdated,
+                createActivityRequestBodyToUpdate(
+                    id = activityNotReachedLimitUpdate.id!!,
+                    startDate = todayDateTime.minusYears(1L),
+                    duration = HOUR * 10
                 ),
-                arrayOf(
-                    "reached limit no remaining hours",
-                    listOf(activityReachedLimitTimeOnly, activityNoLimitTimeOnly),
-                    createProjectRoleWithLimit(maxAllowed = HOUR * 8),
-                    activityReachedLimitUpdate,
-                    createActivityRequestBodyToUpdate(
-                        id = activityReachedLimitUpdate.id!!,
-                        startDate = todayDateTime,
-                        duration = HOUR * 9
-                    ),
-                    0.0,
-                    firstDayOfYear,
-                    lastDayOfYear
+                2.0,
+                firstDayOfYear.minusYears(1L),
+                lastDayOfYear.minusYears(1L)
+            ),
+            arrayOf(
+                "reached limit no remaining hours",
+                listOf(activityReachedLimitTimeOnly, activityNoLimitTimeOnly),
+                createProjectRoleWithLimit(maxAllowed = HOUR * 8),
+                activityReachedLimitUpdate,
+                createActivityRequestBodyToUpdate(
+                    id = activityReachedLimitUpdate.id!!,
+                    startDate = todayDateTime,
+                    duration = HOUR * 9
                 ),
-            )
+                0.0,
+                firstDayOfYear,
+                lastDayOfYear
+            ),
+        )
 
         @ParameterizedTest
         @MethodSource("maxHoursRoleLimitProviderUpdate")
@@ -423,9 +404,9 @@ internal class ActivityValidatorTest {
             lastDay: LocalDateTime
         ) {
 
-            whenever(activityRepository.findWorkedMinutes(firstDay, lastDay)).thenReturn(activitiesInYear)
-            whenever(activityRepository.findById(currentActivity.id!!)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(Optional.of(projectRoleLimited))
+            whenever(activityRepositorySecure.findWorkedMinutes(firstDay, lastDay)).thenReturn(activitiesInYear)
+            whenever(activityRepositorySecure.findById(currentActivity.id!!)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(projectRoleLimited)
 
             val exception = assertThrows<MaxHoursPerRoleException> {
                 activityValidator.checkActivityIsValidForUpdate(activityRequestBodyToUpdate, user)
@@ -456,10 +437,10 @@ internal class ActivityValidatorTest {
                 user.id,
                 false
             )
-            given(activityRepository.findById(1L)).willReturn(currentActivity)
+            given(activityRepositorySecure.findById(1L)).willReturn(currentActivity)
 
             given(
-                activityRepository.find(
+                activityRepositorySecure.find(
                     LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
                     LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
                 )
@@ -477,7 +458,7 @@ internal class ActivityValidatorTest {
                     )
                 )
             )
-            doReturn(Optional.of(projectRole)).whenever(projectRoleRepository).findById(projectRole.id)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForUpdate(newActivity, user)
         }
@@ -510,8 +491,8 @@ internal class ActivityValidatorTest {
                 false
             )
 
-            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(activityRepositorySecure.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             assertThrows<ActivityBeforeHiringDateException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, userHiredLastYear)
@@ -536,7 +517,7 @@ internal class ActivityValidatorTest {
                 false
             )
 
-            whenever(activityRepository.findById(id)).thenReturn(activity)
+            whenever(activityRepositorySecure.findById(id)).thenReturn(activity)
 
             activityValidator.checkActivityIsValidForDeletion(id, user)
         }
@@ -545,7 +526,7 @@ internal class ActivityValidatorTest {
         fun `throw ActivityNotFoundException with id when activity is not in the database`() {
             val id = 1L
 
-            given(activityRepository.findById(id)).willReturn(null)
+            given(activityRepositorySecure.findById(id)).willReturn(null)
 
             val exception = assertThrows<ActivityNotFoundException> {
                 activityValidator.checkActivityIsValidForDeletion(id, user)
@@ -566,7 +547,7 @@ internal class ActivityValidatorTest {
                 false
             )
 
-            whenever(activityRepository.findById(id)).thenReturn(activity)
+            whenever(activityRepositorySecure.findById(id)).thenReturn(activity)
 
             activityValidator.checkActivityIsValidForDeletion(id, user)
         }
@@ -583,7 +564,7 @@ internal class ActivityValidatorTest {
                 user.id,
                 false
             )
-            whenever(activityRepository.findById(id)).thenReturn(activity)
+            whenever(activityRepositorySecure.findById(id)).thenReturn(activity)
 
             assertThrows<ActivityPeriodClosedException> {
                 activityValidator.checkActivityIsValidForDeletion(id, user)

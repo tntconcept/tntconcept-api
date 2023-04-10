@@ -13,19 +13,16 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 
 internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
-
-    private val userService = mock<UserService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
 
-    private val latestProjectRolesForAuthenticatedUserUseCase = LatestProjectRolesForAuthenticatedUserUseCase(userService, projectRoleRepository)
+    private val latestProjectRolesForAuthenticatedUserUseCase = LatestProjectRolesForAuthenticatedUserUseCase(projectRoleRepository)
 
     @Test
     fun `return the last imputed roles`() {
         val startDate = TODAY.minusMonths(1).atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
 
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-        doReturn(PROJECT_ROLES_RECENT).whenever(projectRoleRepository).findDistinctRolesBetweenDate(startDate, endDate, USER.id)
+        doReturn(PROJECT_ROLES_RECENT).whenever(projectRoleRepository).findDistinctRolesBetweenDate(startDate, endDate)
 
         val expectedProjectRoles = listOf(
             buildProjectRoleRecent(1L, START_DATE),
@@ -35,9 +32,8 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get())
     }
 
-    private companion object{
+    private companion object {
         private val TODAY = LocalDate.now()
-        private val USER = createUser()
         private val START_DATE = TODAY.minusDays(1)
         private val END_DATE = TODAY.minusDays(4)
 
@@ -60,7 +56,5 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             buildProjectRoleRecent(5L, START_DATE.minusDays(3), false),
             buildProjectRoleRecent(1L, END_DATE),
         )
-
     }
-
 }

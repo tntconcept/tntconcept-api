@@ -19,7 +19,7 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivityService(
     private val activityRepository: ActivityRepository,
-    private val projectRoleRepository: ProjectRoleRepository,
+    private val projectRoleRepositorySecured: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter
@@ -51,9 +51,9 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
-        val projectRole = projectRoleRepository
+        val projectRole = projectRoleRepositorySecured
             .findById(activityRequest.projectRoleId)
-            .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+            ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val savedActivity = activityRepository.save(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
@@ -76,9 +76,9 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun updateActivity(activityRequest: ActivityRequestBody, user: User): Activity {
-        val projectRole = projectRoleRepository
+        val projectRole = projectRoleRepositorySecured
             .findById(activityRequest.projectRoleId)
-            .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+            ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
             .findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
@@ -87,7 +87,7 @@ internal class ActivityService(
         // Update stored image
         if (activityRequest.hasImage) {
             activityImageService.storeActivityImage(
-                activityRequest.id!!,
+                activityRequest.id,
                 activityRequest.imageFile,
                 oldActivity.insertDate!!
             )
@@ -95,7 +95,7 @@ internal class ActivityService(
 
         // Delete stored image
         if (!activityRequest.hasImage && oldActivity.hasImage) {
-            activityImageService.deleteActivityImage(activityRequest.id!!, oldActivity.insertDate!!)
+            activityImageService.deleteActivityImage(activityRequest.id, oldActivity.insertDate!!)
         }
 
         return activityRepository.update(
@@ -112,7 +112,7 @@ internal class ActivityService(
     fun deleteActivityById(id: Long) {
         val activityToDelete =
             activityRepository
-            .findById(id) ?: throw ActivityNotFoundException(id)
+                .findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasImage) {
             activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
         }
