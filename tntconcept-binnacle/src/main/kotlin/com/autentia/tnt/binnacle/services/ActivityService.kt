@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.core.domain.DateInterval
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.User
@@ -44,14 +43,6 @@ internal class ActivityService(
     @ReadOnly
     fun getActivitiesApprovalState(approvalState: ApprovalState): List<Activity> {
         return activityRepository.find(approvalState)
-    }
-
-    @Transactional
-    @ReadOnly
-    fun workedMinutesBetweenDates(startDate: LocalDate, endDate: LocalDate): List<ActivityTimeOnly> {
-        val startDateMinHour = startDate.atTime(LocalTime.MIN)
-        val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository.findWorkedMinutes(startDateMinHour, endDateMaxHour)
     }
 
     @Transactional
@@ -129,15 +120,11 @@ internal class ActivityService(
     fun deleteActivityById(id: Long) {
         val activityToDelete =
             activityRepository
-            .findById(id) ?: throw ActivityNotFoundException(id)
+                .findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasEvidences) {
             activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
         }
         activityRepository.deleteById(id)
     }
 
-    @Transactional
-    @ReadOnly
-    fun getActivitiesIntervals(timeInterval: TimeInterval, projectRoleId: Long, userId: Long) =
-        activityRepository.findIntervals(timeInterval.start, timeInterval.end, projectRoleId)
 }

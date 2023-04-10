@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import com.autentia.tnt.security.application.isAdmin
+import com.autentia.tnt.security.application.isNotAdmin
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
@@ -73,7 +74,10 @@ internal class ActivityRepositorySecured(
 
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
-        require(activity.userId == authentication.id()) { "User cannot update activity" }
+
+        if(authentication.isNotAdmin()) {
+            require(activity.userId == authentication.id()) { "User cannot update activity" }
+        }
 
         val activityToUpdate = activityDao.findById(activity.id)
         require(activityToUpdate.isPresent) { "Activity to update does not exist" }

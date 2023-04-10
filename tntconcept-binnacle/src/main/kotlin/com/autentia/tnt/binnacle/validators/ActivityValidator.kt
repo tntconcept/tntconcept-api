@@ -144,14 +144,8 @@ internal class ActivityValidator(
 
     @Transactional
     @ReadOnly
-    fun checkIfUserCanApproveActivity(user: User, activityId: Long): Boolean{
-        //TODO: Use JWT to know if user have staff role
-        val activity = activityRepository.findById(activityId)
-        when {
-            activity === null -> throw ActivityNotFoundException(activityId)
-            !userHasAccess(activity, user) -> throw UserPermissionException()
-        }
-        return true
+    fun checkIfUserCanApproveActivity() {
+        //TODO: check if user is admin
     }
 
     fun userHasAccess(activityDb: Activity, user: User): Boolean {

@@ -15,4 +15,5 @@ fun SecurityService.checkRole(role: String): Authentication {
 }
 
 fun Authentication.isAdmin(): Boolean = roles.contains(ADMIN_ROLE)
+fun Authentication.isNotAdmin(): Boolean = !roles.contains(ADMIN_ROLE)
 fun Authentication.id(): Long = name.toLong()
