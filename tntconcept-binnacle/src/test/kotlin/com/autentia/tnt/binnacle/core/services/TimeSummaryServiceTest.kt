@@ -19,7 +19,6 @@ import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HolidayService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

@@ -862,7 +862,6 @@ internal class ActivityValidatorTest {
         private const val DECIMAL_HOUR = 60.0
         private const val CLOSED_ID = 2L
 
-        private val yesterdayDateTime = LocalDateTime.of(LocalDate.now().minusDays(2), LocalTime.now())
         private val todayDateTime =
             LocalDateTime.of(LocalDate.now().year, LocalDate.now().month, LocalDate.now().dayOfMonth, 0, 0)
 
@@ -879,8 +878,6 @@ internal class ActivityValidatorTest {
             Project(CLOSED_ID, "TNT", false, false, Organization(1, "Autentia", emptyList()), emptyList())
         private val closedProjectRole =
             ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false, TimeUnit.MINUTES)
-        private val projectRoleWithoutLimit =
-            ProjectRole(2, "perm", RequireEvidence.NO, permisoProject, 0, true, false, TimeUnit.MINUTES)
         private val projectRoleLimited =
             ProjectRole(3, "vac", RequireEvidence.NO, vacationProject, (HOUR * 8), false, false, TimeUnit.MINUTES)
 
@@ -1004,7 +1001,6 @@ internal class ActivityValidatorTest {
             projectRole.id,
             false
         )
-        private const val anyOtherUserId = 33L
 
         private val validActivityToUpdate = ActivityRequestBody(
             1L,
