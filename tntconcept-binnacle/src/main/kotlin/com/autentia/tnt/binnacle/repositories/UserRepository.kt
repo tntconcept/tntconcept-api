@@ -6,9 +6,5 @@ import io.micronaut.data.repository.CrudRepository
 
 @Repository
 internal interface UserRepository : CrudRepository<User, Long> {
-
-    fun findByUsername(username: String): User?
-
     fun findByActiveTrue(): List<User>
-
 }
