@@ -909,60 +909,6 @@ internal class ActivityValidatorTest {
             projectRole = projectRoleLimited
         )
 
-        private val activityReachedLimitTimeOnly = ActivityInterval(
-            yesterdayDateTime,
-            yesterdayDateTime.plusMinutes(projectRoleLimited.maxAllowed.toLong()),
-            projectRoleLimited.timeUnit
-        )
-
-        private val activityReachedLimitTimeOnlyAYearAgo = ActivityInterval(
-            yesterdayDateTime.minusYears(1L),
-            yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimited.maxAllowed.toLong()),
-            projectRoleLimited.timeUnit
-        )
-
-        private val activityForLimitedProjectRoleAYearAgo = ActivityInterval(
-            yesterdayDateTime.minusYears(1L),
-            yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimited.maxAllowed - 120L),
-            projectRoleLimited.timeUnit
-        )
-
-        private val otherActivityForLimitedProjectRoleAYearAgo = ActivityInterval(
-            yesterdayDateTime.minusYears(1L),
-            yesterdayDateTime.minusYears(1L).plusMinutes(120),
-            projectRoleLimited.timeUnit
-        )
-
-        private val activityNoLimitTimeOnly = ActivityInterval(
-            yesterdayDateTime,
-            yesterdayDateTime.plusMinutes(HOUR * 8L),
-            projectRoleWithoutLimit.timeUnit
-        )
-
-        private val activityNoLimitTimeOnlyAYearAgo = ActivityInterval(
-            yesterdayDateTime.minusYears(1L),
-            yesterdayDateTime.minusYears(1L).plusMinutes(HOUR * 8L),
-            projectRoleWithoutLimit.timeUnit
-        )
-
-        private val activityReachedLimitTodayTimeOnly = ActivityInterval(
-            todayDateTime,
-            todayDateTime.plusMinutes(projectRoleLimited.maxAllowed.toLong()),
-            projectRoleLimited.timeUnit
-        )
-
-        private val activityReachedHalfHourTimeOnly = ActivityInterval(
-            todayDateTime,
-            todayDateTime.plusMinutes(HOUR.toLong()),
-            projectRoleLimited.timeUnit
-        )
-
-        private val activityNotReachedLimitTimeOnly = ActivityInterval(
-            todayDateTime,
-            todayDateTime.plusMinutes(HOUR * 5L),
-            projectRoleLimited.timeUnit
-        )
-
         private val newActivityInMarch = ActivityRequestBody(
             null,
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
@@ -1048,16 +994,6 @@ internal class ActivityValidatorTest {
             false,
             approvalState = ApprovalState.NA
         )
-        val newActivityRequest = ActivityRequestBody(
-            1L,
-            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(HOUR.toLong()),
-            HOUR,
-            "description",
-            false,
-            projectRole.id,
-            false,
-        )
         val activityUpdateTwoYearsAgo = ActivityRequestBody(
             1,
             someYearsAgoLocalDateTime(2),
@@ -1070,17 +1006,6 @@ internal class ActivityValidatorTest {
         )
         private const val anyOtherUserId = 33L
 
-        private val currentActivityAnotherUser = Activity(
-            1L,
-            LocalDateTime.of(2020, Month.JANUARY, 3, 2, 1),
-            LocalDateTime.of(2020, Month.JANUARY, 3, 2, 1).plusMinutes(23),
-            23,
-            "Old description",
-            projectRole,
-            anyOtherUserId,
-            false,
-            approvalState = ApprovalState.NA
-        )
         private val validActivityToUpdate = ActivityRequestBody(
             1L,
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),

@@ -26,7 +26,6 @@ import kotlin.time.toDuration
 
 class ActivityCalendarServiceTest {
 
-    private val activityService = mock<ActivityService>()
     private val projectRoleService = mock<ProjectRoleService>()
     private val holidayService = mock<HolidayService>()
     private val calendarFactory = CalendarFactory(holidayService)
@@ -40,9 +39,6 @@ class ActivityCalendarServiceTest {
     private val dateTimePlusTwoDays = dateTimePlusOneHour.plusDays(2)
 
     private val todayDateTime = LocalDateTime.of(2023, 3, 21, 0, 0)
-    private val todayDateTimePlusOneMonth = todayDateTime.plusMonths(1)
-    private val lastYearDateTime = todayDateTime.minusMonths(3)
-    private val lastYearDateTimePlusOneMonth = lastYearDateTime.plusMonths(1)
 
     private val date = dateTime.toLocalDate()
     private val datePlusTwoDays = dateTimePlusTwoDays.toLocalDate()
@@ -58,18 +54,6 @@ class ActivityCalendarServiceTest {
             projectRole = ProjectRole(2L, TimeUnit.DAYS)
         )
     private val activities = listOf(activityInMinutes, activityWithDecimals, activityInDays)
-
-    private val monthLongActivity = ActivityInterval(
-        todayDateTime,
-        todayDateTimePlusOneMonth,
-        TimeUnit.DAYS
-    )
-
-    private val lastYearActivity = ActivityInterval(
-        lastYearDateTime,
-        lastYearDateTimePlusOneMonth,
-        TimeUnit.DAYS
-    )
 
     @Test
     fun `getActivityDurationSummaryInHours dateInterval, userId should return empty summary with all dates and workedTime set to zero`() {

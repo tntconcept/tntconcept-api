@@ -38,7 +38,6 @@ internal class TimeSummaryServiceTest {
     private val workableProjectRoleIdChecker = WorkableProjectRoleIdChecker(listOf(ProjectRoleId(2)))
     private val targetWorkService = TargetWorkService()
     private val timeWorkableService = TimeWorkableService()
-    private val activityService = mock<ActivityService>()
     private val holidayService = mock<HolidayService>()
     private val calendarFactory = CalendarFactory(holidayService)
     private val activityCalendarService =

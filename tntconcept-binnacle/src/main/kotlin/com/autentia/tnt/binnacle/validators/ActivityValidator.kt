@@ -36,14 +36,13 @@ internal class ActivityValidator(
             ) -> throw ActivityBeforeHiringDateException()
             isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb)
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
         currentActivity: Activity,
         requestActivity: ActivityRequestBody,
-        projectRole: ProjectRole,
-        user: User
+        projectRole: ProjectRole
     ) {
         checkIfIsExceedingMaxHoursForRole(
             currentActivity, requestActivity, requestActivity.start.year, projectRole
@@ -129,7 +128,7 @@ internal class ActivityValidator(
 
             isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb)
     }
 
 
