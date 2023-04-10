@@ -870,8 +870,6 @@ internal class ActivityValidatorTest {
 
         private val vacationProject =
             Project(1, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
-        private val permisoProject =
-            Project(2, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
         private val projectRole =
             ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false, TimeUnit.MINUTES)
         private val closedProject =
