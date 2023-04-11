@@ -15,7 +15,7 @@ import java.time.Month
 
 @MicronautTest
 @TestInstance(PER_CLASS)
-internal class VacationRepositoryIT {
+internal class VacationDaoIT {
 
     @Inject
     private lateinit var vacationDao: VacationDao
@@ -75,7 +75,7 @@ internal class VacationRepositoryIT {
         val startDate = LocalDate.of(2020, Month.JANUARY, 1)
         val endDate = LocalDate.of(2021, Month.DECEMBER, 31)
 
-        val actual = vacationDao.getVacationsBetweenDate(startDate, endDate, userId)
+        val actual = vacationDao.find(startDate, endDate, userId)
 
         assertEquals(vacations.size, actual.size)
         assertTrue(actual.containsAll(vacations))
@@ -93,7 +93,7 @@ internal class VacationRepositoryIT {
         val startDate = LocalDate.of(2021, Month.JANUARY, 1)
         val endDate = LocalDate.of(2021, Month.DECEMBER, 31)
 
-        val actual = vacationDao.getVacationsBetweenDate(startDate, endDate, userId)
+        val actual = vacationDao.find(startDate, endDate, userId)
 
         assertEquals(2, actual.size)
         assertTrue(actual.containsAll(listOf(vacations[1], vacations[2])))
@@ -112,7 +112,7 @@ internal class VacationRepositoryIT {
         val startYear = LocalDate.of(2021, Month.JANUARY, 1)
         val endYear = LocalDate.of(2021, Month.JANUARY, 1)
 
-        val actual = vacationDao.filterBetweenChargeYears(startYear, endYear, userId)
+        val actual = vacationDao.findBetweenChargeYears(startYear, endYear, userId)
 
         assertEquals(3, actual.size)
         assertTrue(actual.containsAll(listOf(vacations[1], vacations[2], vacations[3])))

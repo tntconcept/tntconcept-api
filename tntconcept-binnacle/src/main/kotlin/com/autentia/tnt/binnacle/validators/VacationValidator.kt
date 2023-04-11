@@ -62,7 +62,7 @@ internal class VacationValidator(
 
 
     private fun isVacationOverlaps(startDate: LocalDate, endDate: LocalDate, id: Long?): Boolean {
-        return vacationRepository.findVacationsBetweenDate(startDate, endDate)
+        return vacationRepository.find(startDate, endDate)
             .any { (it.state === ACCEPT || it.state === PENDING) && (id != it.id) }
     }
 

@@ -8,10 +8,8 @@ import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
-import kotlin.IllegalStateException
 import java.time.LocalDate
 import java.util.*
-import kotlin.IllegalArgumentException
 
 class VacationRepositorySecuredTest {
     private val vacationDao = mock<VacationDao>()
@@ -19,23 +17,23 @@ class VacationRepositorySecuredTest {
     private val vacationRepositorySecured = VacationRepositorySecured(vacationDao, securityService)
 
     @Test
-    fun `find vacations between dates when not authenticated` () {
+    fun `find vacations between dates when not authenticated`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        assertThrows<IllegalStateException> { vacationRepositorySecured.findVacationsBetweenDate(startDate, endDate) }
+        assertThrows<IllegalStateException> { vacationRepositorySecured.find(startDate, endDate) }
     }
 
     @Test
-    fun `find vacations between dates when user` () {
+    fun `find vacations between dates when user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
 
-        vacationRepositorySecured.findVacationsBetweenDate(startDate, endDate)
+        vacationRepositorySecured.find(startDate, endDate)
 
-        verify(vacationDao).getVacationsBetweenDate(startDate, endDate, userId)
+        verify(vacationDao).find(startDate, endDate, userId)
     }
 
     @Test
-    fun `find vacation by id when not authenticated` () {
+    fun `find vacation by id when not authenticated`() {
         val vacationId = 1L
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
@@ -43,7 +41,7 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
-    fun `find vacation by id when user` () {
+    fun `find vacation by id when user`() {
         val vacationId = 1L
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
 
@@ -54,7 +52,7 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
-    fun `find vacation by id when admin` () {
+    fun `find vacation by id when admin`() {
         val vacationId = 1L
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
 
@@ -66,38 +64,40 @@ class VacationRepositorySecuredTest {
 
 
     @Test
-    fun  `filter vacations charge year when user not authenticated` () {
+    fun `filter vacations charge year when user not authenticated`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        assertThrows<IllegalStateException> { vacationRepositorySecured.filterBetweenChargeYears(
-            startDate,
-            endDate
-        ) }
+        assertThrows<IllegalStateException> {
+            vacationRepositorySecured.findBetweenChargeYears(
+                startDate,
+                endDate
+            )
+        }
     }
 
     @Test
-    fun  `filter vacations charge year when user` () {
+    fun `filter vacations charge year when user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
 
-        vacationRepositorySecured.filterBetweenChargeYears(startDate, endDate)
+        vacationRepositorySecured.findBetweenChargeYears(startDate, endDate)
 
-        verify(vacationDao).filterBetweenChargeYears(startDate, endDate, userId)
+        verify(vacationDao).findBetweenChargeYears(startDate, endDate, userId)
     }
 
     @Test
-    fun `save all when user not authenticated` () {
+    fun `save all when user not authenticated`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        assertThrows<IllegalStateException> { vacationRepositorySecured.saveAll(emptyList())}
+        assertThrows<IllegalStateException> { vacationRepositorySecured.saveAll(emptyList()) }
     }
 
     @Test
-    fun `save all when user not matching` () {
+    fun `save all when user not matching`() {
         val vacations = listOf(
             Vacation(
                 id = null,
                 startDate = startDate,
-                endDate =  endDate,
+                endDate = endDate,
                 state = VacationState.ACCEPT,
                 userId = userId,
                 description = "Test vacation",
@@ -106,7 +106,7 @@ class VacationRepositorySecuredTest {
             Vacation(
                 id = null,
                 startDate = startDate.plusDays(7),
-                endDate =  endDate.plusDays(7),
+                endDate = endDate.plusDays(7),
                 state = VacationState.ACCEPT,
                 userId = adminUserId,
                 description = "Test vacation 2",
@@ -120,12 +120,12 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
-    fun `save all when user matching` () {
+    fun `save all when user matching`() {
         val vacations = listOf(
             Vacation(
                 id = null,
                 startDate = startDate,
-                endDate =  endDate,
+                endDate = endDate,
                 state = VacationState.ACCEPT,
                 userId = userId,
                 description = "Test vacation",
@@ -150,19 +150,19 @@ class VacationRepositorySecuredTest {
 
 
     @Test
-    fun `update vacation when not authenticated` () {
+    fun `update vacation when not authenticated`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> { vacationRepositorySecured.update(mock()) }
     }
 
     @Test
-    fun `update vacation when activity does not exists` () {
+    fun `update vacation when activity does not exists`() {
         val vacationId = 1L
         val vacation = Vacation(
             id = vacationId,
             startDate = startDate,
-            endDate =  endDate,
+            endDate = endDate,
             state = VacationState.ACCEPT,
             userId = userId,
             description = "Test vacation",
@@ -171,16 +171,16 @@ class VacationRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         whenever(vacationDao.findById(vacationId)).thenReturn(Optional.empty())
 
-        assertThrows<IllegalArgumentException> { vacationRepositorySecured.update(vacation)  }
+        assertThrows<IllegalArgumentException> { vacationRepositorySecured.update(vacation) }
     }
 
     @Test
-    fun `update vacation when user` () {
+    fun `update vacation when user`() {
         val vacationId = 1L
         val vacation = Vacation(
             id = vacationId,
             startDate = startDate,
-            endDate =  endDate,
+            endDate = endDate,
             state = VacationState.ACCEPT,
             userId = userId,
             description = "Test vacation",
@@ -196,11 +196,11 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
-    fun `update vacation when other user` () {
+    fun `update vacation when other user`() {
         val vacation = Vacation(
             id = 1L,
             startDate = startDate,
-            endDate =  endDate,
+            endDate = endDate,
             state = VacationState.ACCEPT,
             userId = userId,
             description = "Test vacation",
@@ -212,7 +212,7 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
-    fun `delete vacation when not authenticated` () {
+    fun `delete vacation when not authenticated`() {
         val vacationId = 1L
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
@@ -220,12 +220,12 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
-    fun `delete vacation when user` () {
+    fun `delete vacation when user`() {
         val vacationId = 1L
         val vacation = Vacation(
             id = 1L,
             startDate = startDate,
-            endDate =  endDate,
+            endDate = endDate,
             state = VacationState.ACCEPT,
             userId = userId,
             description = "Test vacation",
@@ -240,12 +240,12 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
-    fun `delete vacation when other user` () {
+    fun `delete vacation when other user`() {
         val vacationId = 1L
         val vacation = Vacation(
             id = 1L,
             startDate = startDate,
-            endDate =  endDate,
+            endDate = endDate,
             state = VacationState.ACCEPT,
             userId = userId,
             description = "Test vacation",
@@ -262,7 +262,8 @@ class VacationRepositorySecuredTest {
         private val endDate = LocalDate.of(2023, 3, 29)
         private const val userId = 1L
         private const val adminUserId = 3L
-        private val authenticationAdmin = ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin")))
+        private val authenticationAdmin =
+            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin")))
         private val authenticationUser = ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 }

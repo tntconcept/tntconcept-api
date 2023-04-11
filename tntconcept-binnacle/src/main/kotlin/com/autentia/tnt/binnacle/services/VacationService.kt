@@ -29,7 +29,7 @@ internal class VacationService(
     @Transactional
     @ReadOnly
     fun getVacationsBetweenDates(beginDate: LocalDate, finalDate: LocalDate): List<VacationDomain> {
-        val vacations: List<Vacation> = vacationRepository.findVacationsBetweenDate(beginDate, finalDate)
+        val vacations: List<Vacation> = vacationRepository.find(beginDate, finalDate)
         var holidays: List<Holiday> = emptyList()
         if (vacations.isNotEmpty()) {
             holidays = holidayService.findAllBetweenDate(beginDate, finalDate)
@@ -40,7 +40,7 @@ internal class VacationService(
     @Transactional
     @ReadOnly
     fun getVacationsByChargeYear(chargeYear: Int): List<VacationDomain> {
-        val vacations: List<Vacation> = vacationRepository.filterBetweenChargeYears(
+        val vacations: List<Vacation> = vacationRepository.findBetweenChargeYears(
             LocalDate.of(chargeYear, 1, 1),
             LocalDate.of(chargeYear, 1, 1)
         )
@@ -63,7 +63,7 @@ internal class VacationService(
         val nextYear = currentYear + 1
 
         val holidays = getHolidaysBetweenLastAndNextYear()
-        val vacations = vacationRepository.filterBetweenChargeYears(
+        val vacations = vacationRepository.findBetweenChargeYears(
             LocalDate.of(lastYear, Month.JANUARY, 1),
             LocalDate.of(nextYear, Month.DECEMBER, 31)
         )
