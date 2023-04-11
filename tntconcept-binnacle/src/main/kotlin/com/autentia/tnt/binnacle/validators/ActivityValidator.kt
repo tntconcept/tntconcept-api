@@ -20,14 +20,14 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivityValidator(
     private val activityRepository: ActivityRepository,
-    private val projectRoleRepositorySecured: ProjectRoleRepository
+    private val projectRoleRepository: ProjectRoleRepository
 ) {
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForCreation(activityRequest: ActivityRequestBody, user: User) {
         require(activityRequest.id == null) { "Cannot create a new activity with id ${activityRequest.id}." }
 
-        val projectRoleDb = projectRoleRepositorySecured.findById(activityRequest.projectRoleId)
+        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId)
         when {
             projectRoleDb == null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
@@ -102,7 +102,7 @@ internal class ActivityValidator(
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
         val activityDb = activityRepository.findById(activityRequest.id)
-        val projectRoleDb = projectRoleRepositorySecured.findById(activityRequest.projectRoleId)
+        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId)
         when {
             activityDb === null -> throw ActivityNotFoundException(activityRequest.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)

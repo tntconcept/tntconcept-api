@@ -16,7 +16,7 @@ import javax.transaction.Transactional
 
 @Singleton
 internal class VacationValidator(
-    private val vacationRepositorySecured: VacationRepository,
+    private val vacationRepository: VacationRepository,
     private val vacationService: VacationService,
     private val holidayService: HolidayService,
 ) {
@@ -62,7 +62,7 @@ internal class VacationValidator(
 
 
     private fun isVacationOverlaps(startDate: LocalDate, endDate: LocalDate, id: Long?): Boolean {
-        return vacationRepositorySecured.findVacationsBetweenDate(startDate, endDate)
+        return vacationRepository.findVacationsBetweenDate(startDate, endDate)
             .any { (it.state === ACCEPT || it.state === PENDING) && (id != it.id) }
     }
 
@@ -71,7 +71,7 @@ internal class VacationValidator(
     fun canUpdateVacationPeriod(requestVacation: RequestVacation, user: User): UpdateVacationValidation {
         return when (requestVacation.isDateRangeValid()) {
             true -> {
-                val vacationDb = vacationRepositorySecured.findById(requestVacation.id!!)
+                val vacationDb = vacationRepository.findById(requestVacation.id!!)
                 return when {
                     vacationDb === null -> UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_NOT_FOUND)
                     !isDateRangeOpen(requestVacation.startDate) -> UpdateVacationValidation.Failure(
@@ -107,13 +107,14 @@ internal class VacationValidator(
     @Transactional
     @ReadOnly
     fun canDeleteVacationPeriod(id: Long, user: User): DeleteVacationValidation {
-        val vacationDb = vacationRepositorySecured.findById(id)
+        val vacationDb = vacationRepository.findById(id)
         return when {
             vacationDb === null -> DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND)
             !isDateRangeOpen(vacationDb.startDate) -> DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_RANGE_CLOSED)
             isPastAndAcceptedVacation(vacationDb.startDate, vacationDb.state) -> DeleteVacationValidation.Failure(
                 DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD
             )
+
             else -> DeleteVacationValidation.Success
         }
     }

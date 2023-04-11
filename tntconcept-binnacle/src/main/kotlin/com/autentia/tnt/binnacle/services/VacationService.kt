@@ -21,7 +21,7 @@ import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 @Singleton
 internal class VacationService(
-    private val vacationRepositorySecured: VacationRepository,
+    private val vacationRepository: VacationRepository,
     private val holidayService: HolidayService,
     private val myVacationsDetailService: MyVacationsDetailService,
     private val vacationConverter: VacationConverter
@@ -29,7 +29,7 @@ internal class VacationService(
     @Transactional
     @ReadOnly
     fun getVacationsBetweenDates(beginDate: LocalDate, finalDate: LocalDate): List<VacationDomain> {
-        val vacations: List<Vacation> = vacationRepositorySecured.findVacationsBetweenDate(beginDate, finalDate)
+        val vacations: List<Vacation> = vacationRepository.findVacationsBetweenDate(beginDate, finalDate)
         var holidays: List<Holiday> = emptyList()
         if (vacations.isNotEmpty()) {
             holidays = holidayService.findAllBetweenDate(beginDate, finalDate)
@@ -40,7 +40,7 @@ internal class VacationService(
     @Transactional
     @ReadOnly
     fun getVacationsByChargeYear(chargeYear: Int): List<VacationDomain> {
-        val vacations: List<Vacation> = vacationRepositorySecured.filterBetweenChargeYears(
+        val vacations: List<Vacation> = vacationRepository.filterBetweenChargeYears(
             LocalDate.of(chargeYear, 1, 1),
             LocalDate.of(chargeYear, 1, 1)
         )
@@ -63,7 +63,7 @@ internal class VacationService(
         val nextYear = currentYear + 1
 
         val holidays = getHolidaysBetweenLastAndNextYear()
-        val vacations = vacationRepositorySecured.filterBetweenChargeYears(
+        val vacations = vacationRepository.filterBetweenChargeYears(
             LocalDate.of(lastYear, Month.JANUARY, 1),
             LocalDate.of(nextYear, Month.DECEMBER, 31)
         )
@@ -130,7 +130,7 @@ internal class VacationService(
             )
         }
 
-        vacationRepositorySecured.saveAll(vacationsToSave)
+        vacationRepository.saveAll(vacationsToSave)
 
         return vacationPeriods
     }
@@ -142,11 +142,16 @@ internal class VacationService(
         }
 
     @Transactional
-    fun updateVacationPeriod(requestVacation: RequestVacation, user: User, vacation: Vacation): MutableList<CreateVacationResponse> {
+    fun updateVacationPeriod(
+        requestVacation: RequestVacation,
+        user: User,
+        vacation: Vacation
+    ): MutableList<CreateVacationResponse> {
         val holidays = this.getHolidaysBetweenLastAndNextYear()
 
         val oldCorrespondingDays = this.getVacationPeriodDays(vacation.startDate, vacation.endDate, holidays).size
-        val newCorrespondingDays = this.getVacationPeriodDays(requestVacation.startDate, requestVacation.endDate, holidays).size
+        val newCorrespondingDays =
+            this.getVacationPeriodDays(requestVacation.startDate, requestVacation.endDate, holidays).size
 
         var vacationPeriods = mutableListOf<CreateVacationResponse>()
 
@@ -157,7 +162,7 @@ internal class VacationService(
                 description = requestVacation.description.orEmpty()
             )
 
-            val savedPeriod = vacationRepositorySecured.update(newPeriod)
+            val savedPeriod = vacationRepository.update(newPeriod)
 
             vacationPeriods.plusAssign(
                 CreateVacationResponse(
@@ -169,7 +174,7 @@ internal class VacationService(
             )
         } else {
             // Delete the request period first
-            vacationRepositorySecured.deleteById(vacation.id!!)
+            vacationRepository.deleteById(vacation.id!!)
 
             vacationPeriods = createVacationPeriod(requestVacation, user)
         }
@@ -222,7 +227,7 @@ internal class VacationService(
 
     @Transactional
     fun deleteVacationPeriod(id: Long, userId: Long) {
-        vacationRepositorySecured.deleteById(id)
+        vacationRepository.deleteById(id)
     }
 
     fun getVacationPeriodDays(beginDate: LocalDate, finalDate: LocalDate, holidays: List<Holiday>): List<LocalDate> {

@@ -11,14 +11,14 @@ import javax.transaction.Transactional
 
 @Singleton
 class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
-    private val projectRoleRepositorySecured: ProjectRoleRepository
+    private val projectRoleRepository: ProjectRoleRepository
 ) {
     @Transactional
     @ReadOnly
     fun get(): List<ProjectRoleRecent> {
         val oneMonthDateRange = oneMonthDateRangeFromCurrentDate()
 
-        val roles = projectRoleRepositorySecured.findDistinctRolesBetweenDate(
+        val roles = projectRoleRepository.findDistinctRolesBetweenDate(
             oneMonthDateRange.startDate,
             oneMonthDateRange.endDate
         )

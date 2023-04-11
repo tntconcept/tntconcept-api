@@ -19,7 +19,7 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivityService(
     private val activityRepository: ActivityRepository,
-    private val projectRoleRepositorySecured: ProjectRoleRepository,
+    private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter
@@ -51,7 +51,7 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
-        val projectRole = projectRoleRepositorySecured
+        val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
             ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
@@ -76,7 +76,7 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun updateActivity(activityRequest: ActivityRequestBody, user: User): Activity {
-        val projectRole = projectRoleRepositorySecured
+        val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
             ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
