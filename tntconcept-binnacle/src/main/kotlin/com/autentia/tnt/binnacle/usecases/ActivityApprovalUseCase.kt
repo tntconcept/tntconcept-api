@@ -3,8 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.security.application.checkAuthentication
-import com.autentia.tnt.security.application.isAdmin
+import com.autentia.tnt.security.application.checkAdminRole
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 
@@ -15,8 +14,7 @@ class ActivityApprovalUseCase internal constructor(
     private val activityResponseConverter: ActivityResponseConverter
 ) {
     fun approveActivity(id: Long): ActivityResponseDTO {
-        val authentication = securityService.checkAuthentication()
-        require(authentication.isAdmin()) { "User cannot approve activity" }
+        securityService.checkAdminRole()
         val activity = activityService.approveActivityById(id)
         return activityResponseConverter.mapActivityToActivityResponseDTO(activity)
     }

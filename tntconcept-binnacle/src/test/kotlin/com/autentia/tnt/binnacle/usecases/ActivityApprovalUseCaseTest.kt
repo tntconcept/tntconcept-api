@@ -36,7 +36,7 @@ internal class ActivityApprovalUseCaseTest {
     fun `should throw Illegal Argument Exception if user is not admin`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
 
-        assertThrows<IllegalArgumentException> {
+        assertThrows<IllegalStateException> {
             activityApprovalUseCase.approveActivity(activityId)
         }
     }
