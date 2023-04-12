@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createActivityResponseDTO
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.repositories.ActivityRepositorySecuredTest
 import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
-import java.lang.IllegalArgumentException
 import java.util.*
 
 internal class ActivityApprovalUseCaseTest {

@@ -355,13 +355,6 @@ internal class ActivityControllerIT {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
         private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 12, 0)
 
-        private val INTERVAL_RESPONSE_DTO = IntervalResponseDTO(
-            START_DATE,
-            END_DATE,
-            240,
-            TimeUnit.MINUTES
-        )
-
         private val INTERVAL_REQUEST_DTO = TimeIntervalRequestDTO(
             START_DATE,
             END_DATE
