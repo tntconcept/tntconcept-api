@@ -2,18 +2,16 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.ActivityAlreadyApprovedException
+import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.time.LocalDate
 import java.time.LocalTime
 import javax.transaction.Transactional
 
@@ -108,7 +106,7 @@ internal class ActivityService(
     fun approveActivityById(id: Long): Activity {
         val activityToApprove = activityRepository.findById(id)?: throw ActivityNotFoundException(id)
         if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA){
-            throw ActivityAlreadyApprovedException()
+            throw InvalidActivityApprovalStateException()
         }
         activityToApprove.approvalState = ApprovalState.ACCEPTED
         return activityRepository.update(
