@@ -1,10 +1,14 @@
 package com.autentia.tnt.binnacle.entities
 
+import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.micronaut.data.annotation.DateCreated
 import java.time.LocalDateTime
 import java.util.Date
 import javax.persistence.Entity
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 import javax.persistence.FetchType.LAZY
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
@@ -14,6 +18,10 @@ import javax.persistence.ManyToOne
 import javax.persistence.NamedAttributeNode
 import javax.persistence.NamedEntityGraph
 import javax.persistence.NamedSubgraph
+
+enum class ApprovalState {
+    NA, PENDING, ACCEPTED
+}
 
 @Entity
 @NamedEntityGraph(
@@ -40,7 +48,8 @@ data class Activity(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
 
-    val startDate: LocalDateTime,
+    val start: LocalDateTime,
+    val end: LocalDateTime,
     val duration: Int,
     val description: String,
 
@@ -56,9 +65,20 @@ data class Activity(
     @JsonIgnore
     var insertDate: Date? = null,
 
-    var hasImage: Boolean = false
-){
+    var hasEvidences: Boolean = false,
+
+    @Enumerated(EnumType.STRING)
+    var approvalState: ApprovalState,
+) {
+
     companion object {
-        fun emptyActivity(projectRole: ProjectRole) : Activity = Activity(0, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L, false)
+        fun emptyActivity(projectRole: ProjectRole): Activity = Activity(
+            0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
+            false, 0, null, false, ApprovalState.NA
+        )
     }
+
+    fun getDateInterval() = DateInterval.of(start.toLocalDate(), end.toLocalDate())
+    fun getTimeInterval() = TimeInterval.of(start, end)
+
 }

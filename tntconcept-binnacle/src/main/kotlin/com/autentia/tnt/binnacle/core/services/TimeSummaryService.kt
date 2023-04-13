@@ -3,17 +3,16 @@ package com.autentia.tnt.binnacle.core.services
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
 import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
-import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
-import com.autentia.tnt.binnacle.core.domain.Vacation
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeSummary
-import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
+import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.entities.User
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
 import kotlin.time.Duration
 
-class TimeSummaryService(
+internal class TimeSummaryService(
     private val targetWorkService: TargetWorkService,
     private val timeWorkableService: TimeWorkableService,
     private val workedTimeService: WorkedTimeService,
@@ -32,13 +31,20 @@ class TimeSummaryService(
         activities: List<Activity>,
         previousActivities : List<Activity>
     ): TimeSummary {
-        val annualPrevisionWorkingTime = getWorkingPrevision(date.year, user, publicHolidays)
+
+        val year = date.year
+        val previousYear = date.year - 1
+
+        val yearInterval = DateInterval.ofYear(year)
+        val previousYearInterval = DateInterval.ofYear(previousYear)
+
+        val annualPrevisionWorkingTime = getWorkingPrevision(year, user, publicHolidays)
 
         val annualTargetWork = targetWorkService.getAnnualTargetWork(
             date.year,
             user.hiringDate,
             annualPrevisionWorkingTime,
-            user.getAnnualWorkingHoursByYear(date.year),
+            user.getAnnualWorkingHoursByYear(year),
             annualWorkSummary
         )
 
@@ -46,22 +52,20 @@ class TimeSummaryService(
             date.year - 1,
             user.hiringDate,
             annualPrevisionWorkingTime,
-            user.getAnnualWorkingHoursByYear(date.year - 1),
+            user.getAnnualWorkingHoursByYear(previousYear),
             annualWorkSummary
         )
 
-        val workedTimeByMonth = getWorked(activities)
-        val previousWorkedTimeByMonth = getWorked(previousActivities)
+        val workedTimeByMonth = getWorked(yearInterval, activities)
+
+        val previousWorkedTimeByMonth = getWorked(previousYearInterval, previousActivities)
 
         val monthlyWorkingTime = timeWorkableService.getMonthlyWorkingTime(
-            date.year,
-            user.hiringDate,
-            publicHolidays,
-            vacationsRequestedThisYear
+            year, user.hiringDate, publicHolidays, vacationsRequestedThisYear
         )
 
         val suggestWorkingTimeByMonth = getRecommendedWork(
-            date.year,
+            year,
             date.monthValue,
             user,
             annualTargetWork,
@@ -69,37 +73,24 @@ class TimeSummaryService(
             monthlyWorkingTime
         )
 
-
-
-
         val workableMonthlyHoursList: List<Duration> =
             monthlyWorkingTime.values.map {
                 Duration.parse(it.toIsoString())
             }
 
-
         var consumedVacationsDays = 0
         if (vacationsChargedThisYear.isNotEmpty()) {
             consumedVacationsDays = vacationsChargedThisYear.filter { it.isRequestedVacation() }.flatMap {
                 it.days
-            }.count { it.year == date.year }
+            }.count { it.year == year }
 
         }
 
-
-        val notConsumedVacations = Duration.parse(((correspondingVacations - consumedVacationsDays)*8).toString() + "h")
+        val notConsumedVacations =
+            Duration.parse(((correspondingVacations - consumedVacationsDays) * 8).toString() + "h")
         val consumedVacations = vacationsChargedThisYear.filter { it.isRequestedVacation() }
 
-        val roles = mutableMapOf<Month, List<MonthlyRoles>>()
-
-        activities.groupBy { it.date.month }.map { month ->
-            val groupByRole = month.value.groupBy { it.projectRole.id }
-                .mapValues { role ->
-                    role.value.sumOf { it.duration.toBigDecimalHours() }
-                }
-
-            roles[month.key] = groupByRole.map { MonthlyRoles(it.key, Duration.parse("${it.value}h")) }
-        }
+        val roles = getWorkedByRoles(yearInterval, activities)
 
         return timeSummaryConverter.toTimeSummary(
             workedTimeByMonth,
@@ -126,9 +117,12 @@ class TimeSummaryService(
         )
     }
 
-    private fun getWorked(activities: List<Activity>): Map<Month, Duration> {
-        return workedTimeService.workedTime(activities)
-    }
+    private fun getWorked(dateInterval: DateInterval, activities: List<Activity>) =
+        workedTimeService.workedTime(dateInterval, activities)
+
+
+    private fun getWorkedByRoles(dateInterval: DateInterval, activities: List<Activity>) =
+        workedTimeService.getWorkedTimeByRoles(dateInterval, activities)
 
     private fun getRecommendedWork(
         year: Int,

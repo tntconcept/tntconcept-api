@@ -1,22 +1,16 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.VacationService
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import javax.transaction.Transactional
 
 @Singleton
-class PrivateHolidaysPeriodDaysUseCase internal constructor(
-    private val holidayService: HolidayService,
-    private val vacationService: VacationService
-) {
+class PrivateHolidaysPeriodDaysUseCase internal constructor(private val calendarFactory: CalendarFactory) {
     @Transactional
     @ReadOnly
-    fun get(startDate: LocalDate, endDate: LocalDate): Int {
-        val publicHolidays = holidayService.findAllBetweenDate(startDate, endDate)
-        return vacationService.getVacationPeriodDays(startDate, endDate, publicHolidays).size
-    }
-
+    fun get(startDate: LocalDate, endDate: LocalDate) =
+        calendarFactory.create(DateInterval.of(startDate, endDate)).workableDays.size
 }

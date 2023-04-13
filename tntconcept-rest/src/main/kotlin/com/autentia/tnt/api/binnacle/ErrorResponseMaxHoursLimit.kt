@@ -6,10 +6,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 internal class ErrorResponseMaxHoursLimit(
     val code: String,
     val message: String?,
-    val data: ErrorValues
+    val data: ErrorValues,
 )
 
 data class ErrorValues(
     val maxAllowedHours: Double,
-    val remainingHours: Double
+    val remainingHours: Double,
+    val year: Int
 )

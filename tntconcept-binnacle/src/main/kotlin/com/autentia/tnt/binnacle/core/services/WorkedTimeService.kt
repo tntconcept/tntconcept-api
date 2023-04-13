@@ -1,21 +1,28 @@
 package com.autentia.tnt.binnacle.core.services
 
 import com.autentia.tnt.binnacle.core.domain.Activity
+import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import java.time.Month
 import kotlin.time.Duration
 
-class WorkedTimeService(private val workableProjectRoleIdChecker: WorkableProjectRoleIdChecker) {
+internal class WorkedTimeService(
+    private val activityCalendarService: ActivityCalendarService,
+    private val workableProjectRoleIdChecker: WorkableProjectRoleIdChecker
+) {
 
-    fun workedTime(activities: List<Activity>): Map<Month, Duration> {
-        return activities
-            .filter { workableProjectRoleIdChecker.isWorkable(it.projectRole) }
-            .groupBy { it.date.month }
-            .mapValues {
-                it.value
-                    .map { activity -> activity.duration }
-                    .fold(Duration.ZERO, Duration::plus)
-            }
+    fun workedTime(dateInterval: DateInterval, activities: List<Activity>): Map<Month, Duration> {
+        val workableActivities =
+            activities.filter { workableProjectRoleIdChecker.isWorkable(ProjectRoleId(it.projectRole.id)) }
+        return activityCalendarService.getActivityDurationByMonth(workableActivities, dateInterval)
     }
 
+    fun getWorkedTimeByRoles(dateInterval: DateInterval, activities: List<Activity>): Map<Month, List<MonthlyRoles>> {
+        val workableActivities =
+            activities.filter { workableProjectRoleIdChecker.isWorkable(ProjectRoleId(it.projectRole.id)) }
+        return activityCalendarService.getActivityDurationByMonthlyRoles(workableActivities, dateInterval)
+    }
 }

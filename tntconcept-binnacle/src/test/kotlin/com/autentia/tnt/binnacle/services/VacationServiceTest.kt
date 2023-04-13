@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.VacationConverter
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CreateVacationResponse
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
 import com.autentia.tnt.binnacle.entities.Holiday
@@ -35,7 +36,6 @@ import java.time.Month.DECEMBER
 import java.time.Month.JANUARY
 import java.time.Month.SEPTEMBER
 import java.time.temporal.TemporalAdjusters
-import java.util.Date
 
 @TestInstance(PER_CLASS)
 internal class VacationServiceTest {
@@ -43,11 +43,12 @@ internal class VacationServiceTest {
     private val holidayService = mock<HolidayService>()
     private val myVacationsDetailService = mock<MyVacationsDetailService>()
     private val vacationRepository = mock<VacationRepository>()
-
     private val vacationConverter = VacationConverter()
+    private val calendarFactory = CalendarFactory(holidayService)
 
-    private val vacationService =
-        VacationService(vacationRepository, holidayService, myVacationsDetailService, vacationConverter)
+    private val vacationService = VacationService(
+        vacationRepository, myVacationsDetailService, vacationConverter, calendarFactory
+    )
 
     @Test
     fun `return all vacations between date`() {
@@ -57,7 +58,7 @@ internal class VacationServiceTest {
         doReturn(listOf(vacation)).whenever(vacationRepository)
             .getVacationsBetweenDate(FIRST_DAY_2020, END_DATE, USER.id)
 
-        doReturn(holidays2020).whenever(holidayService).findAllBetweenDate(FIRST_DAY_2020, END_DATE)
+        doReturn(holidays2020).whenever(holidayService).findAllBetweenDate(FIRST_DAY_2020, JAN_TENTH_2020)
 
         val vacationsBetweenDates =
             vacationService.getVacationsBetweenDates(beginDate = FIRST_DAY_2020, finalDate = END_DATE, user = USER)
@@ -109,21 +110,6 @@ internal class VacationServiceTest {
 
         assertThat(vacationsBetweenDates[0].days).hasSize(1)
         assertEquals(vacationsBetweenDates[0].days[0], APR_NINTH_2020)
-    }
-
-    @Test
-    fun `calculate the corresponding vacation days between start and end date`() {
-        val actual = vacationService.getVacationPeriodDays(DEC_TWEENTYEIGHT_2020, JAN_FOURTH_2021, holidays2021)
-
-        assertThat(actual).isEqualTo(
-            listOf(
-                LocalDate.of(YEAR_2020, DECEMBER, 28),
-                LocalDate.of(YEAR_2020, DECEMBER, 29),
-                LocalDate.of(YEAR_2020, DECEMBER, 30),
-                LocalDate.of(YEAR_2020, DECEMBER, 31),
-                LocalDate.of(2021, JANUARY, 4)
-            )
-        )
     }
 
     private fun vacationPeriodProvider() = arrayOf(

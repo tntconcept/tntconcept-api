@@ -1,9 +1,6 @@
 package com.autentia.tnt.binnacle.entities
 
-import io.micronaut.data.annotation.DateCreated
-import io.micronaut.data.annotation.DateUpdated
 import java.time.LocalDate
-import java.util.Date
 import javax.persistence.*
 
 enum class VacationState {

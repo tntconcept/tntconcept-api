@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeSummary
 import com.autentia.tnt.binnacle.core.services.TimeSummaryService
 import com.autentia.tnt.binnacle.entities.Holiday
@@ -55,10 +56,14 @@ class UserTimeSummaryUseCase internal constructor(
         val correspondingVacations =
             myVacationsDetailService.getCorrespondingVacationDaysSinceHiringDate(user, startYearDate.year)
 
-        val activities = activityService.getActivitiesBetweenDates(startYearDate, endYearDate, user.id)
+        val activities = activityService.getUserActivitiesBetweenDates(
+            DateInterval.of(startYearDate, endYearDate), user.id
+        )
             .map(activityResponseConverter::toActivity)
 
-        val previousActivities = activityService.getActivitiesBetweenDates(startYearDate.minusYears(1), endYearDate.minusYears(1), user.id)
+        val previousActivities = activityService.getUserActivitiesBetweenDates(
+            DateInterval.of(startYearDate.minusYears(1), endYearDate.minusYears(1)), user.id
+        )
             .map(activityResponseConverter::toActivity)
 
         return timeSummaryService.getTimeSummaryBalance(
@@ -73,6 +78,4 @@ class UserTimeSummaryUseCase internal constructor(
             previousActivities
         )
     }
-
-
 }
