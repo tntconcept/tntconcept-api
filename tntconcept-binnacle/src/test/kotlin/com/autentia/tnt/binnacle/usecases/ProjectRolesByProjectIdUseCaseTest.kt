@@ -1,10 +1,13 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.ActivityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
@@ -14,9 +17,8 @@ import org.mockito.kotlin.whenever
 internal class ProjectRolesByProjectIdUseCaseTest {
 
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val activityService = mock<ActivityService>()
-
-    private val projectRolesByProjectIdUseCase = ProjectRolesByProjectIdUseCase(projectRoleRepository, ProjectRoleResponseConverter(activityService))
+    private val projectRolesByProjectIdUseCase =
+        ProjectRolesByProjectIdUseCase(projectRoleRepository, ProjectRoleResponseConverter())
 
     @Test
     fun `return the expected project role`() {

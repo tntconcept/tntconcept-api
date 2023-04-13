@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -12,6 +11,10 @@ internal interface ActivityRepository {
 
     fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
 
+    fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity>
+
+    fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity>
+    fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity>
     fun find(approvalState: ApprovalState): List<Activity>
 
     fun find(projectRoleId: Long): List<Activity>
@@ -20,8 +23,6 @@ internal interface ActivityRepository {
     fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly>
 
     fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
-
-    fun findIntervals(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<ActivityInterval>
 
     fun save(activity: Activity): Activity
 

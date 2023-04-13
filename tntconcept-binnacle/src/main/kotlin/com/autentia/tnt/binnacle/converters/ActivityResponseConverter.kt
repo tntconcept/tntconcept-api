@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import jakarta.inject.Singleton
@@ -49,16 +48,9 @@ class ActivityResponseConverter(
             activityResponse.approvalState
         )
 
-    fun toActivity(activity: Activity) =
-        com.autentia.tnt.binnacle.core.domain.Activity(
-            activity.start,
-            activity.end,
-            ProjectRole(activity.projectRole.id, activity.projectRole.timeUnit)
-        )
-
-    fun mapActivitiesToActivitiesResponseDTO(activities: List<Activity>): List<ActivityResponseDTO>  {
+    fun mapActivitiesToActivitiesResponseDTO(activities: List<Activity>): List<ActivityResponseDTO> {
         val activitiesResponseDTO = mutableListOf<ActivityResponseDTO>()
-        activities.forEach {activity ->
+        activities.forEach { activity ->
 
             val activityResponseDTO = ActivityResponseDTO(
                 billable = activity.billable,
@@ -74,5 +66,4 @@ class ActivityResponseConverter(
         }
         return activitiesResponseDTO
     }
-
 }

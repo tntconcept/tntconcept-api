@@ -18,4 +18,5 @@ data class ActivityRequestBody(
     val imageFile: String? = null
 ) {
     fun getTimeInterval() = TimeInterval.of(start, end)
+    fun toDomain(projectRole: ProjectRole, userId: Long) = Activity(start, end, projectRole, userId)
 }

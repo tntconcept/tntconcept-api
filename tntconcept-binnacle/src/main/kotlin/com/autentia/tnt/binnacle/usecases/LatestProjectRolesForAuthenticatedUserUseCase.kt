@@ -3,8 +3,12 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.core.domain.StartEndLocalDateTime
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -16,25 +20,25 @@ import javax.transaction.Transactional
 class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     private val userService: UserService,
     private val projectRoleRepository: ProjectRoleRepository,
-    private val projectRoleResponseConverter: ProjectRoleResponseConverter
+    private val projectRoleResponseConverter: ProjectRoleResponseConverter,
+    private val activityService: ActivityService,
+    private val activityCalendarService: ActivityCalendarService
 ) {
     @Transactional
     @ReadOnly
     fun get(): List<ProjectRoleUserDTO> {
-        val userId = userService.getAuthenticatedUser().id
-        val oneMonthDateRange = oneMonthDateRangeFromCurrentDate()
 
-        val roles = projectRoleRepository.findDistinctRolesBetweenDate(
-            oneMonthDateRange.startDate,
-            oneMonthDateRange.endDate,
-            userId
+        val oneMonthDateRange = oneMonthDateRangeFromCurrentDate()
+        val lastMonthTimeInterval = TimeInterval.of(oneMonthDateRange.startDate, oneMonthDateRange.endDate)
+
+        val activities =
+            activityService.getActivitiesOfLatestProjects(lastMonthTimeInterval)
+
+        val remainingGroupedByProjectRoleAndUserId = activityCalendarService.getRemainingGroupedByProjectRoleAndUserId(
+            activities.map(Activity::toDomain), lastMonthTimeInterval.getDateInterval()
         )
 
-        return roles
-            .filter { it.projectOpen }
-            .sortedByDescending { it.date }
-            .distinctBy { it.id }
-            .map { projectRoleResponseConverter.toProjectRoleUserDTO(it) }
+        return remainingGroupedByProjectRoleAndUserId.map(projectRoleResponseConverter::toProjectRoleUserDTO)
     }
 
     @Deprecated("Use get method instead")
@@ -63,5 +67,4 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
 
         return StartEndLocalDateTime(startDate, endDate)
     }
-
 }

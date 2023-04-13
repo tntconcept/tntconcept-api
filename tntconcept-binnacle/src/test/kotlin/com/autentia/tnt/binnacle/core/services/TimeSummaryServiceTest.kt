@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.core.services
 
+import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.config.getHolidaysFrom2022
 import com.autentia.tnt.binnacle.config.getVacationsInOneMonth2022
@@ -11,12 +12,10 @@ import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.PreviousAnnualBalance
-import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.core.domain.YearAnnualBalance
 import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
-import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -174,39 +173,46 @@ internal class TimeSummaryServiceTest {
         val act1 = Activity(
             LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
             LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(5),
-            ProjectRole(10L, TimeUnit.MINUTES)
+            createDomainProjectRole().copy(id = 10L),
+            1L
         )
         val act2 = Activity(
             LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
             LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(6),
-            ProjectRole(10L, TimeUnit.MINUTES)
+            createDomainProjectRole().copy(id = 10L),
+            1L
         )
         val act3 = Activity(
             LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
             LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(6),
-            ProjectRole(3L, TimeUnit.MINUTES)
+            createDomainProjectRole().copy(id = 3L),
+            1L
         )
 
         val act4 = Activity(
             LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0),
             LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0).plusHours(10),
-            ProjectRole(5L, TimeUnit.MINUTES)
+            createDomainProjectRole().copy(id = 5L),
+            1L
         )
         val act5 = Activity(
             LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0),
             LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0).plusHours(6),
-            ProjectRole(1L, TimeUnit.MINUTES)
+            createDomainProjectRole().copy(id = 1L),
+            1L
         )
 
         val act6 = Activity(
             LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0),
             LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0).plusHours(10),
-            ProjectRole(5L, TimeUnit.MINUTES)
+            createDomainProjectRole().copy(id = 5L),
+            1L
         )
         val act7 = Activity(
             LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0),
             LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0).plusHours(10),
-            ProjectRole(5L, TimeUnit.MINUTES)
+            createDomainProjectRole().copy(id = 5L),
+            1L
         )
 
         val activities = listOf(act1, act2, act3, act4, act5, act6, act7)
@@ -284,17 +290,20 @@ internal class TimeSummaryServiceTest {
             Activity(
                 LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0),
                 LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0).plusHours(8),
-                ProjectRole(1, TimeUnit.MINUTES)
+                createDomainProjectRole().copy(id = 1L),
+                1L
             ),
             Activity(
                 LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0),
                 LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0).plusHours(8),
-                ProjectRole(2, TimeUnit.MINUTES)
+                createDomainProjectRole().copy(id = 2L),
+                1L
             ),
             Activity(
                 LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0),
                 LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0).plusHours(8),
-                ProjectRole(3, TimeUnit.MINUTES)
+                createDomainProjectRole().copy(id = 3L),
+                1L
             ),
         )
 
@@ -302,17 +311,20 @@ internal class TimeSummaryServiceTest {
             Activity(
                 LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0),
                 LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0).plusHours(8),
-                ProjectRole(1, TimeUnit.MINUTES)
+                createDomainProjectRole().copy(id = 1L),
+                1L
             ),
             Activity(
                 LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0),
                 LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0).plusHours(8),
-                ProjectRole(2, TimeUnit.MINUTES)
+                createDomainProjectRole().copy(id = 2L),
+                1L
             ),
             Activity(
                 LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0),
                 LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0).plusHours(8),
-                ProjectRole(3, TimeUnit.MINUTES)
+                createDomainProjectRole().copy(id = 3L),
+                1L
             ),
         )
 
@@ -323,5 +335,4 @@ internal class TimeSummaryServiceTest {
         val PREVIOUS_BALANCE = WORKED - TARGET
 
     }
-
 }

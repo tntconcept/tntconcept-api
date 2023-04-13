@@ -1,6 +1,5 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
@@ -29,7 +28,6 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.time.LocalDateTime
 
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -105,20 +103,6 @@ internal class ProjectRoleControllerIT {
     @Test
     fun `get the recent project roles`() {
 
-        val projectRoleRecent = ProjectRoleRecent(
-            1L,
-            "desarrollador",
-            1L,
-            1L,
-            false,
-            LocalDateTime.now(),
-            10,
-            TimeUnit.MINUTES,
-            RequireEvidence.WEEKLY,
-            true,
-            1L
-        )
-
         val projectRoleUserDTO = ProjectRoleUserDTO(
             1L,
             "desarrollador",
@@ -132,7 +116,7 @@ internal class ProjectRoleControllerIT {
             1L
         )
 
-        doReturn(listOf(projectRoleRecent)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get()
+        doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get()
 
         val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role/latest"))
 

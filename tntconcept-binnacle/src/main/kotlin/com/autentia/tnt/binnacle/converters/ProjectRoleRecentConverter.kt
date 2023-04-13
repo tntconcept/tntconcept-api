@@ -23,5 +23,4 @@ class ProjectRoleRecentConverter {
     fun setRequireEvidence(requireEvidence: RequireEvidence): Boolean{
         return requireEvidence != RequireEvidence.NO
     }
-
 }

@@ -5,21 +5,19 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.ActivityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.util.*
+import java.util.Optional
 
 internal class ProjectRoleByIdUseCaseTest {
 
     private val id = 1L
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val activityService = mock<ActivityService>()
-    private val projectRoleByIdUseCase = ProjectRoleByIdUseCase(projectRoleRepository, ProjectRoleResponseConverter(activityService))
+    private val projectRoleByIdUseCase = ProjectRoleByIdUseCase(projectRoleRepository, ProjectRoleResponseConverter())
 
     @Test
     fun `find project role by id`() {

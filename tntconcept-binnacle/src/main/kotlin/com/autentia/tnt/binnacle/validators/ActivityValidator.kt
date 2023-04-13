@@ -2,8 +2,20 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
+import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
+import com.autentia.tnt.binnacle.exception.ActivityPeriodNotValidException
+import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
+import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
+import com.autentia.tnt.binnacle.exception.ProjectClosedException
+import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
+import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -36,20 +48,21 @@ internal class ActivityValidator(
             ) -> throw ActivityBeforeHiringDateException()
             isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb)
+        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user)
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
         currentActivity: Activity,
         requestActivity: ActivityRequestBody,
-        projectRole: ProjectRole
+        projectRole: ProjectRole,
+        user: User
     ) {
         checkIfIsExceedingMaxHoursForRole(
-            currentActivity, requestActivity, requestActivity.start.year, projectRole
+            currentActivity, requestActivity, requestActivity.start.year, projectRole, user
         )
         if (requestActivity.start.year != requestActivity.end.year) {
             checkIfIsExceedingMaxHoursForRole(
-                currentActivity, requestActivity, requestActivity.end.year, projectRole
+                currentActivity, requestActivity, requestActivity.end.year, projectRole, user
             )
         }
     }
@@ -58,7 +71,8 @@ internal class ActivityValidator(
         currentActivity: Activity,
         activityRequest: ActivityRequestBody,
         year: Int,
-        projectRole: ProjectRole
+        projectRole: ProjectRole,
+        user: User
     ) {
         if (projectRole.maxAllowed > 0) {
 
@@ -66,21 +80,15 @@ internal class ActivityValidator(
 
             val calendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
 
-            val currentActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
-                calendar, currentActivity.getTimeInterval(), currentActivity.projectRole.timeUnit
-            )
+            val currentActivityDuration =
+                currentActivity.toDomain().getDurationByCountingWorkableDays(calendar)
+            val requestActivityDuration =
+                activityRequest.toDomain(projectRole.toDomain(), user.id).getDurationByCountingWorkableDays(calendar)
 
-            val requestActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
-                calendar, activityRequest.getTimeInterval(), projectRole.timeUnit
-            )
-
-            val activityIntervals =
-                activityRepository.findIntervals(yearTimeInterval.start, yearTimeInterval.end, projectRole.id)
-
+            val activities =
+                activityRepository.find(yearTimeInterval.start, yearTimeInterval.end, projectRole.id)
             val totalRegisteredDurationForThisRole =
-                activityCalendarService.getSumActivitiesDuration(
-                    calendar, activityIntervals
-                )
+                activities.map(Activity::toDomain).sumOf { it.getDurationByCountingWorkableDays(calendar) }
 
             var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 
@@ -128,7 +136,7 @@ internal class ActivityValidator(
 
             isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb, user)
     }
 
 

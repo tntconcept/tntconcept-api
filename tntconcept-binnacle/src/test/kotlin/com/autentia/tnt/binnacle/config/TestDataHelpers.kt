@@ -154,8 +154,11 @@ internal fun createActivity() = Activity(
 internal fun createDomainActivity() = com.autentia.tnt.binnacle.core.domain.Activity(
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
-    com.autentia.tnt.binnacle.core.domain.ProjectRole(1L, TimeUnit.MINUTES)
+    createDomainProjectRole(),
+    1L
 )
+
+internal fun createDomainProjectRole() = createProjectRole().toDomain()
 
 internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =
     ProjectRoleUserDTO(

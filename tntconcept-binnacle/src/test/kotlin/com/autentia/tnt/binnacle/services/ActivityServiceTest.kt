@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
@@ -11,7 +12,9 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.exception.ActivityAlreadyApprovedException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -23,13 +26,15 @@ import org.mockito.BDDMockito.mock
 import org.mockito.BDDMockito.verify
 import org.mockito.BDDMockito.verifyNoInteractions
 import org.mockito.BDDMockito.willDoNothing
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.*
+import java.util.Date
+import java.util.Optional
 
 internal class ActivityServiceTest {
 
@@ -60,10 +65,15 @@ internal class ActivityServiceTest {
         USER
     )
 
-    private val activityWithImageSaved = activityWithImageToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
+    private val activityWithImageSaved =
+        activityWithImageToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
-    private val activityWithoutImageSaved = activityWithoutImageToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
+    private val activityWithoutImageSaved =
+        activityWithoutImageToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
+    private val activities = listOf(activityWithoutImageSaved)
+
+    private val timeInterval = TimeInterval.of(LocalDateTime.now(), LocalDateTime.now().plusMinutes(30))
 
     @Test
     fun `get activity by id`() {
@@ -87,7 +97,6 @@ internal class ActivityServiceTest {
     fun `get activities between start and end date`() {
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)
-        val userId = 1L
 
         whenever(
             activityRepository.find(
@@ -99,6 +108,32 @@ internal class ActivityServiceTest {
         val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate))
 
         assertEquals(listOf(activityWithoutImageSaved), actual)
+    }
+
+    @Test
+    fun testGetActivitiesApprovalState() {
+
+        doReturn(activities).whenever(activityRepository).find(ApprovalState.ACCEPTED)
+
+        assertEquals(activities, activityService.getActivitiesApprovalState(ApprovalState.ACCEPTED))
+    }
+
+    @Test
+    fun testGetActivities() {
+
+        val userIds = listOf(1L)
+
+        doReturn(activities).whenever(activityRepository).find(timeInterval.start, timeInterval.end, userIds)
+
+        assertEquals(activities, activityService.getActivities(timeInterval, userIds))
+    }
+
+    @Test
+    fun testGetActivitiesOfLatestProjects() {
+
+        doReturn(activities).whenever(activityRepository).findOfLatestProjects(timeInterval.start, timeInterval.end)
+
+        assertEquals(activities, activityService.getActivitiesOfLatestProjects(timeInterval))
     }
 
     @Test
@@ -123,6 +158,19 @@ internal class ActivityServiceTest {
             activityWithImageRequest.imageFile,
             activityWithImageSaved.insertDate!!
         )
+    }
+
+    @Test
+    fun `create activity with nonexistent project role`() {
+
+        doReturn(Optional.empty<ProjectRole>())
+            .whenever(projectRoleRepository).findById(99)
+
+        activityWithoutImageRequest.copy(projectRoleId = 99)
+
+        assertThrows<ProjectRoleNotFoundException> {
+            activityService.createActivity(activityWithoutImageRequest.copy(projectRoleId = 99), USER)
+        }
     }
 
     @Test
@@ -280,6 +328,15 @@ internal class ActivityServiceTest {
 
         val approvedActivity = activityService.approveActivityById(activityWithoutImageSaved.id as Long)
         assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
+    }
+
+    @Test
+    fun `approve activity with not allowed state`() {
+        doReturn(activityWithoutImageToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
+            .findById(any())
+        assertThrows<ActivityAlreadyApprovedException> {
+            activityService.approveActivityById(any())
+        }
     }
 
     @Test

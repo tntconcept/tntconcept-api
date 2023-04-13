@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
@@ -10,11 +9,11 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityAlreadyApprovedException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.time.LocalDate
 import java.time.LocalTime
 import javax.transaction.Transactional
 
@@ -48,22 +47,19 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun workedMinutesBetweenDates(startDate: LocalDate, endDate: LocalDate): List<ActivityTimeOnly> {
-        val startDateMinHour = startDate.atTime(LocalTime.MIN)
-        val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository.findWorkedMinutes(startDateMinHour, endDateMaxHour)
-    }
+    fun getActivities(timeInterval: TimeInterval, userIds: List<Long>): List<Activity> =
+        activityRepository.find(timeInterval.start, timeInterval.end, userIds)
 
     @Transactional
     @ReadOnly
-    fun getActivitiesForAGivenProjectRoleAndUser(projectRoleId: Long, userId: Long): List<Activity> =
-        activityRepository.find(projectRoleId)
+    fun getActivitiesOfLatestProjects(timeInterval: TimeInterval) =
+        activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end)
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
-            .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+            .orElseThrow { ProjectRoleNotFoundException(activityRequest.projectRoleId) }
 
         val savedActivity = activityRepository.save(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
@@ -135,9 +131,4 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
-
-    @Transactional
-    @ReadOnly
-    fun getActivitiesIntervals(timeInterval: TimeInterval, projectRoleId: Long, userId: Long) =
-        activityRepository.findIntervals(timeInterval.start, timeInterval.end, projectRoleId)
 }

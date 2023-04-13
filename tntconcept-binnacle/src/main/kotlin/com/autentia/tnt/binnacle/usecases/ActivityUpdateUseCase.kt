@@ -27,9 +27,8 @@ class ActivityUpdateUseCase internal constructor(
         val user = userService.getAuthenticatedUser()
         val projectRole = projectRoleService.getByProjectRoleId(activityRequest.projectRoleId)
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            timeIntervalConverter.toTimeInterval(activityRequest.interval), projectRole.timeUnit
+            activityRequest.toDomain(projectRole.toDomain(), user.id)
         )
-
         val activityRequestBody =
             activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(
                 activityRequest, projectRole, duration

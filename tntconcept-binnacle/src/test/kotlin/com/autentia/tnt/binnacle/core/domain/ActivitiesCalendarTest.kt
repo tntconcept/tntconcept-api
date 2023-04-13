@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.core.domain
 
+import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.core.utils.myDatesUntil
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -20,10 +21,10 @@ class ActivitiesCalendarTest {
     private val dateTimePlusOneHour = dateTime.plusHours(1L)
     private val dateTimePlusTwoDays = dateTimePlusOneHour.plusDays(2)
 
-    private val projectRoleInMinutes = ProjectRole(1L, TimeUnit.MINUTES)
+    private val projectRoleInMinutes = createDomainProjectRole()
     private val projectRoleInDays = projectRoleInMinutes.copy(timeUnit = TimeUnit.DAYS)
     private val activityInMinutes = Activity(
-        dateTime, dateTimePlusOneHour, projectRoleInMinutes
+        dateTime, dateTimePlusOneHour, projectRoleInMinutes, 1L
     )
     private val activityInDays =
         activityInMinutes.copy(

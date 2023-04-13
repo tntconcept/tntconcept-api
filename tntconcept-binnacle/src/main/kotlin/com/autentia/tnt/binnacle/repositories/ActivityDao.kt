@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -20,6 +19,22 @@ internal interface ActivityDao : CrudRepository<Activity, Long> {
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun find(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
+    @Query("SELECT a FROM Activity a WHERE a.userId IN :userIds AND a.start <= :endDate AND a.end >= :startDate")
+    @EntityGraph(value = "fetch-activity-with-project-and-organization")
+    fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity>
+
+    @Query(
+        "SELECT a " +
+                "FROM Activity a " +
+                "WHERE a.userId = :userId " +
+                "AND a.start <= :endDate " +
+                "AND a.end >= :startDate " +
+                "AND a.projectRole.project.open = true " +
+                "ORDER BY a.start DESC"
+    )
+    @EntityGraph(value = "fetch-activity-with-project-and-organization")
+    fun findOfLatestProjects(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
+
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun findByApprovalStateAndUserId(approvalState: ApprovalState, userId: Long): List<Activity>
 
@@ -35,18 +50,20 @@ internal interface ActivityDao : CrudRepository<Activity, Long> {
     fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
     @Query(
-        "SELECT a.start AS start, a.end AS end, a.projectRole.timeUnit as timeUnit " +
+        "SELECT a " +
                 "FROM Activity a " +
                 "WHERE a.userId= :userId " +
                 "AND a.projectRole.id = :projectRoleId " +
                 "AND a.start <= :endDate AND a.end >= :startDate " +
                 "ORDER BY a.start "
     )
-    fun findIntervals(
+    @EntityGraph(value = "fetch-activity-with-project-and-organization")
+    fun find(
         startDate: LocalDateTime, endDate: LocalDateTime, projectRoleId: Long, userId: Long
-    ): List<ActivityInterval>
+    ): List<Activity>
 
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity>
+
 
 }

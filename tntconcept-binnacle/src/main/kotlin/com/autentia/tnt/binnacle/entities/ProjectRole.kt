@@ -38,4 +38,15 @@ data class ProjectRole(
 
     @Enumerated(EnumType.STRING)
     val timeUnit: TimeUnit
-)
+) {
+    fun toDomain() =
+        com.autentia.tnt.binnacle.core.domain.ProjectRole(
+            id,
+            name,
+            project.toDomain(),
+            maxAllowed,
+            timeUnit,
+            requireEvidence,
+            isApprovalRequired
+        )
+}

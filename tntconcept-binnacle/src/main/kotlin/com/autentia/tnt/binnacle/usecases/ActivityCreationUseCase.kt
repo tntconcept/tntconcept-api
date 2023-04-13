@@ -30,8 +30,9 @@ class ActivityCreationUseCase internal constructor(
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyDTO): ActivityResponseDTO {
         val user = userService.getAuthenticatedUser()
         val projectRole = projectRoleService.getByProjectRoleId(activityRequestBody.projectRoleId)
+
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            timeIntervalConverter.toTimeInterval(activityRequestBody.interval), projectRole.timeUnit
+            activityRequestBody.toDomain(projectRole.toDomain(), user.id)
         )
 
         val activityRequest = activityRequestBodyConverter
