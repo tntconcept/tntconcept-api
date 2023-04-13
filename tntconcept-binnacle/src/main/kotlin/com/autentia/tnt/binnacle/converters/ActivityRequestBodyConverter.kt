@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import jakarta.inject.Singleton
 import java.util.Date
 
@@ -23,6 +24,17 @@ class ActivityRequestBodyConverter() {
             activityRequestBodyDTO.imageFile
         )
 
+    fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =
+        ActivityRequestBody(
+            activityRequestBodyDTO.id,
+            activityRequestBodyDTO.startDate,
+            activityRequestBodyDTO.duration,
+            activityRequestBodyDTO.description,
+            activityRequestBodyDTO.billable,
+            activityRequestBodyDTO.projectRoleId,
+            activityRequestBodyDTO.hasImage,
+            activityRequestBodyDTO.imageFile
+        )
 
     fun mapActivityRequestBodyToActivity(
         activityRequestBody: ActivityRequestBody,
