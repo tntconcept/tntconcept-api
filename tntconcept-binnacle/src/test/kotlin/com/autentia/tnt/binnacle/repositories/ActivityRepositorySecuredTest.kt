@@ -115,6 +115,36 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
+    fun `find activities between dates without security should retrieve user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+
+        whenever(activityDao.find(startDate, endDate, adminUserId)).thenReturn(activities)
+
+        val result: List<Activity> = activityRepositorySecured.findWithoutSecurity(
+            startDate, endDate, adminUserId
+        )
+
+        assertEquals(activities, result)
+    }
+
+    @Test
     fun `find activities between dates should retrieve user logged activities`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(

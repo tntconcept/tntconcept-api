@@ -33,6 +33,11 @@ internal class ActivityRepositorySecured(
         return activityDao.find(startDate, endDate, authentication.id())
     }
 
+    override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
+        //TODO: Add security to this method!!!
+        return activityDao.find(startDate, endDate, userId)
+    }
+
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isAdmin()) {

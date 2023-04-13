@@ -39,6 +39,14 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
+    fun getUserActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
+        val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
+        val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
+        return activityRepository.findWithoutSecurity(startDateMinHour, endDateMaxHour, userId)
+    }
+
+    @Transactional
+    @ReadOnly
     fun getActivitiesApprovalState(approvalState: ApprovalState): List<Activity> {
         return activityRepository.find(approvalState)
     }

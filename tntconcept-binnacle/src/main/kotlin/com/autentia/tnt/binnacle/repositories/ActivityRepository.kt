@@ -12,6 +12,8 @@ internal interface ActivityRepository {
 
     fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
 
+    fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
+
     fun find(approvalState: ApprovalState): List<Activity>
 
     fun find(projectRoleId: Long): List<Activity>
