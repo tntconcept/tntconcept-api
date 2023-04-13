@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_branch:
+        type: string
+        description: 'Hotfix source branch'
+        required: true
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    outputs:
+      NEXT_RELEASE: ${{ env.NEXT_RELEASE }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          ref: ${{ inputs.from_branch }}
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
+          server-id: "github"
+
+      - name: Configure Git user
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
+      - name: Gathering artifact information
+        shell: bash
+        run: |
+          POM_VERSION=$(./mvnw -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+          echo "- POM_VERSION: $POM_VERSION"
+          echo "POM_VERSION=$POM_VERSION" >> $GITHUB_ENV
+          
+          ARTIFACT_VERSION=$(echo $POM_VERSION | grep -o '^[0-9]\+\.[0-9]\+\.[0-9]\+')
+          echo "- ARTIFACT_VERSION: $ARTIFACT_VERSION"
+          echo "ARTIFACT_VERSION=$ARTIFACT_VERSION" >> $GITHUB_ENV     
+
+      - name: Check if hotfix tag already exists
+        shell: bash
+        run: |
+          existed_in_remote=$(git ls-remote --tags --heads origin --quiet refs/tags/${{ env.ARTIFACT_VERSION }})
+
+          if [[ ! -z "${existed_in_remote}" ]]; then
+            echo "Error: The release ${{ env.ARTIFACT_VERSION }} tag already exists"
+            exit 1
+          fi
+      
+
+      
