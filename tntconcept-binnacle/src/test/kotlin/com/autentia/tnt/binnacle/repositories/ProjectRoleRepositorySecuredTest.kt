@@ -61,8 +61,36 @@ class ProjectRoleRepositorySecuredTest {
         projectRoleRepositorySecured.getAllByIdIn(projectIdList)
 
         verify(projectRoleDao).getAllByIdIn(projectIdList)
-
     }
+
+    @Test
+    fun `find between date`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> {
+            projectRoleRepositorySecured.findDistinctProjectRolesBetweenDate(startDate, endDate)
+        }
+    }
+
+    @Test
+    fun `find between date when user`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
+        projectRoleRepositorySecured.findDistinctProjectRolesBetweenDate(startDate, endDate)
+
+        verify(projectRoleDao).findDistinctProjectRolesBetweenDate(startDate, endDate, userId)
+    }
+
+    @Test
+    fun `find by user ids when user`() {
+        val userIds = listOf(userId);
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
+        projectRoleRepositorySecured.findDistinctRolesByUserIds(userIds)
+
+        verify(projectRoleDao).findDistinctRolesByUserIds(userIds)
+    }
+
 
     private companion object {
         private const val projectId = 1L
