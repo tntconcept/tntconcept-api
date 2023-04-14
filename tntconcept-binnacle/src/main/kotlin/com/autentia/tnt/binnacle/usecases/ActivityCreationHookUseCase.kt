@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
@@ -26,13 +27,23 @@ open class ActivityCreationHookUseCase internal constructor(
         val activityRequest = activityRequestBodyConverter
             .mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBody)
 
-        activityValidator.checkActivityIsValidForCreation(activityRequest, user)
-        val activityResponse = activityResponseConverter.mapActivityToActivityResponse(
-            activityService.createActivity(
-                activityRequest,
-                user
+        val activityResponse = if (activityRequestBody.id == null) {
+            activityValidator.checkActivityIsValidForCreation(activityRequest, user)
+            activityResponseConverter.mapActivityToActivityResponse(
+                activityService.createActivity(
+                    activityRequest,
+                    user
+                )
             )
-        )
+        } else {
+            activityValidator.checkActivityIsValidForUpdate(activityRequest, user)
+            activityResponseConverter.mapActivityToActivityResponse(
+                activityService.updateActivity(
+                    activityRequest,
+                    user
+                )
+            )
+        }
 
         return activityResponseConverter.toActivityResponseDTO(activityResponse)
     }
