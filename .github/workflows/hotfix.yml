@@ -1,4 +1,4 @@
-name: Release
+name: Hotfix
 
 on:
   workflow_dispatch:
@@ -9,16 +9,71 @@ on:
         required: true
 
 jobs:
-  prepare-release:
+  prepare-hotfix:
     runs-on: ubuntu-latest
     outputs:
-      NEXT_RELEASE: ${{ env.NEXT_RELEASE }}
+      HOTFIX_VERSION: ${{ env.HOTFIX_VERSION }}
 
     steps:
+      - name: Check branch name
+        run: |
+          if [[ "${{ inputs.from_branch }}" == "main" ]]; then
+              echo "Error: It is not allowed to create a hotfix from main, use Release Action instead"
+              exit 1
+          fi
+
       - uses: actions/checkout@v3
         with:
           token: ${{ secrets.GH_TOKEN }}
           ref: ${{ inputs.from_branch }}
+
+      - uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "maven"
+          server-id: "github"
+
+      - name: Check if hotfix tag already exists
+        run: |
+          POM_VERSION=$(./mvnw -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+          HOTFIX_VERSION=$(echo $POM_VERSION | grep -o '^[0-9]\+\.[0-9]\+\.[0-9]\+')
+          echo "HOTFIX_VERSION=$HOTFIX_VERSION" >> $GITHUB_ENV
+          
+          exist_in_remote=$(git ls-remote --tags --heads origin --quiet refs/tags/${{ env.HOTFIX_VERSION }})
+
+          if [[ ! -z "${exist_in_remote}" ]]; then
+            echo "Error: The hotfix ${{ env.HOTFIX_VERSION }} tag already exists"
+            exit 1
+          fi
+
+      - name: Configure Git user
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
+      - name: Prepare Maven release
+        run: |
+          
+          version_parts_array=($(echo "${{ env.HOTFIX_VERSION }}" | tr '.' '\n'))
+          version_parts_array[2]=$((version_parts_array[2]+1))
+          next_development_parts=$(IFS='.'; echo "${version_parts_array[*]}")
+          NEXT_DEVELOPMENT=${next_development_parts}-SNAPSHOT
+          ./mvnw --batch-mode release:prepare -DdevelopmentVersion=${NEXT_DEVELOPMENT}
+
+  upload-artifacts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    needs: [ prepare-hotfix ]
+    env:
+      HOTFIX_VERSION: ${{ needs.prepare-hotfix.outputs.HOTFIX_VERSION }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.HOTFIX_VERSION }}
 
       - uses: actions/setup-java@v3
         with:
@@ -32,26 +87,17 @@ jobs:
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
 
-      - name: Gathering artifact information
-        shell: bash
+      - name: Create Docker release
         run: |
-          POM_VERSION=$(./mvnw -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
-          echo "- POM_VERSION: $POM_VERSION"
-          echo "POM_VERSION=$POM_VERSION" >> $GITHUB_ENV
-          
-          ARTIFACT_VERSION=$(echo $POM_VERSION | grep -o '^[0-9]\+\.[0-9]\+\.[0-9]\+')
-          echo "- ARTIFACT_VERSION: $ARTIFACT_VERSION"
-          echo "ARTIFACT_VERSION=$ARTIFACT_VERSION" >> $GITHUB_ENV     
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+          ./mvnw --batch-mode clean install jib:build -Ddocker.tag=${{ env.HOTFIX_VERSION }}
+          docker logout ghcr.io
 
-      - name: Check if hotfix tag already exists
-        shell: bash
-        run: |
-          existed_in_remote=$(git ls-remote --tags --heads origin --quiet refs/tags/${{ env.ARTIFACT_VERSION }})
+      - name: Create GitHub release
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          tag: ${{ env.HOTFIX_VERSION }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-          if [[ ! -z "${existed_in_remote}" ]]; then
-            echo "Error: The release ${{ env.ARTIFACT_VERSION }} tag already exists"
-            exit 1
-          fi
-      
 
-      
+
