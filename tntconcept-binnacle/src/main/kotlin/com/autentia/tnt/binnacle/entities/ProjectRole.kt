@@ -1,15 +1,15 @@
 package com.autentia.tnt.binnacle.entities
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import javax.persistence.Entity
-import javax.persistence.FetchType
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.persistence.NamedAttributeNode
-import javax.persistence.NamedEntityGraph
+import javax.persistence.*
+
+enum class RequireEvidence{
+    NO, ONCE, WEEKLY
+}
+
+enum class TimeUnit{
+    MINUTES, DAYS
+}
 
 @Entity
 @NamedEntityGraph(
@@ -21,7 +21,9 @@ data class ProjectRole(
     val id: Long,
 
     val name: String,
-    val requireEvidence: Boolean,
+
+    @Enumerated(EnumType.STRING)
+    val requireEvidence: RequireEvidence,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "projectId")
@@ -29,4 +31,11 @@ data class ProjectRole(
     val project: Project,
 
     val maxAllowed: Int,
+
+    val isWorkingTime: Boolean,
+
+    val isApprovalRequired: Boolean,
+
+    @Enumerated(EnumType.STRING)
+    val timeUnit: TimeUnit
 )

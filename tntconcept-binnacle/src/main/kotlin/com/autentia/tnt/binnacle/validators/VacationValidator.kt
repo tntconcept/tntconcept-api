@@ -1,5 +1,7 @@
 package com.autentia.tnt.binnacle.validators
 
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.Vacation
@@ -7,8 +9,6 @@ import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.repositories.VacationRepository
-import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.VacationService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -17,8 +17,7 @@ import javax.transaction.Transactional
 @Singleton
 internal class VacationValidator(
     private val vacationRepository: VacationRepository,
-    private val vacationService: VacationService,
-    private val holidayService: HolidayService,
+    private val calendarFactory: CalendarFactory
 ) {
 
     fun canCreateVacationPeriod(requestVacation: RequestVacation, user: User): CreateVacationValidation {
@@ -43,10 +42,8 @@ internal class VacationValidator(
         }
     }
 
-    private fun isRequestEmpty(startDate: LocalDate, endDate: LocalDate): Boolean {
-        val publicHolidays = holidayService.findAllBetweenDate(startDate, endDate)
-        return vacationService.getVacationPeriodDays(startDate, endDate, publicHolidays).isEmpty()
-    }
+    private fun isRequestEmpty(startDate: LocalDate, endDate: LocalDate) =
+        calendarFactory.create(DateInterval.of(startDate, endDate)).workableDays.isEmpty()
 
     private fun isDateBeforeHiringDate(startDate: LocalDate, hiringDate: LocalDate): Boolean {
         return startDate.isBefore(hiringDate)

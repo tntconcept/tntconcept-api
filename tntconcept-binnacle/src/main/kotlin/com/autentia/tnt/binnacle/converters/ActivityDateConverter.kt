@@ -1,19 +1,19 @@
 package com.autentia.tnt.binnacle.converters
 
+import com.autentia.tnt.binnacle.core.domain.ActivitiesResponse
 import com.autentia.tnt.binnacle.core.domain.ActivityDate
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
 import com.autentia.tnt.binnacle.core.utils.myDatesUntil
 import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
 import jakarta.inject.Singleton
-
 import java.time.LocalDate
 
+@Deprecated("Used in the deprecated Activities Controller")
 @Singleton
 class ActivityDateConverter(
     private val workableProjectRoleIdChecker: WorkableProjectRoleIdChecker,
-    private val activityResponseConverter: ActivityResponseConverter
+    private val activityResponseConverter: ActivitiesResponseConverter
 ) {
 
     fun toActivityDateDTO(activityDate: ActivityDate) =
@@ -24,19 +24,19 @@ class ActivityDateConverter(
         )
 
     fun toListActivityDate(
-        activities: List<ActivityResponse>,
+        activities: List<ActivitiesResponse>,
         startDate: LocalDate,
         endDate: LocalDate,
     ): List<ActivityDate> {
         val activitiesByDate = activities.groupBy { it.startDate.toLocalDate() }
         val allActivitiesBetweenDates = startDate.myDatesUntil(endDate)
-            .associateWith { emptyList<ActivityResponse>() }
+            .associateWith { emptyList<ActivitiesResponse>() }
             .toMutableMap()
         allActivitiesBetweenDates.putAll(activitiesByDate)
         return allActivitiesBetweenDates.map(::toActivityDate)
     }
 
-    private fun toActivityDate(entry: Map.Entry<LocalDate, List<ActivityResponse>>): ActivityDate =
+    private fun toActivityDate(entry: Map.Entry<LocalDate, List<ActivitiesResponse>>): ActivityDate =
         ActivityDate(
             date = entry.key,
             workedMinutes = entry.value

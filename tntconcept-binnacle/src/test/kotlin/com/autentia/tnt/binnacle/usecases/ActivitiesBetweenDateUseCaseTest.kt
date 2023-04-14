@@ -1,100 +1,91 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityDateConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.dto.ActivityDateDTO
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.UserService
-import org.junit.jupiter.api.Assertions.assertTrue
+import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 internal class ActivitiesBetweenDateUseCaseTest {
 
-    private var userService = mock<UserService>()
-    private var activityService = mock<ActivityService>()
-    private val activityDateConverter = ActivityDateConverter(
-        WorkableProjectRoleIdChecker(emptyList()),
-        ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
-        )
+    private val activityService = mock<ActivityService>()
+    private val activityConverter = mock<ActivityResponseConverter>()
+
+    private val activitiesBetweenDateUseCase = ActivitiesBetweenDateUseCase(
+        activityService,
+        activityConverter
     )
 
-    private var sut = ActivitiesBetweenDateUseCase(activityService, userService, activityDateConverter)
-
     @Test
-    fun `given start date and end date should return activities`() {
-        val startDate = NOW.minusDays(1)
-        val endDate = NOW.plusDays(1)
+    fun `get activities between start and end date`() {
+        whenever(activityService.getActivitiesBetweenDates(any())).thenReturn(listOf(activity))
+        whenever(activityConverter.mapActivitiesToActivitiesResponseDTO(listOf(activity))).thenReturn(activitiesResponseDTO)
 
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-        doReturn(listOf(ACTIVITY_RESPONSE)).whenever(activityService).getActivitiesBetweenDates(startDate, endDate, USER.id)
+        val actual = activitiesBetweenDateUseCase.getActivities(startDate, endDate)
 
-        val result = sut.getActivities(startDate, endDate)
-
-        verify(userService).getAuthenticatedUser()
-        verify(activityService).getActivitiesBetweenDates(startDate, endDate, USER.id)
-
-        val expectedResult = ActivityDateDTO(NOW, WORKED_TIME, listOf(ACTIVITY_RESPONSE_DTO))
-        assertTrue(result.contains(expectedResult))
+        assertEquals(activitiesResponseDTO, actual)
     }
 
-    private companion object {
-        private val TIME_NOW = LocalDateTime.now()
-        private val NOW  = TIME_NOW.toLocalDate()
+    private companion object{
+        val startDate: LocalDate = LocalDate.of(2019, 1, 1)
+        val endDate: LocalDate = LocalDate.of(2019, 1, 31)
+        val approvalState = ApprovalState.PENDING
 
-        private val USER = createUser()
-
-        private val ORGANIZATION = Organization(1, "organization", emptyList())
-        private val PROJECT = Project(1, "project", true, true, ORGANIZATION, emptyList())
-        private val PROJECT_ROLE = ProjectRole(1, "Role", false, PROJECT, 0)
-        private val WORKED_TIME = 120
-
-        private val ACTIVITY_RESPONSE = ActivityResponse(
-            1,
-            TIME_NOW,
-            WORKED_TIME,
-            "Activity",
-            PROJECT_ROLE,
-            USER.id,
-            true,
-            ORGANIZATION,
-            PROJECT,
-            false
+        val intervalResponseDTO = IntervalResponseDTO(
+            start = startDate.atStartOfDay(),
+            end = endDate.atStartOfDay(),
+            duration = 120,
+            timeUnit = TimeUnit.MINUTES
         )
 
-        private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
-            ACTIVITY_RESPONSE.id,
-            TIME_NOW,
-            ACTIVITY_RESPONSE.duration,
-            ACTIVITY_RESPONSE.description,
-            ProjectRoleResponseDTO(PROJECT_ROLE.id, PROJECT_ROLE.name, PROJECT_ROLE.requireEvidence),
-            ACTIVITY_RESPONSE.userId,
-            ACTIVITY_RESPONSE.billable,
-            OrganizationResponseDTO(ORGANIZATION.id, ORGANIZATION.name),
-            ProjectResponseDTO(PROJECT.id, PROJECT.name, PROJECT.open, PROJECT.billable),
-            ACTIVITY_RESPONSE.hasImage
+        val organization = Organization(1L, "Dummy Organization", listOf())
+        val project = Project(
+            1L,
+            "Dummy Project",
+            open = true,
+            billable = false,
+            organization,
+            listOf()
+        )
+
+        val projectRole = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO,
+            project, 0, true, false, TimeUnit.MINUTES)
+
+
+        val activity =
+            Activity(
+                1,
+                startDate.atStartOfDay(),
+                endDate.atStartOfDay(),
+                45,
+                "New activity",
+                projectRole,
+                1,
+                false,
+                null,
+                null,
+                false,
+                approvalState = ApprovalState.PENDING
+            )
+
+        val activitiesResponseDTO = listOf(
+            ActivityResponseDTO(
+                billable= false,
+                description = "description",
+                hasEvidences = false,
+                id = 1L,
+                projectRoleId = 1,
+                interval = intervalResponseDTO,
+                userId = 1,
+                approvalState = approvalState
+            )
         )
 
     }
-
 }

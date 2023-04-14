@@ -17,7 +17,7 @@ internal class ActivityImageService(
 
     fun storeActivityImage(activityId: Long, imageFile: String?, insertDate: Date) {
         if (imageFile == null || imageFile == "") {
-            throw BinnacleApiIllegalArgumentException("With hasImage = true, imageFile could not be null")
+            throw BinnacleApiIllegalArgumentException("With hasEvidences = true, imageFile could not be null")
         }
 
         val fileContent = Base64.getDecoder().decode(imageFile)

@@ -1,15 +1,17 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.*
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
+import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
+import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -24,21 +26,25 @@ internal class ActivityCreationUseCaseTest {
 
     private val user = createUser()
     private val activityService = mock<ActivityService>()
+    private val activityCalendarService = mock<ActivityCalendarService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
+    private val projectRoleService = ProjectRoleService(projectRoleRepository)
     private val activityRepository = mock<ActivityRepository>()
-    private val activityValidator = ActivityValidator(activityRepository, projectRoleRepository)
+    private val activityValidator =
+        ActivityValidator(activityRepository, activityCalendarService, projectRoleRepository)
     private val userService = mock<UserService>()
 
     private val activityCreationUseCase = ActivityCreationUseCase(
         activityService,
+        activityCalendarService,
+        projectRoleService,
         userService,
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
-        )
+            ActivityIntervalResponseConverter()
+        ),
+        TimeIntervalConverter()
     )
 
     @Test
@@ -74,18 +80,31 @@ internal class ActivityCreationUseCaseTest {
             open = true,
             billable = false,
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, PROJECT, 0)
+        private val PROJECT_ROLE =
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleResponseDTO(10L, "Dummy Project role", false)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
+            10L,
+            "Dummy Project role",
+            ORGANIZATION_DTO.id,
+            PROJECT.id,
+            PROJECT_ROLE.maxAllowed,
+            5,
+            PROJECT_ROLE.timeUnit,
+            RequireEvidence.NO,
+            PROJECT_ROLE.isApprovalRequired,
+            1L
+        )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
             TIME_NOW,
-            75,
+            TIME_NOW.plusMinutes(75L),
             "New activity",
             false,
             PROJECT_ROLE.id,
-            false
+            false,
+            null,
         )
 
         private fun generateLargeDescription(mainMessage: String): String {
@@ -100,46 +119,48 @@ internal class ActivityCreationUseCaseTest {
             id: Long = 1L,
             userId: Long = 1L,
             description: String = generateLargeDescription("New activity").substring(0, 2048),
-            startDate: LocalDateTime = TIME_NOW,
+            start: LocalDateTime = TIME_NOW,
+            end: LocalDateTime = TIME_NOW.plusMinutes(75L),
             duration: Int = 75,
             billable: Boolean = false,
-            hasImage: Boolean = false,
-            projectRole: ProjectRole = PROJECT_ROLE
+            hasEvidences: Boolean = false,
+            projectRole: ProjectRole = PROJECT_ROLE,
+            approvalState: ApprovalState = ApprovalState.NA
         ): Activity =
             Activity(
                 id = id,
                 userId = userId,
                 description = description,
-                startDate = startDate,
+                start = start,
+                end = end,
                 duration = duration,
                 billable = billable,
-                hasImage = hasImage,
-                projectRole = projectRole
+                hasEvidences = hasEvidences,
+                projectRole = projectRole,
+                approvalState = approvalState
             )
 
         private fun createActivityResponseDTO(
             id: Long = 1L,
             userId: Long = 0L,
             description: String = generateLargeDescription("New activity").substring(0, 2048),
-            startDate: LocalDateTime = TIME_NOW,
+            start: LocalDateTime = TIME_NOW,
+            end: LocalDateTime = TIME_NOW.plusMinutes(75L),
             duration: Int = 75,
             billable: Boolean = false,
-            hasImage: Boolean = false,
-            projectRole: ProjectRoleResponseDTO = PROJECT_ROLE_RESPONSE_DTO,
-            organization: OrganizationResponseDTO = ORGANIZATION_DTO,
-            project: ProjectResponseDTO = PROJECT_RESPONSE_DTO
+            hasEvidences: Boolean = false,
+            projectRoleId: Long = 10L,
+            approvalState: ApprovalState = ApprovalState.NA
         ): ActivityResponseDTO =
             ActivityResponseDTO(
-                id,
-                startDate,
-                duration,
-                description,
-                projectRole,
-                userId,
                 billable,
-                organization,
-                project,
-                hasImage,
+                description,
+                hasEvidences,
+                id,
+                projectRoleId,
+                IntervalResponseDTO(start, end, duration, PROJECT_ROLE.timeUnit),
+                userId,
+                approvalState
             )
 
     }

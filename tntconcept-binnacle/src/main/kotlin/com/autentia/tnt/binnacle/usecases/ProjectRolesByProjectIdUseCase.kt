@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -15,9 +15,9 @@ class ProjectRolesByProjectIdUseCase internal constructor(
 ) {
     @Transactional
     @ReadOnly
-    fun get(id: Int): List<ProjectRoleResponseDTO> =
+    fun get(id: Int): List<ProjectRoleDTO> =
         projectRoleRepository
             .getAllByProjectId(id.toLong())
-            .map { projectRoleResponseConverter.toProjectRoleResponseDTO(it) }
+            .map { projectRoleResponseConverter.toProjectRoleDTO(it) }
 
 }

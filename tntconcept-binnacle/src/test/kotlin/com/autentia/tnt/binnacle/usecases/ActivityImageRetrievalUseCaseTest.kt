@@ -2,23 +2,26 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.NoImageInActivityException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.services.ActivityImageService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.Mockito.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
 import java.util.Date
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.mockito.Mockito.doReturn
 
 internal class ActivityImageRetrievalUseCaseTest {
 
@@ -91,11 +94,12 @@ internal class ActivityImageRetrievalUseCaseTest {
             ORGANIZATION,
             listOf(),
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", false, PROJECT, 0)
+        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
         private val todayActivity = Activity(
             ID,
             TODAY,
+            TODAY.plusMinutes(60),
             60,
             "Dummy description",
             PROJECT_ROLE,
@@ -104,11 +108,13 @@ internal class ActivityImageRetrievalUseCaseTest {
             null,
             TODAY_DATE,
             true,
+            ApprovalState.NA
         )
 
         val activityWithoutImage = Activity(
             ID,
             TODAY,
+            TODAY.plusMinutes(60),
             60,
             "Dummy description",
             PROJECT_ROLE,
@@ -117,6 +123,7 @@ internal class ActivityImageRetrievalUseCaseTest {
             null,
             TODAY_DATE,
             false,
+            ApprovalState.NA
         )
     }
 }

@@ -1,14 +1,10 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.*
+import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -34,18 +30,11 @@ internal class ActivityServiceTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
     private val activityRequestBodyConverter = ActivityRequestBodyConverter()
-    private val activityResponseConverter = ActivityResponseConverter(
-        OrganizationResponseConverter(),
-        ProjectResponseConverter(),
-        ProjectRoleResponseConverter()
-    )
-
     private val activityService = ActivityService(
         activityRepository,
         projectRoleRepository,
         activityImageService,
-        activityRequestBodyConverter,
-        activityResponseConverter
+        activityRequestBodyConverter
     )
 
     init {
@@ -63,9 +52,11 @@ internal class ActivityServiceTest {
         USER
     )
 
-    private val activityWithImageSaved = activityWithImageToSave.copy(id = 101, insertDate = Date())
+    private val activityWithImageSaved =
+        activityWithImageToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
-    private val activityWithoutImageSaved = activityWithoutImageToSave.copy(id = 100L, insertDate = Date())
+    private val activityWithoutImageSaved =
+        activityWithoutImageToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
 
     @Test
@@ -95,50 +86,31 @@ internal class ActivityServiceTest {
         whenever(
             activityRepository.find(
                 startDate.atTime(LocalTime.MIN),
-                endDate.atTime(23, 59, 59)
+                endDate.atTime(LocalTime.MAX)
             )
         ).thenReturn(listOf(activityWithoutImageSaved))
 
-        val actual = activityService.getActivitiesBetweenDates(startDate, endDate, userId)
+        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate))
 
-        assertEquals(
-            listOf(
-                ActivityResponse(
-                    activityWithoutImageSaved.id as Long,
-                    activityWithoutImageSaved.startDate,
-                    activityWithoutImageSaved.duration,
-                    activityWithoutImageSaved.description,
-                    activityWithoutImageSaved.projectRole,
-                    activityWithoutImageSaved.userId,
-                    activityWithoutImageSaved.billable,
-                    activityWithoutImageSaved.projectRole.project.organization,
-                    activityWithoutImageSaved.projectRole.project,
-                    false,
-                )
-            ),
-            actual
-        )
+        assertEquals(listOf(activityWithoutImageSaved), actual)
     }
 
     @Test
-    fun `get worked minutes between start and end date`() {
+    fun `get activities between start and end date for user`() {
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)
-        val activityTimeOnly = ActivityTimeOnly(
-            activityWithoutImageSaved.startDate,
-            activityWithoutImageSaved.duration,
-            activityWithoutImageSaved.projectRole.id
-        )
+        val userId = 1L
         whenever(
-            activityRepository.findWorkedMinutes(
+            activityRepository.findWithoutSecurity(
                 startDate.atTime(LocalTime.MIN),
-                endDate.atTime(23, 59, 59),
+                endDate.atTime(LocalTime.MAX),
+                userId
             )
-        ).thenReturn(listOf(activityTimeOnly))
+        ).thenReturn(listOf(activityWithoutImageSaved))
 
-        val actual = activityService.workedMinutesBetweenDates(startDate, endDate)
+        val actual = activityService.getUserActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
 
-        assertEquals(listOf(activityTimeOnly), actual)
+        assertEquals(listOf(activityWithoutImageSaved), actual)
     }
 
     @Test
@@ -170,11 +142,13 @@ internal class ActivityServiceTest {
         val activityRequest = ActivityRequestBody(
             activityWithoutImageSaved.id,
             TODAY_NOON,
+            TODAY_NOON.plusMinutes(120),
             120,
             "Description...",
             false,
             projectRole.id,
-            false
+            false,
+            null
         )
 
         whenever(activityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(activityWithoutImageSaved)
@@ -201,23 +175,26 @@ internal class ActivityServiceTest {
         val activityRequest = ActivityRequestBody(
             activityId,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
             120,
             "Description...",
             false,
             projectRole.id,
             true,
-            "Base64 format..."
+            "Base64 format...",
         )
         val oldActivityInsertDate = Date()
         val oldActivity = Activity(
             id = activityId,
-            startDate = activityRequest.startDate,
+            start = activityRequest.start,
             duration = 120,
+            end = activityRequest.start.plusHours(2L),
             description = "Test activity",
             projectRole = projectRole,
             userId = USER.id,
             billable = false,
-            hasImage = true,
+            hasEvidences = true,
+            approvalState = ApprovalState.NA,
             insertDate = oldActivityInsertDate,
         )
 
@@ -253,26 +230,30 @@ internal class ActivityServiceTest {
     @Test
     fun `update activity and delete the stored image`() {
         val activityId = 90L
-        val oldActivityInsertDate = Date()
         val activityRequest = ActivityRequestBody(
             activityId,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
             120,
             "Description...",
             false,
             projectRole.id,
-            false
+            false,
+            null,
         )
 
+        val oldActivityInsertDate = Date()
         val oldActivity = Activity(
             id = activityId,
-            startDate = activityRequest.startDate,
+            start = activityRequest.start,
             duration = 120,
+            end = activityRequest.start.plusHours(2L),
             description = "Test activity",
             projectRole = projectRole,
             userId = USER.id,
             billable = false,
-            hasImage = true,
+            hasEvidences = true,
+            approvalState = ApprovalState.NA,
             insertDate = oldActivityInsertDate,
         )
 
@@ -281,7 +262,7 @@ internal class ActivityServiceTest {
         // Delete the old activity image
         given(activityImageService.deleteActivityImage(activityId, oldActivityInsertDate)).willReturn(true)
 
-        val savedActivity = mock(Activity::class.java)
+        val savedActivity = mock<Activity>()
 
         given(
             activityRepository.update(
@@ -298,6 +279,19 @@ internal class ActivityServiceTest {
 
         assertThat(result).isEqualTo(savedActivity)
         verify(activityImageService).deleteActivityImage(activityId, oldActivityInsertDate)
+    }
+
+    @Test
+    fun `approve activity by id`() {
+        given(activityRepository.findById(activityWithoutImageSaved.id as Long)).willReturn(activityWithoutImageSaved)
+        given(
+            activityRepository.update(
+                activityWithoutImageSaved
+            )
+        ).willReturn(activityWithoutImageSaved)
+
+        val approvedActivity = activityService.approveActivityById(activityWithoutImageSaved.id as Long)
+        assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
     }
 
     @Test
@@ -330,7 +324,8 @@ internal class ActivityServiceTest {
 
         private val organization = Organization(1L, "Autentia", emptyList())
         private val project = Project(1L, "Back-end developers", true, false, organization, emptyList())
-        private val projectRole = ProjectRole(10, "Kotlin developer", false, project, 0)
+        private val projectRole =
+            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
 
         private val TODAY_NOON = LocalDateTime.of(LocalDate.now(), LocalTime.NOON)
 
@@ -339,22 +334,25 @@ internal class ActivityServiceTest {
         private val activityWithoutImageRequest = ActivityRequestBody(
             null,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60),
             60,
             "Dummy description",
             false,
             projectRole.id,
-            false
+            false,
+            null,
         )
 
         private val activityWithImageRequest = ActivityRequestBody(
             null,
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
             120,
             "Description...",
             false,
             projectRole.id,
             true,
-            "Base64 format..."
+            "Base64 format...",
         )
     }
 

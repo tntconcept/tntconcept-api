@@ -1,62 +1,45 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createActivityResponse
 import com.autentia.tnt.binnacle.config.createUser
+import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
-import com.autentia.tnt.binnacle.core.domain.AnnualBalance
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
-import com.autentia.tnt.binnacle.core.domain.MonthlyBalance
-import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
-import com.autentia.tnt.binnacle.core.domain.PreviousAnnualBalance
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
-import com.autentia.tnt.binnacle.core.domain.TimeSummary
 import com.autentia.tnt.binnacle.core.domain.Vacation
-import com.autentia.tnt.binnacle.core.domain.YearAnnualBalance
 import com.autentia.tnt.binnacle.core.services.TimeSummaryService
 import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
-import com.autentia.tnt.binnacle.entities.Holiday
+import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
-import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
-import com.autentia.tnt.binnacle.entities.dto.AnnualBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.MonthlyBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.PreviousAnnualBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
-import com.autentia.tnt.binnacle.entities.dto.YearAnnualBalanceDTO
-import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.AnnualWorkSummaryService
-import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.MyVacationsDetailService
-import com.autentia.tnt.binnacle.services.UserService
-import com.autentia.tnt.binnacle.services.VacationService
+import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.services.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.whenever
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
 import kotlin.time.Duration
-import java.math.BigDecimal
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 internal class UserWorkTimeUseCaseTest {
-    private val userService = mock<UserService> ()
-    private val holidayService = mock<HolidayService> ()
-    private val annualWorkSummaryService = mock<AnnualWorkSummaryService> ()
-    private val activityService = mock<ActivityService> ()
-    private val vacationService = mock<VacationService> ()
-    private val myVacationsDetailService = mock<MyVacationsDetailService> ()
-    private val workTimeService = mock<TimeSummaryService> ()
+    private val userService = mock<UserService>()
+    private val holidayService = mock<HolidayService>()
+    private val annualWorkSummaryService = mock<AnnualWorkSummaryService>()
+    private val activityService = mock<ActivityService>()
+    private val vacationService = mock<VacationService>()
+    private val myVacationsDetailService = mock<MyVacationsDetailService>()
+    private val workTimeService = mock<TimeSummaryService>()
 
     private val userWorkTimeUseCase = UserTimeSummaryUseCase(
         userService,
@@ -67,9 +50,7 @@ internal class UserWorkTimeUseCaseTest {
         myVacationsDetailService,
         workTimeService,
         ActivityResponseConverter(
-            OrganizationResponseConverter(),
-            ProjectResponseConverter(),
-            ProjectRoleResponseConverter()
+            ActivityIntervalResponseConverter()
         ),
         TimeSummaryConverter()
     )
@@ -77,24 +58,46 @@ internal class UserWorkTimeUseCaseTest {
     @Test
     fun `given date should return working time`() {
         whenever(userService.getAuthenticatedUser()).thenReturn(USER)
-        whenever(annualWorkSummaryService.getAnnualWorkSummary(USER, TODAY_LAST_YEAR.minusYears(1).year)).thenReturn(annualWorkSummary)
+        whenever(annualWorkSummaryService.getAnnualWorkSummary(USER, TODAY_LAST_YEAR.minusYears(1).year)).thenReturn(
+            annualWorkSummary
+        )
         whenever(holidayService.findAllBetweenDate(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR)).thenReturn(HOLIDAYS)
-        whenever(vacationService.getVacationsBetweenDates(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR)).thenReturn(vacations)
+        whenever(
+            vacationService.getVacationsBetweenDates(
+                FIRST_DAY_LAST_YEAR,
+                LAST_DAY_LAST_YEAR
+            )
+        ).thenReturn(vacations)
         vacations.add(vacation)
-        whenever(activityService.getActivitiesBetweenDates(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR, USER.id)).thenReturn(listOf(LAST_YEAR_ACTIVITY))
-        whenever(myVacationsDetailService.getCorrespondingVacationDaysSinceHiringDate(USER, FIRST_DAY_LAST_YEAR.year)).thenReturn(CORRESPONDING_VACATIONS)
+        whenever(
+            activityService.getActivitiesBetweenDates(
+                DateInterval.of(
+                    FIRST_DAY_LAST_YEAR,
+                    LAST_DAY_LAST_YEAR
+                )
+            )
+        ).thenReturn(listOf(LAST_YEAR_ACTIVITY))
+        whenever(
+            myVacationsDetailService.getCorrespondingVacationDaysSinceHiringDate(
+                USER,
+                FIRST_DAY_LAST_YEAR.year
+            )
+        ).thenReturn(CORRESPONDING_VACATIONS)
         whenever(vacationService.getVacationsByChargeYear(FIRST_DAY_LAST_YEAR.year)).thenReturn(vacationsChargedThisYear)
         whenever(vacationService.getVacationsByChargeYear(FIRST_DAY_LAST_YEAR.year)).thenReturn(vacationsChargedThisYear)
-        whenever(workTimeService.getTimeSummaryBalance( eq(TODAY_LAST_YEAR),
-            eq(USER),
-            eq(annualWorkSummary),
-            eq(listOf(CHRISTMAS_DATE)),
-            eq(vacationDaysRequestedThisYear),
-            eq(vacationsChargedThisYear),
-            eq(CORRESPONDING_VACATIONS),
-            any(),
-            any(),
-        )).thenReturn(TIME_SUMMARY)
+        whenever(
+            workTimeService.getTimeSummaryBalance(
+                eq(TODAY_LAST_YEAR),
+                eq(USER),
+                eq(annualWorkSummary),
+                eq(listOf(CHRISTMAS_DATE)),
+                eq(vacationDaysRequestedThisYear),
+                eq(vacationsChargedThisYear),
+                eq(CORRESPONDING_VACATIONS),
+                any(),
+                any(),
+            )
+        ).thenReturn(TIME_SUMMARY)
 
         //When
         val actualWorkingTime = userWorkTimeUseCase.getTimeSummary(TODAY_LAST_YEAR)
@@ -104,12 +107,12 @@ internal class UserWorkTimeUseCaseTest {
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any())
-        verify(activityService, times(2)).getActivitiesBetweenDates(any(), any(), any())
+        verify(activityService, times(2)).getUserActivitiesBetweenDates(any(), eq(USER.id))
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)
     }
 
-    private companion object{
+    private companion object {
 
         private val TODAY = LocalDate.now()
         private val TOMORROW = TODAY.plusDays(1)
@@ -138,11 +141,38 @@ internal class UserWorkTimeUseCaseTest {
                 state = ACCEPT,
                 days = listOf(TODAY, TOMORROW),
                 chargeYear = TODAY
-        )
+            )
 
         private val vacations = mutableListOf<VacationDomain>()
+        private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
+        private val PROJECT = Project(
+            1L,
+            "Dummy Project",
+            open = true,
+            billable = false,
+            ORGANIZATION,
+            listOf()
+        )
 
-        private val LAST_YEAR_ACTIVITY = createActivityResponse(1L, LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30), false)
+        private val PROJECT_ROLE = ProjectRole(
+            10L, "Dummy Project role", RequireEvidence.NO,
+            PROJECT, 0, true, false, TimeUnit.MINUTES
+        )
+
+        private val LAST_YEAR_ACTIVITY = Activity(
+            1,
+            LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30),
+            LocalDateTime.of(LAST_YEAR, TODAY.month, 2, 12, 30),
+            45,
+            "New activity",
+            PROJECT_ROLE,
+            USER.id,
+            false,
+            null,
+            null,
+            false,
+            approvalState = ApprovalState.NA
+        )
 
         val vacationsChargedThisYear = listOf(
             Vacation(
@@ -204,7 +234,8 @@ internal class UserWorkTimeUseCaseTest {
         val DEV_OPS_ROLE = ProjectRoleId(5L)
 
         val rolesJanuary = listOf(MonthlyRoles(DEV_ROLE.id, Duration.parse("11h")))
-        val rolesFebruary = listOf(MonthlyRoles(QA_ROLE.id, Duration.parse("10h")),MonthlyRoles(DEV_OPS_ROLE.id, Duration.parse("4h")) )
+        val rolesFebruary =
+            listOf(MonthlyRoles(QA_ROLE.id, Duration.parse("10h")), MonthlyRoles(DEV_OPS_ROLE.id, Duration.parse("4h")))
 
         val notConsumedVacationsForDTO =
             Duration.parse(((CORRESPONDING_VACATIONS - consumedVacationsDays) * 8).toString() + "h").toBigDecimalHours()
@@ -218,8 +249,22 @@ internal class UserWorkTimeUseCaseTest {
                 AnnualBalance(worked, target, notConsumedVacations, balance)
             ),
             mapOf(
-                Month.JANUARY to MonthlyBalance(workable, workedJanuary, recommendedJanuary, balanceJanuary, rolesJanuary, Duration.parse("8h")),
-                Month.FEBRUARY to MonthlyBalance(workable, workedFebruary, recommendedFebruary, balanceFebruary, rolesFebruary, Duration.parse("8h")),
+                Month.JANUARY to MonthlyBalance(
+                    workable,
+                    workedJanuary,
+                    recommendedJanuary,
+                    balanceJanuary,
+                    rolesJanuary,
+                    Duration.parse("8h")
+                ),
+                Month.FEBRUARY to MonthlyBalance(
+                    workable,
+                    workedFebruary,
+                    recommendedFebruary,
+                    balanceFebruary,
+                    rolesFebruary,
+                    Duration.parse("8h")
+                ),
             )
         )
 
@@ -243,7 +288,7 @@ internal class UserWorkTimeUseCaseTest {
                     workedJanuary.toBigDecimalHours(),
                     recommendedJanuary.toBigDecimalHours(),
                     balanceJanuary.toBigDecimalHours(),
-                        listOf(MonthlyRolesDTO(DEV_ROLE.id, BigDecimal("11.00"))),
+                    listOf(MonthlyRolesDTO(DEV_ROLE.id, BigDecimal("11.00"))),
                     Duration.parse("8h").toBigDecimalHours()
                 ),
                 MonthlyBalanceDTO(
@@ -251,7 +296,10 @@ internal class UserWorkTimeUseCaseTest {
                     workedFebruary.toBigDecimalHours(),
                     recommendedFebruary.toBigDecimalHours(),
                     balanceFebruary.toBigDecimalHours(),
-                        listOf(MonthlyRolesDTO(QA_ROLE.id, BigDecimal("10.00")), MonthlyRolesDTO(DEV_OPS_ROLE.id, BigDecimal("4.00"))),
+                    listOf(
+                        MonthlyRolesDTO(QA_ROLE.id, BigDecimal("10.00")),
+                        MonthlyRolesDTO(DEV_OPS_ROLE.id, BigDecimal("4.00"))
+                    ),
                     Duration.parse("8h").toBigDecimalHours()
                 ),
             )

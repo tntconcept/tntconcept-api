@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.entities.dto
 
-data class ProjectRoleResponseDTO (
+@Deprecated("Use ProjectRoleResponseDTO instead")
+data class ProjectRoleResponseDTOOld (
     val id: Long,
     val name: String,
     val requireEvidence: Boolean

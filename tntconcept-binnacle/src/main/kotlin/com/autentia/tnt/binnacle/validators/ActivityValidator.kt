@@ -1,25 +1,22 @@
 package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
-import com.autentia.tnt.binnacle.core.utils.overlaps
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.Month
 import javax.transaction.Transactional
 
 @Singleton
 internal class ActivityValidator(
     private val activityRepository: ActivityRepository,
+    private val activityCalendarService: ActivityCalendarService,
     private val projectRoleRepository: ProjectRoleRepository
 ) {
     @Transactional
@@ -31,45 +28,75 @@ internal class ActivityValidator(
         when {
             projectRoleDb == null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
-            !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
-                activityRequest.startDate.toLocalDate(),
+                activityRequest.start.toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
 
+            isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
         checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb!!), activityRequest, projectRoleDb)
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
         currentActivity: Activity,
+        requestActivity: ActivityRequestBody,
+        projectRole: ProjectRole
+    ) {
+        checkIfIsExceedingMaxHoursForRole(
+            currentActivity, requestActivity, requestActivity.start.year, projectRole
+        )
+        if (requestActivity.start.year != requestActivity.end.year) {
+            checkIfIsExceedingMaxHoursForRole(
+                currentActivity, requestActivity, requestActivity.end.year, projectRole
+            )
+        }
+    }
+
+    private fun checkIfIsExceedingMaxHoursForRole(
+        currentActivity: Activity,
         activityRequest: ActivityRequestBody,
+        year: Int,
         projectRole: ProjectRole
     ) {
         if (projectRole.maxAllowed > 0) {
-            val year = activityRequest.startDate.year
-            val activitiesSinceStartOfYear = getActivitiesInYear(year)
-            val totalRegisteredHoursForThisRole =
-                getTotalHoursPerRole(activitiesSinceStartOfYear, activityRequest)
-            var totalRegisteredHoursForThisRoleAfterDiscount = totalRegisteredHoursForThisRole
+
+            val yearTimeInterval = TimeInterval.ofYear(year)
+
+            val calendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
+
+            val currentActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
+                calendar, currentActivity.getTimeInterval(), currentActivity.projectRole.timeUnit
+            )
+
+            val requestActivityDuration = activityCalendarService.getDurationByCountingWorkingDays(
+                calendar, activityRequest.getTimeInterval(), projectRole.timeUnit
+            )
+
+            val activityIntervals =
+                activityRepository.findIntervals(yearTimeInterval.start, yearTimeInterval.end, projectRole.id)
+
+            val totalRegisteredDurationForThisRole =
+                activityCalendarService.getSumActivitiesDuration(
+                    calendar, activityIntervals
+                )
+
+            var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 
             if (currentActivity.projectRole.id == activityRequest.projectRoleId) {
-                totalRegisteredHoursForThisRoleAfterDiscount =
-                    totalRegisteredHoursForThisRole - currentActivity.duration
+                totalRegisteredDurationForThisRoleAfterDiscount =
+                    totalRegisteredDurationForThisRole - currentActivityDuration
             }
 
-            val totalRegisteredHoursAfterSaveRequested =
-                totalRegisteredHoursForThisRoleAfterDiscount + activityRequest.duration
+            val totalRegisteredDurationAfterSaveRequested =
+                totalRegisteredDurationForThisRoleAfterDiscount + requestActivityDuration
 
-
-            if (totalRegisteredHoursAfterSaveRequested > projectRole.maxAllowed) {
-                val remainingTime = (projectRole.maxAllowed - totalRegisteredHoursForThisRole.toDouble()) / DECIMAL_HOUR
-
-                throw MaxHoursPerRoleException(
-                    projectRole.maxAllowed / DECIMAL_HOUR,
-                    remainingTime
-                )
+            if (totalRegisteredDurationAfterSaveRequested > projectRole.maxAllowed) {
+                val remainingTime =
+                    (projectRole.maxAllowed - totalRegisteredDurationForThisRole.toDouble()) / DECIMAL_HOUR
+                throw MaxHoursPerRoleException(projectRole.maxAllowed / DECIMAL_HOUR, remainingTime, year)
             }
         }
     }
@@ -82,20 +109,6 @@ internal class ActivityValidator(
         return startDate.year >= LocalDateTime.now().year - 1
     }
 
-    private fun getTotalHoursPerRole(
-        activitiesInYear: List<ActivityTimeOnly>,
-        activityRequest: ActivityRequestBody
-    ) =
-        activitiesInYear
-            .filter { it.projectRoleId == activityRequest.projectRoleId }
-            .sumOf { it.duration }
-
-    private fun getActivitiesInYear(year: Int) =
-        activityRepository.findWorkedMinutes(
-            LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
-            LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
-        )
-
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForUpdate(activityRequest: ActivityRequestBody, user: User) {
@@ -107,12 +120,14 @@ internal class ActivityValidator(
             activityDb === null -> throw ActivityNotFoundException(activityRequest.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
-            !isOpenPeriod(activityRequest.startDate) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
             isBeforeHiringDate(
-                activityRequest.startDate.toLocalDate(),
+                activityRequest.start.toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
+
+            isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
         checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb!!)
     }
@@ -124,8 +139,14 @@ internal class ActivityValidator(
         val activityDb = activityRepository.findById(id)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
-            !isOpenPeriod(activityDb.startDate) -> throw ActivityPeriodClosedException()
+            !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
         }
+    }
+
+    @Transactional
+    @ReadOnly
+    fun checkIfUserCanApproveActivity() {
+        //TODO: check if user is admin
     }
 
     fun userHasAccess(activityDb: Activity, user: User): Boolean {
@@ -136,27 +157,26 @@ internal class ActivityValidator(
         return project.open
     }
 
-    private fun isOverlappingAnotherActivityTime(activityRequest: ActivityRequestBody): Boolean {
+    private fun isOverlappingAnotherActivityTime(
+        activityRequest: ActivityRequestBody
+    ): Boolean {
         if (activityRequest.duration == 0) {
             return false
         }
-
-        val startDate = activityRequest.startDate.withHour(0).withMinute(0).withSecond(0)
-        val endDate = activityRequest.startDate.withHour(23).withMinute(59).withSecond(59)
-        val activities = activityRepository.find(startDate, endDate)
-
-        return checkTimeOverlapping(activityRequest, activities)
+        val activities =
+            activityRepository.findOverlapped(
+                activityRequest.start, activityRequest.end
+            )
+        return activities.size > 1 || activities.size == 1 && activities[0].id != activityRequest.id
     }
 
-    private fun checkTimeOverlapping(activityRequest: ActivityRequestBody, activities: List<Activity>): Boolean {
-        val startDate = activityRequest.startDate
-        val endDate = activityRequest.startDate.plusMinutes(activityRequest.duration.toLong())
-
-        return activities.any {
-            val otherStartDate = it.startDate
-            val otherEndDate = it.startDate.plusMinutes(it.duration.toLong())
-            activityRequest.id != it.id && it.duration > 0 && (startDate..endDate).overlaps(otherStartDate..otherEndDate)
+    private fun isMoreThanADay(activityTimeInterval: TimeInterval, projectRole: ProjectRole): Boolean {
+        var moreThanADay = false
+        val isMinutesTimeUnit = projectRole.timeUnit == TimeUnit.MINUTES
+        if (isMinutesTimeUnit) {
+            moreThanADay = activityTimeInterval.getDuration().toDays().toInt() > 0
         }
+        return moreThanADay
     }
 
     private companion object {

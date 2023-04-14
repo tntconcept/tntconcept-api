@@ -1,10 +1,10 @@
 package com.autentia.tnt.binnacle.validators
 
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.VacationService
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -15,11 +15,12 @@ import java.time.Month
 internal class VacationValidatorTest {
 
     private val vacationRepository = mock(VacationRepository::class.java)
-    private val vacationService = mock(VacationService::class.java)
     private val holidayService = mock(HolidayService::class.java)
+    private val calendarFactory = CalendarFactory(holidayService)
     private val user = mock(User::class.java)
 
-    private val vacationValidator = VacationValidator(vacationRepository, vacationService, holidayService)
+    private val vacationValidator =
+        VacationValidator(vacationRepository, calendarFactory)
 
     // Characterized use cases objects
     private val today = LocalDate.now()
@@ -38,10 +39,6 @@ internal class VacationValidatorTest {
                 requestVacation.endDate
             )
         ).willReturn(holidays)
-
-        given(vacationService.getVacationPeriodDays(today, today.plusDays(1), holidays)).willReturn(
-            listOf(LocalDate.of(2021, Month.MARCH, 11))
-        )
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
@@ -151,8 +148,8 @@ internal class VacationValidatorTest {
         val user = createUser()
         val requestVacation = RequestVacation(
             null,
-            LocalDate.of(today.year, Month.MARCH, 11),
-            LocalDate.of(today.year, Month.MARCH, 11),
+            LocalDate.of(2023, Month.MARCH, 11),
+            LocalDate.of(2023, Month.MARCH, 11),
             "description"
         )
         val holidays = emptyList<Holiday>()
@@ -163,14 +160,6 @@ internal class VacationValidatorTest {
                 requestVacation.endDate
             )
         ).willReturn(holidays)
-
-        given(
-            vacationService.getVacationPeriodDays(
-                requestVacation.startDate,
-                requestVacation.endDate,
-                holidays
-            )
-        ).willReturn(emptyList())
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
@@ -201,11 +190,6 @@ internal class VacationValidatorTest {
                 requestVacation.endDate
             )
         ).willReturn(holidays)
-
-        given(vacationService.getVacationPeriodDays(today, tomorrow, holidays)).willReturn(
-            listOf(LocalDate.of(2021, Month.MARCH, 14))
-        )
-
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
 
         Assertions.assertThat(result).isEqualTo(UpdateVacationValidation.Success(vacationDb))
@@ -383,8 +367,8 @@ internal class VacationValidatorTest {
         val user = createUser()
         val requestVacation = RequestVacation(
             1,
-            startDate = LocalDate.of(today.year - 1, Month.MARCH, 14),
-            endDate = LocalDate.of(today.year - 1, Month.APRIL, 14),
+            startDate = LocalDate.of(2023, Month.MARCH, 11),
+            endDate = LocalDate.of(2023, Month.MARCH, 11),
             "description"
         )
         val vacationDb = Vacation(
@@ -406,15 +390,6 @@ internal class VacationValidatorTest {
                 requestVacation.endDate
             )
         ).willReturn(holidays)
-
-        given(
-            vacationService.getVacationPeriodDays(
-                requestVacation.startDate,
-                requestVacation.endDate,
-                holidays
-            )
-        ).willReturn(emptyList())
-
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
         Assertions.assertThat(result)
             .isEqualTo(UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY))

@@ -1,6 +1,8 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
+import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
@@ -35,5 +37,18 @@ internal class ProjectRoleRepositorySecured(
     ): List<ProjectRoleRecent> {
         val authentication = securityService.checkAuthentication()
         return projectRoleDao.findDistinctRolesBetweenDate(startDate, endDate, authentication.id())
+    }
+    
+    @Deprecated("Use findDistinctRolesBetweenDate instead")
+    override fun findDistinctProjectRolesBetweenDate(
+        startDate: LocalDateTime,
+        endDate: LocalDateTime
+    ): List<ProjectRolesRecent> {
+        val authentication = securityService.checkAuthentication()
+        return projectRoleDao.findDistinctProjectRolesBetweenDate(startDate, endDate, authentication.id())
+    }
+
+    override fun findDistinctRolesByUserIds(userIds: List<Long>): List<ProjectRoleUser> {
+        return projectRoleDao.findDistinctRolesByUserIds(userIds)
     }
 }

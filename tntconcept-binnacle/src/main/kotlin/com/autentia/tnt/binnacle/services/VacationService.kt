@@ -1,12 +1,9 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.converters.VacationConverter
-import com.autentia.tnt.binnacle.core.domain.CreateVacationResponse
-import com.autentia.tnt.binnacle.core.domain.RequestVacation
-import com.autentia.tnt.binnacle.core.utils.isHoliday
-import com.autentia.tnt.binnacle.core.utils.isWeekend
-import com.autentia.tnt.binnacle.core.utils.myDatesUntil
-import com.autentia.tnt.binnacle.entities.Holiday
+import com.autentia.tnt.binnacle.core.domain.*
+import com.autentia.tnt.binnacle.core.utils.maxDate
+import com.autentia.tnt.binnacle.core.utils.minDate
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
@@ -22,19 +19,15 @@ import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 @Singleton
 internal class VacationService(
     private val vacationRepository: VacationRepository,
-    private val holidayService: HolidayService,
     private val myVacationsDetailService: MyVacationsDetailService,
-    private val vacationConverter: VacationConverter
+    private val vacationConverter: VacationConverter,
+    private val calendarFactory: CalendarFactory
 ) {
     @Transactional
     @ReadOnly
     fun getVacationsBetweenDates(beginDate: LocalDate, finalDate: LocalDate): List<VacationDomain> {
         val vacations: List<Vacation> = vacationRepository.find(beginDate, finalDate)
-        var holidays: List<Holiday> = emptyList()
-        if (vacations.isNotEmpty()) {
-            holidays = holidayService.findAllBetweenDate(beginDate, finalDate)
-        }
-        return filterVacationsWithHolidays(vacations, holidays)
+        return getVacationsWithWorkableDays(vacations)
     }
 
     @Transactional
@@ -44,32 +37,43 @@ internal class VacationService(
             LocalDate.of(chargeYear, 1, 1),
             LocalDate.of(chargeYear, 1, 1)
         )
-
-        var holidays: List<Holiday> = emptyList()
-        if (vacations.isNotEmpty()) {
-            val minStartDate = vacations.minOfOrNull(Vacation::startDate)!!
-            val maxEndDate = vacations.maxOfOrNull(Vacation::endDate)!!
-
-            holidays = holidayService.findAllBetweenDate(minStartDate, maxEndDate)
-        }
-
-        return filterVacationsWithHolidays(vacations, holidays)
+        return getVacationsWithWorkableDays(vacations)
     }
+
+    fun getVacationsWithWorkableDays(vacations: List<Vacation>): List<VacationDomain> {
+        return if (vacations.isEmpty()) {
+            emptyList()
+        } else {
+            val start: LocalDate = vacations.map(Vacation::startDate).min()
+            val end: LocalDate = vacations.map(Vacation::endDate).max()
+            val dateInterval = DateInterval.of(start, end)
+            val calendar = calendarFactory.create(dateInterval)
+            getVacationsWithWorkableDays(calendar, vacations)
+        }
+    }
+
+    private fun getVacationsWithWorkableDays(calendar: Calendar, vacations: List<Vacation>): List<VacationDomain> =
+        vacations.map {
+            val days = calendar.getWorkableDays(DateInterval.of(it.startDate, it.endDate))
+            vacationConverter.toVacationDomain(it, days)
+        }
 
     @Transactional
     fun createVacationPeriod(requestVacation: RequestVacation, user: User): MutableList<CreateVacationResponse> {
+
         val currentYear = LocalDate.now().year
         val lastYear = currentYear - 1
         val nextYear = currentYear + 1
 
-        val holidays = getHolidaysBetweenLastAndNextYear()
-        val vacations = vacationRepository.findBetweenChargeYears(
-            LocalDate.of(lastYear, Month.JANUARY, 1),
-            LocalDate.of(nextYear, Month.DECEMBER, 31)
-        )
+        val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
+        val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
 
-        val vacationsByYear: Map<Int, List<VacationDomain>> = filterVacationsWithHolidays(vacations, holidays)
-            .groupBy { it.chargeYear.year }
+        val calendar = calendarFactory.create(DateInterval.of(lastYearFirstDay, nextYearLastDay))
+
+        val vacations = vacationRepository.findBetweenChargeYears(lastYearFirstDay, nextYearLastDay)
+
+        val vacationsByYear: Map<Int, List<VacationDomain>> =
+            getVacationsWithWorkableDays(calendar, vacations).groupBy { it.chargeYear.year }
 
         val lastYearRemainingVacations = myVacationsDetailService
             .getRemainingVacations(lastYear, vacationsByYear.getOrElse(lastYear) { listOf() }, user)
@@ -78,8 +82,7 @@ internal class VacationService(
         val nextYearRemainingVacations = myVacationsDetailService
             .getRemainingVacations(nextYear, vacationsByYear.getOrElse(nextYear) { listOf() }, user)
 
-
-        var selectedDays = getVacationPeriodDays(requestVacation.startDate, requestVacation.endDate, holidays)
+        var selectedDays = calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate))
 
         val remainingHolidaysLastAndCurrentYear = lastYearRemainingVacations + currentYearRemainingVacations
 
@@ -135,23 +138,23 @@ internal class VacationService(
         return vacationPeriods
     }
 
-    private fun filterVacationsWithHolidays(vacations: List<Vacation>, holidays: List<Holiday>) =
-        vacations.map { privateHoliday ->
-            val days = getVacationPeriodDays(privateHoliday.startDate, privateHoliday.endDate, holidays)
-            vacationConverter.toVacationDomain(privateHoliday, days)
-        }
-
     @Transactional
     fun updateVacationPeriod(
         requestVacation: RequestVacation,
         user: User,
         vacation: Vacation
     ): MutableList<CreateVacationResponse> {
-        val holidays = this.getHolidaysBetweenLastAndNextYear()
 
-        val oldCorrespondingDays = this.getVacationPeriodDays(vacation.startDate, vacation.endDate, holidays).size
+        val calendar = calendarFactory.create(
+            DateInterval.of(
+                minDate(vacation.startDate, requestVacation.startDate),
+                maxDate(vacation.endDate, requestVacation.endDate)
+            )
+        )
+
+        val oldCorrespondingDays = calendar.getWorkableDays(DateInterval.of(vacation.startDate, vacation.endDate)).size
         val newCorrespondingDays =
-            this.getVacationPeriodDays(requestVacation.startDate, requestVacation.endDate, holidays).size
+            calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate)).size
 
         var vacationPeriods = mutableListOf<CreateVacationResponse>()
 
@@ -217,23 +220,8 @@ internal class VacationService(
         }
     }
 
-    fun getHolidaysBetweenLastAndNextYear(): List<Holiday> {
-        val currentYear = LocalDate.now().year
-        val lastYearFirstDay = LocalDate.of(currentYear - 1, Month.JANUARY, 1)
-        val nextYearLastDay = LocalDate.of(currentYear + 1, Month.DECEMBER, 31)
-
-        return holidayService.findAllBetweenDate(lastYearFirstDay, nextYearLastDay)
-    }
-
     @Transactional
     fun deleteVacationPeriod(id: Long, userId: Long) {
         vacationRepository.deleteById(id)
-    }
-
-    fun getVacationPeriodDays(beginDate: LocalDate, finalDate: LocalDate, holidays: List<Holiday>): List<LocalDate> {
-        val holidaysDates = holidays.map { it.date.toLocalDate() }
-        return beginDate
-            .myDatesUntil(finalDate)
-            .filterNot { it.isWeekend() || it.isHoliday(holidaysDates) }
     }
 }

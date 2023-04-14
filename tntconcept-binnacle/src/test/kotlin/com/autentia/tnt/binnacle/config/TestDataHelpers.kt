@@ -1,11 +1,25 @@
 package com.autentia.tnt.binnacle.config
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Holiday
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.Role
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
-import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
@@ -33,6 +47,9 @@ internal fun createUser(hiringDate: LocalDate): User = User(
     ),
     active = true
 )
+
+internal fun createHoliday() = Holiday(1, "Holiday description", LocalDate.of(2023, 3, 15).atStartOfDay())
+
 
 internal fun getHolidaysFrom2022(): List<LocalDate> = listOf<LocalDate>(
     LocalDate.of(2022, Month.JANUARY, 1),
@@ -109,22 +126,62 @@ internal fun createProjectResponseDTO(id: Long = 1L, open: Boolean = false, bill
 )
 
 internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
-    id = id,
-    name = "Dummy Project role",
-    requireEvidence = true,
-    project = createProject(),
-    maxAllowed = 0
+    id,
+    "Dummy Project role",
+    RequireEvidence.WEEKLY,
+    createProject(),
+    0,
+    true,
+    false,
+    TimeUnit.MINUTES
 )
 
-internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: Boolean = false) = ProjectRoleResponseDTO(
-    id = id,
-    name = "Dummy Project Role",
-    requireEvidence = requireEvidence
+internal fun createActivity() = Activity(
+    1,
+    LocalDateTime.of(2023, 3, 1, 13, 5, 25),
+    LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
+    60,
+    "Activity",
+    createProjectRole(),
+    1L,
+    true,
+    1L,
+    null,
+    false,
+    ApprovalState.NA
 )
 
-internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage: Boolean) = ActivityResponse(
+internal fun createDomainActivity() = com.autentia.tnt.binnacle.core.domain.Activity(
+    LocalDateTime.of(2023, 3, 1, 13, 5, 25),
+    LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
+    com.autentia.tnt.binnacle.core.domain.ProjectRole(1L, TimeUnit.MINUTES)
+)
+
+internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =
+    ProjectRoleUserDTO(
+        id = id,
+        name = "Dummy Project Role",
+        1L,
+        1L,
+        10,
+        5,
+        TimeUnit.MINUTES,
+        requireEvidence = requireEvidence,
+        false,
+        1L
+    )
+
+
+internal fun createActivityResponse(
+    id: Long,
+    start: LocalDateTime,
+    end: LocalDateTime,
+    hasEvidences: Boolean,
+    approvalState: ApprovalState = ApprovalState.NA
+) = ActivityResponse(
     id = id,
-    startDate = startDate,
+    start = start,
+    end = end,
     duration = 60,
     description = "",
     projectRole = createProjectRole(),
@@ -132,32 +189,44 @@ internal fun createActivityResponse(id: Long, startDate: LocalDateTime, hasImage
     billable = false,
     organization = createOrganization(),
     project = createProject(),
-    hasImage = hasImage
+    hasEvidences = hasEvidences,
+    approvalState = approvalState
 )
 
-internal fun createActivityResponseDTO(id: Long, startDate: LocalDateTime, hasImage: Boolean) = ActivityResponseDTO(
-    id = id,
-    startDate = startDate,
-    duration = 540,
-    description = "Dummy description",
-    userId = 1L,
+internal fun createActivityResponseDTO(
+    id: Long,
+    start: LocalDateTime,
+    end: LocalDateTime,
+    hasEvidences: Boolean,
+    approvalState: ApprovalState = ApprovalState.NA
+) = ActivityResponseDTO(
     billable = true,
-    hasImage = hasImage,
-    organization = createOrganizationResponseDTO(),
-    project = createProjectResponseDTO(),
-    projectRole = createProjectRoleResponseDTO()
+    description = "Dummy description",
+    hasEvidences = hasEvidences,
+    id = id,
+    projectRoleId = 1L,
+    interval = IntervalResponseDTO(start, end,45, TimeUnit.MINUTES),
+    userId = 1L,
+    approvalState = approvalState
 )
 
-internal fun createActivityRequestBodyDTO(id: Long, startDate: LocalDateTime, projectRoleId: Long, hasImage: Boolean) =
+internal fun createActivityRequestBodyDTO(
+    id: Long,
+    start: LocalDateTime,
+    end: LocalDateTime,
+    projectRoleId: Long,
+    hasEvidences: Boolean
+) =
     ActivityRequestBodyDTO(
         id,
-        startDate,
-        75,
+        start,
+        end,
         "New activity",
         false,
         projectRoleId,
-        hasImage
+        hasEvidences,
     )
+
 
 
 
