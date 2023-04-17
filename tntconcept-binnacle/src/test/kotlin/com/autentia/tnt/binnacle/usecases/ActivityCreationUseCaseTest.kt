@@ -12,11 +12,12 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
-import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -25,13 +26,15 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
-import java.util.Optional
+import java.util.*
 
 internal class ActivityCreationUseCaseTest {
 
     private val user = createUser()
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
+    private val approveActivityMailService = mock<ApproveActivityMailService>()
+    private val securityService = mock<SecurityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleService = ProjectRoleService(projectRoleRepository)
     private val activityRepository = mock<ActivityRepository>()
@@ -49,7 +52,9 @@ internal class ActivityCreationUseCaseTest {
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
         ),
-        TimeIntervalConverter()
+        TimeIntervalConverter(),
+        approveActivityMailService,
+        securityService
     )
 
     @Test
@@ -63,7 +68,7 @@ internal class ActivityCreationUseCaseTest {
         doReturn(activity).whenever(activityService).createActivity(any(), eq(user))
         doReturn(Optional.of(activity.projectRole)).whenever(projectRoleRepository).findById(any())
 
-        val result = activityCreationUseCase.createActivity(ACTIVITY_REQUEST_BODY_DTO)
+        val result = activityCreationUseCase.createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         assertEquals(expectedResponseDTO, result)
     }

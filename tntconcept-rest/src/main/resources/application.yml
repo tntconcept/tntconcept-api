@@ -120,11 +120,12 @@ javamail:
     password: '${TNT_MAIL_PASSWORD:mailserver_password}'
   properties:
     mail.transport.protocol: smtp
-    mail.host: smtp.gmail.com
+    mail.host: localhost
     mail.port: 465
     mail.auth: true
     mail:
       smtp:
+        port: 1025
         starttls:
           enable: true
 

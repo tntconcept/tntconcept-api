@@ -175,7 +175,7 @@ internal class ActivityControllerIT {
 
     @Test
     fun `post a new activity`() {
-        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO)
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
             POST("/api/activity", ACTIVITY_POST_JSON)
@@ -217,7 +217,7 @@ internal class ActivityControllerIT {
         expectedResponseStatus: HttpStatus,
         expectedErrorCode: String
     ) {
-        doThrow(exception).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO)
+        doThrow(exception).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
