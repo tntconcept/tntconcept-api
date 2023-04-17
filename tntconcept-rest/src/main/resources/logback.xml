@@ -10,11 +10,11 @@
     </appender>
 
     <logger name="com.autentia.tnt" level="INFO"/>
-    <logger name="io.micronaut" level="DEBUG"/>
-    <logger name="io.micronaut.context" level="TRACE"/>
-    <logger name="io.micronaut.context.condition" level="TRACE"/>
-    <logger name="io.micronaut.data.query" level="TRACE"/>
-    <logger name="io.micronaut.http.client" level="TRACE"/>
+    <!--    <logger name="io.micronaut" level="DEBUG" />-->
+    <!--    <logger name="io.micronaut.context" level="TRACE"/>-->
+    <!--    <logger name="io.micronaut.context.condition" level="TRACE"/>-->
+    <!--    <logger name="io.micronaut.data.query" level="TRACE" />-->
+    <!--    <logger name="io.micronaut.http.client" level="TRACE"/>-->
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

@@ -107,8 +107,8 @@ jpa:
   default:
     properties:
       hibernate:
-        show_sql: true
-        format_sql: true
+#        show_sql: true
+        #        format_sql: true
         physical_naming_strategy: 'org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl'
     entity-scan:
       packages: 'com.autentia.tnt.binnacle.entities'
