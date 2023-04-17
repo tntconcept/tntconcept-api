@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
+import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
@@ -10,7 +11,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -81,6 +84,32 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
+    fun `test findOfLatestProjects should throw IllegalStateException if there is not logged user`() {
+
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findOfLatestProjects(any(), any())
+        }
+    }
+
+    @Test
+    fun `test findOfLatestProjects should return only user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val userActivity = createActivity()
+        val otherUserActivity = userActivity.copy(userId = 2L)
+
+        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findOfLatestProjects(startDate, endDate, userActivity.userId)).doReturn(
+            listOf(userActivity)
+        )
+
+        assertEquals(listOf(userActivity), activityRepositorySecured.findOfLatestProjects(startDate, endDate))
+    }
+
+    @Test
     fun `find worked minutes should retrieve authenticated user worked minutes`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
@@ -111,6 +140,36 @@ internal class ActivityRepositorySecuredTest {
                 startDate, endDate
             )
         }
+    }
+
+    @Test
+    fun `find activities between dates without security should retrieve user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+
+        whenever(activityDao.find(startDate, endDate, adminUserId)).thenReturn(activities)
+
+        val result: List<Activity> = activityRepositorySecured.findWithoutSecurity(
+            startDate, endDate, adminUserId
+        )
+
+        assertEquals(activities, result)
     }
 
     @Test
@@ -524,29 +583,25 @@ internal class ActivityRepositorySecuredTest {
         }
     }
 
-//    @Test
-//    fun `find intervals should return activities`() {
-//        val startDate = today.atTime(LocalTime.MIN)
-//        val endDate = today.plusDays(30L).atTime(
-//            LocalTime.MAX
-//        )
-//        val intervals = listOf(
-//            ActivityInterval(
-//                today.atTime(10, 0, 0),
-//                today.atTime(12, 0, 0),
-//                TimeUnit.MINUTES
-//            )
-//        )
-//
-//        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-//        whenever(activityDao.find(startDate, endDate, projectRole.id, adminUserId)).thenReturn(intervals)
-//
-//        val result: List<ActivityInterval> = activityRepositorySecured.find(
-//            startDate, endDate, projectRole.id
-//        )
-//
-//        assertEquals(intervals, result)
-//    }
+    @Test
+    fun `find intervals should return activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val intervals = listOf(
+            createActivity().copy(start = today.atTime(10, 0, 0), end = today.atTime(12, 0, 0))
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.find(startDate, endDate, projectRole.id, adminUserId)).thenReturn(intervals)
+
+        val result = activityRepositorySecured.find(
+            startDate, endDate, projectRole.id
+        )
+
+        assertEquals(intervals, result)
+    }
 
     @Test
     fun `find intervals should throw IllegalStateException`() {

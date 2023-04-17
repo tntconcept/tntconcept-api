@@ -26,13 +26,15 @@ internal interface ActivityDao : CrudRepository<Activity, Long> {
     @Query(
         "SELECT a " +
                 "FROM Activity a " +
+                "JOIN FETCH a.projectRole pr " +
+                "JOIN FETCH pr.project p " +
+                "JOIN FETCH p.organization o " +
                 "WHERE a.userId = :userId " +
                 "AND a.start <= :endDate " +
                 "AND a.end >= :startDate " +
-                "AND a.projectRole.project.open = true " +
+                "AND p.open = true " +
                 "ORDER BY a.start DESC"
     )
-    @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun findOfLatestProjects(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
     @EntityGraph(value = "fetch-activity-with-project-and-organization")

@@ -15,7 +15,6 @@ import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
 import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -148,18 +147,6 @@ internal class ActivityValidator(
             activityDb === null -> throw ActivityNotFoundException(id)
             !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
         }
-    }
-
-    @Transactional
-    @ReadOnly
-    fun checkIfUserCanApproveActivity(user: User, activityId: Long): Boolean{
-        //TODO: Use JWT to know if user have staff role
-        val activity = activityRepository.findById(activityId)
-        when {
-            activity === null -> throw ActivityNotFoundException(activityId)
-            !userHasAccess(activity, user) -> throw UserPermissionException()
-        }
-        return true
     }
 
     fun userHasAccess(activityDb: Activity, user: User): Boolean {

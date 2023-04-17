@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
+import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -13,8 +14,12 @@ internal interface ActivityRepository {
 
     fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity>
 
+    fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
+
     fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity>
+
     fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity>
+
     fun find(approvalState: ApprovalState): List<Activity>
 
     fun find(projectRoleId: Long): List<Activity>

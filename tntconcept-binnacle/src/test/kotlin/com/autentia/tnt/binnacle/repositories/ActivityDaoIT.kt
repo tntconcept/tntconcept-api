@@ -1,9 +1,9 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Project
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.*
@@ -18,6 +18,9 @@ internal class ActivityDaoIT {
 
     @Inject
     private lateinit var activityDao: ActivityDao
+
+    @Inject
+    private lateinit var projectRepository: ProjectRepository
 
     @Test
     fun `should find activity by id`() {
@@ -163,6 +166,15 @@ internal class ActivityDaoIT {
 
     @Test
     fun `should find activities filtered by period of time, user and opened projects`() {
+
+        val project = projectRepository.findById(5).get()
+
+        projectRepository.update(
+            Project(
+                project.id, project.name, false, project.billable, project.organization, project.projectRoles
+            )
+        )
+
         val todayActivity = Activity(
             start = today.atTime(10, 0, 0),
             end = today.atTime(12, 0, 0),
@@ -179,7 +191,7 @@ internal class ActivityDaoIT {
             end = yesterday.atTime(17, 0, 0),
             duration = 540,
             description = "Test activity 2",
-            projectRole = createProjectRole().copy(project = createProject().copy(open = false)),
+            projectRole = createProjectRole().copy(id = 5),
             userId = userId,
             billable = false,
             hasEvidences = false,
@@ -191,11 +203,13 @@ internal class ActivityDaoIT {
             duration = 960,
             description = "Test activity 3",
             projectRole = createProjectRole(),
-            userId = userId,
+            userId = otherUserId,
             billable = false,
             hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
+
+
         val savedActivities = activityDao.saveAll(
             listOf(
                 todayActivity, yesterdayActivity, activityForTwoDays
@@ -206,9 +220,8 @@ internal class ActivityDaoIT {
         val end = today.atTime(LocalTime.MAX)
         val activitiesBetweenDate = activityDao.findOfLatestProjects(start, end, userId)
 
-        assertEquals(2, activitiesBetweenDate.size)
+        assertEquals(1, activitiesBetweenDate.size)
         assertTrue(activitiesBetweenDate.contains(savedActivities.elementAt(0)))
-        assertTrue(activitiesBetweenDate.contains(savedActivities.elementAt(2)))
     }
 
     @Test

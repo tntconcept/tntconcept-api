@@ -115,7 +115,7 @@ internal class ActivityController(
         HttpResponse.badRequest(ErrorResponse("No image", e.message))
 
     @Error
-    internal fun onActivityAlreadyApproved(request: HttpRequest<*>, e: ActivityAlreadyApprovedException) =
-        HttpResponse.status<HttpStatus>(HttpStatus.CONFLICT, e.message)
+    internal fun onActivityAlreadyApproved(request: HttpRequest<*>, e: InvalidActivityApprovalStateException) =
+        HttpResponse.status<HttpStatus>(HttpStatus.CONFLICT).body(ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", e.message))
 
 }

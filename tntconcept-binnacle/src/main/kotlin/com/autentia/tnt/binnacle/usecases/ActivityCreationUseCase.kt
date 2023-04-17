@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -23,8 +22,7 @@ class ActivityCreationUseCase internal constructor(
     private val userService: UserService,
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
-    private val activityResponseConverter: ActivityResponseConverter,
-    private val timeIntervalConverter: TimeIntervalConverter
+    private val activityResponseConverter: ActivityResponseConverter
 ) {
 
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyDTO): ActivityResponseDTO {

@@ -4,7 +4,6 @@ import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.utils.SecurityService
 
 private const val ADMIN_ROLE = "admin"
-private const val STAFF_ROLE = "staff"
 
 fun SecurityService.checkAuthentication(): Authentication =
     authentication.orElseThrow { IllegalStateException("Required authentication") }
@@ -15,6 +14,10 @@ fun SecurityService.checkRole(role: String): Authentication {
     return authentication
 }
 
+fun SecurityService.checkAdminRole(): Authentication {
+    return checkRole(ADMIN_ROLE)
+}
+
 fun Authentication.isAdmin(): Boolean = roles.contains(ADMIN_ROLE)
-fun Authentication.isStaff(): Boolean = roles.contains(STAFF_ROLE)
+fun Authentication.isNotAdmin(): Boolean = !roles.contains(ADMIN_ROLE)
 fun Authentication.id(): Long = name.toLong()

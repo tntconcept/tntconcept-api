@@ -326,18 +326,17 @@ internal class ActivityControllerIT {
         assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
     }
 
-    private fun approveFailProvider() = arrayOf(
-        arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND", null),
-        arrayOf(ActivityAlreadyApprovedException(), CONFLICT, null,"Activity could not been approved.")
+    private fun activityApprovalFailedProvider() = arrayOf(
+        arrayOf(UserPermissionException(), NOT_FOUND, ErrorResponse("RESOURCE_NOT_FOUND", "You don't have permission to access the resource")),
+        arrayOf(InvalidActivityApprovalStateException(), CONFLICT, ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", "Activity could not been approved"))
     )
 
     @ParameterizedTest
-    @MethodSource("approveFailProvider")
+    @MethodSource("activityApprovalFailedProvider")
     fun `fail if try to approve an activity and exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String?,
-        expectedResponseReason: String?
+        expectedErrorResponse: ErrorResponse?,
     ) {
         doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
 
@@ -348,21 +347,13 @@ internal class ActivityControllerIT {
         }
 
         assertEquals(expectedResponseStatus, ex.status)
-        if(expectedErrorCode !== null) assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get().code)
-        if(expectedResponseReason !== null) assertEquals(expectedResponseReason, ex.response.reason())
+        assertEquals(expectedErrorResponse, ex.response.getBody<ErrorResponse>().get())
     }
 
 
     private companion object {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
         private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 12, 0)
-
-        private val INTERVAL_RESPONSE_DTO = IntervalResponseDTO(
-            START_DATE,
-            END_DATE,
-            240,
-            TimeUnit.MINUTES
-        )
 
         private val INTERVAL_REQUEST_DTO = TimeIntervalRequestDTO(
             START_DATE,
