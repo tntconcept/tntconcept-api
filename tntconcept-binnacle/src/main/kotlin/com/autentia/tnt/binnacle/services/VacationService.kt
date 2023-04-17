@@ -32,10 +32,28 @@ internal class VacationService(
 
     @Transactional
     @ReadOnly
+    fun getVacationsBetweenDates(beginDate: LocalDate, finalDate: LocalDate, user: User): List<VacationDomain> {
+        val vacations: List<Vacation> = vacationRepository.findWithoutSecurity(beginDate, finalDate, user.id)
+        return getVacationsWithWorkableDays(vacations)
+    }
+
+    @Transactional
+    @ReadOnly
     fun getVacationsByChargeYear(chargeYear: Int): List<VacationDomain> {
         val vacations: List<Vacation> = vacationRepository.findBetweenChargeYears(
             LocalDate.of(chargeYear, 1, 1),
             LocalDate.of(chargeYear, 1, 1)
+        )
+        return getVacationsWithWorkableDays(vacations)
+    }
+
+    @Transactional
+    @ReadOnly
+    fun getVacationsByChargeYear(chargeYear: Int, user: User): List<VacationDomain> {
+        val vacations: List<Vacation> = vacationRepository.findBetweenChargeYearsWithoutSecurity(
+            LocalDate.of(chargeYear, 1, 1),
+            LocalDate.of(chargeYear, 1, 1),
+            user.id
         )
         return getVacationsWithWorkableDays(vacations)
     }

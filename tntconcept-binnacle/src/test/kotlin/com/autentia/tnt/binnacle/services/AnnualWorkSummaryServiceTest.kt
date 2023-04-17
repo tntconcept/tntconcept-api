@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.AnnualWorkSummaryConverter
 import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.domain.alertvalidators.AnnualWorkSummaryAlertValidators
@@ -51,11 +51,18 @@ internal class AnnualWorkSummaryServiceTest {
         val year = 2021
         val vacationsTaken = consumedVacations.filter { VacationState.ACCEPT === it.state }.flatMap { it.days }.size
         whenever(annualWorkSummaryRepository.findById(AnnualWorkSummaryId(user.id, year))).thenReturn(summaryEntity)
-        whenever(holidayService.findAllBetweenDate(LocalDate.ofYearDay(year, 1), LocalDate.of(year, DECEMBER, 31))).thenReturn(EMPTY_HOLIDAYS)
-        whenever(vacationService.getVacationsByChargeYear(year)).thenReturn(consumedVacations)
+        whenever(
+            holidayService.findAllBetweenDate(
+                LocalDate.ofYearDay(year, 1),
+                LocalDate.of(year, DECEMBER, 31)
+            )
+        ).thenReturn(EMPTY_HOLIDAYS)
+        whenever(vacationService.getVacationsByChargeYear(year, user)).thenReturn(consumedVacations)
         whenever(timeWorkableService.getEarnedVacationsSinceHiringDate(user, year)).thenReturn(EARNED_VACATIONS)
-        whenever(annualWorkSummaryConverter
-            .toAnnualWorkSummary(year, EARNED_VACATIONS, vacationsTaken, summaryEntity.orElse(null))).thenReturn(expectedSummary)
+        whenever(
+            annualWorkSummaryConverter
+                .toAnnualWorkSummary(year, EARNED_VACATIONS, vacationsTaken, summaryEntity.orElse(null))
+        ).thenReturn(expectedSummary)
 
         //When
         val annualWorkSummary = annualWorkSummaryService.getAnnualWorkSummary(user, year)
@@ -107,10 +114,22 @@ internal class AnnualWorkSummaryServiceTest {
 
         appProperties.binnacle.workSummary.persistenceEnabled = saveSummary
 
-        whenever(holidayService.findAllBetweenDate(LocalDate.ofYearDay(year, 1), LocalDate.of(year, DECEMBER, 31))).thenReturn(EMPTY_HOLIDAYS)
-        whenever(vacationService.getVacationsByChargeYear(year)).thenReturn(consumedVacations)
+        whenever(
+            holidayService.findAllBetweenDate(
+                LocalDate.ofYearDay(year, 1),
+                LocalDate.of(year, DECEMBER, 31)
+            )
+        ).thenReturn(EMPTY_HOLIDAYS)
+        whenever(vacationService.getVacationsByChargeYear(year, user)).thenReturn(consumedVacations)
         whenever(timeWorkableService.getEarnedVacationsSinceHiringDate(user, year)).thenReturn(EARNED_VACATIONS)
-        whenever(annualWorkSummaryConverter.toAnnualWorkSummary(year, EARNED_VACATIONS, vacationsTaken, workSummaryEntity)).thenReturn(expectedSummary)
+        whenever(
+            annualWorkSummaryConverter.toAnnualWorkSummary(
+                year,
+                EARNED_VACATIONS,
+                vacationsTaken,
+                workSummaryEntity
+            )
+        ).thenReturn(expectedSummary)
 
         //When
         val annualWorkSummary = annualWorkSummaryService.createAnnualWorkSummary(user, year, timeSummaryBalance)

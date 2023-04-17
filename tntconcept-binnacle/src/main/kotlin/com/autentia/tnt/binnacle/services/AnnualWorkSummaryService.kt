@@ -13,7 +13,7 @@ import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.repositories.AnnualWorkSummaryRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.util.Optional
+import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
@@ -29,7 +29,7 @@ internal class AnnualWorkSummaryService(
 
     fun getAnnualWorkSummary(user: User, year: Int): AnnualWorkSummary {
         val workSummaryEntity = getAnnualWorkSummaryFromRepository(user, year)
-        val consumedVacations = getConsumedVacations(year)
+        val consumedVacations = getConsumedVacations(year, user)
         val earnedVacations = getEarnedVacations(user, year)
         return buildAnnualWorkSummaryResponse(year, earnedVacations, consumedVacations, workSummaryEntity)
     }
@@ -46,7 +46,7 @@ internal class AnnualWorkSummaryService(
             annualWorkSummaryRepository.saveOrUpdate(workSummaryEntity)
         }
 
-        val consumedVacations = getConsumedVacations(year)
+        val consumedVacations = getConsumedVacations(year, user)
         val earnedVacations = getEarnedVacations(user, year)
         val annualWorkSummary = annualWorkSummaryConverter.toAnnualWorkSummary(
             year,
@@ -72,9 +72,10 @@ internal class AnnualWorkSummaryService(
     }
 
     private fun getConsumedVacations(
-        year: Int
+        year: Int,
+        user: User
     ): Int {
-        return vacationService.getVacationsByChargeYear(year)
+        return vacationService.getVacationsByChargeYear(year, user)
             .filter { VacationState.ACCEPT === it.state }
             .flatMap { it.days }
             .size

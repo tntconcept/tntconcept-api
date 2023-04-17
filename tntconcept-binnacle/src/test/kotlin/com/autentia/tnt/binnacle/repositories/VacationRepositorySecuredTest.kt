@@ -24,6 +24,24 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
+    fun `find without security`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        vacationRepositorySecured.findWithoutSecurity(startDate, endDate, userId)
+
+        verify(vacationDao).find(startDate, endDate, userId)
+    }
+
+    @Test
+    fun `find between charge years without security`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        vacationRepositorySecured.findBetweenChargeYearsWithoutSecurity(startDate, endDate, userId)
+
+        verify(vacationDao).findBetweenChargeYears(startDate, endDate, userId)
+    }
+
+    @Test
     fun `find vacations between dates when user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
 

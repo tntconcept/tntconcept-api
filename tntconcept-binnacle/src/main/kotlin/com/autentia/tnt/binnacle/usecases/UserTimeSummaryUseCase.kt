@@ -8,12 +8,7 @@ import com.autentia.tnt.binnacle.core.services.TimeSummaryService
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
-import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.AnnualWorkSummaryService
-import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.MyVacationsDetailService
-import com.autentia.tnt.binnacle.services.UserService
-import com.autentia.tnt.binnacle.services.VacationService
+import com.autentia.tnt.binnacle.services.*
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.Month
@@ -45,13 +40,13 @@ class UserTimeSummaryUseCase internal constructor(
         val holidays: List<Holiday> = holidayService.findAllBetweenDate(startYearDate, endYearDate)
         val holidaysDates = holidays.map { it.date.toLocalDate() }
 
-        val vacationsRequestedThisYear = vacationService.getVacationsBetweenDates(startYearDate, endYearDate)
+        val vacationsRequestedThisYear = vacationService.getVacationsBetweenDates(startYearDate, endYearDate, user)
             .filter { it.isRequestedVacation() }
 
         val vacationDaysRequestedThisYear =
             vacationsRequestedThisYear.flatMap { it.days }.filter { it.year == startYearDate.year }
 
-        val vacationsChargedThisYear = vacationService.getVacationsByChargeYear(startYearDate.year)
+        val vacationsChargedThisYear = vacationService.getVacationsByChargeYear(startYearDate.year, user)
 
         val correspondingVacations =
             myVacationsDetailService.getCorrespondingVacationDaysSinceHiringDate(user, startYearDate.year)

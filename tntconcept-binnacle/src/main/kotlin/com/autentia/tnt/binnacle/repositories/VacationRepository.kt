@@ -9,10 +9,23 @@ internal interface VacationRepository {
         endDate: LocalDate
     ): List<Vacation>
 
+    fun findWithoutSecurity(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        userId: Long
+    ): List<Vacation>
+
     fun findBetweenChargeYears(
         startYear: LocalDate,
         endYear: LocalDate
     ): List<Vacation>
+
+    fun findBetweenChargeYearsWithoutSecurity(
+        startYear: LocalDate,
+        endYear: LocalDate,
+        userId: Long
+    ): List<Vacation>
+
 
     fun findById(vacationId: Long): Vacation?
     fun saveAll(vacations: Iterable<Vacation>): Iterable<Vacation>

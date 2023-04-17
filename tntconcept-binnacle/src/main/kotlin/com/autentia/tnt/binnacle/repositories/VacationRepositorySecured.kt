@@ -18,9 +18,23 @@ internal class VacationRepositorySecured(
         return vacationDao.find(startDate, endDate, authentication.id())
     }
 
+    override fun findWithoutSecurity(startDate: LocalDate, endDate: LocalDate, userId: Long): List<Vacation> {
+        //TODO: secure this method!!!
+        return vacationDao.find(startDate, endDate, userId)
+    }
+
     override fun findBetweenChargeYears(startYear: LocalDate, endYear: LocalDate): List<Vacation> {
         val authentication = securityService.checkAuthentication()
         return vacationDao.findBetweenChargeYears(startYear, endYear, authentication.id())
+    }
+
+    override fun findBetweenChargeYearsWithoutSecurity(
+        startYear: LocalDate,
+        endYear: LocalDate,
+        userId: Long
+    ): List<Vacation> {
+        //TODO: secure this method!!!
+        return vacationDao.findBetweenChargeYears(startYear, endYear, userId)
     }
 
     override fun findById(vacationId: Long): Vacation? {
