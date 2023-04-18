@@ -16,7 +16,7 @@ internal class ProjectControllerTest {
     private val projectRolesByProjectIdUseCase = mock<ProjectRolesByProjectIdUseCase>()
     private val projectByIdUseCase = mock<ProjectByIdUseCase>()
 
-    private val projectController = ProjectController(projectByIdUseCase, projectRolesByProjectIdUseCase)
+    private val projectsController = ProjectsController(projectByIdUseCase, projectRolesByProjectIdUseCase)
 
     @Test
     fun `return the correct project`() {
@@ -27,7 +27,7 @@ internal class ProjectControllerTest {
         doReturn(projectDTO).whenever(projectByIdUseCase).get(projectId)
 
         //When
-        val actualProjectDTO = projectController.getProjectById(projectId)
+        val actualProjectDTO = projectsController.getProjectById(projectId)
 
         //Then
         assertEquals(projectDTO, actualProjectDTO)
@@ -45,7 +45,7 @@ internal class ProjectControllerTest {
         doReturn(rolesDTO).whenever(projectRolesByProjectIdUseCase).get(projectId)
 
         //When
-        val actualRolesDTO = projectController.getProjectRolesByProjectId(projectId)
+        val actualRolesDTO = projectsController.getProjectRolesByProjectId(projectId)
 
         //Then
         assertEquals(actualRolesDTO, rolesDTO)
@@ -60,7 +60,7 @@ internal class ProjectControllerTest {
 
         //When
         val exception = assertThrows<ProjectNotFoundException> {
-            projectController.getProjectById(projectId)
+            projectsController.getProjectById(projectId)
         }
 
         //Then
