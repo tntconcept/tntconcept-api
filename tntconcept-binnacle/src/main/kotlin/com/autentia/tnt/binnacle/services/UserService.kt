@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.repositories.UserRepository
 import io.micronaut.security.utils.SecurityService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
+import java.util.Optional
 import javax.transaction.Transactional
 
 @Singleton
@@ -23,4 +24,7 @@ class UserService internal constructor(
     fun findActive(): List<User> =
         userRepository.findByActiveTrue()
 
+    fun getUserByUserName(userName: String): User =
+        Optional.ofNullable(userRepository.findByUsername(userName))
+            .orElseThrow { IllegalStateException("There isn't authenticated user") }
 }
