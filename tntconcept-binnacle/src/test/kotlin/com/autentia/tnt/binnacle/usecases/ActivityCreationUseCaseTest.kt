@@ -1,30 +1,19 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.*
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
+import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
+import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
-import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
-import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -34,7 +23,6 @@ internal class ActivityCreationUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val approveActivityMailService = mock<ApproveActivityMailService>()
-    private val securityService = mock<SecurityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleService = ProjectRoleService(projectRoleRepository)
     private val activityRepository = mock<ActivityRepository>()
@@ -54,7 +42,6 @@ internal class ActivityCreationUseCaseTest {
         ),
         TimeIntervalConverter(),
         approveActivityMailService,
-        securityService
     )
 
     @Test
