@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
