@@ -225,6 +225,60 @@ internal class ActivityDaoIT {
     }
 
     @Test
+    fun `should find activities filtered by period of time, user and project`() {
+
+        val projectRole = createProjectRole()
+
+        val todayActivity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = otherUserId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val yesterdayActivity = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityForTwoDays = Activity(
+            start = yesterday.minusDays(2).atTime(0, 0, 0),
+            end = yesterday.minusDays(1).atTime(23, 59, 59),
+            duration = 960,
+            description = "Test activity 3",
+            projectRole = projectRole.copy(id = 2L),
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+
+
+        val savedActivities = activityDao.saveAll(
+            listOf(
+                todayActivity, yesterdayActivity, activityForTwoDays
+            )
+        )
+
+        val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
+        val end = today.atTime(LocalTime.MAX)
+        val activitiesBetweenDate = activityDao.findByProjectId(start, end, 1L, userId)
+
+        assertEquals(1, activitiesBetweenDate.size)
+        assertTrue(activitiesBetweenDate.contains(savedActivities.elementAt(1)))
+    }
+
+    @Test
     fun `should find pending activities`() {
         val todayActivity = Activity(
             start = today.atTime(10, 0, 0),

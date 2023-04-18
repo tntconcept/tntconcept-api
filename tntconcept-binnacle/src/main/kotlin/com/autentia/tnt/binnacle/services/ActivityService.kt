@@ -52,6 +52,11 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
+    fun getActivitiesByProjectId(timeInterval: TimeInterval, projectId: Long): List<Activity> =
+        activityRepository.findByProjectId(timeInterval.start, timeInterval.end, projectId)
+
+    @Transactional
+    @ReadOnly
     fun getActivitiesOfLatestProjects(timeInterval: TimeInterval) =
         activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end)
 

@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.*
+import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
@@ -126,6 +126,14 @@ internal class ActivityServiceTest {
         doReturn(activities).whenever(activityRepository).find(timeInterval.start, timeInterval.end, userIds)
 
         assertEquals(activities, activityService.getActivities(timeInterval, userIds))
+    }
+
+    @Test
+    fun testGetActivitiesByProjectId() {
+
+        doReturn(activities).whenever(activityRepository).findByProjectId(timeInterval.start, timeInterval.end, 1L)
+
+        assertEquals(activities, activityService.getActivitiesByProjectId(timeInterval, 1L))
     }
 
     @Test

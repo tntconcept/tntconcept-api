@@ -11,12 +11,12 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Optional
 
@@ -88,7 +88,7 @@ internal class ActivityRepositorySecuredTest {
 
         whenever(securityService.authentication).thenReturn(Optional.empty())
         assertThrows<IllegalStateException> {
-            activityRepositorySecured.findOfLatestProjects(any(), any())
+            activityRepositorySecured.findOfLatestProjects(LocalDateTime.now(), LocalDateTime.now())
         }
     }
 
@@ -99,7 +99,6 @@ internal class ActivityRepositorySecuredTest {
             LocalTime.MAX
         )
         val userActivity = createActivity()
-        val otherUserActivity = userActivity.copy(userId = 2L)
 
         whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
         whenever(activityDao.findOfLatestProjects(startDate, endDate, userActivity.userId)).doReturn(
@@ -107,6 +106,31 @@ internal class ActivityRepositorySecuredTest {
         )
 
         assertEquals(listOf(userActivity), activityRepositorySecured.findOfLatestProjects(startDate, endDate))
+    }
+
+    @Test
+    fun `test findByProjectId should throw IllegalStateException if there is not logged user`() {
+
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findByProjectId(LocalDateTime.now(), LocalDateTime.now(), 1L)
+        }
+    }
+
+    @Test
+    fun `test findByProjectId should return only user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val userActivity = createActivity()
+
+        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findByProjectId(startDate, endDate, 1L, userActivity.userId)).doReturn(
+            listOf(userActivity)
+        )
+
+        assertEquals(listOf(userActivity), activityRepositorySecured.findByProjectId(startDate, endDate, 1L))
     }
 
     @Test

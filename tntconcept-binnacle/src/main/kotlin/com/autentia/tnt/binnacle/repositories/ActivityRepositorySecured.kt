@@ -67,6 +67,11 @@ internal class ActivityRepositorySecured(
         return activityDao.findOfLatestProjects(startDate, endDate, authentication.id())
     }
 
+    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findByProjectId(start, end, projectId, authentication.id())
+    }
+
     override fun findWorkedMinutes(
         startDate: LocalDateTime,
         endDate: LocalDateTime
