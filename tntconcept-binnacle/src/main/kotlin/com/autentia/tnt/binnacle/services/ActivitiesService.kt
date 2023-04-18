@@ -41,6 +41,16 @@ internal class ActivitiesService(
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
     }
 
+    @Transactional
+    @ReadOnly
+    fun getActivitiesBetweenDatesWithoutSecurity(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivitiesResponse> {
+        val startDateMinHour = startDate.atTime(LocalTime.MIN)
+        val endDateMaxHour = endDate.atTime(23, 59, 59)
+        return activityRepository
+            .findWithoutSecurity(startDateMinHour, endDateMaxHour, userId)
+            .map { activityResponseConverter.mapActivityToActivityResponse(it) }
+    }
+
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(activityRequest: ActivitiesRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository

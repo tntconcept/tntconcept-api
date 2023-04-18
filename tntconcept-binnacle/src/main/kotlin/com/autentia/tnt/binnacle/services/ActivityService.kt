@@ -80,6 +80,19 @@ internal class ActivityService(
     }
 
     @Transactional(rollbackOn = [Exception::class])
+    fun createHookActivity(activityRequest: ActivityRequestBody, user: User): Activity {
+        val projectRole = projectRoleRepository
+            .findById(activityRequest.projectRoleId)
+            .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+
+        return activityRepository.saveWithoutSecurity(
+            activityRequestBodyConverter.mapActivityRequestBodyToActivity(
+                activityRequest, projectRole, user
+            )
+        )
+    }
+
+    @Transactional(rollbackOn = [Exception::class])
     fun updateActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)

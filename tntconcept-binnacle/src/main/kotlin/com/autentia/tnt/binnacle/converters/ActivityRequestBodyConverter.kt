@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.converters
 
+import com.autentia.tnt.binnacle.core.domain.ActivitiesRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -7,6 +8,7 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -27,6 +29,19 @@ class ActivityRequestBodyConverter() {
             activityRequestBodyDTO.billable,
             activityRequestBodyDTO.projectRoleId,
             activityRequestBodyDTO.hasEvidences,
+            activityRequestBodyDTO.imageFile
+        )
+
+    fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =
+        ActivityRequestBody(
+            activityRequestBodyDTO.id,
+            activityRequestBodyDTO.startDate,
+            activityRequestBodyDTO.startDate.plusMinutes(activityRequestBodyDTO.duration.toLong()),
+            activityRequestBodyDTO.duration,
+            activityRequestBodyDTO.description,
+            activityRequestBodyDTO.billable,
+            activityRequestBodyDTO.projectRoleId,
+            activityRequestBodyDTO.hasImage,
             activityRequestBodyDTO.imageFile
         )
 

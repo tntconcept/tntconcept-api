@@ -77,6 +77,11 @@ internal class ActivityRepositorySecured(
         return activityDao.save(activity)
     }
 
+    override fun saveWithoutSecurity(activity: Activity): Activity {
+        //TODO: Temporal method, we have to implement security!!
+        return activityDao.save(activity)
+    }
+
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
 
