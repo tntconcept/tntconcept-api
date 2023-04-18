@@ -19,9 +19,9 @@ internal interface ProjectRoleDao : CrudRepository<ProjectRole, Long> {
     fun getAllByIdIn(ids: List<Long>): List<ProjectRole>
 
     @Query(
-        "SELECT new com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent(pr.id, pr.name, pr.project.name, pr.project.organization.name, pr.project.billable, pr.project.open, ac.startDate, pr.requireEvidence)" +
-                " FROM ProjectRole pr LEFT JOIN Activity ac ON pr.id = ac.projectRole.id" +
-                " WHERE ac.userId = :userId AND ac.start BETWEEN :startDate AND :endDate"
+        "SELECT new com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent(pr.id, pr.name, pr.project.id, pr.project.organization.id, pr.project.open, ac.start, pr.maxAllowed, pr.timeUnit, pr.requireEvidence, pr.isApprovalRequired, ac.userId)" +
+                " FROM ProjectRole pr LEFT JOIN Activity ac ON pr.id = ac.projectRole.id " +
+                "WHERE ac.userId = :userId AND ac.start BETWEEN :startDate AND :endDate"
     )
     fun findDistinctRolesBetweenDate(
         startDate: LocalDateTime,
