@@ -31,7 +31,7 @@ class PrivateHolidaysByChargeYearUseCase internal constructor(
         val userTimeSinceHiringYear = getTimeSinceHiringYear(user.hiringDate.year)
         val holidays: List<Holiday> =
             holidayService.findAllBetweenDate(userTimeSinceHiringYear.startDate, userTimeSinceHiringYear.endDate)
-        val vacations: List<Vacation> = vacationService.getVacationsByChargeYear(chargeYear, user)
+        val vacations: List<Vacation> = vacationService.getVacationsByChargeYear(chargeYear)
 
         val holidayResponse = HolidayResponse(holidays, vacations)
 

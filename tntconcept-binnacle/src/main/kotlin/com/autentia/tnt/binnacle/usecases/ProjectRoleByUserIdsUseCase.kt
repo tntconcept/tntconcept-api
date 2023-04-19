@@ -16,11 +16,7 @@ class ProjectRoleByUserIdsUseCase internal constructor(
     @Transactional
     @ReadOnly
     fun get(userIds: List<Long>): List<ProjectRoleUserDTO> =
-
         projectRoleService.getByUserIds(userIds)
             .map { projectRoleResponseConverter.toProjectRoleUserDTO(it) }
             .distinct()
-
-
-
 }

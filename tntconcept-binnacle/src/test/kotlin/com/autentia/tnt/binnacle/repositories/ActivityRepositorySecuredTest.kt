@@ -8,7 +8,8 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
@@ -28,6 +29,7 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `find activity should throw illegal state exception`() {
         val activityId = 1L
+
         val activity = Activity(
             id = activityId,
             start = today.atTime(10, 0, 0),

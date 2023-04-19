@@ -13,7 +13,10 @@ import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
 import java.util.*
 
@@ -46,17 +49,14 @@ internal class ActivityCreationUseCaseTest {
 
     @Test
     fun `created activity`() {
-        doReturn(user).whenever(userService).getAuthenticatedUser()
-
         val activity = createActivity(userId = user.id)
-
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
-
-        doReturn(activity).whenever(activityService).createActivity(any(), eq(user))
-        doReturn(Optional.of(activity.projectRole)).whenever(projectRoleRepository).findById(any())
+        whenever(userService.getAuthenticatedUser()).thenReturn(user)
+        whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
+        whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         assertEquals(expectedResponseDTO, result)
     }
 
@@ -80,9 +80,21 @@ internal class ActivityCreationUseCaseTest {
             open = true,
             billable = false,
         )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
+        private val PROJECT_ROLE =
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(10L, "Dummy Project role", ORGANIZATION_DTO.id, PROJECT.id, PROJECT_ROLE.maxAllowed, 5, PROJECT_ROLE.timeUnit, RequireEvidence.NO, PROJECT_ROLE.isApprovalRequired,1L)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
+            10L,
+            "Dummy Project role",
+            ORGANIZATION_DTO.id,
+            PROJECT.id,
+            PROJECT_ROLE.maxAllowed,
+            5,
+            PROJECT_ROLE.timeUnit,
+            RequireEvidence.NO,
+            PROJECT_ROLE.isApprovalRequired,
+            1L
+        )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
@@ -137,7 +149,7 @@ internal class ActivityCreationUseCaseTest {
             duration: Int = 75,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
-            projectRoleId:  Long = 10L,
+            projectRoleId: Long = 10L,
             approvalState: ApprovalState = ApprovalState.NA
         ): ActivityResponseDTO =
             ActivityResponseDTO(
@@ -146,7 +158,7 @@ internal class ActivityCreationUseCaseTest {
                 hasEvidences,
                 id,
                 projectRoleId,
-                IntervalResponseDTO(start,end,duration, PROJECT_ROLE.timeUnit),
+                IntervalResponseDTO(start, end, duration, PROJECT_ROLE.timeUnit),
                 userId,
                 approvalState
             )

@@ -13,13 +13,10 @@ class ProjectRoleByIdUseCase internal constructor(
     private val projectRoleRepository: ProjectRoleRepository,
     private val projectRoleResponseConverter: ProjectRoleResponseConverter
 ) {
-
     @Transactional
     @ReadOnly
-    fun get(id: Long): ProjectRoleDTO =
-        projectRoleRepository
-            .findById(id)
-            .map { projectRoleResponseConverter.toProjectRoleDTO(it) }
-            .orElseThrow { ProjectRoleNotFoundException(id) }
-
+    fun get(id: Long): ProjectRoleDTO {
+        val projectRole = projectRoleRepository.findById(id) ?: throw ProjectRoleNotFoundException(id)
+        return projectRoleResponseConverter.toProjectRoleDTO(projectRole)
+    }
 }

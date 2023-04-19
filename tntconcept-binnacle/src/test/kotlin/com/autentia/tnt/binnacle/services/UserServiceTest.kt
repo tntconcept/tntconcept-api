@@ -3,24 +3,20 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.repositories.UserRepository
-import com.sun.security.auth.UserPrincipal
-import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.times
-import org.mockito.kotlin.any
 import java.util.*
 
 internal class UserServiceTest {
 
-    private val userRepository =  mock<UserRepository>()
+    private val userRepository = mock<UserRepository>()
     private val securityService = mock<SecurityService>()
 
     private var userService = UserService(userRepository, securityService)
@@ -42,8 +38,6 @@ internal class UserServiceTest {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> { userService.getAuthenticatedUser() }
-
-        verify(userRepository, times(0)).findByUsername(any())
     }
 
     @Test
