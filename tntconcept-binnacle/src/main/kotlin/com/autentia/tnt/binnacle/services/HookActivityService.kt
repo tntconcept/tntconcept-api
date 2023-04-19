@@ -7,16 +7,18 @@ import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
-internal open class HookActivityService(
+@Singleton
+internal class HookActivityService(
     private val activityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter
 ) {
 
     @Transactional(rollbackOn = [Exception::class])
-    fun createHookActivity(activityRequest: ActivityRequestBody, user: User): Activity {
+    fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
             ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
@@ -29,7 +31,7 @@ internal open class HookActivityService(
     }
 
     @Transactional(rollbackOn = [Exception::class])
-    fun updateHookActivity(activityRequest: ActivityRequestBody, user: User): Activity {
+    fun updateActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
             ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }

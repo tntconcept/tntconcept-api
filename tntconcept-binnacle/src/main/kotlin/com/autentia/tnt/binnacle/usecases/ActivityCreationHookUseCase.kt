@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HookActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import io.micronaut.validation.Validated
@@ -27,14 +26,14 @@ open class ActivityCreationHookUseCase internal constructor(
 
         val activityResponse = if (activityRequestBody.id == null) {
             activityResponseConverter.mapActivityToActivityResponse(
-                activityService.createHookActivity(
+                activityService.createActivity(
                     activityRequest,
                     user
                 )
             )
         } else {
             activityResponseConverter.mapActivityToActivityResponse(
-                activityService.updateHookActivity(
+                activityService.updateActivity(
                     activityRequest,
                     user
                 )
