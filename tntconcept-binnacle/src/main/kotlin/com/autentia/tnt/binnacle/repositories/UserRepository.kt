@@ -1,16 +1,17 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.User
-import io.micronaut.data.annotation.Repository
-import io.micronaut.data.repository.CrudRepository
+import java.util.Optional
 
-@Repository
-internal interface UserRepository : CrudRepository<User, Long> {
+
+internal interface UserRepository {
+
+    fun findByAuthenticatedUser(): Optional<User>
+    fun findById(id: Long): Optional<User>
 
     fun findByUsername(username: String): User?
 
     fun findByActiveTrue(): List<User>
 
-    fun find(): List<User>
 
 }

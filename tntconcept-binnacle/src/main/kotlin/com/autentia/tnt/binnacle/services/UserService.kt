@@ -1,41 +1,31 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.repositories.UserRepository
-import com.autentia.tnt.security.application.checkAuthentication
-import com.autentia.tnt.security.application.isAdmin
-import io.micronaut.security.utils.SecurityService
+import com.autentia.tnt.binnacle.repositories.UserRepositorySecured
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.util.Optional
+import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
 @Transactional
 @ReadOnly
 class UserService internal constructor(
-    private val userRepository: UserRepository,
-    private val securityService: SecurityService
+    private val userRepositorySecured: UserRepositorySecured,
 ) {
 
     fun getAuthenticatedUser(): User =
-        securityService.authentication
-            .flatMap { userRepository.findById(it.name.toLong()) }
+        userRepositorySecured.findByAuthenticatedUser()
             .orElseThrow { IllegalStateException("There isn't authenticated user") }
 
     fun findActive(): List<User> =
-        userRepository.findByActiveTrue()
+        userRepositorySecured.findByActiveTrue()
 
     fun findAll(): List<User> {
-        val authentication = securityService.checkAuthentication()
-        return if(authentication.isAdmin()) {
-            userRepository.find()
-        }else{
-            listOf()
-        }
+           return userRepositorySecured.find()
     }
 
     fun getUserByUserName(userName: String): User =
-        Optional.ofNullable(userRepository.findByUsername(userName))
+        Optional.ofNullable(userRepositorySecured.findByUsername(userName))
             .orElseThrow { IllegalStateException("There isn't authenticated user") }
 }
