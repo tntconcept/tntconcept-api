@@ -13,7 +13,7 @@ import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.repositories.AnnualWorkSummaryRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.util.Optional
+import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
@@ -73,7 +73,7 @@ internal class AnnualWorkSummaryService(
 
     private fun getConsumedVacations(
         year: Int,
-        user: User,
+        user: User
     ): Int {
         return vacationService.getVacationsByChargeYear(year, user)
             .filter { VacationState.ACCEPT === it.state }

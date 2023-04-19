@@ -15,10 +15,10 @@ import java.time.Month
 
 @MicronautTest
 @TestInstance(PER_CLASS)
-internal class VacationRepositoryIT {
+internal class VacationDaoIT {
 
     @Inject
-    private lateinit var vacationRepository: VacationRepository
+    private lateinit var vacationDao: VacationDao
 
     private val userId = 1L
     private val christmas2020 = Vacation(
@@ -60,7 +60,7 @@ internal class VacationRepositoryIT {
 
     @BeforeEach
     fun setUpTest() {
-        vacationRepository.deleteAll()
+        vacationDao.deleteAll()
     }
 
     @Test
@@ -70,12 +70,12 @@ internal class VacationRepositoryIT {
             reyes2021.copy(),
             carnaval2021.copy()
         )
-        vacationRepository.saveAll(vacations)
+        vacationDao.saveAll(vacations)
 
         val startDate = LocalDate.of(2020, Month.JANUARY, 1)
         val endDate = LocalDate.of(2021, Month.DECEMBER, 31)
 
-        val actual = vacationRepository.getVacationsBetweenDate(startDate, endDate, userId)
+        val actual = vacationDao.find(startDate, endDate, userId)
 
         assertEquals(vacations.size, actual.size)
         assertTrue(actual.containsAll(vacations))
@@ -88,12 +88,12 @@ internal class VacationRepositoryIT {
             reyes2021.copy(),
             carnaval2021.copy()
         )
-        vacationRepository.saveAll(vacations)
+        vacationDao.saveAll(vacations)
 
         val startDate = LocalDate.of(2021, Month.JANUARY, 1)
         val endDate = LocalDate.of(2021, Month.DECEMBER, 31)
 
-        val actual = vacationRepository.getVacationsBetweenDate(startDate, endDate, userId)
+        val actual = vacationDao.find(startDate, endDate, userId)
 
         assertEquals(2, actual.size)
         assertTrue(actual.containsAll(listOf(vacations[1], vacations[2])))
@@ -107,12 +107,12 @@ internal class VacationRepositoryIT {
             carnaval2021.copy(),
             christmas2021.copy()
         )
-        vacationRepository.saveAll(vacations)
+        vacationDao.saveAll(vacations)
 
         val startYear = LocalDate.of(2021, Month.JANUARY, 1)
         val endYear = LocalDate.of(2021, Month.JANUARY, 1)
 
-        val actual = vacationRepository.filterBetweenChargeYears(startYear, endYear, userId)
+        val actual = vacationDao.findBetweenChargeYears(startYear, endYear, userId)
 
         assertEquals(3, actual.size)
         assertTrue(actual.containsAll(listOf(vacations[1], vacations[2], vacations[3])))

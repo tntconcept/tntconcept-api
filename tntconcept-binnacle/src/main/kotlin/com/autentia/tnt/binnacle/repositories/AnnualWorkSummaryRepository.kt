@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.entities.AnnualWorkSummary
 import com.autentia.tnt.binnacle.entities.AnnualWorkSummaryId
 import io.micronaut.data.annotation.Repository
 import io.micronaut.data.repository.CrudRepository
-import javax.transaction.Transactional
 
 @Repository
 abstract class AnnualWorkSummaryRepository : CrudRepository<AnnualWorkSummary, AnnualWorkSummaryId> {

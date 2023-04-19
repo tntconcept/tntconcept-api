@@ -10,6 +10,8 @@ internal interface ActivityRepository {
 
     fun findById(id: Long): Activity?
 
+    fun findByIdWithoutSecurity(id: Long): Activity?
+
     fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
 
     fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
@@ -30,6 +32,8 @@ internal interface ActivityRepository {
     fun saveWithoutSecurity(activity: Activity): Activity
 
     fun update(activity: Activity): Activity
+
+    fun updateWithoutSecurity(activity: Activity): Activity
 
     fun deleteById(id: Long)
 }

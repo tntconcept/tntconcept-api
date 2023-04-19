@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.HolidayConverter
 import com.autentia.tnt.binnacle.converters.HolidayResponseConverter
 import com.autentia.tnt.binnacle.converters.VacationConverter
@@ -10,7 +9,6 @@ import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
 import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
 import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.VacationService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -26,14 +24,11 @@ import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 internal class HolidaysBetweenDateForAuthenticateUserUseCaseTest {
     private var holidayService = mock<HolidayService>()
     private var vacationService = mock<VacationService>()
-    private var userService = mock<UserService>()
     private var holidaysBetweenDateForAuthenticateUserUseCase =
-        HolidaysBetweenDateForAuthenticateUserUseCase(holidayService, vacationService, userService, HolidayResponseConverter(VacationConverter(), HolidayConverter()))
+        HolidaysBetweenDateForAuthenticateUserUseCase(holidayService, vacationService, HolidayResponseConverter(VacationConverter(), HolidayConverter()))
 
     @Test
     fun `return holidays given start date, end date and username`() {
-
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
         doReturn(THREE_KINGS_DAY).whenever(holidayService).findAllBetweenDate(JANUARY_FIFTH, JANUARY_NINTH)
 
         doReturn(
@@ -42,7 +37,7 @@ internal class HolidaysBetweenDateForAuthenticateUserUseCaseTest {
                 DAY_AFTER_THREE_KINGS_DAY
             ), TODAY
             ))
-        ).whenever(vacationService).getVacationsBetweenDates(JANUARY_FIFTH, JANUARY_NINTH, USER)
+        ).whenever(vacationService).getVacationsBetweenDates(JANUARY_FIFTH, JANUARY_NINTH)
 
         assertEquals(HolidayResponseDTO(THREE_KINGS_DAY_DTO, vacationsDTO), holidaysBetweenDateForAuthenticateUserUseCase.getHolidays(
             JANUARY_FIFTH, JANUARY_NINTH
@@ -50,8 +45,6 @@ internal class HolidaysBetweenDateForAuthenticateUserUseCaseTest {
     }
 
     private companion object{
-        private val USER = createUser()
-
         private val TODAY = LocalDate.now()
         private val CURRENT_YEAR = TODAY.year
 

@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
 import com.autentia.tnt.binnacle.exception.VacationNotFoundException
 import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
@@ -25,7 +24,6 @@ class PrivateHolidayPeriodDeleteUseCase internal constructor(
             is DeleteVacationValidation.Success -> vacationService.deleteVacationPeriod(id, user.id)
             is DeleteVacationValidation.Failure ->
                 when (result.reason) {
-                    DeleteVacationValidation.FailureReason.USER_UNAUTHORIZED -> throw UserPermissionException()
                     DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD -> throw VacationAcceptedPastPeriodStateException()
                     DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND -> throw VacationNotFoundException(id)
                     DeleteVacationValidation.FailureReason.VACATION_RANGE_CLOSED -> throw VacationRangeClosedException()

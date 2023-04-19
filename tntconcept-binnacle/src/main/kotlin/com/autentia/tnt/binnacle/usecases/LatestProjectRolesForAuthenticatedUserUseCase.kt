@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.core.domain.StartEndLocalDateTime
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.UserService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -14,20 +13,17 @@ import javax.transaction.Transactional
 
 @Singleton
 class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
-    private val userService: UserService,
     private val projectRoleRepository: ProjectRoleRepository,
     private val projectRoleResponseConverter: ProjectRoleResponseConverter
 ) {
     @Transactional
     @ReadOnly
     fun get(): List<ProjectRoleUserDTO> {
-        val userId = userService.getAuthenticatedUser().id
         val oneMonthDateRange = oneMonthDateRangeFromCurrentDate()
 
         val roles = projectRoleRepository.findDistinctRolesBetweenDate(
             oneMonthDateRange.startDate,
-            oneMonthDateRange.endDate,
-            userId
+            oneMonthDateRange.endDate
         )
 
         return roles
@@ -41,13 +37,11 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     @Transactional
     @ReadOnly
     fun getProjectRolesRecent(): List<ProjectRolesRecent> {
-        val userId = userService.getAuthenticatedUser().id
         val oneMonthDateRange = oneMonthDateRangeFromCurrentDate()
 
         val roles = projectRoleRepository.findDistinctProjectRolesBetweenDate(
             oneMonthDateRange.startDate,
-            oneMonthDateRange.endDate,
-            userId
+            oneMonthDateRange.endDate
         )
 
         return roles

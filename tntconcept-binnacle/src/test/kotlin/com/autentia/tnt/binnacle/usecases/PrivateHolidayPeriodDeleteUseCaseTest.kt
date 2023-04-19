@@ -14,7 +14,6 @@ import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.Success
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_RANGE_CLOSED
-import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.USER_UNAUTHORIZED
 import com.autentia.tnt.binnacle.validators.VacationValidator
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -64,7 +63,6 @@ internal class PrivateHolidayPeriodDeleteUseCaseTest {
     }
 
     private fun deleteVacationFailProvider() = arrayOf(
-        arrayOf("User permission exception", UserPermissionException(), Failure(USER_UNAUTHORIZED), vacationID, UserPermissionException().message),
         arrayOf("Vacation range closed exception", VacationRangeClosedException(), Failure(VACATION_RANGE_CLOSED), vacationID, VacationRangeClosedException().message),
         arrayOf("Vacation accepted for past period", VacationAcceptedPastPeriodStateException(), Failure(VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD), vacationID, VacationAcceptedPastPeriodStateException().message),
     )

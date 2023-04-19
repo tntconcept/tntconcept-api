@@ -11,16 +11,16 @@ import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 
 @MicronautTest
 @TestInstance(PER_CLASS)
-internal class ProjectRoleRepositoryIT {
+internal class ProjectRoleDaoIT {
 
     @Inject
-    private lateinit var projectRoleRepository: ProjectRoleRepository
+    private lateinit var projectRoleDao: ProjectRoleDao
 
     @Test
     fun `should get the roles by project id`() {
         val projectId = 1L
 
-        val result = projectRoleRepository.getAllByProjectId(projectId)
+        val result = projectRoleDao.getAllByProjectId(projectId)
 
         assertEquals("vacaciones", result[0].name)
     }
@@ -29,7 +29,7 @@ internal class ProjectRoleRepositoryIT {
     fun `should get the roles by project ids in`() {
         val projectIds = listOf(1L, 3L)
 
-        val result = projectRoleRepository.getAllByProjectIdIn(projectIds)
+        val result = projectRoleDao.getAllByProjectIdIn(projectIds)
 
         assertEquals("vacaciones", result[0].name)
         checkProjectRole(result[0], 1L, "vacaciones", projectIds[0])
@@ -40,14 +40,19 @@ internal class ProjectRoleRepositoryIT {
     fun `should get the roles by project ids`() {
         val projectRoleIds = listOf(1L, 2L)
 
-        val result = projectRoleRepository.getAllByIdIn(projectRoleIds)
+        val result = projectRoleDao.getAllByIdIn(projectRoleIds)
 
         assertEquals(projectRoleIds.size, result.size)
         checkProjectRole(result[0], projectRoleIds[0], "vacaciones", 1L)
         checkProjectRole(result[1], projectRoleIds[1], "permiso", 2L)
     }
 
-    private fun checkProjectRole(projectRole: ProjectRole, expectedProjectRoleId: Long, expectedProjectRoleName: String, expectedProjectId: Long) {
+    private fun checkProjectRole(
+        projectRole: ProjectRole,
+        expectedProjectRoleId: Long,
+        expectedProjectRoleName: String,
+        expectedProjectId: Long
+    ) {
         assertEquals(projectRole.id, expectedProjectRoleId)
         assertEquals(projectRole.project.id, expectedProjectId)
         assertEquals(projectRole.name, expectedProjectRoleName)
@@ -57,7 +62,7 @@ internal class ProjectRoleRepositoryIT {
     fun `should get project role with required evidence`() {
         val projectId = 1L
 
-        val result = projectRoleRepository.getAllByProjectId(projectId)
+        val result = projectRoleDao.getAllByProjectId(projectId)
 
         assertTrue(result.isNotEmpty())
     }
