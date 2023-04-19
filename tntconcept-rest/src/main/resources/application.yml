@@ -141,6 +141,7 @@ app:
 
   binnacle:
     vacations-approvers: approver@example.com
+    activities-approvers: approver@example.com
     not-workable-projects: 1
 
     work-summary:

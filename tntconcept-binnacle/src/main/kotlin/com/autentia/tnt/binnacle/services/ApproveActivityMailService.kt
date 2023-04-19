@@ -16,7 +16,7 @@ internal class ApproveActivityMailService(
 ) {
     fun sendApprovalActivityMail(activity: ActivityResponse, username: String, locale: Locale){
         if (!appProperties.mail.enabled) {
-            logger.info("Mailing of vacations is disabled")
+            logger.info("Mailing of approval activities is disabled")
             return
         }
         val body = messageSource
@@ -31,10 +31,10 @@ internal class ApproveActivityMailService(
             .orElse(null) ?: error("Cannot find message mail.request.approveActivity.template")
 
         val subject = messageSource
-            .getMessage("mail.request.approveActivity.subject", locale, activity.userId)
+            .getMessage("mail.request.approveActivity.subject", locale, username)
             .orElse(null) ?: error("Cannot find message mail.request.approveActivity.subject")
 
-        mailService.send(appProperties.mail.from, appProperties.binnacle.vacationsApprovers, subject, body)
+        mailService.send(appProperties.mail.from, appProperties.binnacle.activitiesApprovers, subject, body)
             .onFailure { logger.error("Error sending activity approve email", it) }
     }
 
