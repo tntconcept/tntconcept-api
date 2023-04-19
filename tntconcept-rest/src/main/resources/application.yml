@@ -67,6 +67,9 @@ micronaut:
       login-success: 'http://localhost:3000/tnt/binnacle'
 
     intercept-url-map:
+      - pattern: /api-hook/**
+        access:
+          - isAnonymous()
       - pattern: /
         access:
           - isAnonymous()
