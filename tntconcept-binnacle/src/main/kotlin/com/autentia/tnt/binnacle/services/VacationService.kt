@@ -1,11 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.converters.VacationConverter
-import com.autentia.tnt.binnacle.core.domain.Calendar
-import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.CreateVacationResponse
-import com.autentia.tnt.binnacle.core.domain.DateInterval
-import com.autentia.tnt.binnacle.core.domain.RequestVacation
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.utils.maxDate
 import com.autentia.tnt.binnacle.core.utils.minDate
 import com.autentia.tnt.binnacle.entities.User
@@ -29,15 +25,32 @@ internal class VacationService(
 ) {
     @Transactional
     @ReadOnly
+    fun getVacationsBetweenDates(beginDate: LocalDate, finalDate: LocalDate): List<VacationDomain> {
+        val vacations: List<Vacation> = vacationRepository.find(beginDate, finalDate)
+        return getVacationsWithWorkableDays(vacations)
+    }
+
+    @Transactional
+    @ReadOnly
     fun getVacationsBetweenDates(beginDate: LocalDate, finalDate: LocalDate, user: User): List<VacationDomain> {
-        val vacations: List<Vacation> = vacationRepository.getVacationsBetweenDate(beginDate, finalDate, user.id)
+        val vacations: List<Vacation> = vacationRepository.findWithoutSecurity(beginDate, finalDate, user.id)
+        return getVacationsWithWorkableDays(vacations)
+    }
+
+    @Transactional
+    @ReadOnly
+    fun getVacationsByChargeYear(chargeYear: Int): List<VacationDomain> {
+        val vacations: List<Vacation> = vacationRepository.findBetweenChargeYears(
+            LocalDate.of(chargeYear, 1, 1),
+            LocalDate.of(chargeYear, 1, 1)
+        )
         return getVacationsWithWorkableDays(vacations)
     }
 
     @Transactional
     @ReadOnly
     fun getVacationsByChargeYear(chargeYear: Int, user: User): List<VacationDomain> {
-        val vacations: List<Vacation> = vacationRepository.filterBetweenChargeYears(
+        val vacations: List<Vacation> = vacationRepository.findBetweenChargeYearsWithoutSecurity(
             LocalDate.of(chargeYear, 1, 1),
             LocalDate.of(chargeYear, 1, 1),
             user.id
@@ -75,7 +88,7 @@ internal class VacationService(
 
         val calendar = calendarFactory.create(DateInterval.of(lastYearFirstDay, nextYearLastDay))
 
-        val vacations = vacationRepository.filterBetweenChargeYears(lastYearFirstDay, nextYearLastDay, user.id)
+        val vacations = vacationRepository.findBetweenChargeYears(lastYearFirstDay, nextYearLastDay)
 
         val vacationsByYear: Map<Int, List<VacationDomain>> =
             getVacationsWithWorkableDays(calendar, vacations).groupBy { it.chargeYear.year }
@@ -144,7 +157,11 @@ internal class VacationService(
     }
 
     @Transactional
-    fun updateVacationPeriod(requestVacation: RequestVacation, user: User, vacation: Vacation): MutableList<CreateVacationResponse> {
+    fun updateVacationPeriod(
+        requestVacation: RequestVacation,
+        user: User,
+        vacation: Vacation
+    ): MutableList<CreateVacationResponse> {
 
         val calendar = calendarFactory.create(
             DateInterval.of(

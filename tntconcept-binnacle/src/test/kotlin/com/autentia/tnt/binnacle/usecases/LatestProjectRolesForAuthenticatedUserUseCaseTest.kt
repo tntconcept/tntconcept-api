@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleRecent
 import com.autentia.tnt.binnacle.entities.RequireEvidence
@@ -8,7 +7,6 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -17,22 +15,20 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
-
-    private val userService = mock<UserService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityService = mock<ActivityService>()
-    private val projectRoleResponseConverter= ProjectRoleResponseConverter(activityService)
+    private val projectRoleResponseConverter = ProjectRoleResponseConverter(activityService)
 
-    private val latestProjectRolesForAuthenticatedUserUseCase = LatestProjectRolesForAuthenticatedUserUseCase(userService, projectRoleRepository, projectRoleResponseConverter)
+    private val latestProjectRolesForAuthenticatedUserUseCase =
+        LatestProjectRolesForAuthenticatedUserUseCase(projectRoleRepository, projectRoleResponseConverter)
 
     @Test
     fun `return the last imputed roles`() {
         val startDate = TODAY.minusMonths(1).atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
-
-        whenever(userService.getAuthenticatedUser()).thenReturn(USER)
-        whenever(projectRoleRepository.findDistinctRolesBetweenDate(startDate, endDate, USER.id)).thenReturn(
-            PROJECT_ROLES_RECENT)
+        whenever(projectRoleRepository.findDistinctRolesBetweenDate(startDate, endDate)).thenReturn(
+            PROJECT_ROLES_RECENT
+        )
 
         val expectedProjectRoles = listOf(
             buildProjectRoleUserDTO(1L),
@@ -40,17 +36,16 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         )
 
         val result = latestProjectRolesForAuthenticatedUserUseCase.get()
-
         assertEquals(expectedProjectRoles, result)
     }
 
-    private companion object{
+    private companion object {
         private val TODAY = LocalDate.now()
-        private val USER = createUser()
         private val START_DATE = TODAY.minusDays(1)
         private val END_DATE = TODAY.minusDays(4)
 
-        private fun buildProjectRoleRecent(id: Long, date: LocalDate, projectOpen: Boolean = true): ProjectRoleRecent = ProjectRoleRecent(
+        private fun buildProjectRoleRecent(id: Long, date: LocalDate, projectOpen: Boolean = true): ProjectRoleRecent =
+            ProjectRoleRecent(
                 id = id,
                 date = date.atTime(LocalTime.MIDNIGHT),
                 name = "Role ID $id",
@@ -61,7 +56,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
                 timeUnit = TimeUnit.MINUTES,
                 requireEvidence = RequireEvidence.WEEKLY,
                 requireApproval = false,
-                userId = USER.id
+                userId = 1L
             )
 
         private fun buildProjectRoleUserDTO(id: Long): ProjectRoleUserDTO = ProjectRoleUserDTO(
@@ -74,7 +69,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             timeUnit = TimeUnit.MINUTES,
             requireEvidence = RequireEvidence.WEEKLY,
             requireApproval = false,
-            userId = USER.id
+            userId = 1L
         )
 
 
@@ -84,7 +79,5 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             buildProjectRoleRecent(5L, START_DATE.minusDays(3), false),
             buildProjectRoleRecent(1L, END_DATE),
         )
-
     }
-
 }

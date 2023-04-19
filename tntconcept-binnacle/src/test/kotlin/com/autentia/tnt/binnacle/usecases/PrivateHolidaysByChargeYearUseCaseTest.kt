@@ -38,7 +38,7 @@ internal class PrivateHolidaysByChargeYearUseCaseTest {
 
         doReturn(user).whenever(userService).getAuthenticatedUser()
         doReturn(HOLIDAYS).whenever(holidayService).findAllBetweenDate(startDate, endDate)
-        doReturn(VACATIONS).whenever(vacationService).getVacationsByChargeYear(CHARGE_YEAR, user)
+        doReturn(VACATIONS).whenever(vacationService).getVacationsByChargeYear(CHARGE_YEAR)
 
         assertEquals(HOLIDAY_RESPONSE_DTO, privateHolidaysByChargeYearUseCase.get(CHARGE_YEAR))
     }

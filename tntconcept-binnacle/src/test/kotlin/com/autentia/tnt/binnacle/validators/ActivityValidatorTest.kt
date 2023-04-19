@@ -21,18 +21,16 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.BDDMockito.given
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
-import java.util.Optional
+import java.util.*
 
 @TestInstance(PER_CLASS)
 internal class ActivityValidatorTest {
-
     private val holidayService = mock<HolidayService>()
     private val activityRepository = mock<ActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
@@ -46,8 +44,7 @@ internal class ActivityValidatorTest {
     inner class CheckActivityIsValidForCreation {
         @Test
         fun `do nothing when activity is valid`() {
-
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
         }
@@ -92,7 +89,7 @@ internal class ActivityValidatorTest {
             user: User,
             expectedException: BinnacleException,
         ) {
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             val exception = assertThrows<BinnacleException> {
                 activityValidator.checkActivityIsValidForCreation(activityRequestBody, user)
@@ -104,8 +101,7 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `throw ProjectRoleNotFoundException with role id when project role is not in the database`() {
-
-            doReturn(Optional.empty<ProjectRole>()).whenever(projectRoleRepository).findById(projectRole.id)
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(null)
 
             val exception = assertThrows<ProjectRoleNotFoundException> {
                 activityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
@@ -115,7 +111,7 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `do nothing when activity started last year`() {
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForCreation(newActivityLastYear, user)
         }
@@ -133,7 +129,11 @@ internal class ActivityValidatorTest {
                 false
             )
 
-            doReturn(
+            whenever(
+                activityRepository.findOverlapped(
+                    newActivity.start, newActivity.end
+                )
+            ).thenReturn(
                 listOf(
                     Activity(
                         1,
@@ -147,10 +147,8 @@ internal class ActivityValidatorTest {
                         approvalState = ApprovalState.NA
                     )
                 )
-            ).whenever(activityRepository).findOverlapped(
-                newActivity.start, newActivity.end
             )
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             assertThrows<OverlapsAnotherTimeException> {
                 activityValidator.checkActivityIsValidForCreation(newActivity, user)
@@ -235,14 +233,13 @@ internal class ActivityValidatorTest {
             firstDay: LocalDateTime,
             lastDay: LocalDateTime
         ) {
-
             val timeInterval = TimeInterval.of(firstDay, lastDay)
             val calendar = calendarFactory.create(timeInterval.getDateInterval())
             val activitiesIntervals = listOf(
                 ActivityInterval(firstDay, lastDay, projectRoleLimited.timeUnit)
             )
 
-            whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(Optional.of(projectRoleLimited))
+            whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(projectRoleLimited)
             whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
             whenever(
                 activityRepository.findIntervals(
@@ -303,7 +300,7 @@ internal class ActivityValidatorTest {
                 )
             )
 
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
             whenever(
                 activityRepository.findIntervals(
                     timeInterval2022.start,
@@ -359,7 +356,7 @@ internal class ActivityValidatorTest {
         @Test
         fun `do nothing when activity is valid`() {
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForUpdate(validActivityToUpdate, user)
         }
@@ -367,7 +364,7 @@ internal class ActivityValidatorTest {
         @Test
         fun `throw ActivityNotFoundException with activity id when the activity to be replaced does not exist`() {
             whenever(activityRepository.findById(1L)).thenReturn(null)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             val exception = assertThrows<ActivityNotFoundException> {
                 activityValidator.checkActivityIsValidForUpdate(activityUpdateNonexistentID, user)
@@ -379,7 +376,7 @@ internal class ActivityValidatorTest {
         fun `throw ActivityPeriodInvalidException when TimeInterval is longer than a day for a Minutes TimeUnit project role`() {
 
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(any())).thenReturn(projectRole)
 
             assertThrows<ActivityPeriodNotValidException> {
                 activityValidator.checkActivityIsValidForUpdate(activityInvalidPeriodForMinutesProjectRole, user)
@@ -411,7 +408,7 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.empty())
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(null)
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
 
             val exception = assertThrows<ProjectRoleNotFoundException> {
@@ -422,8 +419,6 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `throw ProjectClosedException when chosen project is already closed`() {
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(closedProjectRole))
-
             val newActivity = ActivityRequestBody(
                 1L,
                 LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
@@ -434,9 +429,8 @@ internal class ActivityValidatorTest {
                 closedProjectRole.id,
                 false,
             )
-
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(closedProjectRole))
+            whenever(projectRoleRepository.findById(1L)).thenReturn(closedProjectRole)
 
             assertThrows<ProjectClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, user)
@@ -446,7 +440,7 @@ internal class ActivityValidatorTest {
         @Test
         fun `do nothing when updated activity started last year`() {
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForUpdate(activityLastYear, user)
         }
@@ -454,7 +448,7 @@ internal class ActivityValidatorTest {
         @Test
         fun `throw ActivityPeriodClosedException when updated activity started more than one year ago`() {
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             assertThrows<ActivityPeriodClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(activityUpdateTwoYearsAgo, user)
@@ -495,7 +489,7 @@ internal class ActivityValidatorTest {
                     )
                 )
             )
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             assertThrows<OverlapsAnotherTimeException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, user)
@@ -582,26 +576,37 @@ internal class ActivityValidatorTest {
             val yearTimeInterval = TimeInterval.ofYear(firstDay.year)
             val calendar = calendarFactory.create(timeInterval.getDateInterval())
             val activitiesIntervals = listOf(
-                ActivityInterval(currentActivity.getTimeInterval().start, currentActivity.getTimeInterval().end, projectRoleLimited.timeUnit)
+                ActivityInterval(
+                    currentActivity.getTimeInterval().start,
+                    currentActivity.getTimeInterval().end,
+                    projectRoleLimited.timeUnit
+                )
             )
 
             whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
-
             whenever(activityRepository.findById(currentActivity.id!!)).thenReturn(currentActivity)
-            whenever(activityRepository.findIntervals(yearTimeInterval.start, yearTimeInterval.end, projectRoleLimited.id)).thenReturn(activitiesIntervals)
-            whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(Optional.of(projectRoleLimited))
-
+            whenever(
+                activityRepository.findIntervals(
+                    yearTimeInterval.start,
+                    yearTimeInterval.end,
+                    projectRoleLimited.id
+                )
+            ).thenReturn(activitiesIntervals)
+            whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(projectRoleLimited)
             whenever(
                 activityCalendarService
                     .getDurationByCountingWorkingDays(
                         calendar, activityRequestBodyToUpdate.getTimeInterval(), projectRoleLimited.timeUnit
                     )
             ).thenReturn(activityRequestBodyToUpdate.duration)
-            whenever(activityCalendarService.getDurationByCountingWorkingDays(
+            whenever(
+                activityCalendarService.getDurationByCountingWorkingDays(
                     calendar, currentActivity.getTimeInterval(), currentActivity.projectRole.timeUnit
-           )).thenReturn(currentActivity.duration)
-
-            whenever(activityCalendarService.getSumActivitiesDuration(calendar, activitiesIntervals)).thenReturn(duration)
+                )
+            ).thenReturn(currentActivity.duration)
+            whenever(activityCalendarService.getSumActivitiesDuration(calendar, activitiesIntervals)).thenReturn(
+                duration
+            )
 
             val exception = assertThrows<MaxHoursPerRoleException> {
                 activityValidator.checkActivityIsValidForUpdate(activityRequestBodyToUpdate, user)
@@ -650,21 +655,46 @@ internal class ActivityValidatorTest {
                 )
             )
 
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
             whenever(activityRepository.findById(activity.id!!)).thenReturn(activity)
-            whenever(activityRepository.findIntervals(timeInterval2022.start, timeInterval2022.end, projectRole.id)).thenReturn(activitiesIntervals2022)
-            whenever(activityRepository.findIntervals(timeInterval2023.start, timeInterval2023.end, projectRole.id)).thenReturn(activitiesIntervals2023)
+            whenever(
+                activityRepository.findIntervals(
+                    timeInterval2022.start,
+                    timeInterval2022.end,
+                    projectRole.id
+                )
+            ).thenReturn(activitiesIntervals2022)
+            whenever(
+                activityRepository.findIntervals(
+                    timeInterval2023.start,
+                    timeInterval2023.end,
+                    projectRole.id
+                )
+            ).thenReturn(activitiesIntervals2023)
 
             whenever(activityCalendarService.createCalendar(timeInterval2022.getDateInterval())).thenReturn(calendar2022)
             whenever(activityCalendarService.createCalendar(timeInterval2023.getDateInterval())).thenReturn(calendar2023)
 
-            whenever(activityCalendarService.getSumActivitiesDuration(calendar2022, activitiesIntervals2022)).thenReturn(maxAllowed)
-            whenever(activityCalendarService.getSumActivitiesDuration(calendar2023, activitiesIntervals2023)).thenReturn(maxAllowed)
+            whenever(
+                activityCalendarService.getSumActivitiesDuration(
+                    calendar2022,
+                    activitiesIntervals2022
+                )
+            ).thenReturn(maxAllowed)
+            whenever(
+                activityCalendarService.getSumActivitiesDuration(
+                    calendar2023,
+                    activitiesIntervals2023
+                )
+            ).thenReturn(maxAllowed)
 
-            whenever(activityCalendarService.getDurationByCountingWorkingDays(
+            whenever(
+                activityCalendarService.getDurationByCountingWorkingDays(
                     calendar2023,
                     activityRequestBody.getTimeInterval(),
-                    projectRole.timeUnit)).thenReturn(activityRequestBody.duration)
+                    projectRole.timeUnit
+                )
+            ).thenReturn(activityRequestBody.duration)
 
             val exception = assertThrows<MaxHoursPerRoleException> {
                 activityValidator.checkActivityIsValidForUpdate(activityRequestBody, user)
@@ -722,7 +752,7 @@ internal class ActivityValidatorTest {
                     )
                 )
             )
-            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
 
             activityValidator.checkActivityIsValidForUpdate(newActivity, user)
         }
@@ -766,7 +796,7 @@ internal class ActivityValidatorTest {
             )
 
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectRoleRepository.findById(any())).thenReturn(Optional.of(projectRole))
+            whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
 
             assertThrows<ActivityBeforeHiringDateException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, userHiredLastYear)

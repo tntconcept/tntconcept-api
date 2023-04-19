@@ -30,7 +30,6 @@ import com.autentia.tnt.binnacle.validators.UpdateVacationValidation.FailureReas
 import com.autentia.tnt.binnacle.validators.UpdateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS
 import com.autentia.tnt.binnacle.validators.UpdateVacationValidation.FailureReason.VACATION_BEFORE_HIRING_DATE
 import com.autentia.tnt.binnacle.validators.UpdateVacationValidation.FailureReason.INVALID_DATE_RANGE
-import com.autentia.tnt.binnacle.validators.UpdateVacationValidation.FailureReason.USER_UNAUTHORIZED
 import com.autentia.tnt.binnacle.validators.VacationValidator
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -89,7 +88,6 @@ internal class PrivateHolidayPeriodUpdateUseCaseTest {
         arrayOf("Invalid date range exception", DateRangeException(AFTER_TOMORROW, TODAY), Failure(INVALID_DATE_RANGE), invalidVacationRange, DateRangeException(
             AFTER_TOMORROW, TODAY
         ).message),
-        arrayOf("User permission exception", UserPermissionException(), Failure(USER_UNAUTHORIZED), notLoggedUserVacation, UserPermissionException().message),
         arrayOf("Vacation accepted exception", VacationAcceptedStateException(), Failure(VACATION_ALREADY_ACCEPTED), vacationAccepted, VacationAcceptedStateException().message),
         arrayOf("Vacation range closed exception", VacationRangeClosedException(), Failure(VACATION_RANGE_CLOSED), vacationForRangeClosed, VacationRangeClosedException().message),
         arrayOf("Vacation before hiring date exception", VacationBeforeHiringDateException(), Failure(VACATION_BEFORE_HIRING_DATE), vacationRequestBeforeHiringDate, VacationBeforeHiringDateException().message),

@@ -24,9 +24,9 @@ internal class ActivityValidator(
     fun checkActivityIsValidForCreation(activityRequest: ActivityRequestBody, user: User) {
         require(activityRequest.id == null) { "Cannot create a new activity with id ${activityRequest.id}." }
 
-        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
+        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId)
         when {
-            projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
+            projectRoleDb == null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityRequest) -> throw OverlapsAnotherTimeException()
@@ -34,9 +34,10 @@ internal class ActivityValidator(
                 activityRequest.start.toLocalDate(),
                 user
             ) -> throw ActivityBeforeHiringDateException()
+
             isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb)
+        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb!!), activityRequest, projectRoleDb)
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
@@ -114,9 +115,9 @@ internal class ActivityValidator(
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
         val activityDb = activityRepository.findById(activityRequest.id)
-        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
+        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId)
         when {
-            activityDb == null -> throw ActivityNotFoundException(activityRequest.id)
+            activityDb === null -> throw ActivityNotFoundException(activityRequest.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityRequest.start) -> throw ActivityPeriodClosedException()
@@ -128,7 +129,7 @@ internal class ActivityValidator(
 
             isMoreThanADay(activityRequest.getTimeInterval(), projectRoleDb) -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb!!)
     }
 
 
@@ -172,7 +173,7 @@ internal class ActivityValidator(
     private fun isMoreThanADay(activityTimeInterval: TimeInterval, projectRole: ProjectRole): Boolean {
         var moreThanADay = false
         val isMinutesTimeUnit = projectRole.timeUnit == TimeUnit.MINUTES
-        if (isMinutesTimeUnit){
+        if (isMinutesTimeUnit) {
             moreThanADay = activityTimeInterval.getDuration().toDays().toInt() > 0
         }
         return moreThanADay

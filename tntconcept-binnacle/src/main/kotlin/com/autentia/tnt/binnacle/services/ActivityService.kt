@@ -6,8 +6,8 @@ import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -60,7 +60,7 @@ internal class ActivityService(
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
-            .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+            ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val savedActivity = activityRepository.save(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
@@ -80,23 +80,10 @@ internal class ActivityService(
     }
 
     @Transactional(rollbackOn = [Exception::class])
-    fun createHookActivity(activityRequest: ActivityRequestBody, user: User): Activity {
-        val projectRole = projectRoleRepository
-            .findById(activityRequest.projectRoleId)
-            .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
-
-        return activityRepository.saveWithoutSecurity(
-            activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                activityRequest, projectRole, user
-            )
-        )
-    }
-
-    @Transactional(rollbackOn = [Exception::class])
     fun updateActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
-            .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+            ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
             .findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
@@ -105,7 +92,7 @@ internal class ActivityService(
         // Update stored image
         if (activityRequest.hasEvidences) {
             activityImageService.storeActivityImage(
-                activityRequest.id!!,
+                activityRequest.id,
                 activityRequest.imageFile,
                 oldActivity.insertDate!!
             )
@@ -125,8 +112,8 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun approveActivityById(id: Long): Activity {
-        val activityToApprove = activityRepository.findById(id)?: throw ActivityNotFoundException(id)
-        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA){
+        val activityToApprove = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
+        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA) {
             throw InvalidActivityApprovalStateException()
         }
         activityToApprove.approvalState = ApprovalState.ACCEPTED
