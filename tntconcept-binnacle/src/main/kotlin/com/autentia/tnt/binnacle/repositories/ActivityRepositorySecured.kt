@@ -8,6 +8,7 @@ import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import com.autentia.tnt.security.application.isAdmin
 import com.autentia.tnt.security.application.isNotAdmin
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
@@ -17,6 +18,8 @@ internal class ActivityRepositorySecured(
     private val activityDao: ActivityDao,
     private val securityService: SecurityService,
 ) : ActivityRepository {
+    override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
+        activityDao.findAll(addUserFilterIfNecessary(activitySpecification))
 
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
@@ -118,4 +121,12 @@ internal class ActivityRepositorySecured(
         activityDao.deleteById(id)
     }
 
+    private fun addUserFilterIfNecessary(activitySpecification: Specification<Activity>): Specification<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.isNotAdmin()) {
+            activitySpecification.and { root, _, cb -> cb.equal(root.get<Long>("userId"), authentication.id()) }
+        } else {
+            activitySpecification
+        }
+    }
 }
