@@ -12,6 +12,7 @@ import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalTime
@@ -43,6 +44,12 @@ internal class ActivityService(
     @ReadOnly
     fun getActivitiesApprovalState(approvalState: ApprovalState): List<Activity> {
         return activityRepository.find(approvalState)
+    }
+
+    @Transactional
+    @ReadOnly
+    fun getActivities(activitySpecification: Specification<Activity>): List<Activity> {
+        return activityRepository.findAll(activitySpecification)
     }
 
     @Transactional
