@@ -13,10 +13,7 @@ import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDateTime
 import java.util.*
 
@@ -26,6 +23,7 @@ internal class ActivityCreationUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val approveActivityMailService = mock<ApproveActivityMailService>()
+    private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleService = ProjectRoleService(projectRoleRepository)
     private val activityRepository = mock<ActivityRepository>()
@@ -54,17 +52,52 @@ internal class ActivityCreationUseCaseTest {
         whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
         whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
 
-        val result = activityCreationUseCase.createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
+        val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         assertEquals(expectedResponseDTO, result)
+    }
+
+    @Test
+    fun `created activity with approval required`() {
+        val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_APPROVAL)
+        whenever(userService.getAuthenticatedUser()).thenReturn(user)
+        whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
+        whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
+
+        val result = activityCreationUseCase.createActivity(ACTIVITY_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
+
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
+        assertEquals(expectedResponseDTO, result)
+        verify(approveActivityMailService, times(1)).sendApprovalActivityMail(
+            activityResponseConverter.mapActivityToActivityResponse(activity),
+            user.email,
+            Locale.ENGLISH
+        )
+    }
+
+    @Test
+    fun `created activity without approval required`() {
+        val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_NO_APPROVAL)
+        whenever(userService.getAuthenticatedUser()).thenReturn(user)
+        whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
+        whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
+
+        val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
+
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
+        assertEquals(expectedResponseDTO, result)
+        verify(approveActivityMailService, times(0)).sendApprovalActivityMail(
+            activityResponseConverter.mapActivityToActivityResponse(activity),
+            user.email,
+            Locale.ENGLISH
+        )
     }
 
     private companion object {
         private val TIME_NOW = LocalDateTime.now()
 
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
-        private val ORGANIZATION_DTO = OrganizationResponseDTO(1L, "Dummy Organization")
 
         private val PROJECT = Project(
             1L,
@@ -74,35 +107,31 @@ internal class ActivityCreationUseCaseTest {
             ORGANIZATION,
             listOf()
         )
-        private val PROJECT_RESPONSE_DTO = ProjectResponseDTO(
-            1L,
-            "Dummy Project",
-            open = true,
-            billable = false,
-        )
-        private val PROJECT_ROLE =
+        private val PROJECT_ROLE_NO_APPROVAL =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
-            10L,
-            "Dummy Project role",
-            ORGANIZATION_DTO.id,
-            PROJECT.id,
-            PROJECT_ROLE.maxAllowed,
-            5,
-            PROJECT_ROLE.timeUnit,
-            RequireEvidence.NO,
-            PROJECT_ROLE.isApprovalRequired,
-            1L
-        )
+        private val PROJECT_ROLE_APPROVAL =
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.MINUTES)
 
-        private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
+
+        private val ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
             TIME_NOW,
             TIME_NOW.plusMinutes(75L),
             "New activity",
             false,
-            PROJECT_ROLE.id,
+            PROJECT_ROLE_NO_APPROVAL.id,
+            false,
+            null,
+        )
+
+        private val ACTIVITY_APPROVAL_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
+            null,
+            TIME_NOW,
+            TIME_NOW.plusMinutes(75L),
+            "New activity",
+            false,
+            PROJECT_ROLE_APPROVAL.id,
             false,
             null,
         )
@@ -124,7 +153,7 @@ internal class ActivityCreationUseCaseTest {
             duration: Int = 75,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
-            projectRole: ProjectRole = PROJECT_ROLE,
+            projectRole: ProjectRole = PROJECT_ROLE_NO_APPROVAL,
             approvalState: ApprovalState = ApprovalState.NA
         ): Activity =
             Activity(
@@ -158,7 +187,7 @@ internal class ActivityCreationUseCaseTest {
                 hasEvidences,
                 id,
                 projectRoleId,
-                IntervalResponseDTO(start, end, duration, PROJECT_ROLE.timeUnit),
+                IntervalResponseDTO(start, end, duration, PROJECT_ROLE_NO_APPROVAL.timeUnit),
                 userId,
                 approvalState
             )
