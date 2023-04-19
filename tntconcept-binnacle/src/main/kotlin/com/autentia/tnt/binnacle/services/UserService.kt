@@ -2,6 +2,8 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.repositories.UserRepository
+import com.autentia.tnt.security.application.checkAuthentication
+import com.autentia.tnt.security.application.isAdmin
 import io.micronaut.security.utils.SecurityService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -23,6 +25,15 @@ class UserService internal constructor(
 
     fun findActive(): List<User> =
         userRepository.findByActiveTrue()
+
+    fun findAll(): List<User> {
+        val authentication = securityService.checkAuthentication()
+        return if(authentication.isAdmin()) {
+            userRepository.find()
+        }else{
+            listOf()
+        }
+    }
 
     fun getUserByUserName(userName: String): User =
         Optional.ofNullable(userRepository.findByUsername(userName))

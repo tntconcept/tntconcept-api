@@ -11,4 +11,6 @@ internal interface UserRepository : CrudRepository<User, Long> {
 
     fun findByActiveTrue(): List<User>
 
+    fun find(): List<User>
+
 }
