@@ -17,7 +17,7 @@ internal object ActivityPredicates {
         criteriaBuilder.equal(root.get<ApprovalState>("approvalState"), approvalState)
     }
 
-    internal fun startAfter(date: LocalDate) = Specification<Activity> { root, _, criteriaBuilder ->
+    internal fun startDateAfter(date: LocalDate) = Specification<Activity> { root, _, criteriaBuilder ->
         criteriaBuilder.greaterThan(root.get("start"), date)
     }
 
@@ -25,7 +25,17 @@ internal object ActivityPredicates {
         criteriaBuilder.lessThan(root.get("end"), date)
     }
 
+    internal fun startDateLessThanOrEqualTo(date: LocalDate) = Specification<Activity> { root, _, criteriaBuilder ->
+        val dateTime = date.atTime(23, 59, 59)
+        criteriaBuilder.lessThanOrEqualTo(root.get("start"), dateTime)
+    }
+
+    internal fun endDateGreaterThanOrEqualTo(date: LocalDate) = Specification<Activity> { root, _, criteriaBuilder ->
+        val dateTime = date.atStartOfDay()
+        criteriaBuilder.greaterThanOrEqualTo(root.get("end"), dateTime)
+    }
+
     internal fun roleId(roleId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(root.get<Long>("roleId"), roleId)
+        criteriaBuilder.equal(root.get<Long>("projectRole").get<Long>("id"), roleId)
     }
 }
