@@ -25,7 +25,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
-
     private val userService = mock<UserService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleResponseConverter = ProjectRoleResponseConverter()
@@ -35,12 +34,11 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activityCalendarFactory)
     private val latestProjectRolesForAuthenticatedUserUseCase = LatestProjectRolesForAuthenticatedUserUseCase(
-        userService, projectRoleRepository, projectRoleResponseConverter, activityService, activityCalendarService
+        projectRoleRepository, projectRoleResponseConverter, activityService, activityCalendarService
     )
 
     @Test
-    fun testGetProjectRoleRecent() {
-
+    fun `return the last imputed roles`() {
         val startDate = TODAY.minusMonths(1).atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
         val lastMonthTimeInterval = TimeInterval.of(startDate, endDate)
@@ -50,7 +48,6 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             createActivity().copy(projectRole = createProjectRole(id = 2).copy(name = "Role ID 2"))
         )
 
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
         doReturn(activities).whenever(activityService)
             .getActivitiesOfLatestProjects(lastMonthTimeInterval)
 
@@ -63,17 +60,16 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     }
 
     @Test
-    fun testGetProjectRolesRecent() {
+    fun `get project roles recent should return project roles`() {
         val startDate = TODAY.minusMonths(1).atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
 
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
         doReturn(PROJECT_ROLES_RECENT).whenever(projectRoleRepository)
-            .findDistinctProjectRolesBetweenDate(startDate, endDate, USER.id)
+            .findDistinctProjectRolesBetweenDate(startDate, endDate)
 
         val expectedProjectRoles = listOf(
-            buildProjectRolesRecent(1L, START_DATE),
-            buildProjectRolesRecent(2L, START_DATE.minusDays(2)),
+            buildProjectRoleRecent(1L, START_DATE),
+            buildProjectRoleRecent(2L, START_DATE.minusDays(2)),
         )
 
         assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.getProjectRolesRecent())
@@ -81,11 +77,10 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
 
     private companion object {
         private val TODAY = LocalDate.now()
-        private val USER = createUser()
         private val START_DATE = TODAY.minusDays(1)
         private val END_DATE = TODAY.minusDays(4)
 
-        private fun buildProjectRolesRecent(id: Long, date: LocalDate, projectOpen: Boolean = true) =
+        private fun buildProjectRoleRecent(id: Long, date: LocalDate, projectOpen: Boolean = true) =
             ProjectRolesRecent(
                 id = id,
                 date = date.atTime(LocalTime.MIDNIGHT),
@@ -107,14 +102,14 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             timeUnit = TimeUnit.MINUTES,
             requireEvidence = RequireEvidence.WEEKLY,
             requireApproval = false,
-            userId = USER.id
+            userId = 1L
         )
 
         private val PROJECT_ROLES_RECENT = listOf(
-            buildProjectRolesRecent(1L, START_DATE),
-            buildProjectRolesRecent(2L, START_DATE.minusDays(2)),
-            buildProjectRolesRecent(5L, START_DATE.minusDays(3), false),
-            buildProjectRolesRecent(1L, END_DATE),
+            buildProjectRoleRecent(1L, START_DATE),
+            buildProjectRoleRecent(2L, START_DATE.minusDays(2)),
+            buildProjectRoleRecent(5L, START_DATE.minusDays(3), false),
+            buildProjectRoleRecent(1L, END_DATE),
         )
     }
 }

@@ -31,7 +31,6 @@ internal class VacationValidator(
             isVacationOverlaps(
                 requestVacation.startDate,
                 requestVacation.endDate,
-                user.id,
                 requestVacation.id
             ) -> CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS)
 
@@ -58,8 +57,9 @@ internal class VacationValidator(
         return ((startDate <= LocalDate.now()) && (state == ACCEPT))
     }
 
-    private fun isVacationOverlaps(startDate: LocalDate, endDate: LocalDate, userId: Long, id: Long?): Boolean {
-        return vacationRepository.getVacationsBetweenDate(startDate, endDate, userId)
+
+    private fun isVacationOverlaps(startDate: LocalDate, endDate: LocalDate, id: Long?): Boolean {
+        return vacationRepository.find(startDate, endDate)
             .any { (it.state === ACCEPT || it.state === PENDING) && (id != it.id) }
     }
 
@@ -68,7 +68,7 @@ internal class VacationValidator(
     fun canUpdateVacationPeriod(requestVacation: RequestVacation, user: User): UpdateVacationValidation {
         return when (requestVacation.isDateRangeValid()) {
             true -> {
-                val vacationDb = vacationRepository.findById(requestVacation.id).orElse(null)
+                val vacationDb = vacationRepository.findById(requestVacation.id!!)
                 return when {
                     vacationDb === null -> UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_NOT_FOUND)
                     !isDateRangeOpen(requestVacation.startDate) -> UpdateVacationValidation.Failure(
@@ -76,10 +76,6 @@ internal class VacationValidator(
                     )
 
                     !isVacationPending(vacationDb) -> UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED)
-                    !hasUserAccess(
-                        vacationDb,
-                        user
-                    ) -> UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.USER_UNAUTHORIZED)
 
                     isDateBeforeHiringDate(
                         requestVacation.startDate,
@@ -89,7 +85,6 @@ internal class VacationValidator(
                     isVacationOverlaps(
                         requestVacation.startDate,
                         requestVacation.endDate,
-                        user.id,
                         requestVacation.id
                     ) -> UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS)
 
@@ -109,7 +104,7 @@ internal class VacationValidator(
     @Transactional
     @ReadOnly
     fun canDeleteVacationPeriod(id: Long, user: User): DeleteVacationValidation {
-        val vacationDb = vacationRepository.findById(id).orElse(null)
+        val vacationDb = vacationRepository.findById(id)
         return when {
             vacationDb === null -> DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND)
             !isDateRangeOpen(vacationDb.startDate) -> DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_RANGE_CLOSED)
@@ -117,17 +112,8 @@ internal class VacationValidator(
                 DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD
             )
 
-            !hasUserAccess(
-                vacationDb,
-                user
-            ) -> DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.USER_UNAUTHORIZED)
-
             else -> DeleteVacationValidation.Success
         }
-    }
-
-    fun hasUserAccess(vacationDb: Vacation, user: User): Boolean {
-        return vacationDb.userId == user.id
     }
 
     fun isVacationPending(vacation: Vacation): Boolean {
@@ -156,7 +142,6 @@ sealed class UpdateVacationValidation {
         INVALID_DATE_RANGE,
         VACATION_ALREADY_ACCEPTED,
         VACATION_NOT_FOUND,
-        USER_UNAUTHORIZED,
         VACATION_RANGE_CLOSED,
         VACATION_BEFORE_HIRING_DATE,
         VACATION_REQUEST_OVERLAPS,
@@ -171,7 +156,6 @@ sealed class DeleteVacationValidation {
     enum class FailureReason {
         VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD,
         VACATION_NOT_FOUND,
-        USER_UNAUTHORIZED,
         VACATION_RANGE_CLOSED,
     }
 }

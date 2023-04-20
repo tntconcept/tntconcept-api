@@ -7,9 +7,8 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.ActivityAlreadyApprovedException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
+import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -41,8 +40,10 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesApprovalState(approvalState: ApprovalState): List<Activity> {
-        return activityRepository.find(approvalState)
+    fun getUserActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
+        val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
+        val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
+        return activityRepository.findWithoutSecurity(startDateMinHour, endDateMaxHour, userId)
     }
 
     @Transactional
@@ -55,6 +56,13 @@ internal class ActivityService(
     fun getActivitiesByProjectId(timeInterval: TimeInterval, projectId: Long): List<Activity> =
         activityRepository.findByProjectId(timeInterval.start, timeInterval.end, projectId)
 
+
+    @Transactional
+    @ReadOnly
+    fun getActivitiesApprovalState(approvalState: ApprovalState): List<Activity> {
+        return activityRepository.find(approvalState)
+    }
+
     @Transactional
     @ReadOnly
     fun getActivitiesOfLatestProjects(timeInterval: TimeInterval) =
@@ -64,7 +72,7 @@ internal class ActivityService(
     fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
-            .orElseThrow { ProjectRoleNotFoundException(activityRequest.projectRoleId) }
+            ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val savedActivity = activityRepository.save(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
@@ -87,7 +95,7 @@ internal class ActivityService(
     fun updateActivity(activityRequest: ActivityRequestBody, user: User): Activity {
         val projectRole = projectRoleRepository
             .findById(activityRequest.projectRoleId)
-            .orElse(null) ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+            ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
             .findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
@@ -96,7 +104,7 @@ internal class ActivityService(
         // Update stored image
         if (activityRequest.hasEvidences) {
             activityImageService.storeActivityImage(
-                activityRequest.id!!,
+                activityRequest.id,
                 activityRequest.imageFile,
                 oldActivity.insertDate!!
             )
@@ -116,9 +124,9 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun approveActivityById(id: Long): Activity {
-        val activityToApprove = activityRepository.findById(id)?: throw ActivityNotFoundException(id)
-        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA){
-            throw ActivityAlreadyApprovedException()
+        val activityToApprove = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
+        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA) {
+            throw InvalidActivityApprovalStateException()
         }
         activityToApprove.approvalState = ApprovalState.ACCEPTED
         return activityRepository.update(

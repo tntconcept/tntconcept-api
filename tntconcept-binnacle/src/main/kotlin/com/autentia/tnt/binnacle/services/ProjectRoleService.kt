@@ -23,5 +23,5 @@ internal class ProjectRoleService(private val projectRoleRepository: ProjectRole
     @Transactional
     @ReadOnly
     fun getByProjectRoleId(projectRoleId: Long): ProjectRole =
-        projectRoleRepository.findById(projectRoleId).orElseThrow { ProjectRoleNotFoundException(projectRoleId) }
+        projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)
 }

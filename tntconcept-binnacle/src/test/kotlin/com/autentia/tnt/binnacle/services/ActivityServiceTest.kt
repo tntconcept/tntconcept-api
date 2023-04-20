@@ -12,8 +12,8 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.exception.ActivityAlreadyApprovedException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -34,7 +34,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.Date
-import java.util.Optional
 
 internal class ActivityServiceTest {
 
@@ -50,8 +49,7 @@ internal class ActivityServiceTest {
     )
 
     init {
-        doReturn(Optional.of(projectRole))
-            .whenever(projectRoleRepository).findById(projectRole.id)
+        whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
     }
 
     private val activityWithImageToSave = activityRequestBodyConverter.mapActivityRequestBodyToActivity(
@@ -111,16 +109,33 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun testGetActivitiesApprovalState() {
+    fun `get activities between start and end date for user`() {
+        val startDate = LocalDate.of(2019, 1, 1)
+        val endDate = LocalDate.of(2019, 1, 31)
+        val userId = 1L
 
+        whenever(
+            activityRepository.findWithoutSecurity(
+                startDate.atTime(LocalTime.MIN),
+                endDate.atTime(LocalTime.MAX),
+                userId
+            )
+        ).thenReturn(listOf(activityWithoutImageSaved))
+
+        val actual = activityService.getUserActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
+
+        assertEquals(listOf(activityWithoutImageSaved), actual)
+    }
+
+    @Test
+    fun `get activities by approval state should call repository`() {
         doReturn(activities).whenever(activityRepository).find(ApprovalState.ACCEPTED)
 
         assertEquals(activities, activityService.getActivitiesApprovalState(ApprovalState.ACCEPTED))
     }
 
     @Test
-    fun testGetActivities() {
-
+    fun `get activities by time interval should call repository`() {
         val userIds = listOf(1L)
 
         doReturn(activities).whenever(activityRepository).find(timeInterval.start, timeInterval.end, userIds)
@@ -129,7 +144,7 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun testGetActivitiesByProjectId() {
+    fun `get activities by project should call repository`() {
 
         doReturn(activities).whenever(activityRepository).findByProjectId(timeInterval.start, timeInterval.end, 1L)
 
@@ -170,13 +185,11 @@ internal class ActivityServiceTest {
 
     @Test
     fun `create activity with nonexistent project role`() {
-
-        doReturn(Optional.empty<ProjectRole>())
-            .whenever(projectRoleRepository).findById(99)
+        whenever(projectRoleRepository.findById(99)).thenReturn(null)
 
         activityWithoutImageRequest.copy(projectRoleId = 99)
 
-        assertThrows<ProjectRoleNotFoundException> {
+        assertThrows<IllegalStateException> {
             activityService.createActivity(activityWithoutImageRequest.copy(projectRoleId = 99), USER)
         }
     }
@@ -326,7 +339,7 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `approve activity by id`(){
+    fun `approve activity by id`() {
         given(activityRepository.findById(activityWithoutImageSaved.id as Long)).willReturn(activityWithoutImageSaved)
         given(
             activityRepository.update(
@@ -342,7 +355,7 @@ internal class ActivityServiceTest {
     fun `approve activity with not allowed state`() {
         doReturn(activityWithoutImageToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
             .findById(any())
-        assertThrows<ActivityAlreadyApprovedException> {
+        assertThrows<InvalidActivityApprovalStateException> {
             activityService.approveActivityById(any())
         }
     }

@@ -9,12 +9,7 @@ import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
-import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.AnnualWorkSummaryService
-import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.MyVacationsDetailService
-import com.autentia.tnt.binnacle.services.UserService
-import com.autentia.tnt.binnacle.services.VacationService
+import com.autentia.tnt.binnacle.services.*
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.Month

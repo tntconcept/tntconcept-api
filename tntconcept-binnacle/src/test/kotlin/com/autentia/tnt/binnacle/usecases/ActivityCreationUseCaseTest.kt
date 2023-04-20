@@ -4,19 +4,9 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -27,12 +17,10 @@ import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
-import java.util.Optional
 
 internal class ActivityCreationUseCaseTest {
 
@@ -55,22 +43,19 @@ internal class ActivityCreationUseCaseTest {
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
-        )
+        ),
     )
 
     @Test
     fun `created activity`() {
-        doReturn(user).whenever(userService).getAuthenticatedUser()
-
         val activity = createActivity(userId = user.id)
-
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
-
-        doReturn(activity).whenever(activityService).createActivity(any(), eq(user))
-        doReturn(Optional.of(activity.projectRole)).whenever(projectRoleRepository).findById(any())
+        whenever(userService.getAuthenticatedUser()).thenReturn(user)
+        whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
+        whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_REQUEST_BODY_DTO)
 
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         assertEquals(expectedResponseDTO, result)
     }
 
@@ -88,15 +73,8 @@ internal class ActivityCreationUseCaseTest {
             ORGANIZATION,
             listOf()
         )
-        private val PROJECT_RESPONSE_DTO = ProjectResponseDTO(
-            1L,
-            "Dummy Project",
-            open = true,
-            billable = false,
-        )
-        private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
-
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(10L, "Dummy Project role", ORGANIZATION_DTO.id, PROJECT.id, PROJECT_ROLE.maxAllowed, 5, PROJECT_ROLE.timeUnit, RequireEvidence.NO, PROJECT_ROLE.isApprovalRequired,1L)
+        private val PROJECT_ROLE =
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
             null,
@@ -151,7 +129,7 @@ internal class ActivityCreationUseCaseTest {
             duration: Int = 75,
             billable: Boolean = false,
             hasEvidences: Boolean = false,
-            projectRoleId:  Long = 10L,
+            projectRoleId: Long = 10L,
             approvalState: ApprovalState = ApprovalState.NA
         ): ActivityResponseDTO =
             ActivityResponseDTO(
@@ -160,7 +138,7 @@ internal class ActivityCreationUseCaseTest {
                 hasEvidences,
                 id,
                 projectRoleId,
-                IntervalResponseDTO(start,end,duration, PROJECT_ROLE.timeUnit),
+                IntervalResponseDTO(start, end, duration, PROJECT_ROLE.timeUnit),
                 userId,
                 approvalState
             )

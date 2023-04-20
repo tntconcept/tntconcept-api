@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.converters.RequestVacationConverter
 import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import com.autentia.tnt.binnacle.exception.DateRangeException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.exception.VacationAcceptedStateException
 import com.autentia.tnt.binnacle.exception.VacationBeforeHiringDateException
 import com.autentia.tnt.binnacle.exception.VacationNotFoundException
@@ -60,8 +59,6 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
                         requestVacation.startDate,
                         requestVacation.endDate
                     )
-
-                    UpdateVacationValidation.FailureReason.USER_UNAUTHORIZED -> throw UserPermissionException()
                     UpdateVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED -> throw VacationAcceptedStateException()
                     UpdateVacationValidation.FailureReason.VACATION_RANGE_CLOSED -> throw VacationRangeClosedException()
                     UpdateVacationValidation.FailureReason.VACATION_NOT_FOUND -> throw VacationNotFoundException(

@@ -30,6 +30,7 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `find activity should throw illegal state exception`() {
         val activityId = 1L
+
         val activity = Activity(
             id = activityId,
             start = today.atTime(10, 0, 0),

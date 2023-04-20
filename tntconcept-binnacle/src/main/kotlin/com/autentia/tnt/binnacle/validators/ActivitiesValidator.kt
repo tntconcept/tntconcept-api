@@ -28,7 +28,7 @@ internal class ActivitiesValidator(
     fun checkActivityIsValidForCreation(activityRequest: ActivitiesRequestBody, user: User) {
         require(activityRequest.id == null) { "Cannot create a new activity with id ${activityRequest.id}." }
 
-        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
+        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId)
         when {
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
@@ -40,7 +40,7 @@ internal class ActivitiesValidator(
             ) -> throw ActivityBeforeHiringDateException()
 
         }
-        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb), activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(projectRoleDb!!), activityRequest, projectRoleDb, user)
     }
 
     private fun checkIfIsExceedingMaxHoursForRole(
@@ -105,7 +105,7 @@ internal class ActivitiesValidator(
         require(activityRequest.id != null) { "Cannot update an activity without id." }
 
         val activityDb = activityRepository.findById(activityRequest.id)
-        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId).orElse(null)
+        val projectRoleDb = projectRoleRepository.findById(activityRequest.projectRoleId)
         when {
             activityDb == null -> throw ActivityNotFoundException(activityRequest.id!!)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityRequest.projectRoleId)
@@ -118,7 +118,7 @@ internal class ActivitiesValidator(
                 user
             ) -> throw ActivityBeforeHiringDateException()
         }
-        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb, user)
+        checkIfIsExceedingMaxHoursForRole(activityDb!!, activityRequest, projectRoleDb!!, user)
     }
 
 

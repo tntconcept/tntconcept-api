@@ -2,12 +2,7 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
-import com.autentia.tnt.binnacle.entities.Holiday
-import com.autentia.tnt.binnacle.entities.Role
-import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.entities.Vacation
-import com.autentia.tnt.binnacle.entities.VacationState
-import com.autentia.tnt.binnacle.entities.WorkingAgreement
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.services.HolidayService
 import org.assertj.core.api.Assertions
@@ -16,7 +11,6 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.given
 import java.time.LocalDate
 import java.time.Month
-import java.util.Optional
 
 internal class VacationValidatorTest {
 
@@ -37,9 +31,14 @@ internal class VacationValidatorTest {
     fun `should create valid request`() {
         val requestVacation = RequestVacation(null, today, today.plusDays(1), "description")
         val user = createUser()
-        val holidays= emptyList<Holiday>()
+        val holidays = emptyList<Holiday>()
 
-        given(holidayService.findAllBetweenDate(requestVacation.startDate,requestVacation.endDate)).willReturn(holidays)
+        given(
+            holidayService.findAllBetweenDate(
+                requestVacation.startDate,
+                requestVacation.endDate
+            )
+        ).willReturn(holidays)
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
@@ -91,8 +90,13 @@ internal class VacationValidatorTest {
     @Test
     fun `should not create overlaps vacations `() {
         val user = createUser()
-        val requestVacation = RequestVacation(null, LocalDate.of(today.year, Month.MARCH, 15), LocalDate.of(today.year, Month.MARCH, 20), "description")
-        val userId=2L
+        val requestVacation = RequestVacation(
+            null,
+            LocalDate.of(today.year, Month.MARCH, 15),
+            LocalDate.of(today.year, Month.MARCH, 20),
+            "description"
+        )
+        val userId = 2L
         val vacations = listOf(
             Vacation(
                 id = 1L,
@@ -131,11 +135,12 @@ internal class VacationValidatorTest {
                 description = ""
             )
         )
-        given(vacationRepository.getVacationsBetweenDate(requestVacation.startDate,requestVacation.endDate,userId)).willReturn(vacations)
+        given(vacationRepository.find(requestVacation.startDate, requestVacation.endDate)).willReturn(vacations)
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
-        Assertions.assertThat(result).isEqualTo(CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS))
+        Assertions.assertThat(result)
+            .isEqualTo(CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS))
     }
 
     @Test
@@ -147,9 +152,14 @@ internal class VacationValidatorTest {
             LocalDate.of(2023, Month.MARCH, 11),
             "description"
         )
-        val holidays= emptyList<Holiday>()
+        val holidays = emptyList<Holiday>()
 
-        given(holidayService.findAllBetweenDate(requestVacation.startDate,requestVacation.endDate)).willReturn(holidays)
+        given(
+            holidayService.findAllBetweenDate(
+                requestVacation.startDate,
+                requestVacation.endDate
+            )
+        ).willReturn(holidays)
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
@@ -170,12 +180,16 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val holidays= emptyList<Holiday>()
+        val holidays = emptyList<Holiday>()
 
-        given(holidayService.findAllBetweenDate(requestVacation.startDate,requestVacation.endDate)).willReturn(holidays)
-
+        given(
+            holidayService.findAllBetweenDate(
+                requestVacation.startDate,
+                requestVacation.endDate
+            )
+        ).willReturn(holidays)
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
 
         Assertions.assertThat(result).isEqualTo(UpdateVacationValidation.Success(vacationDb))
@@ -195,7 +209,7 @@ internal class VacationValidatorTest {
     fun `should not update not found vacation`() {
         val requestVacation = RequestVacation(1L, today, tomorrow, "description")
 
-        given(vacationRepository.findById(1L)).willReturn(Optional.empty())
+        given(vacationRepository.findById(1L)).willReturn(null)
 
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
 
@@ -216,33 +230,12 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
 
         Assertions.assertThat(result)
             .isEqualTo(UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED))
-    }
-
-    @Test
-    fun `should not update not user vacations`() {
-        given(user.id).willReturn(1L)
-        val requestVacation = RequestVacation(1L, today, tomorrow, "description")
-        val vacationDb = Vacation(
-            requestVacation.id,
-            requestVacation.startDate,
-            requestVacation.endDate,
-            VacationState.PENDING,
-            2L,
-            description = "description",
-            chargeYear = today
-        )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
-
-        val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
-
-        Assertions.assertThat(result)
-            .isEqualTo(UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.USER_UNAUTHORIZED))
     }
 
     @Test
@@ -262,7 +255,7 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
         Assertions.assertThat(result)
@@ -287,7 +280,7 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
         Assertions.assertThat(result)
@@ -297,8 +290,13 @@ internal class VacationValidatorTest {
     @Test
     fun `should not update overlaps vacation`() {
         val user = createUser()
-        val userId=2L
-        val requestVacation = RequestVacation(3L, LocalDate.of(today.year, Month.MARCH, 15), LocalDate.of(today.year, Month.MARCH, 20), "description")
+        val userId = 2L
+        val requestVacation = RequestVacation(
+            3L,
+            LocalDate.of(today.year, Month.MARCH, 15),
+            LocalDate.of(today.year, Month.MARCH, 20),
+            "description"
+        )
         val vacationDb = Vacation(
             id = 3L,
             startDate = LocalDate.of(today.year, Month.MARCH, 18),
@@ -308,7 +306,7 @@ internal class VacationValidatorTest {
             userId = userId,
             description = ""
         )
-        given(vacationRepository.findById(3L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(3L)).willReturn(vacationDb)
 
         val vacations = listOf(
             Vacation(
@@ -346,8 +344,7 @@ internal class VacationValidatorTest {
                 chargeYear = LocalDate.of(today.year, Month.MARCH, 1),
                 userId = userId,
                 description = ""
-            )
-            ,Vacation(
+            ), Vacation(
                 id = 3L,
                 startDate = LocalDate.of(today.year, Month.MARCH, 18),
                 endDate = LocalDate.of(today.year, Month.MARCH, 20),
@@ -358,10 +355,11 @@ internal class VacationValidatorTest {
             )
 
         )
-        given(vacationRepository.getVacationsBetweenDate(requestVacation.startDate,requestVacation.endDate,userId)).willReturn(vacations)
+        given(vacationRepository.find(requestVacation.startDate, requestVacation.endDate)).willReturn(vacations)
 
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
-        Assertions.assertThat(result).isEqualTo(UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS))
+        Assertions.assertThat(result)
+            .isEqualTo(UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS))
     }
 
     @Test
@@ -382,12 +380,16 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val holidays= emptyList<Holiday>()
+        val holidays = emptyList<Holiday>()
 
-        given(holidayService.findAllBetweenDate(requestVacation.startDate,requestVacation.endDate)).willReturn(holidays)
-
+        given(
+            holidayService.findAllBetweenDate(
+                requestVacation.startDate,
+                requestVacation.endDate
+            )
+        ).willReturn(holidays)
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
         Assertions.assertThat(result)
             .isEqualTo(UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY))
@@ -405,12 +407,13 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
         Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Success)
     }
+
     @Test
     fun `should delete valid past and pending vacation between yesterday and today`() {
         given(user.id).willReturn(1L)
@@ -423,7 +426,7 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
@@ -442,7 +445,7 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
@@ -461,12 +464,13 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
         Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Success)
     }
+
     @Test
     fun `should delete valid request for a future and pending vacation period`() {
         given(user.id).willReturn(1L)
@@ -479,7 +483,7 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
@@ -487,6 +491,7 @@ internal class VacationValidatorTest {
             .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD))
 
     }
+
     @Test
     fun `should not delete past and accepted vacation period`() {
         given(user.id).willReturn(1L)
@@ -499,12 +504,14 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
-        Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD))
+        Assertions.assertThat(result)
+            .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD))
     }
+
     @Test
     fun `should delete pending for today`() {
         given(user.id).willReturn(1L)
@@ -517,12 +524,13 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
         Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Success)
     }
+
     @Test
     fun `should not delete accepted for today`() {
         given(user.id).willReturn(1L)
@@ -535,43 +543,24 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
-        Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD))
+        Assertions.assertThat(result)
+            .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD))
 
     }
 
 
     @Test
     fun `should vacation not found`() {
-        given(vacationRepository.findById(1L)).willReturn(Optional.empty())
+        given(vacationRepository.findById(1L)).willReturn(null)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 
         Assertions.assertThat(result)
             .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND))
-    }
-
-    @Test
-    fun `should not delete not user vacation`() {
-        given(user.id).willReturn(1L)
-        val vacationDb = Vacation(
-            1L,
-            tomorrow,
-            tomorrow.plusDays(2),
-            VacationState.PENDING,
-            2L,
-            description = "description",
-            chargeYear = today
-        )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
-
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
-
-        Assertions.assertThat(result)
-            .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.USER_UNAUTHORIZED))
     }
 
     @Test
@@ -586,7 +575,7 @@ internal class VacationValidatorTest {
             description = "description",
             chargeYear = today
         )
-        given(vacationRepository.findById(1L)).willReturn(Optional.of(vacationDb))
+        given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
         val result = vacationValidator.canDeleteVacationPeriod(1L, user)
 

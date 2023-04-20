@@ -27,6 +27,11 @@ internal class ActivityRepositorySecured(
         }
     }
 
+    override fun findByIdWithoutSecurity(id: Long): Activity? {
+        //TODO: Add security to this method!!!
+        return activityDao.findById(id).orElse(null)
+    }
+
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return activityDao.find(startDate, endDate, authentication.id())
@@ -97,6 +102,11 @@ internal class ActivityRepositorySecured(
         return activityDao.save(activity)
     }
 
+    override fun saveWithoutSecurity(activity: Activity): Activity {
+        //TODO: Temporal method, we have to implement security!!
+        return activityDao.save(activity)
+    }
+
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
 
@@ -104,6 +114,14 @@ internal class ActivityRepositorySecured(
             require(activity.userId == authentication.id()) { "User cannot update activity" }
         }
 
+        val activityToUpdate = activityDao.findById(activity.id)
+        require(activityToUpdate.isPresent) { "Activity to update does not exist" }
+
+        return activityDao.update(activity)
+    }
+
+    override fun updateWithoutSecurity(activity: Activity): Activity {
+        //TODO: Temporal method, we have to implement security!!
         val activityToUpdate = activityDao.findById(activity.id)
         require(activityToUpdate.isPresent) { "Activity to update does not exist" }
 
