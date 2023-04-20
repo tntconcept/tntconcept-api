@@ -2,11 +2,9 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.DateInterval
-import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -94,7 +92,7 @@ class ActivityCalendarServiceTest {
     }
 
     @Test
-    fun getActivityDurationByMonth() {
+    fun `get activity duration by month`() {
         val activityDurationByMonth =
             activityCalendarService.getActivityDurationByMonth(activities, DateInterval.ofYear(2023))
 
@@ -124,9 +122,9 @@ class ActivityCalendarServiceTest {
     }
 
     @Test
-    fun getRemainingGroupedByProjectRoleAndUserId() {
+    fun `get remaining grouped by project role and user should return projects roles without filter of time interval`() {
         val remainingGroupedByProjectRoleAndUserId =
-            activityCalendarService.getRemainingGroupedByProjectRoleAndUserId(activities, DateInterval.ofYear(2023))
+            activityCalendarService.getRemainingGroupedByProjectRoleAndUser(activities, DateInterval.ofYear(2023))
         val remainingGroupedByProjectRoleAndUserIdExpected = listOf(
             ProjectRoleUser(
                 1, "Dummy Project role",
@@ -155,7 +153,7 @@ class ActivityCalendarServiceTest {
                 "Dummy Project role",
                 1,
                 1,
-                1440,
+                3,
                 1,
                 TimeUnit.DAYS,
                 RequireEvidence.WEEKLY,
@@ -167,19 +165,42 @@ class ActivityCalendarServiceTest {
     }
 
     @Test
-    fun getDurationByCountingWorkingDays() {
+    fun `get remaining grouped by project role and user should return projects roles with filter of time interval`() {
+        val date = LocalDateTime.of(2023, 4, 3, 23, 59, 59)
+        val remainingGroupedByProjectRoleAndUserId =
+            activityCalendarService.getRemainingGroupedByProjectRoleAndUser(activities, DateInterval.ofYear(2023),
+                TimeInterval.of(date.minusDays(30), date))
+        val remainingGroupedByProjectRoleAndUserIdExpected = listOf(
+            ProjectRoleUser(
+                2,
+                "Dummy Project role",
+                1,
+                1,
+                3,
+                1,
+                TimeUnit.DAYS,
+                RequireEvidence.WEEKLY,
+                false,
+                userId = 1
+            )
+        )
+        assertEquals(remainingGroupedByProjectRoleAndUserIdExpected, remainingGroupedByProjectRoleAndUserId)
+    }
+
+    @Test
+    fun `get duration counting working days`() {
         val duration = activityCalendarService.getDurationByCountingWorkingDays(activityInMinutes)
         assertEquals(60, duration)
     }
 
     @Test
-    fun `getDurationByCountingNumberOfDays by passing activities, numberOfDays`() {
+    fun `get duration by counting number of days of activities should return the number of days`() {
         val duration = activityCalendarService.getDurationByCountingNumberOfDays(activities, 1)
         assertEquals(620, duration)
     }
 
     @Test
-    fun `getDurationByCountingNumberOfDays by passing activity, numberOfDays`() {
+    fun `get duration by counting number of days of activity should return the number of days`() {
         val duration = activityCalendarService.getDurationByCountingNumberOfDays(activityInMinutes, 1)
         assertEquals(60, duration)
     }

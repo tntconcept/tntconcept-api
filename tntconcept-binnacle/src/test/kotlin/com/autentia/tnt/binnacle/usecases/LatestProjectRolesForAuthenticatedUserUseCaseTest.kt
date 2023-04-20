@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
@@ -15,7 +14,6 @@ import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
@@ -25,7 +23,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
-    private val userService = mock<UserService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleResponseConverter = ProjectRoleResponseConverter()
     private val activityService = mock<ActivityService>()
@@ -39,21 +36,20 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
 
     @Test
     fun `return the last imputed roles`() {
-        val startDate = TODAY.minusMonths(1).atTime(LocalTime.MIN)
+        val startDate = BEGINNING_OF_THE_YEAR.atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
-        val lastMonthTimeInterval = TimeInterval.of(startDate, endDate)
+        val timeInterval = TimeInterval.of(startDate, endDate)
 
         val activities = listOf(
-            createActivity().copy(projectRole = createProjectRole().copy(name = "Role ID 1")),
+            createActivity().copy(projectRole = createProjectRole().copy(name = "Role ID 1")).copy(start = TODAY.minusDays(15).atStartOfDay()).copy(end = TODAY.minusDays(15).atTime(9,0,0)),
             createActivity().copy(projectRole = createProjectRole(id = 2).copy(name = "Role ID 2"))
         )
 
         doReturn(activities).whenever(activityService)
-            .getActivitiesOfLatestProjects(lastMonthTimeInterval)
+            .getActivitiesOfLatestProjects(timeInterval)
 
         val expectedProjectRoles = listOf(
             buildProjectRoleUserDTO(1L),
-            buildProjectRoleUserDTO(2L),
         )
 
         assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get())
@@ -77,6 +73,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
 
     private companion object {
         private val TODAY = LocalDate.now()
+        private val BEGINNING_OF_THE_YEAR = LocalDate.of(TODAY.year, 1, 1)
         private val START_DATE = TODAY.minusDays(1)
         private val END_DATE = TODAY.minusDays(4)
 

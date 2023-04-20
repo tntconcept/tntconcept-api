@@ -27,7 +27,7 @@ class ProjectRoleByUserIdsUseCase internal constructor(
         val activities =
             activityService.getActivities(currentYearTimeInterval, userIds)
 
-        val remainingGroupedByProjectRoleAndUserId = activityCalendarService.getRemainingGroupedByProjectRoleAndUserId(
+        val remainingGroupedByProjectRoleAndUserId = activityCalendarService.getRemainingGroupedByProjectRoleAndUser(
             activities.map(Activity::toDomain), currentYearTimeInterval.getDateInterval()
         )
 

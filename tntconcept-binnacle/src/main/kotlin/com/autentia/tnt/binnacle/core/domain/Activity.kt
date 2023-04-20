@@ -17,4 +17,8 @@ data class Activity(val start: LocalDateTime, val end: LocalDateTime, val projec
         } else {
             numberOfDays * 8 * 60
         }
+
+    fun isInTheTimeInterval(timeInterval: TimeInterval) =
+          (start.isBefore(timeInterval.end) || start.isEqual(timeInterval.end))
+                    && (end.isAfter(timeInterval.start) || end.isEqual(timeInterval.start))
 }

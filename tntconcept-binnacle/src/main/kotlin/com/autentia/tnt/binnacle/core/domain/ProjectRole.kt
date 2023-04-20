@@ -21,6 +21,13 @@ data class ProjectRole(
         return remaining
     }
 
+    fun getMaxAllowedInUnits(): Int {
+        if (timeUnit === TimeUnit.DAYS) {
+            return maxAllowed / (60 * 8)
+        }
+        return maxAllowed
+    }
+
     private fun getRemaining(calendar: Calendar, activities: List<Activity>) =
         if (maxAllowed == 0) {
             0

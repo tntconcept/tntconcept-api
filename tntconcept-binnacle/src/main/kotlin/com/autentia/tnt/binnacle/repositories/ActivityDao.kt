@@ -38,7 +38,7 @@ internal interface ActivityDao : CrudRepository<Activity, Long> {
     fun findOfLatestProjects(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
     @Query(
-        """SELECT a 
+        """SELECT a
             FROM Activity a
             JOIN a.projectRole.project p
             WHERE a.userId = :userId
