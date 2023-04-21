@@ -2,12 +2,25 @@ package com.autentia.tnt.binnacle.repositories.predicates
 
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDate
+import javax.persistence.criteria.CriteriaBuilder
+import javax.persistence.criteria.CriteriaQuery
+import javax.persistence.criteria.JoinType
+import javax.persistence.criteria.Root
 
 internal object ActivityPredicates {
 
-    internal val ALL = Specification<Activity> { _, _, _ -> null }
+    internal val ALL =
+        Specification { root: Root<Activity>, criteriaQuery: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder ->
+            val projectRoleFetch = root.fetch<Activity, ProjectRole>("projectRole", JoinType.INNER)
+            val projectFetch = projectRoleFetch.fetch<ProjectRole, Project>("project", JoinType.INNER)
+            projectFetch.fetch<Project, Organization>("organization", JoinType.INNER)
+            null
+        }
 
     internal fun id(id: Long) = Specification<Activity> { root, _, criteriaBuilder ->
         criteriaBuilder.equal(root.get<Long>("id"), id)
@@ -36,6 +49,21 @@ internal object ActivityPredicates {
     }
 
     internal fun roleId(roleId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(root.get<Long>("projectRole").get<Long>("id"), roleId)
+        criteriaBuilder.equal(root.get<ProjectRole>("projectRole").get<Long>("id"), roleId)
+    }
+
+    internal fun projectId(projectId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
+        criteriaBuilder.equal(root.get<ProjectRole>("projectRole").get<Project>("project").get<Long>("id"), projectId)
+    }
+
+    internal fun organizationId(organizationId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
+        criteriaBuilder.equal(
+            root.get<ProjectRole>("projectRole").get<Project>("project").get<Organization>("organization")
+                .get<Long>("id"), organizationId
+        )
+    }
+
+    internal fun userId(userId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
+        criteriaBuilder.equal(root.get<Long>("userId"), userId)
     }
 }
