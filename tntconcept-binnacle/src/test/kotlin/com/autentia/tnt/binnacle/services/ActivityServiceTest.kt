@@ -4,10 +4,20 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.DateInterval
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.exception.ActivityAlreadyApprovedException
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,12 +27,15 @@ import org.mockito.BDDMockito.mock
 import org.mockito.BDDMockito.verify
 import org.mockito.BDDMockito.verifyNoInteractions
 import org.mockito.BDDMockito.willDoNothing
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.*
+import java.util.Date
+import java.util.Optional
 
 internal class ActivityServiceTest {
 
@@ -81,7 +94,6 @@ internal class ActivityServiceTest {
     fun `get activities between start and end date`() {
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)
-        val userId = 1L
 
         whenever(
             activityRepository.find(
@@ -282,7 +294,7 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `approve activity by id`() {
+    fun `approve activity by id`(){
         given(activityRepository.findById(activityWithoutImageSaved.id as Long)).willReturn(activityWithoutImageSaved)
         given(
             activityRepository.update(
@@ -292,6 +304,15 @@ internal class ActivityServiceTest {
 
         val approvedActivity = activityService.approveActivityById(activityWithoutImageSaved.id as Long)
         assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
+    }
+
+    @Test
+    fun `approve activity with not allowed state`() {
+        doReturn(activityWithoutImageToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
+            .findById(any())
+        assertThrows<ActivityAlreadyApprovedException> {
+            activityService.approveActivityById(any())
+        }
     }
 
     @Test
@@ -324,8 +345,7 @@ internal class ActivityServiceTest {
 
         private val organization = Organization(1L, "Autentia", emptyList())
         private val project = Project(1L, "Back-end developers", true, false, organization, emptyList())
-        private val projectRole =
-            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
+        private val projectRole = ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
 
         private val TODAY_NOON = LocalDateTime.of(LocalDate.now(), LocalTime.NOON)
 
