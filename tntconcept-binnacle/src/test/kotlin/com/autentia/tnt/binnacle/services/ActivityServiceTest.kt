@@ -17,6 +17,7 @@ import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -116,6 +117,12 @@ internal class ActivityServiceTest {
         doReturn(activities).whenever(activityRepository).find(ApprovalState.ACCEPTED)
 
         assertEquals(activities, activityService.getActivitiesApprovalState(ApprovalState.ACCEPTED))
+    }
+
+    @Test
+    fun testGetActivitiesBySpecification() {
+        doReturn(activities).whenever(activityRepository).findAll(ActivityPredicates.ALL)
+        assertEquals(activities, activityService.getActivities(ActivityPredicates.ALL))
     }
 
     @Test
