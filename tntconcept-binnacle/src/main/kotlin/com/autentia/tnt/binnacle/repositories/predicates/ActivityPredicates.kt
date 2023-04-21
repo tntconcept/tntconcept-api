@@ -7,20 +7,12 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDate
-import javax.persistence.criteria.CriteriaBuilder
-import javax.persistence.criteria.CriteriaQuery
 import javax.persistence.criteria.JoinType
-import javax.persistence.criteria.Root
 
 internal object ActivityPredicates {
 
     internal val ALL =
-        Specification { root: Root<Activity>, criteriaQuery: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder ->
-            val projectRoleFetch = root.fetch<Activity, ProjectRole>("projectRole", JoinType.INNER)
-            val projectFetch = projectRoleFetch.fetch<ProjectRole, Project>("project", JoinType.INNER)
-            projectFetch.fetch<Project, Organization>("organization", JoinType.INNER)
-            null
-        }
+        Specification<Activity> { _, _, _ -> null }
 
     internal fun id(id: Long) = Specification<Activity> { root, _, criteriaBuilder ->
         criteriaBuilder.equal(root.get<Long>("id"), id)
@@ -53,12 +45,16 @@ internal object ActivityPredicates {
     }
 
     internal fun projectId(projectId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(root.get<ProjectRole>("projectRole").get<Project>("project").get<Long>("id"), projectId)
+        criteriaBuilder.equal(
+            root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
+                .join<ProjectRole, Project>("project", JoinType.INNER).get<Long>("id"), projectId
+        )
     }
 
     internal fun organizationId(organizationId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
         criteriaBuilder.equal(
-            root.get<ProjectRole>("projectRole").get<Project>("project").get<Organization>("organization")
+            root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
+                .join<ProjectRole, Project>("project", JoinType.INNER).join<Project, Organization>("organization")
                 .get<Long>("id"), organizationId
         )
     }
