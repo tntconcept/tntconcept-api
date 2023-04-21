@@ -178,10 +178,12 @@ class ActivityDaoSpecificationIT {
 
         activityDao.saveAll(activitiesToSave)
 
-        val activitySpecification = ActivityPredicates.endDateGreaterThanOrEqualTo(startDate)
-            .and(ActivityPredicates.startDateLessThanOrEqualTo(endDate))
+        val activitySpecification = ActivityPredicates.ALL.and(
+            ActivityPredicates.endDateGreaterThanOrEqualTo(startDate)
+                .and(ActivityPredicates.startDateLessThanOrEqualTo(endDate))
+        )
 
-        val actualActivities = activityDao.findAll(ActivityPredicates.ALL.and(activitySpecification))
+        val actualActivities = activityDao.findAll(activitySpecification)
 
         assertEquals(3, actualActivities.size)
 
