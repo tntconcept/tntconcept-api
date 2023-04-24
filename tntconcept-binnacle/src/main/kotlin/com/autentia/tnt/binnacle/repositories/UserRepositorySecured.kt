@@ -32,7 +32,7 @@ internal class UserRepositorySecured(
     fun find(): List<User>{
         val authentication = securityService.checkAuthentication()
         return if(authentication.isAdmin()) {
-            userDao.find()
+            userDao.findByActiveTrue()
         }else{
             emptyList()
         }

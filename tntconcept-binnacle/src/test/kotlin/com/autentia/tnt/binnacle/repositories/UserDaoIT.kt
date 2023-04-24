@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDate
-import java.time.Month
 
 @MicronautTest()
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -23,7 +22,7 @@ internal class UserDaoIT {
     fun `should find user by id`() {
         val user = User(
             id = 1L,
-            hiringDate = LocalDate.of(2023, Month.APRIL, 19),
+            hiringDate = LocalDate.now(),
             username = "admin",
             password = "dd94709528bb1c83d08f3088d4043f4742891f4f",
             name = "Administrador",
@@ -51,7 +50,7 @@ internal class UserDaoIT {
     fun `should find list of users`() {
         val user = User(
             id = 1L,
-            hiringDate = LocalDate.of(2023, Month.APRIL, 19),
+            hiringDate = LocalDate.now(),
             username = "admin",
             password = "dd94709528bb1c83d08f3088d4043f4742891f4f",
             name = "Administrador",
@@ -79,7 +78,7 @@ internal class UserDaoIT {
     fun `should find by username`() {
         val user = User(
             id = 1L,
-            hiringDate = LocalDate.of(2023, Month.APRIL, 19),
+            hiringDate = LocalDate.now(),
             username = "admin",
             password = "dd94709528bb1c83d08f3088d4043f4742891f4f",
             name = "Administrador",
@@ -106,7 +105,7 @@ internal class UserDaoIT {
     fun `should find by active user`() {
         val user = User(
             id = 1L,
-            hiringDate = LocalDate.of(2023, Month.APRIL, 19),
+            hiringDate = LocalDate.now(),
             username = "admin",
             password = "dd94709528bb1c83d08f3088d4043f4742891f4f",
             name = "Administrador",

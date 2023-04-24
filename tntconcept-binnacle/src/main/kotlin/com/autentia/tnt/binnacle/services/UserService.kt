@@ -21,9 +21,9 @@ class UserService internal constructor(
     fun findActive(): List<User> =
         userRepositorySecured.findByActiveTrue()
 
-    fun findAll(): List<User> {
-           return userRepositorySecured.find()
-    }
+    fun findAll(): List<User>  =
+        userRepositorySecured.find()
+
 
     fun getUserByUserName(userName: String): User =
         Optional.ofNullable(userRepositorySecured.findByUsername(userName))
