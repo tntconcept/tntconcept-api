@@ -15,17 +15,27 @@ internal class PredicateBuilder<T> {
 
     fun and(spec1: Specification<T>, spec2: Specification<T>): Specification<T> {
         return when {
-            spec1 is EmptySpecification -> where(spec2)
-            spec2 is EmptySpecification -> where(spec1)
-            else -> SpecificationComposition(spec1.and(spec2), "($spec1&$spec2)")
+            spec1 !is EmptySpecification && spec2 !is EmptySpecification -> SpecificationComposition(
+                spec1.and(spec2),
+                "($spec1&$spec2)"
+            )
+
+            spec1 !is EmptySpecification -> where(spec1)
+            spec2 !is EmptySpecification -> where(spec2)
+            else -> EmptySpecification()
         }
     }
 
     fun or(spec1: Specification<T>, spec2: Specification<T>): Specification<T> {
         return when {
-            spec1 is EmptySpecification -> where(spec2)
-            spec2 is EmptySpecification -> where(spec1)
-            else -> SpecificationComposition(spec1.or(spec2), "($spec1||$spec2)")
+            spec1 !is EmptySpecification && spec2 !is EmptySpecification -> SpecificationComposition(
+                spec1.or(spec2),
+                "($spec1||$spec2)"
+            )
+
+            spec1 !is EmptySpecification -> where(spec1)
+            spec2 !is EmptySpecification -> where(spec2)
+            else -> EmptySpecification()
         }
     }
 
@@ -43,7 +53,7 @@ internal class PredicateBuilder<T> {
         }
 
         override fun toString(): String {
-            return descriptor;
+            return descriptor
         }
 
 

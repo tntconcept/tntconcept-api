@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.repositories.predicates
 import com.autentia.tnt.binnacle.entities.Activity
 import io.micronaut.data.jpa.repository.criteria.Specification
 import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
@@ -131,5 +132,17 @@ class PredicateBuilderTest {
 
         assertEquals("mySpecificationExpression1", predicate.toString())
         assertEquals("mySpecificationExpression1", reversePredicate.toString())
+    }
+
+    @Test
+    fun `operations with two empty specifications result in empty specification`() {
+        val specification1 = EmptySpecification<Activity>()
+        val specification2 = EmptySpecification<Activity>()
+
+        val predicate = predicateBuilder.and(specification1, specification2)
+        assertTrue(predicate is EmptySpecification)
+
+        val predicate2 = predicateBuilder.or(specification1, specification2)
+        assertTrue(predicate2 is EmptySpecification)
     }
 }
