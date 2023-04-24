@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
+import io.micronaut.http.HttpHeaders
 import io.micronaut.http.HttpRequest.*
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.HttpStatus.*
@@ -175,10 +176,10 @@ internal class ActivityControllerIT {
 
     @Test
     fun `post a new activity`() {
-        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO)
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
-            POST("/api/activity", ACTIVITY_POST_JSON)
+            POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
@@ -194,7 +195,7 @@ internal class ActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                POST("/api/activity", tooLongDescriptionJson),
+                POST("/api/activity", tooLongDescriptionJson).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -217,11 +218,11 @@ internal class ActivityControllerIT {
         expectedResponseStatus: HttpStatus,
         expectedErrorCode: String
     ) {
-        doThrow(exception).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO)
+        doThrow(exception).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                POST("/api/activity", ACTIVITY_POST_JSON),
+                POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
