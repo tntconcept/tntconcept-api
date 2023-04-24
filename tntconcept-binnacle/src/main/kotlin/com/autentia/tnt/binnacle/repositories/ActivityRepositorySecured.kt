@@ -50,9 +50,9 @@ internal class ActivityRepositorySecured(
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isAdmin()) {
-           return activityDao.findByApprovalState(approvalState)
+            activityDao.findByApprovalState(approvalState)
         } else {
-            return activityDao.findByApprovalStateAndUserId(approvalState, authentication.id())
+            activityDao.findByApprovalStateAndUserId(approvalState, authentication.id())
         }
     }
 
@@ -94,7 +94,7 @@ internal class ActivityRepositorySecured(
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
 
-        if(authentication.isNotAdmin()) {
+        if (authentication.isNotAdmin()) {
             require(activity.userId == authentication.id()) { "User cannot update activity" }
         }
 

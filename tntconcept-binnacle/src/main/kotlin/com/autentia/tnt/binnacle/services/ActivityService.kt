@@ -101,7 +101,7 @@ internal class ActivityService(
         // Update stored image
         if (activityRequest.hasEvidences) {
             activityImageService.storeActivityImage(
-                activityRequest.id!!,
+                activityRequest.id,
                 activityRequest.imageFile,
                 oldActivity.insertDate!!
             )
@@ -109,7 +109,7 @@ internal class ActivityService(
 
         // Delete stored image
         if (!activityRequest.hasEvidences && oldActivity.hasEvidences) {
-            activityImageService.deleteActivityImage(activityRequest.id!!, oldActivity.insertDate!!)
+            activityImageService.deleteActivityImage(activityRequest.id, oldActivity.insertDate!!)
         }
 
         return activityRepository.update(
