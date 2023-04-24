@@ -93,6 +93,11 @@ internal class ActivityCalendarService(
         return activitiesCalendar.activitiesCalendarMap
     }
 
+    fun getRemainingOfProjectRoleForUser(projectRole: ProjectRole, activities: List<Activity>, dateInterval: DateInterval, userId: Long): Int{
+        val calendar = createCalendar(dateInterval)
+        return projectRole.getRemainingInUnits(calendar, filterActivities(activities, projectRole, userId))
+    }
+
     fun getRemainingGroupedByProjectRoleAndUser(
         activities: List<Activity>, dateInterval: DateInterval
     ): List<ProjectRoleUser> =
@@ -116,7 +121,7 @@ internal class ActivityCalendarService(
                         projectRole.project.organization.id,
                         projectRole.project.id,
                         projectRole.getMaxAllowedInUnits(),
-                        projectRole.getRemainingInUnits(calendar, userActivities.value),
+                        projectRole.getRemainingInUnits(calendar, filterActivities(activities, projectRole, userActivities.key)),
                         projectRole.timeUnit,
                         projectRole.requireEvidence,
                         projectRole.isApprovalRequired,
@@ -125,6 +130,12 @@ internal class ActivityCalendarService(
                 }
             }.flatten()
     }
+
+    private fun filterActivities(
+        activities: List<Activity>,
+        projectRole: ProjectRole,
+        userId: Long
+    ) = activities.filter { it.projectRole == projectRole && it.userId == userId }
 
     private fun filterActivitiesByTimeInterval(
         filterTimeInterval: TimeInterval?,

@@ -151,6 +151,21 @@ internal fun createActivity() = Activity(
     ApprovalState.NA
 )
 
+internal fun createActivity(projectRole: ProjectRole) = Activity(
+    1,
+    LocalDateTime.of(2023, 3, 1, 13, 5, 25),
+    LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
+    60,
+    "Activity",
+    projectRole,
+    1L,
+    true,
+    1L,
+    null,
+    false,
+    ApprovalState.NA
+)
+
 internal fun createDomainActivity() = com.autentia.tnt.binnacle.core.domain.Activity(
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),

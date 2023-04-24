@@ -14,7 +14,6 @@ import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -125,6 +124,17 @@ internal class ActivityServiceTest {
         val actual = activityService.getUserActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
 
         assertEquals(listOf(activityWithoutImageSaved), actual)
+    }
+
+    @Test
+    fun `get activities by project role id`() {
+        val expectedProjectRoleActivities = listOf(activityWithoutImageSaved, activityWithImageToSave)
+
+        whenever(activityRepository.find(1L)).thenReturn(expectedProjectRoleActivities)
+
+        val result = activityService.getProjectRoleActivities(1L)
+
+        assertEquals(expectedProjectRoleActivities, result)
     }
 
     @Test
@@ -390,7 +400,8 @@ internal class ActivityServiceTest {
 
         private val organization = Organization(1L, "Autentia", emptyList())
         private val project = Project(1L, "Back-end developers", true, false, organization, emptyList())
-        private val projectRole = ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
+        private val projectRole =
+            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
 
         private val TODAY_NOON = LocalDateTime.of(LocalDate.now(), LocalTime.NOON)
 

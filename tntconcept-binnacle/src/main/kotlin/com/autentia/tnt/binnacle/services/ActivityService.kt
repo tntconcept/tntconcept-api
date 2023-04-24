@@ -63,6 +63,8 @@ internal class ActivityService(
         return activityRepository.find(approvalState)
     }
 
+
+
     @Transactional
     @ReadOnly
     fun getActivitiesOfLatestProjects(timeInterval: TimeInterval) =
@@ -144,4 +146,6 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
+
+    fun getProjectRoleActivities(projectRoleId: Long): List<Activity> = activityRepository.find(projectRoleId)
 }

@@ -122,69 +122,51 @@ class ActivityCalendarServiceTest {
     }
 
     @Test
-    fun `get remaining grouped by project role and user should return projects roles without filter of time interval`() {
-        val remainingGroupedByProjectRoleAndUserId =
-            activityCalendarService.getRemainingGroupedByProjectRoleAndUser(activities, DateInterval.ofYear(2023))
-        val remainingGroupedByProjectRoleAndUserIdExpected = listOf(
-            ProjectRoleUser(
-                1, "Dummy Project role",
-                1,
-                1,
-                480,
-                420,
-                TimeUnit.MINUTES,
-                RequireEvidence.WEEKLY,
-                false,
-                1
-            ),
-            ProjectRoleUser(
-                1, "Dummy Project role",
-                1,
-                1,
-                480,
-                400,
-                TimeUnit.MINUTES,
-                RequireEvidence.WEEKLY,
-                false,
-                2
-            ),
-            ProjectRoleUser(
-                2,
-                "Dummy Project role",
-                1,
-                1,
-                3,
-                1,
-                TimeUnit.DAYS,
-                RequireEvidence.WEEKLY,
-                false,
-                userId = 1
+    fun `should calculate remaining for project role`() {
+        assertEquals(
+            420, activityCalendarService.getRemainingOfProjectRoleForUser(
+                projectRoleInMinutes,
+                activities,
+                DateInterval.ofYear(2023),
+                1L
             )
         )
-        assertEquals(remainingGroupedByProjectRoleAndUserIdExpected, remainingGroupedByProjectRoleAndUserId)
-    }
 
-    @Test
-    fun `get remaining grouped by project role and user should return projects roles with filter of time interval`() {
-        val date = LocalDateTime.of(2023, 4, 3, 23, 59, 59)
-        val remainingGroupedByProjectRoleAndUserId =
-            activityCalendarService.getRemainingGroupedByProjectRoleAndUser(activities, DateInterval.ofYear(2023),
-                TimeInterval.of(date.minusDays(30), date))
-        val remainingGroupedByProjectRoleAndUserIdExpected = listOf(
-            ProjectRoleUser(
-                2,
-                "Dummy Project role",
-                1,
-                1,
-                3,
-                1,
-                TimeUnit.DAYS,
-                RequireEvidence.WEEKLY,
-                false,
-                userId = 1
+        assertEquals(
+            400, activityCalendarService.getRemainingOfProjectRoleForUser(
+                projectRoleInMinutes,
+                activities,
+                DateInterval.ofYear(2023),
+                2L
             )
         )
-        assertEquals(remainingGroupedByProjectRoleAndUserIdExpected, remainingGroupedByProjectRoleAndUserId)
+
+        assertEquals(
+            1, activityCalendarService.getRemainingOfProjectRoleForUser(
+                activityInDays.projectRole,
+                activities,
+                DateInterval.ofYear(2023),
+                1L
+            )
+        )
+
+        assertEquals(
+            480, activityCalendarService.getRemainingOfProjectRoleForUser(
+                projectRoleInMinutes,
+                emptyList(),
+                DateInterval.ofYear(2023),
+                1L
+            )
+        )
+
+        assertEquals(
+            0, activityCalendarService.getRemainingOfProjectRoleForUser(
+                projectRoleInMinutes.copy(maxAllowed = 0),
+                emptyList(),
+                DateInterval.ofYear(2023),
+                1L
+            )
+        )
     }
 
     @Test
