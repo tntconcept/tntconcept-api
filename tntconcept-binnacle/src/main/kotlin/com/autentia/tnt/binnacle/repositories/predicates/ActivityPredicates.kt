@@ -1,65 +1,143 @@
 package com.autentia.tnt.binnacle.repositories.predicates
 
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.*
 import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDate
-import javax.persistence.criteria.JoinType
+import javax.persistence.criteria.*
 
 internal object ActivityPredicates {
 
-    internal val ALL =
-        Specification<Activity> { _, _, _ -> null }
+    internal val ALL = EmptySpecification<Activity>()
+    internal fun id(id: Long) = ActivityIdSpecification(id)
+    internal fun approvalState(approvalState: ApprovalState): Specification<Activity> =
+        ActivityApprovalStateSpecification(approvalState)
 
-    internal fun id(id: Long) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(root.get<Long>("id"), id)
+    internal fun roleId(roleId: Long) = ActivityRoleIdSpecification(roleId)
+    internal fun startDateLessThanOrEqualTo(date: LocalDate) = ActivityStartDateLessOrEqualSpecification(date)
+    internal fun endDateGreaterThanOrEqualTo(date: LocalDate) = ActivityEndDateGreaterOrEqualSpecification(date)
+    internal fun projectId(projectId: Long) = ActivityProjectIdSpecification(projectId)
+    internal fun organizationId(organizationId: Long) = ActivityOrganizationIdSpecification(organizationId)
+    internal fun userId(userId: Long) = ActivityUserIdSpecification(userId)
+}
+
+class ActivityIdSpecification(private val id: Long) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.equal(root.get<Long>("id"), id)
     }
 
-    internal fun approvalState(approvalState: ApprovalState) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(root.get<ApprovalState>("approvalState"), approvalState)
+    override fun toString(): String {
+        return "activity.id==$id"
+    }
+}
+
+class ActivityApprovalStateSpecification(private val approvalState: ApprovalState) :
+    Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.equal(root.get<ApprovalState>("approvalState"), approvalState)
     }
 
-    internal fun startDateAfter(date: LocalDate) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.greaterThan(root.get("start"), date)
+    override fun toString(): String {
+        return "activity.approvalState==$approvalState"
+    }
+}
+
+class ActivityRoleIdSpecification(private val roleId: Long) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.equal(root.get<ProjectRole>("projectRole").get<Long>("id"), roleId)
     }
 
-    internal fun endBefore(date: LocalDate) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.lessThan(root.get("end"), date)
+    override fun toString(): String {
+        return "activity.projectRole.id==$roleId"
     }
+}
 
-    internal fun startDateLessThanOrEqualTo(date: LocalDate) = Specification<Activity> { root, _, criteriaBuilder ->
-        val dateTime = date.atTime(23, 59, 59)
-        criteriaBuilder.lessThanOrEqualTo(root.get("start"), dateTime)
-    }
-
-    internal fun endDateGreaterThanOrEqualTo(date: LocalDate) = Specification<Activity> { root, _, criteriaBuilder ->
-        val dateTime = date.atStartOfDay()
-        criteriaBuilder.greaterThanOrEqualTo(root.get("end"), dateTime)
-    }
-
-    internal fun roleId(roleId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(root.get<ProjectRole>("projectRole").get<Long>("id"), roleId)
-    }
-
-    internal fun projectId(projectId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(
+class ActivityProjectIdSpecification(private val projectId: Long) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.equal(
             root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
                 .join<ProjectRole, Project>("project", JoinType.INNER).get<Long>("id"), projectId
         )
     }
 
-    internal fun organizationId(organizationId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(
+    override fun toString(): String {
+        return "activity.projectRole.project.id==$projectId"
+    }
+}
+
+class ActivityOrganizationIdSpecification(private val organizationId: Long) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.equal(
             root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
                 .join<ProjectRole, Project>("project", JoinType.INNER).join<Project, Organization>("organization")
                 .get<Long>("id"), organizationId
         )
     }
 
-    internal fun userId(userId: Long) = Specification<Activity> { root, _, criteriaBuilder ->
-        criteriaBuilder.equal(root.get<Long>("userId"), userId)
+    override fun toString(): String {
+        return "activity.projectRole.project.organization.id==$organizationId"
     }
+}
+
+class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.lessThanOrEqualTo(root.get("start"), startDate.atTime(23, 59, 59))
+    }
+
+    override fun toString(): String {
+        return "activity.start<=$startDate"
+    }
+
+}
+
+class ActivityEndDateGreaterOrEqualSpecification(private val endDate: LocalDate) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.greaterThanOrEqualTo(root.get("end"), endDate.atStartOfDay())
+    }
+
+    override fun toString(): String {
+        return "activity.end>=$endDate"
+    }
+}
+
+class ActivityUserIdSpecification(private val userId: Long) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.equal(root.get<Long>("userId"), userId)
+    }
+
+    override fun toString(): String {
+        return "activity.userId==$userId"
+    }
+
 }

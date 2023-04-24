@@ -103,7 +103,7 @@ internal class ActivityService(
         // Update stored image
         if (activityRequest.hasEvidences) {
             activityImageService.storeActivityImage(
-                activityRequest.id!!,
+                activityRequest.id,
                 activityRequest.imageFile,
                 oldActivity.insertDate!!
             )
@@ -111,7 +111,7 @@ internal class ActivityService(
 
         // Delete stored image
         if (!activityRequest.hasEvidences && oldActivity.hasEvidences) {
-            activityImageService.deleteActivityImage(activityRequest.id!!, oldActivity.insertDate!!)
+            activityImageService.deleteActivityImage(activityRequest.id, oldActivity.insertDate!!)
         }
 
         return activityRepository.update(
@@ -123,8 +123,8 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun approveActivityById(id: Long): Activity {
-        val activityToApprove = activityRepository.findById(id)?: throw ActivityNotFoundException(id)
-        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA){
+        val activityToApprove = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
+        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA) {
             throw ActivityAlreadyApprovedException()
         }
         activityToApprove.approvalState = ApprovalState.ACCEPTED
@@ -137,7 +137,7 @@ internal class ActivityService(
     fun deleteActivityById(id: Long) {
         val activityToDelete =
             activityRepository
-            .findById(id) ?: throw ActivityNotFoundException(id)
+                .findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasEvidences) {
             activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
         }

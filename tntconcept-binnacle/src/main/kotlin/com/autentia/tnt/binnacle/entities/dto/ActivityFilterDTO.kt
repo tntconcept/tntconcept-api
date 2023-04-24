@@ -6,10 +6,10 @@ import java.time.LocalDate
 
 @Introspected
 data class ActivityFilterDTO(
-    val startDate: LocalDate?,
-    val endDate: LocalDate?,
-    val approvalState: ApprovalState?,
-    val organizationId: Long?,
-    val projectId: Long?,
-    val roleId: Long?
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
+    val approvalState: ApprovalState? = null,
+    val organizationId: Long? = null,
+    val projectId: Long? = null,
+    val roleId: Long? = null
 )
