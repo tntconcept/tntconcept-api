@@ -21,7 +21,7 @@ internal class ActivityService(
     private val activityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
-    private val activityRequestBodyConverter: ActivityRequestBodyConverter
+    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
 ) {
 
     @Transactional
@@ -36,12 +36,6 @@ internal class ActivityService(
         val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
         return activityRepository.find(startDateMinHour, endDateMaxHour)
-    }
-
-    @Transactional
-    @ReadOnly
-    fun getActivitiesApprovalState(approvalState: ApprovalState): List<Activity> {
-        return activityRepository.find(approvalState)
     }
 
     @Transactional
