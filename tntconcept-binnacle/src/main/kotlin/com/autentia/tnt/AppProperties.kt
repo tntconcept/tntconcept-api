@@ -32,9 +32,12 @@ internal class AppProperties {
     internal class BinnacleProperties {
         @Email
         var vacationsApprovers: List<String> = emptyList()
+        @Email
+        var activitiesApprovers: List<String> = emptyList()
 
         var notWorkableProjects: List<Int> = emptyList()
         var workSummary = WorkSummaryProperties()
+
 
         @ConfigurationProperties("work-summary")
         internal class WorkSummaryProperties {

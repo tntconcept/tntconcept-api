@@ -56,8 +56,8 @@ internal class ActivityController(
 
     @Post
     @Operation(summary = "Creates a new activity.")
-    internal fun post(@Valid activityRequest: ActivityRequestBodyDTO): ActivityResponseDTO =
-        activityCreationUseCase.createActivity(activityRequest)
+    internal fun post(@Body @Valid activityRequest: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO =
+        activityCreationUseCase.createActivity(activityRequest, locale)
 
     @Put
     @Operation(summary = "Updates an existing activity.")
