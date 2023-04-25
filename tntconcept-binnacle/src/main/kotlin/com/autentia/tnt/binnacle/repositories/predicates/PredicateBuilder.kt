@@ -7,19 +7,15 @@ import javax.persistence.criteria.Predicate
 import javax.persistence.criteria.Root
 
 internal object PredicateBuilder {
-    fun <T> where(specification: Specification<T>): Specification<T> {
-        return SpecificationComposition(specification, "$specification")
-    }
 
     fun <T> and(spec1: Specification<T>, spec2: Specification<T>): Specification<T> {
         return when {
             spec1 !is EmptySpecification && spec2 !is EmptySpecification -> SpecificationComposition(
-                spec1.and(spec2),
-                "($spec1&$spec2)"
+                spec1, spec2, SpecificationComposition.Operator.AND
             )
 
-            spec1 !is EmptySpecification -> where(spec1)
-            spec2 !is EmptySpecification -> where(spec2)
+            spec1 !is EmptySpecification -> spec1
+            spec2 !is EmptySpecification -> spec2
             else -> EmptySpecification()
         }
     }
@@ -27,44 +23,62 @@ internal object PredicateBuilder {
     fun <T> or(spec1: Specification<T>, spec2: Specification<T>): Specification<T> {
         return when {
             spec1 !is EmptySpecification && spec2 !is EmptySpecification -> SpecificationComposition(
-                spec1.or(spec2),
-                "($spec1||$spec2)"
+                spec1, spec2, SpecificationComposition.Operator.OR
             )
 
-            spec1 !is EmptySpecification -> where(spec1)
-            spec2 !is EmptySpecification -> where(spec2)
+            spec1 !is EmptySpecification -> spec1
+            spec2 !is EmptySpecification -> spec2
             else -> EmptySpecification()
         }
     }
 
-    private class SpecificationComposition<T>(
-        private val specification: Specification<T>,
-        private val descriptor: String
+    class SpecificationComposition<T>(
+        private val lhs: Specification<T>,
+        private val rhs: Specification<T>,
+        private val operator: Operator,
     ) :
         Specification<T> {
+
+        enum class Operator {
+            AND, OR
+        }
+
         override fun toPredicate(
             root: Root<T>,
             query: CriteriaQuery<*>,
-            criteriaBuilder: CriteriaBuilder
+            criteriaBuilder: CriteriaBuilder,
         ): Predicate? {
-            return specification.toPredicate(root, query, criteriaBuilder)
+            val predicate = when (operator) {
+                Operator.OR -> lhs.or(rhs)
+                Operator.AND -> lhs.and(rhs)
+            }
+
+            return predicate.toPredicate(root, query, criteriaBuilder)
         }
 
         override fun toString(): String {
-            return descriptor
+            return when (operator) {
+                Operator.OR -> "($lhs||$rhs)"
+                Operator.AND -> "($lhs&$rhs)"
+            }
         }
-
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other !is SpecificationComposition<*>) return false
-            return descriptor == other.descriptor
+            if (operator !== other.operator) return false
+            return when (lhs) {
+                other.lhs -> rhs == other.rhs
+                other.rhs -> rhs == other.lhs
+                else -> false
+            }
         }
 
         override fun hashCode(): Int {
-            return descriptor.hashCode()
+            var result = lhs.hashCode()
+            result = 31 * result + rhs.hashCode()
+            return result
         }
-
     }
 }
 
@@ -72,13 +86,13 @@ class EmptySpecification<T> : Specification<T> {
     override fun toPredicate(
         root: Root<T>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return null
     }
 
     override fun toString(): String {
-        return ""
+        return "TRUE"
     }
 }
 

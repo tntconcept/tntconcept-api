@@ -24,7 +24,7 @@ class ActivityIdSpecification(private val id: Long) : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(root.get<Long>("id"), id)
     }
@@ -39,7 +39,7 @@ class ActivityApprovalStateSpecification(private val approvalState: ApprovalStat
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(root.get<ApprovalState>("approvalState"), approvalState)
     }
@@ -47,13 +47,26 @@ class ActivityApprovalStateSpecification(private val approvalState: ApprovalStat
     override fun toString(): String {
         return "activity.approvalState==$approvalState"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityApprovalStateSpecification) return false
+
+        return approvalState == other.approvalState
+    }
+
+    override fun hashCode(): Int {
+        return approvalState.hashCode()
+    }
+
+
 }
 
 class ActivityRoleIdSpecification(private val roleId: Long) : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(root.get<ProjectRole>("projectRole").get<Long>("id"), roleId)
     }
@@ -61,13 +74,26 @@ class ActivityRoleIdSpecification(private val roleId: Long) : Specification<Acti
     override fun toString(): String {
         return "activity.projectRole.id==$roleId"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityRoleIdSpecification) return false
+
+        return roleId == other.roleId
+    }
+
+    override fun hashCode(): Int {
+        return roleId.hashCode()
+    }
+
+
 }
 
 class ActivityProjectIdSpecification(private val projectId: Long) : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(
             root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
@@ -78,13 +104,24 @@ class ActivityProjectIdSpecification(private val projectId: Long) : Specificatio
     override fun toString(): String {
         return "activity.projectRole.project.id==$projectId"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityProjectIdSpecification) return false
+
+        return projectId == other.projectId
+    }
+
+    override fun hashCode(): Int {
+        return projectId.hashCode()
+    }
 }
 
 class ActivityOrganizationIdSpecification(private val organizationId: Long) : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(
             root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
@@ -96,13 +133,24 @@ class ActivityOrganizationIdSpecification(private val organizationId: Long) : Sp
     override fun toString(): String {
         return "activity.projectRole.project.organization.id==$organizationId"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityOrganizationIdSpecification) return false
+
+        return organizationId == other.organizationId
+    }
+
+    override fun hashCode(): Int {
+        return organizationId.hashCode()
+    }
 }
 
 class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate) : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.lessThanOrEqualTo(root.get("start"), startDate.atTime(23, 59, 59))
     }
@@ -111,13 +159,25 @@ class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate
         return "activity.start<=$startDate"
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityStartDateLessOrEqualSpecification) return false
+
+        return startDate == other.startDate
+    }
+
+    override fun hashCode(): Int {
+        return startDate.hashCode()
+    }
+
+
 }
 
 class ActivityEndDateGreaterOrEqualSpecification(private val endDate: LocalDate) : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.greaterThanOrEqualTo(root.get("end"), endDate.atStartOfDay())
     }
@@ -125,13 +185,25 @@ class ActivityEndDateGreaterOrEqualSpecification(private val endDate: LocalDate)
     override fun toString(): String {
         return "activity.end>=$endDate"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityEndDateGreaterOrEqualSpecification) return false
+
+        return endDate == other.endDate
+    }
+
+    override fun hashCode(): Int {
+        return endDate.hashCode()
+    }
+
 }
 
 class ActivityUserIdSpecification(private val userId: Long) : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(root.get<Long>("userId"), userId)
     }
@@ -139,5 +211,17 @@ class ActivityUserIdSpecification(private val userId: Long) : Specification<Acti
     override fun toString(): String {
         return "activity.userId==$userId"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityUserIdSpecification) return false
+
+        return userId == other.userId
+    }
+
+    override fun hashCode(): Int {
+        return userId.hashCode()
+    }
+
 
 }

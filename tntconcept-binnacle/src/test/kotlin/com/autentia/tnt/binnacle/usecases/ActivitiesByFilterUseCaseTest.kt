@@ -10,7 +10,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.repositories.predicates.*
 import com.autentia.tnt.binnacle.services.ActivityService
-import junit.framework.TestCase.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -43,9 +43,7 @@ internal class ActivitiesByFilterUseCaseTest {
             approvalState = ApprovalState.PENDING,
         )
         val compositedSpecification =
-            PredicateBuilder.where(
-                ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!)
-            )
+            ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!)
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -93,9 +91,8 @@ internal class ActivitiesByFilterUseCaseTest {
             roleId = 1L
         )
         val compositedSpecification =
-            PredicateBuilder.where(
-                ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
-            )
+            ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
+
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -108,9 +105,7 @@ internal class ActivitiesByFilterUseCaseTest {
             organizationId = 1L,
         )
         val compositedSpecification =
-            PredicateBuilder.where(
-                ActivityOrganizationIdSpecification(activityFilterDTO.organizationId!!)
-            )
+            ActivityOrganizationIdSpecification(activityFilterDTO.organizationId!!)
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -128,9 +123,7 @@ internal class ActivitiesByFilterUseCaseTest {
             roleId = null
         )
         val compositedSpecification =
-            PredicateBuilder.where(
-                ActivityProjectIdSpecification(activityFilterDTO.projectId!!)
-            )
+            ActivityProjectIdSpecification(activityFilterDTO.projectId!!)
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
