@@ -1,11 +1,9 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.core.domain.StartEndLocalDateTime
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -26,7 +24,7 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
     private val securityService: SecurityService
-) {
+): ProjectRoleUserUseCase(activityCalendarService) {
 
     @Transactional
     @ReadOnly
@@ -41,30 +39,15 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
             activityService.getActivitiesOfLatestProjects(currentYearTimeInterval)
         val lastMonthActivities = activityService.filterActivitiesByTimeInterval(oneMonthDateRange, activities)
 
-        val projectRoles = lastMonthActivities.map { it.projectRole }.distinct()
-
-        val latestUserProjectRoles = mutableListOf<ProjectRoleUser>()
-        for(projectRole in projectRoles){
-            val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
+        val latestUserProjectRoles = lastMonthActivities.map { it.projectRole }.distinct().map { projectRole ->
+            buildProjectRoleWithUserRemaining(
                 projectRole,
-                activities.map(Activity::toDomain),
-                currentYearTimeInterval.getDateInterval(),
-                authentication.id()
+                activities,
+                authentication.id(),
+                currentYearTimeInterval.getDateInterval()
             )
-            val projectRoleUser = ProjectRoleUser(
-                projectRole.id,
-                projectRole.name,
-                projectRole.project.organization.id,
-                projectRole.project.id,
-                projectRole.getMaxAllowedInUnits(),
-                remainingOfProjectRoleForUser,
-                projectRole.timeUnit,
-                projectRole.requireEvidence,
-                projectRole.isApprovalRequired,
-                authentication.id()
-            )
-            latestUserProjectRoles.add(projectRoleUser)
         }
+
         return latestUserProjectRoles.map(projectRoleResponseConverter::toProjectRoleUserDTO)
     }
 
