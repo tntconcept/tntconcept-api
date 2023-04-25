@@ -1,8 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.core.domain.*
-import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
-import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.math.BigDecimal

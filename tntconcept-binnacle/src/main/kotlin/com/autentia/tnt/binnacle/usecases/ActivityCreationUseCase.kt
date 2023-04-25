@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -26,14 +25,12 @@ class ActivityCreationUseCase internal constructor(
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val timeIntervalConverter: TimeIntervalConverter,
     private val approveActivityMailService: ApproveActivityMailService,
 ) {
 
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO {
         val user = userService.getAuthenticatedUser()
         val projectRole = projectRoleService.getByProjectRoleId(activityRequestBody.projectRoleId)
-
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
             activityRequestBody.toDomain(projectRole.toDomain(), user.id)
         )

@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
@@ -58,7 +57,6 @@ internal class ActivityCreationUseCaseTest {
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
         ),
-        TimeIntervalConverter(),
         approveActivityMailService,
     )
 

@@ -22,13 +22,13 @@ class ActivityIntervalResponseConverter {
         end = activityResponse.end,
         duration = intervalDurationToTimeUnit(activityResponse),
         timeUnit = activityResponse.projectRole.timeUnit
-
     )
 
     private fun intervalDurationToTimeUnit(activityResponse: ActivityResponse): Int {
         val durationToDays = TimeInterval.of(activityResponse.start, activityResponse.end).getDuration().toDays().toInt()
         return if (activityResponse.projectRole.timeUnit == TimeUnit.DAYS) durationToDays else activityResponse.duration
     }
+
     private fun intervalDurationToTimeUnit(activity: Activity): Int {
         val durationToDays = activity.getTimeInterval().getDuration().toDays().toInt()
         return if (activity.projectRole.timeUnit == TimeUnit.DAYS) durationToDays else activity.duration
