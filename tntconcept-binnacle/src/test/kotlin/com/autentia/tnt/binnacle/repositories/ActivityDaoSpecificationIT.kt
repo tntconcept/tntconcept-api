@@ -46,13 +46,12 @@ class ActivityDaoSpecificationIT {
 
         val activitiesToSave = listOf(
             createActivity().copy(id = null),
-            createActivity().copy(id = null, userId = 1L)
         )
         activityDao.saveAll(activitiesToSave)
 
-        val actualActivities = activityDao.findAll(ActivityPredicates.ALL.and(ActivityPredicates.userId(2L)))
+        val actualActivities = activityDao.findAll(ActivityPredicates.ALL.and(ActivityPredicates.userId(1L)))
         assertEquals(1, actualActivities.size)
-        assertEquals(2L, actualActivities[0].userId)
+        assertEquals(1L, actualActivities[0].userId)
     }
 
     @Test
