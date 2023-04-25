@@ -10,7 +10,6 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
@@ -44,7 +43,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     fun `return the last imputed roles`() {
         val startDate = BEGINNING_OF_THE_YEAR.atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
-        val timeInterval = TimeInterval.of(startDate, endDate)
+        val timeInterval = TimeInterval.of(startDate, END_OF_THE_YEAR.atTime(23, 59, 59))
         val oneMonthTimeInterval = TimeInterval.of(TODAY.minusMonths(1).atTime(LocalTime.MIN), endDate)
 
         val activities = listOf(
@@ -63,7 +62,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             buildProjectRoleUserDTO(2L, 0, 0),
         )
 
-        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get2())
+        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get())
     }
 
     @Test
@@ -86,6 +85,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         private const val USER_ID = 1L
         private val TODAY = LocalDate.now()
         private val BEGINNING_OF_THE_YEAR = LocalDate.of(TODAY.year, 1, 1)
+        private val END_OF_THE_YEAR = LocalDate.of(TODAY.year, 12, 31)
         private val START_DATE = TODAY.minusDays(1)
         private val END_DATE = TODAY.minusDays(4)
         private val projectRole1 = createProjectRole().copy(name = "Role ID 1").copy(maxAllowed = 120)

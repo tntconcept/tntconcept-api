@@ -27,27 +27,10 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     private val activityCalendarService: ActivityCalendarService,
     private val securityService: SecurityService
 ) {
+
     @Transactional
     @ReadOnly
     fun get(): List<ProjectRoleUserDTO> {
-        val oneMonthDateRange = oneMonthTimeIntervalFromCurrentDate()
-        val dateRange = dateRangeOfCurrentYear()
-        val currentYearTimeInterval = TimeInterval.of(dateRange.startDate, dateRange.endDate)
-
-        val activities =
-            activityService.getActivitiesOfLatestProjects(currentYearTimeInterval)
-
-        val remainingGroupedByProjectRoleAndUserId = activityCalendarService.getRemainingGroupedByProjectRoleAndUser(
-            activities.map(Activity::toDomain), currentYearTimeInterval.getDateInterval(),
-            oneMonthDateRange
-        )
-
-        return remainingGroupedByProjectRoleAndUserId.map(projectRoleResponseConverter::toProjectRoleUserDTO)
-    }
-
-    @Transactional
-    @ReadOnly
-    fun get2(): List<ProjectRoleUserDTO> {
         val authentication = securityService.checkAuthentication()
 
         val oneMonthDateRange = oneMonthTimeIntervalFromCurrentDate()
@@ -66,7 +49,7 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
                 projectRole,
                 activities.map(Activity::toDomain),
                 currentYearTimeInterval.getDateInterval(),
-                1L
+                authentication.id()
             )
             val projectRoleUser = ProjectRoleUser(
                 projectRole.id,
@@ -121,7 +104,7 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     private fun dateRangeOfCurrentYear(): StartEndLocalDateTime {
         val now = LocalDate.now()
         val startDate = LocalDate.of(now.year, 1, 1).atTime(LocalTime.MIN)
-        val endDate = now.atTime(23, 59, 59)
+        val endDate = LocalDate.of(now.year, 12, 31).atTime(23, 59, 59)
 
         return StartEndLocalDateTime(startDate, endDate)
     }
