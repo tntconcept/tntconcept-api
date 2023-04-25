@@ -13,7 +13,6 @@ import javax.persistence.criteria.Predicate
 import javax.persistence.criteria.Root
 
 class PredicateBuilderTest {
-    private val predicateBuilder = PredicateBuilder<Activity>()
 
     @Test
     fun `test and`() {
@@ -44,7 +43,7 @@ class PredicateBuilderTest {
             }
         }
         val spySpecification1 = spy(specification1)
-        val predicate = predicateBuilder.and(spySpecification1, specification2)
+        val predicate = PredicateBuilder.and(spySpecification1, specification2)
 
         verify(spySpecification1).and(specification2)
         assertEquals("(mySpecificationExpression1&mySpecificationExpression2)", predicate.toString())
@@ -67,8 +66,8 @@ class PredicateBuilderTest {
         }
         val specification2 = EmptySpecification<Activity>()
 
-        val predicate = predicateBuilder.and(specification1, specification2)
-        val reversePredicate = predicateBuilder.and(specification2, specification1)
+        val predicate = PredicateBuilder.and(specification1, specification2)
+        val reversePredicate = PredicateBuilder.and(specification2, specification1)
 
         assertEquals("mySpecificationExpression1", predicate.toString())
         assertEquals("mySpecificationExpression1", reversePredicate.toString())
@@ -104,7 +103,7 @@ class PredicateBuilderTest {
         }
 
         val spySpecification1 = spy(specification1)
-        val predicate = predicateBuilder.or(spySpecification1, specification2)
+        val predicate = PredicateBuilder.or(spySpecification1, specification2)
 
         verify(spySpecification1).or(specification2)
         assertEquals("(mySpecificationExpression1||mySpecificationExpression2)", predicate.toString())
@@ -127,8 +126,8 @@ class PredicateBuilderTest {
         }
         val specification2 = EmptySpecification<Activity>()
 
-        val predicate = predicateBuilder.or(specification1, specification2)
-        val reversePredicate = predicateBuilder.or(specification2, specification1)
+        val predicate = PredicateBuilder.or(specification1, specification2)
+        val reversePredicate = PredicateBuilder.or(specification2, specification1)
 
         assertEquals("mySpecificationExpression1", predicate.toString())
         assertEquals("mySpecificationExpression1", reversePredicate.toString())
@@ -139,10 +138,10 @@ class PredicateBuilderTest {
         val specification1 = EmptySpecification<Activity>()
         val specification2 = EmptySpecification<Activity>()
 
-        val predicate = predicateBuilder.and(specification1, specification2)
+        val predicate = PredicateBuilder.and(specification1, specification2)
         assertTrue(predicate is EmptySpecification)
 
-        val predicate2 = predicateBuilder.or(specification1, specification2)
+        val predicate2 = PredicateBuilder.or(specification1, specification2)
         assertTrue(predicate2 is EmptySpecification)
     }
 }

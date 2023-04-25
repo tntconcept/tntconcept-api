@@ -1,19 +1,17 @@
 package com.autentia.tnt.binnacle.repositories.predicates
 
 import io.micronaut.data.jpa.repository.criteria.Specification
-import jakarta.inject.Singleton
 import javax.persistence.criteria.CriteriaBuilder
 import javax.persistence.criteria.CriteriaQuery
 import javax.persistence.criteria.Predicate
 import javax.persistence.criteria.Root
 
-@Singleton
-internal class PredicateBuilder<T> {
-    fun where(specification: Specification<T>): Specification<T> {
+internal object PredicateBuilder {
+    fun <T> where(specification: Specification<T>): Specification<T> {
         return SpecificationComposition(specification, "$specification")
     }
 
-    fun and(spec1: Specification<T>, spec2: Specification<T>): Specification<T> {
+    fun <T> and(spec1: Specification<T>, spec2: Specification<T>): Specification<T> {
         return when {
             spec1 !is EmptySpecification && spec2 !is EmptySpecification -> SpecificationComposition(
                 spec1.and(spec2),
@@ -26,7 +24,7 @@ internal class PredicateBuilder<T> {
         }
     }
 
-    fun or(spec1: Specification<T>, spec2: Specification<T>): Specification<T> {
+    fun <T> or(spec1: Specification<T>, spec2: Specification<T>): Specification<T> {
         return when {
             spec1 !is EmptySpecification && spec2 !is EmptySpecification -> SpecificationComposition(
                 spec1.or(spec2),

@@ -21,9 +21,8 @@ import java.time.LocalDate
 internal class ActivitiesByFilterUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val activityResponseConverter = mock<ActivityResponseConverter>()
-    private val activityPredicateBuilder = PredicateBuilder<Activity>()
     private val activitiesByFilterUseCase =
-        ActivitiesByFilterUseCase(activityService, activityPredicateBuilder, activityResponseConverter)
+        ActivitiesByFilterUseCase(activityService, activityResponseConverter)
 
     @Test
     fun `test get activities`() {
@@ -44,7 +43,7 @@ internal class ActivitiesByFilterUseCaseTest {
             approvalState = ApprovalState.PENDING,
         )
         val compositedSpecification =
-            activityPredicateBuilder.where(
+            PredicateBuilder.where(
                 ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!)
             )
 
@@ -60,7 +59,7 @@ internal class ActivitiesByFilterUseCaseTest {
             roleId = 1L
         )
         val compositedSpecification =
-            activityPredicateBuilder.and(
+            PredicateBuilder.and(
                 ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
                 ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
             )
@@ -77,7 +76,7 @@ internal class ActivitiesByFilterUseCaseTest {
             endDate = endDate,
         )
         val compositedSpecification =
-            activityPredicateBuilder.and(
+            PredicateBuilder.and(
                 ActivityStartDateLessOrEqualSpecification(activityFilterDTO.startDate!!),
                 ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.endDate!!)
             )
@@ -94,7 +93,7 @@ internal class ActivitiesByFilterUseCaseTest {
             roleId = 1L
         )
         val compositedSpecification =
-            activityPredicateBuilder.where(
+            PredicateBuilder.where(
                 ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
             )
 
@@ -109,7 +108,7 @@ internal class ActivitiesByFilterUseCaseTest {
             organizationId = 1L,
         )
         val compositedSpecification =
-            activityPredicateBuilder.where(
+            PredicateBuilder.where(
                 ActivityOrganizationIdSpecification(activityFilterDTO.organizationId!!)
             )
 
@@ -129,7 +128,7 @@ internal class ActivitiesByFilterUseCaseTest {
             roleId = null
         )
         val compositedSpecification =
-            activityPredicateBuilder.where(
+            PredicateBuilder.where(
                 ActivityProjectIdSpecification(activityFilterDTO.projectId!!)
             )
 
@@ -149,8 +148,8 @@ internal class ActivitiesByFilterUseCaseTest {
             roleId = null
         )
         val compositedSpecification =
-            activityPredicateBuilder.and(
-                activityPredicateBuilder.and(
+            PredicateBuilder.and(
+                PredicateBuilder.and(
                     ActivityStartDateLessOrEqualSpecification(activityFilterDTO.startDate!!),
                     ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.endDate!!)
                 ), ActivityProjectIdSpecification(activityFilterDTO.projectId!!)

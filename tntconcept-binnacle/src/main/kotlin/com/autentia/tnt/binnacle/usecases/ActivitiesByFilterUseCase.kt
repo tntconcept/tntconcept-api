@@ -20,29 +20,28 @@ import jakarta.inject.Singleton
 @Singleton
 class ActivitiesByFilterUseCase internal constructor(
     private val activityService: ActivityService,
-    private val activityPredicateBuilder: PredicateBuilder<Activity>,
     private val activityResponseConverter: ActivityResponseConverter
 ) {
     fun getActivities(activityFilter: ActivityFilterDTO): List<ActivityResponseDTO> {
         var predicate: Specification<Activity> = ActivityPredicates.ALL
 
         if (activityFilter.approvalState !== null) {
-            predicate = activityPredicateBuilder.and(predicate, approvalState(activityFilter.approvalState))
+            predicate = PredicateBuilder.and(predicate, approvalState(activityFilter.approvalState))
         }
 
         if (activityFilter.startDate !== null) {
-            predicate = activityPredicateBuilder.and(predicate, startDateLessThanOrEqualTo(activityFilter.startDate))
+            predicate = PredicateBuilder.and(predicate, startDateLessThanOrEqualTo(activityFilter.startDate))
         }
         if (activityFilter.endDate !== null) {
-            predicate = activityPredicateBuilder.and(predicate, endDateGreaterThanOrEqualTo(activityFilter.endDate))
+            predicate = PredicateBuilder.and(predicate, endDateGreaterThanOrEqualTo(activityFilter.endDate))
         }
 
         if (activityFilter.roleId !== null) {
-            predicate = activityPredicateBuilder.and(predicate, roleId(activityFilter.roleId))
+            predicate = PredicateBuilder.and(predicate, roleId(activityFilter.roleId))
         } else if (activityFilter.projectId !== null) {
-            predicate = activityPredicateBuilder.and(predicate, projectId(activityFilter.projectId))
+            predicate = PredicateBuilder.and(predicate, projectId(activityFilter.projectId))
         } else if (activityFilter.organizationId !== null) {
-            predicate = activityPredicateBuilder.and(predicate, organizationId(activityFilter.organizationId))
+            predicate = PredicateBuilder.and(predicate, organizationId(activityFilter.organizationId))
         }
 
         val activities = activityService.getActivities(predicate)
