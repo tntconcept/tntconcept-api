@@ -63,8 +63,6 @@ internal class ActivityService(
         return activityRepository.find(approvalState)
     }
 
-
-
     @Transactional
     @ReadOnly
     fun getActivitiesOfLatestProjects(timeInterval: TimeInterval) =
@@ -92,6 +90,11 @@ internal class ActivityService(
 
         return savedActivity
     }
+
+    fun filterActivitiesByTimeInterval(
+        filterTimeInterval: TimeInterval,
+        activities: List<Activity>
+    ) = activities.map(Activity::toDomain).filter { it.isInTheTimeInterval(filterTimeInterval) }.toList()
 
     @Transactional(rollbackOn = [Exception::class])
     fun updateActivity(activityRequest: ActivityRequestBody, user: User): Activity {

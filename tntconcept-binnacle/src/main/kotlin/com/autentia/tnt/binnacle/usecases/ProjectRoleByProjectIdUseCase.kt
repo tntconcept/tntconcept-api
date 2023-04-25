@@ -11,6 +11,7 @@ import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
+import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -28,9 +29,20 @@ class ProjectRoleByProjectIdUseCase internal constructor(
     fun get(projectId: Long): List<ProjectRoleUserDTO> {
         val authentication = securityService.checkAuthentication()
         val currentYearTimeInterval = TimeInterval.ofYear(LocalDate.now().year)
+        val projectRolesOfProject = projectRoleRepository.getAllByProjectId(projectId).map(ProjectRole::toDomain)
+        val projectRolesUser = buildProjectRoleWithUserRemaining(projectRolesOfProject, currentYearTimeInterval, authentication)
+
+        return projectRolesUser
+            .map(projectRoleResponseConverter::toProjectRoleUserDTO)
+    }
+
+    private fun buildProjectRoleWithUserRemaining(
+        projectRolesOfProject: List<com.autentia.tnt.binnacle.core.domain.ProjectRole>,
+        currentYearTimeInterval: TimeInterval,
+        authentication: Authentication
+    ): MutableList<ProjectRoleUser> {
         val projectRolesUser = mutableListOf<ProjectRoleUser>()
 
-        val projectRolesOfProject = projectRoleRepository.getAllByProjectId(projectId).map(ProjectRole::toDomain)
         for (projectRole in projectRolesOfProject) {
             val projectRoleActivities = activityService.getProjectRoleActivities(projectRole.id)
             val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
@@ -53,8 +65,6 @@ class ProjectRoleByProjectIdUseCase internal constructor(
             )
             projectRolesUser.add(projectRoleUser)
         }
-
         return projectRolesUser
-            .map(projectRoleResponseConverter::toProjectRoleUserDTO)
     }
 }
