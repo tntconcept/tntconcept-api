@@ -11,14 +11,12 @@ import org.mockito.kotlin.whenever
 
 internal class UsersRetrievalUseCaseTest {
     private val userService = mock<UserService>()
-    private val userResponseConverter = mock<UserResponseConverter>()
 
-    private val usersRetrievalUseCase = UsersRetrievalUseCase(userService, userResponseConverter)
+    private val usersRetrievalUseCase = UsersRetrievalUseCase(userService, UserResponseConverter())
 
     @Test
     fun `should return the list of users`() {
         whenever(userService.findAll()).thenReturn(listOf(createUser()))
-        whenever(userResponseConverter.mapUserToUserResponseDTO(createUser())).thenReturn(userResponseDTO)
 
         val actual = usersRetrievalUseCase.getAllUsers()
 

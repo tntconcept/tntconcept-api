@@ -74,7 +74,6 @@ internal class UserControllerIT {
 
     @Test
     fun `get users`() {
-        //(listOf(USER_RESPONSE_DTO)).whenever(usersRetrievalUseCase).getAllUsers()
         whenever(usersRetrievalUseCase.getAllUsers()).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponseDTO>(

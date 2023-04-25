@@ -11,6 +11,4 @@ internal interface UserDao : CrudRepository<User, Long> {
 
     fun findByActiveTrue(): List<User>
 
-    fun find(): List<User>
-
 }

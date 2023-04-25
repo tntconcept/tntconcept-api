@@ -46,33 +46,6 @@ internal class UserDaoIT {
         assertEquals(user, result.get())
     }
 
-    @Test
-    fun `should find list of users`() {
-        val user = User(
-            id = 1L,
-            hiringDate = LocalDate.now(),
-            username = "admin",
-            password = "dd94709528bb1c83d08f3088d4043f4742891f4f",
-            name = "Administrador",
-            email = "",
-            dayDuration = 480,
-            photoUrl = "",
-            departmentId = 1L,
-            role = Role(1L, "Administrador"),
-            agreementYearDuration = null,
-            agreement = WorkingAgreement(
-                1L, setOf(
-                    WorkingAgreementTerms(2, LocalDate.of(2022, 7, 22), 23, 105900),
-                    WorkingAgreementTerms(1, LocalDate.of(1970, 1, 1), 22, 105900),
-                )
-            ),
-            active = true
-        )
-
-        val result = userDao.find()
-
-        assertEquals(user, result.first())
-    }
 
     @Test
     fun `should find by username`() {

@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.repositories.UserRepositorySecured
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.util.*
@@ -11,21 +11,22 @@ import javax.transaction.Transactional
 @Transactional
 @ReadOnly
 class UserService internal constructor(
-    private val userRepositorySecured: UserRepositorySecured,
+    //use userRepository instead of secured
+    private val userRepository: UserRepository,
 ) {
 
     fun getAuthenticatedUser(): User =
-        userRepositorySecured.findByAuthenticatedUser()
+        userRepository.findByAuthenticatedUser()
             .orElseThrow { IllegalStateException("There isn't authenticated user") }
 
     fun findActive(): List<User> =
-        userRepositorySecured.findByActiveTrue()
+        userRepository.findByActiveTrue()
 
     fun findAll(): List<User>  =
-        userRepositorySecured.find()
+        userRepository.find()
 
 
     fun getUserByUserName(userName: String): User =
-        Optional.ofNullable(userRepositorySecured.findByUsername(userName))
+        Optional.ofNullable(userRepository.findByUsername(userName))
             .orElseThrow { IllegalStateException("There isn't authenticated user") }
 }

@@ -14,10 +14,6 @@ internal class UserRepositorySecured(
     private val securityService: SecurityService
 ): UserRepository {
 
-    override fun findById(id: Long): Optional<User> {
-            return userDao.findById(id)
-    }
-
     override fun findByAuthenticatedUser(): Optional<User> {
         val authentication = securityService.checkAuthentication()
         return userDao.findById(authentication.id())
@@ -29,7 +25,7 @@ internal class UserRepositorySecured(
     override fun findByActiveTrue(): List<User> {
         return userDao.findByActiveTrue()
     }
-    fun find(): List<User>{
+    override fun find(): List<User>{
         val authentication = securityService.checkAuthentication()
         return if(authentication.isAdmin()) {
             userDao.findByActiveTrue()
