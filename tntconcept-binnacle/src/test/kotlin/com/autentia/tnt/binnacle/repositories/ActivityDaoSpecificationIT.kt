@@ -33,7 +33,7 @@ class ActivityDaoSpecificationIT {
 
         val activitiesToSave = listOf(
             createActivity().copy(id = null),
-            createActivity().copy(id = null, userId = 2L)
+            createActivity().copy(id = null, userId = 1L)
         )
         activityDao.saveAll(activitiesToSave)
 
@@ -46,7 +46,7 @@ class ActivityDaoSpecificationIT {
 
         val activitiesToSave = listOf(
             createActivity().copy(id = null),
-            createActivity().copy(id = null, userId = 2L)
+            createActivity().copy(id = null, userId = 1L)
         )
         activityDao.saveAll(activitiesToSave)
 
