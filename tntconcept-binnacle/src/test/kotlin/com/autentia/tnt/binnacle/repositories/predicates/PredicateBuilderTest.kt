@@ -43,7 +43,7 @@ class PredicateBuilderTest {
         val reversePredicate = PredicateBuilder.and(specification2, specification1)
 
         assertEquals(predicate, reversePredicate)
-        assertEquals("(mySpecificationExpression1&mySpecificationExpression2)", predicate.toString())
+        assertEquals("(mySpecificationExpression1 AND mySpecificationExpression2)", predicate.toString())
     }
 
     @Test
@@ -103,7 +103,7 @@ class PredicateBuilderTest {
         val reversePredicate = PredicateBuilder.or(specification2, specification1)
 
         assertEquals(predicate, reversePredicate)
-        assertEquals("(mySpecificationExpression1||mySpecificationExpression2)", predicate.toString())
+        assertEquals("(mySpecificationExpression1 OR mySpecificationExpression2)", predicate.toString())
     }
 
     @Test

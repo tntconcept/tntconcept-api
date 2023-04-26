@@ -58,8 +58,8 @@ internal object PredicateBuilder {
 
         override fun toString(): String {
             return when (operator) {
-                Operator.OR -> "($lhs||$rhs)"
-                Operator.AND -> "($lhs&$rhs)"
+                Operator.OR -> "($lhs OR $rhs)"
+                Operator.AND -> "($lhs AND $rhs)"
             }
         }
 

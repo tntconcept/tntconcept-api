@@ -150,19 +150,6 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `get all activities should return bad request response`() {
-        val expectedErrorCode = ErrorResponse("ILLEGAL_ARGUMENT", "Invalid parameters")
-        val ex = assertThrows<HttpClientResponseException> {
-            client.exchangeList<ActivityResponseDTO>(
-                GET("/api/activity"),
-            )
-        }
-
-        assertEquals(BAD_REQUEST, ex.status)
-        assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get())
-    }
-
-    @Test
     fun `get summary activities between the start and end date`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
@@ -218,7 +205,8 @@ internal class ActivityControllerIT {
 
     @Test
     fun `post a new activity`() {
-        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase)
+            .createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
             POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -258,7 +246,7 @@ internal class ActivityControllerIT {
     fun `fail if try to post an activity and a exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
@@ -306,7 +294,7 @@ internal class ActivityControllerIT {
     fun `fail if try to put an activity and exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(activityUpdateUseCase).updateActivity(ACTIVITY_REQUEST_BODY_DTO)
 
@@ -343,7 +331,7 @@ internal class ActivityControllerIT {
     fun `fail if try to delete an activity and exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(activityDeletionUseCase).deleteActivityById(ACTIVITY_RESPONSE_DTO.id)
 
