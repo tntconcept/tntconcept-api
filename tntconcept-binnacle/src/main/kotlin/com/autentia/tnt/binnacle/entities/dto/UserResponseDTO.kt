@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.entities.dto
 
-import com.autentia.tnt.binnacle.entities.Role
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
 import java.time.LocalDate
 
@@ -26,5 +25,5 @@ data class UserResponseDTO(
 
     val email: String,
 
-    val role: Role,
- )
+    val role: String,
+)

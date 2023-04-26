@@ -4,14 +4,13 @@ import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.repositories.UserRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.util.*
+import java.util.Optional
 import javax.transaction.Transactional
 
 @Singleton
 @Transactional
 @ReadOnly
 class UserService internal constructor(
-    //use userRepository instead of secured
     private val userRepository: UserRepository,
 ) {
 

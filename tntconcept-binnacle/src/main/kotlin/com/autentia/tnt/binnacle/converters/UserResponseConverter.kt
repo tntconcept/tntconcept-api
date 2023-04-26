@@ -3,6 +3,8 @@ package com.autentia.tnt.binnacle.converters
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
 import jakarta.inject.Singleton
+import java.time.LocalDate
+import kotlin.time.DurationUnit
 
 @Singleton
 class UserResponseConverter {
@@ -14,9 +16,9 @@ class UserResponseConverter {
         photoUrl = user.photoUrl,
         dayDuration = user.dayDuration,
         agreement = user.agreement,
-        agreementYearDuration = user.agreementYearDuration,
+        agreementYearDuration = user.getAnnualWorkingHoursByYear(LocalDate.now().year).toInt(DurationUnit.MINUTES),
         hiringDate = user.hiringDate,
         email = user.email,
-        role = user.role
+        role = user.role.name
     )
 }
