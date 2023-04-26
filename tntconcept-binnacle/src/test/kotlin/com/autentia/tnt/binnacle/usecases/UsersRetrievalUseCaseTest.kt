@@ -4,10 +4,11 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.UserResponseConverter
 import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
 import com.autentia.tnt.binnacle.services.UserService
-import junit.framework.TestCase.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import kotlin.time.DurationUnit
 
 internal class UsersRetrievalUseCaseTest {
     private val userService = mock<UserService>()
@@ -33,10 +34,10 @@ internal class UsersRetrievalUseCaseTest {
                 createUser().photoUrl,
                 dayDuration = createUser().dayDuration,
                 createUser().agreement,
-                createUser().agreementYearDuration,
+                createUser().getAnnualWorkingHoursByYear(2023).toInt(DurationUnit.MINUTES),
                 createUser().hiringDate,
                 createUser().email,
-                createUser().role,
+                createUser().role.name,
             )
     }
 }

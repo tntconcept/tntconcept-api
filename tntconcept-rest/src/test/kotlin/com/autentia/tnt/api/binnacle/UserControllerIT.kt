@@ -96,7 +96,7 @@ internal class UserControllerIT {
             null,
             LocalDate.now(),
             "email",
-            Role(4, "role"),
+            "role",
         )
     }
 
