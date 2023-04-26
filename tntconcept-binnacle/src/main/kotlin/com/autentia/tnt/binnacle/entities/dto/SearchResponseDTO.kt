@@ -31,6 +31,6 @@ data class ProjectRoleDescriptionDTO(
     val projectId: Long,
     val maxAllowed: Int,
     val isWorkingTime: Boolean,
-    val isApprovalRequired: Boolean,
+    val approvalRequired: Boolean,
     val timeUnit: TimeUnit
 )
