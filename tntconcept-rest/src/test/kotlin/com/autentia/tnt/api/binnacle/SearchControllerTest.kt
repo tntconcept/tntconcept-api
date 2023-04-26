@@ -1,5 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.OrganizationDescriptionDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectDescriptionDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDescriptionDTO
@@ -60,7 +62,16 @@ internal class SearchControllerTest {
         private val UNKNOWN_ROLE_ID = -1L
 
         private val AUTENTIA = OrganizationDescriptionDTO(1, "Autentia")
-        private val TRAINING = ProjectDescriptionDTO(1, "Formación Autentia", AUTENTIA.id)
-        private val STUDENT = ProjectRoleDescriptionDTO(1, "Alumno en formación", TRAINING.id)
+        private val TRAINING = ProjectDescriptionDTO(1, "Formación Autentia", true, false, AUTENTIA.id)
+        private val STUDENT = ProjectRoleDescriptionDTO(
+            1,
+            "Alumno en formación",
+            RequireEvidence.NO,
+            TRAINING.id,
+            480,
+            true,
+            false,
+            TimeUnit.MINUTES
+        )
     }
 }
