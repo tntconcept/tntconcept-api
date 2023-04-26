@@ -60,7 +60,7 @@ internal class SearchControllerTest {
         private val UNKNOWN_ROLE_ID = -1L
 
         private val AUTENTIA = OrganizationDescriptionDTO(1, "Autentia")
-        private val TRAINING = ProjectDescriptionDTO(1, "Formación Autentia", AUTENTIA.id)
+        private val TRAINING = ProjectDescriptionDTO(1, "Formación Autentia", true, false, AUTENTIA.id)
         private val STUDENT = ProjectRoleDescriptionDTO(1, "Alumno en formación", TRAINING.id)
     }
 }

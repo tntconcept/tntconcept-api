@@ -1,7 +1,11 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.SearchConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.ProjectRoleService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -13,8 +17,8 @@ import org.mockito.kotlin.whenever
 internal class SearchByRoleIdUseCaseTest {
 
     private val projectRoleService = mock<ProjectRoleService>()
-
-    private val searchByRoleIdUseCase = SearchByRoleIdUseCase(projectRoleService, SearchConverter())
+    private val searchConverter = SearchConverter()
+    private val searchByRoleIdUseCase = SearchByRoleIdUseCase(projectRoleService, searchConverter)
 
     @Test
     fun `return empty list when roleid is not found`() {
@@ -70,8 +74,8 @@ internal class SearchByRoleIdUseCaseTest {
 
         assertNotNull(roles.organizations.find { it.id == AUTENTIA.id })
         assertNotNull(roles.organizations.find { it.id == OTHER_COMPANY.id })
-        assertNotNull(roles.projects.find { it.id == INTERNAL_TRAINING.id })
-        assertNotNull(roles.projects.find { it.id == EXTERNAL_TRAINING.id })
+        assertNotNull(roles.projects.find { it == searchConverter.toResponseDTO(INTERNAL_TRAINING) })
+        assertNotNull(roles.projects.find { it == searchConverter.toResponseDTO(EXTERNAL_TRAINING) })
     }
 
     private companion object {

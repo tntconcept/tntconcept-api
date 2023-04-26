@@ -13,9 +13,11 @@ data class OrganizationDescriptionDTO(
     val name: String
 )
 
-class ProjectDescriptionDTO(
+data class ProjectDescriptionDTO(
     val id: Long,
     val name: String,
+    val open: Boolean,
+    val billable: Boolean,
     val organizationId: Long
 )
 

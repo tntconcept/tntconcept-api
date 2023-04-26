@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.converters
 
+import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.OrganizationDescriptionDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectDescriptionDTO
@@ -13,9 +14,7 @@ class SearchConverter {
     fun toResponseDTO(roles: List<ProjectRole>): SearchResponseDTO {
         val projectRoleDescription = roles
             .map { ProjectRoleDescriptionDTO(it.id, it.name, it.project.id) }
-        val projectDescription = roles
-            .map { ProjectDescriptionDTO(it.project.id, it.project.name, it.project.organization.id) }
-            .distinctBy { it.id }
+        val projectDescription = roles.map { toResponseDTO(it.project) }.distinctBy { it.id }
         val organizationDescription = roles
             .map { OrganizationDescriptionDTO(it.project.organization.id, it.project.organization.name) }
             .distinctBy { it.id }
@@ -27,4 +26,12 @@ class SearchConverter {
         )
     }
 
+    fun toResponseDTO(project: Project) =
+        ProjectDescriptionDTO(
+            project.id,
+            project.name,
+            project.open,
+            project.billable,
+            project.organization.id
+        )
 }
