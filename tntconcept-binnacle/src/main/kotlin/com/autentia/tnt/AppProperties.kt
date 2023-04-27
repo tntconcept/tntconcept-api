@@ -26,6 +26,7 @@ internal class AppProperties {
 
         @Email
         var from: String = ""
+
     }
 
     @ConfigurationProperties("binnacle")
@@ -38,6 +39,7 @@ internal class AppProperties {
         var notWorkableProjects: List<Int> = emptyList()
         var workSummary = WorkSummaryProperties()
 
+        var activityEvidence = ActivityEvidenceProperties()
 
         @ConfigurationProperties("work-summary")
         internal class WorkSummaryProperties {
@@ -65,5 +67,13 @@ internal class AppProperties {
             }
 
         }
+
+
+        @ConfigurationProperties("activity-evidence")
+        internal class ActivityEvidenceProperties {
+            var enabled: Boolean = false
+
+        }
+
     }
 }

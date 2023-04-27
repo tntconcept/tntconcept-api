@@ -110,8 +110,8 @@ jpa:
   default:
     properties:
       hibernate:
-#        show_sql: true
-#        format_sql: true
+        #        show_sql: true
+        #        format_sql: true
         physical_naming_strategy: 'org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl'
     entity-scan:
       packages: 'com.autentia.tnt.binnacle.entities'
@@ -145,6 +145,9 @@ app:
     vacations-approvers: approver@example.com
     activities-approvers: approver@example.com
     not-workable-projects: 1
+
+    activity-evidence:
+      enabled: true
 
     work-summary:
       persistence-enabled: true

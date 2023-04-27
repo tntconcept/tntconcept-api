@@ -53,6 +53,9 @@ app:
     vacations-approvers: approver@example.com,other@example.com
     not-workable-projects: 1
 
+    activity-evidence:
+      enabled: true
+
     work-summary:
       persistence-enabled: true
 
