@@ -9,9 +9,8 @@ data class ProjectRoleDTO (
     val organizationId: Long,
     val projectId: Long,
     val maxAllowed: Int,
+    val isWorkingTime: Boolean,
     val timeUnit: TimeUnit,
     val requireEvidence: RequireEvidence,
     val requireApproval: Boolean
 )
-
-

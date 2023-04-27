@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -40,13 +39,13 @@ internal class OrganizationControllerTest {
     @Test
     fun `return all projects by organization`() {
         val organizationId = 1L
-        val project = Project(1, "Dummy Project", true, true, mock(Organization::class.java), listOf())
+        val project = Project(1, "Dummy Project", true, true, createOrganization(id = 1L), listOf())
 
         doReturn(listOf(project)).whenever(imputableProjectsByOrganizationIdUseCase).get(organizationId)
 
         val result = organizationController.getOrganizationsProjects(organizationId)
 
-        val expectedProjectDTO = ProjectResponseDTO(1, "Dummy Project", true, true)
+        val expectedProjectDTO = ProjectResponseDTO(1, "Dummy Project", true, true, 1L)
         assertEquals(listOf(expectedProjectDTO), result)
     }
 

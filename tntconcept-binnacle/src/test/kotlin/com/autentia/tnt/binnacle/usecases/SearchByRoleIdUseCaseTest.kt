@@ -1,11 +1,15 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
+import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
+import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.converters.SearchConverter
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -17,7 +21,16 @@ import org.mockito.kotlin.whenever
 internal class SearchByRoleIdUseCaseTest {
 
     private val projectRoleService = mock<ProjectRoleService>()
-    private val searchConverter = SearchConverter()
+    private val activityService = mock<ActivityService>()
+    private val projectResponseConverter = ProjectResponseConverter()
+    private val organizationResponseConverter = OrganizationResponseConverter()
+    private val projectRoleResponseConverter = ProjectRoleResponseConverter(activityService)
+    private val searchConverter =
+        SearchConverter(
+            projectResponseConverter,
+            organizationResponseConverter,
+            projectRoleResponseConverter
+        )
     private val searchByRoleIdUseCase = SearchByRoleIdUseCase(projectRoleService, searchConverter)
 
     @Test
@@ -44,9 +57,9 @@ internal class SearchByRoleIdUseCaseTest {
         assertEquals(1, roles.projects.size)
         assertEquals(1, roles.projectRoles.size)
 
-        assertEquals(searchConverter.toResponseDTO(AUTENTIA), roles.organizations[0])
-        assertEquals(searchConverter.toResponseDTO(INTERNAL_TRAINING), roles.projects[0])
-        assertEquals(searchConverter.toResponseDTO(INTERNAL_STUDENT), roles.projectRoles[0])
+        assertEquals(organizationResponseConverter.toOrganizationResponseDTO(AUTENTIA), roles.organizations[0])
+        assertEquals(projectResponseConverter.toProjectResponseDTO(INTERNAL_TRAINING), roles.projects[0])
+        assertEquals(projectRoleResponseConverter.toProjectRoleDTO(INTERNAL_STUDENT), roles.projectRoles[0])
     }
 
     @Test
@@ -72,10 +85,14 @@ internal class SearchByRoleIdUseCaseTest {
         assertEquals(2, roles.projects.size)
         assertEquals(4, roles.projectRoles.size)
 
-        assertNotNull(roles.organizations.find { it == searchConverter.toResponseDTO(AUTENTIA) })
-        assertNotNull(roles.organizations.find { it == searchConverter.toResponseDTO(OTHER_COMPANY) })
-        assertNotNull(roles.projects.find { it == searchConverter.toResponseDTO(INTERNAL_TRAINING) })
-        assertNotNull(roles.projects.find { it == searchConverter.toResponseDTO(EXTERNAL_TRAINING) })
+        assertNotNull(roles.organizations.find { it == organizationResponseConverter.toOrganizationResponseDTO(AUTENTIA) })
+        assertNotNull(roles.organizations.find {
+            it == organizationResponseConverter.toOrganizationResponseDTO(
+                OTHER_COMPANY
+            )
+        })
+        assertNotNull(roles.projects.find { it == projectResponseConverter.toProjectResponseDTO(INTERNAL_TRAINING) })
+        assertNotNull(roles.projects.find { it == projectResponseConverter.toProjectResponseDTO(EXTERNAL_TRAINING) })
     }
 
     private companion object {
