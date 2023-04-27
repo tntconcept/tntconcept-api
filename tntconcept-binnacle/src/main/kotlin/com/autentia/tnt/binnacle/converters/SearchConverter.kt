@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.converters
 
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
 import jakarta.inject.Singleton
@@ -11,8 +12,8 @@ class SearchConverter(
     private val projectRoleResponseConverter: ProjectRoleResponseConverter
 ) {
 
-    fun toResponseDTO(roles: List<ProjectRole>): SearchResponseDTO {
-        val projectRoleDescription = roles.map { projectRoleResponseConverter.toProjectRoleDTO(it) }
+    fun toResponseDTO(roles: List<ProjectRole>, projectRoleUsers: List<ProjectRoleUser>): SearchResponseDTO {
+        val projectRoleDescription = projectRoleUsers.map { projectRoleResponseConverter.toProjectRoleUserDTO(it) }
         val projectDescription =
             roles.map { projectResponseConverter.toProjectResponseDTO(it.project) }.distinctBy { it.id }
         val organizationDescription =

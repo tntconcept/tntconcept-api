@@ -28,6 +28,18 @@ class ProjectRoleResponseConverter internal constructor(
         requireApproval = projectRole.isApprovalRequired
     )
 
+    fun toProjectRoleUser(projectRole: ProjectRole, userId: Long) = ProjectRoleUser(
+        projectRole.id,
+        projectRole.name,
+        projectRole.project.organization.id,
+        projectRole.project.id,
+        projectRole.maxAllowed,
+        projectRole.timeUnit,
+        projectRole.requireEvidence,
+        projectRole.isApprovalRequired,
+        userId
+    )
+
     fun toProjectRoleUserDTO(projectRole: ProjectRoleUser): ProjectRoleUserDTO = ProjectRoleUserDTO(
         id = projectRole.id,
         name = projectRole.name,

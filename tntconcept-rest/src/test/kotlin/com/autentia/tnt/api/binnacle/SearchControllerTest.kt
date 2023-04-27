@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
 import com.autentia.tnt.binnacle.usecases.SearchByRoleIdUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,16 +63,17 @@ internal class SearchControllerTest {
 
         private val AUTENTIA = OrganizationResponseDTO(1, "Autentia")
         private val TRAINING = ProjectResponseDTO(1, "Formación Autentia", true, false, AUTENTIA.id)
-        private val STUDENT = ProjectRoleDTO(
+        private val STUDENT = ProjectRoleUserDTO(
             1,
             "Alumno en formación",
             AUTENTIA.id,
             TRAINING.id,
             480,
-            true,
+            240,
             TimeUnit.MINUTES,
             RequireEvidence.NO,
-            true
+            true,
+            1L
         )
     }
 }
