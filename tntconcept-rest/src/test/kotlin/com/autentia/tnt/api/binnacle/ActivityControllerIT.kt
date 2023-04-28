@@ -317,10 +317,10 @@ internal class ActivityControllerIT {
 
     @Test
     fun `approve an activity`() {
-        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
-            POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "")
+            POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
@@ -339,11 +339,11 @@ internal class ActivityControllerIT {
         expectedResponseStatus: HttpStatus,
         expectedErrorResponse: ErrorResponse?,
     ) {
-        doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+        doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Unit>(
-                POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", ""),
+                POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
