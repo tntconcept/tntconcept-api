@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.converters
 
+import com.autentia.tnt.binnacle.config.createOrganization
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
@@ -45,7 +46,7 @@ internal class ProjectResponseConverterTest {
                 open = false,
                 billable = false,
                 projectRoles = listOf(),
-                organization = Mockito.mock(Organization::class.java)
+                organization = createOrganization(1L)
             ),
             Project(
                 id = 2,
@@ -53,7 +54,7 @@ internal class ProjectResponseConverterTest {
                 open = false,
                 billable = true,
                 projectRoles = listOf(),
-                organization = Mockito.mock(Organization::class.java)
+                organization = createOrganization(1L)
             ),
         )
 
@@ -67,12 +68,14 @@ internal class ProjectResponseConverterTest {
                 name = "First Project",
                 open = false,
                 billable = false,
+                1L
             ),
             ProjectResponseDTO(
                 id = 2,
                 name = "Second Project",
                 open = false,
                 billable = true,
+                1L
             ),
         )
 

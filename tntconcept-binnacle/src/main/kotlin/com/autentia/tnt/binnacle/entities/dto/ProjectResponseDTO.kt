@@ -4,5 +4,6 @@ data class ProjectResponseDTO(
     val id: Long,
     val name: String,
     val open: Boolean,
-    val billable: Boolean
+    val billable: Boolean,
+    val organizationId: Long
 )
