@@ -79,6 +79,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
             true,
             approvalState = ApprovalState.NA
         )
+
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
             true,
             "Dummy description",

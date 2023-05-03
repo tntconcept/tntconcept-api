@@ -1,10 +1,9 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ProjectRole
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
-
 import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
 import jakarta.inject.Singleton
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 
 @Singleton
 class SearchConverter(

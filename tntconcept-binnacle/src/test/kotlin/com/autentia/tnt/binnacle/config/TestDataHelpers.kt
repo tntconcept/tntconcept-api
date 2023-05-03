@@ -98,6 +98,7 @@ internal fun createOrganization(id: Long = 1L) = Organization(
     name = "Dummy Organization",
     projects = listOf()
 )
+
 internal fun createProject(id: Long = 1L) = Project(
     id = id,
     name = "Dummy Project",

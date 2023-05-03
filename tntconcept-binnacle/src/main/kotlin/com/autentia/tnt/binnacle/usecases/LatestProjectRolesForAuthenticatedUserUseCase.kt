@@ -22,7 +22,7 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     private val projectRoleRepository: ProjectRoleRepository,
     private val projectRoleResponseConverter: ProjectRoleResponseConverter,
     private val activityService: ActivityService,
-    private val activityCalendarService: ActivityCalendarService,
+    activityCalendarService: ActivityCalendarService,
     private val securityService: SecurityService
 ): ProjectRoleUserUseCase(activityCalendarService) {
 

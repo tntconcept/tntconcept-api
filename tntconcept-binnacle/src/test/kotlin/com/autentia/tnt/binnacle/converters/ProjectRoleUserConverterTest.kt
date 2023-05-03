@@ -1,11 +1,7 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,8 +30,8 @@ internal class ProjectRoleUserConverterTest {
         val projectRoleResponseDTOList = projectRoleList.map { projectRoleResponseConverter.toProjectRoleDTO(it) }
 
         val expectedProjectRoleDTOLists = listOf(
-            ProjectRoleDTO(1, "First Role", 2, 1, 0, TimeUnit.MINUTES, RequireEvidence.NO, false),
-            ProjectRoleDTO(2, "Second Role", 2, 1, 0, TimeUnit.MINUTES, RequireEvidence.WEEKLY, false)
+            ProjectRoleDTO(1, "First Role", 2, 1, 0, true, TimeUnit.MINUTES, RequireEvidence.NO, false),
+            ProjectRoleDTO(2, "Second Role", 2, 1, 0, true, TimeUnit.MINUTES, RequireEvidence.WEEKLY, false)
         )
         assertEquals(expectedProjectRoleDTOLists, projectRoleResponseDTOList)
     }
