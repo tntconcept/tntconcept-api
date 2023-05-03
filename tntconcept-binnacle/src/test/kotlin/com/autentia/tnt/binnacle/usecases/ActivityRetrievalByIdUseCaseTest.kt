@@ -48,6 +48,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
     private companion object{
         private val USER = createUser()
         private val YESTERDAY = LocalDate.now().minusDays(1)
+
         private val PROJECT_ROLE = ProjectRole(
             10L,
             "Dummy Project role",
