@@ -1,5 +1,8 @@
 package com.autentia.tnt.binnacle.entities.dto
 
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
+
 data class SearchResponseDTO(
 
     val organizations: List<OrganizationDescriptionDTO>,
@@ -13,14 +16,21 @@ data class OrganizationDescriptionDTO(
     val name: String
 )
 
-class ProjectDescriptionDTO(
+data class ProjectDescriptionDTO(
     val id: Long,
     val name: String,
+    val open: Boolean,
+    val billable: Boolean,
     val organizationId: Long
 )
 
-class ProjectRoleDescriptionDTO(
+data class ProjectRoleDescriptionDTO(
     val id: Long,
     val name: String,
-    val projectId: Long
+    val requireEvidence: RequireEvidence,
+    val projectId: Long,
+    val maxAllowed: Int,
+    val isWorkingTime: Boolean,
+    val approvalRequired: Boolean,
+    val timeUnit: TimeUnit
 )

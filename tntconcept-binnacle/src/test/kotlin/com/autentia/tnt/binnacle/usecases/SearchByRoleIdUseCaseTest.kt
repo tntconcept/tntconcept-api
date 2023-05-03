@@ -1,7 +1,11 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.SearchConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.ProjectRoleService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -13,8 +17,8 @@ import org.mockito.kotlin.whenever
 internal class SearchByRoleIdUseCaseTest {
 
     private val projectRoleService = mock<ProjectRoleService>()
-
-    private val searchByRoleIdUseCase = SearchByRoleIdUseCase(projectRoleService, SearchConverter())
+    private val searchConverter = SearchConverter()
+    private val searchByRoleIdUseCase = SearchByRoleIdUseCase(projectRoleService, searchConverter)
 
     @Test
     fun `return empty list when roleid is not found`() {
@@ -40,9 +44,9 @@ internal class SearchByRoleIdUseCaseTest {
         assertEquals(1, roles.projects.size)
         assertEquals(1, roles.projectRoles.size)
 
-        assertEquals(AUTENTIA.name, roles.organizations[0].name)
-        assertEquals(INTERNAL_TRAINING.name, roles.projects[0].name)
-        assertEquals(INTERNAL_STUDENT.name, roles.projectRoles[0].name)
+        assertEquals(searchConverter.toResponseDTO(AUTENTIA), roles.organizations[0])
+        assertEquals(searchConverter.toResponseDTO(INTERNAL_TRAINING), roles.projects[0])
+        assertEquals(searchConverter.toResponseDTO(INTERNAL_STUDENT), roles.projectRoles[0])
     }
 
     @Test
@@ -68,14 +72,14 @@ internal class SearchByRoleIdUseCaseTest {
         assertEquals(2, roles.projects.size)
         assertEquals(4, roles.projectRoles.size)
 
-        assertNotNull(roles.organizations.find { it.id == AUTENTIA.id })
-        assertNotNull(roles.organizations.find { it.id == OTHER_COMPANY.id })
-        assertNotNull(roles.projects.find { it.id == INTERNAL_TRAINING.id })
-        assertNotNull(roles.projects.find { it.id == EXTERNAL_TRAINING.id })
+        assertNotNull(roles.organizations.find { it == searchConverter.toResponseDTO(AUTENTIA) })
+        assertNotNull(roles.organizations.find { it == searchConverter.toResponseDTO(OTHER_COMPANY) })
+        assertNotNull(roles.projects.find { it == searchConverter.toResponseDTO(INTERNAL_TRAINING) })
+        assertNotNull(roles.projects.find { it == searchConverter.toResponseDTO(EXTERNAL_TRAINING) })
     }
 
     private companion object {
-        private val UNKONW_ROLE_ID = -1L
+        private const val UNKONW_ROLE_ID = -1L
 
         private val AUTENTIA = Organization(1, "Autentia", emptyList())
         private val INTERNAL_TRAINING = Project(1, "Internal training", true, true, AUTENTIA, emptyList())
