@@ -1,26 +1,68 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.config.createDomainActivity
+import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
+import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
+import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
+import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.converters.SearchConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
+import com.autentia.tnt.binnacle.core.domain.Organization
+import com.autentia.tnt.binnacle.core.domain.Project
+import com.autentia.tnt.binnacle.core.domain.ProjectRole
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.HolidayService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
+import io.micronaut.security.authentication.ClientAuthentication
+import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
+import java.util.Optional
 
 internal class SearchByRoleIdUseCaseTest {
 
     private val projectRoleService = mock<ProjectRoleService>()
-
-    private val searchByRoleIdUseCase = SearchByRoleIdUseCase(projectRoleService, SearchConverter())
+    private val activityService = mock<ActivityService>()
+    private val holidayService = mock<HolidayService>()
+    private val calendarFactory = CalendarFactory(holidayService)
+    private val activitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
+    private val activityCalendarService = ActivityCalendarService(calendarFactory, activitiesCalendarFactory)
+    private val projectResponseConverter = ProjectResponseConverter()
+    private val organizationResponseConverter = OrganizationResponseConverter()
+    private val projectRoleResponseConverter = ProjectRoleResponseConverter()
+    private val projectRoleConverter = ProjectRoleConverter()
+    private val searchConverter =
+        SearchConverter(
+            projectResponseConverter,
+            organizationResponseConverter,
+            projectRoleResponseConverter
+        )
+    private val securityService = mock<SecurityService>()
+    private val searchByRoleIdUseCase = SearchByRoleIdUseCase(
+        projectRoleService,
+        activityService,
+        securityService,
+        activityCalendarService,
+        projectRoleConverter,
+        searchConverter
+    )
 
     @Test
     fun `return empty list when roleid is not found`() {
 
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
         doReturn(emptyList<ProjectRole>())
-            .whenever(projectRoleService).getAllByIds(listOf(UNKONW_ROLE_ID.toInt()))
+            .whenever(projectRoleService).getAllByIds(listOf(UNKONW_ROLE_ID))
 
         val roles = searchByRoleIdUseCase.getDescriptions(listOf(UNKONW_ROLE_ID))
 
@@ -32,7 +74,14 @@ internal class SearchByRoleIdUseCaseTest {
     @Test
     fun `return an unique element for Organization, Project and Role when search only for one projectRole`() {
         val rolesForSearch = listOf(INTERNAL_STUDENT.id)
-        doReturn(listOf(INTERNAL_STUDENT)).whenever(projectRoleService).getAllByIds(rolesForSearch.map(Long::toInt))
+        val activity = createDomainActivity().copy(projectRole = INTERNAL_STUDENT)
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
+        doReturn(listOf(INTERNAL_STUDENT)).whenever(projectRoleService).getAllByIds(rolesForSearch)
+        doReturn(listOf(activity)).whenever(
+            activityService
+        ).getActivitiesByProjectRoleIds(TimeInterval.ofYear(2023), rolesForSearch)
 
         val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch)
 
@@ -40,27 +89,38 @@ internal class SearchByRoleIdUseCaseTest {
         assertEquals(1, roles.projects.size)
         assertEquals(1, roles.projectRoles.size)
 
-        assertEquals(AUTENTIA.name, roles.organizations[0].name)
-        assertEquals(INTERNAL_TRAINING.name, roles.projects[0].name)
-        assertEquals(INTERNAL_STUDENT.name, roles.projectRoles[0].name)
+        assertEquals(organizationResponseConverter.toOrganizationResponseDTO(AUTENTIA), roles.organizations[0])
+        assertEquals(projectResponseConverter.toProjectResponseDTO(INTERNAL_TRAINING), roles.projects[0])
+        assertEquals(
+            projectRoleResponseConverter.toProjectRoleUserDTO(
+                projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT, 1380, 1L)
+            ), roles.projectRoles[0]
+        )
     }
 
     @Test
     fun `return unique elements for shared project and companies`() {
+
+        val activity = createDomainActivity()
+        val internalStudentActivity = activity.copy(projectRole = INTERNAL_STUDENT)
+        val internalTeacherActivity = activity.copy(projectRole = INTERNAL_TEACHER)
         val rolesForSearch = listOf(
             INTERNAL_STUDENT.id,
             INTERNAL_TEACHER.id,
             EXTERNAL_STUDENT.id,
             EXTERNAL_TEACHER.id
         )
-        doReturn(
-            listOf(
-                INTERNAL_STUDENT,
-                INTERNAL_TEACHER,
-                EXTERNAL_STUDENT,
-                EXTERNAL_TEACHER
-            )
-        ).whenever(projectRoleService).getAllByIds(rolesForSearch.map(Long::toInt))
+        val rolesToReturn = listOf(
+            INTERNAL_STUDENT,
+            INTERNAL_TEACHER,
+            EXTERNAL_STUDENT,
+            EXTERNAL_TEACHER
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+        doReturn(rolesToReturn).whenever(projectRoleService).getAllByIds(rolesForSearch)
+        doReturn(listOf(internalStudentActivity, internalTeacherActivity)).whenever(
+            activityService
+        ).getActivitiesByProjectRoleIds(TimeInterval.ofYear(2023), rolesForSearch)
 
         val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch)
 
@@ -68,27 +128,78 @@ internal class SearchByRoleIdUseCaseTest {
         assertEquals(2, roles.projects.size)
         assertEquals(4, roles.projectRoles.size)
 
-        assertNotNull(roles.organizations.find { it.id == AUTENTIA.id })
-        assertNotNull(roles.organizations.find { it.id == OTHER_COMPANY.id })
-        assertNotNull(roles.projects.find { it.id == INTERNAL_TRAINING.id })
-        assertNotNull(roles.projects.find { it.id == EXTERNAL_TRAINING.id })
+
+        assertNotNull(roles.organizations.find { it == organizationResponseConverter.toOrganizationResponseDTO(AUTENTIA) })
+        assertNotNull(roles.organizations.find {
+            it == organizationResponseConverter.toOrganizationResponseDTO(OTHER_COMPANY)
+        })
+        assertNotNull(roles.projects.find { it == projectResponseConverter.toProjectResponseDTO(INTERNAL_TRAINING) })
+        assertNotNull(roles.projects.find { it == projectResponseConverter.toProjectResponseDTO(EXTERNAL_TRAINING) })
+        assertNotNull(roles.projectRoles.find {
+            it == projectRoleResponseConverter.toProjectRoleUserDTO(
+                projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT, 1380, 1L)
+            )
+        })
+        assertNotNull(roles.projectRoles.find {
+            it == projectRoleResponseConverter.toProjectRoleUserDTO(
+                projectRoleConverter.toProjectRoleUser(INTERNAL_TEACHER, 2820, 1L)
+            )
+        })
+        assertNotNull(roles.projectRoles.find {
+            it == projectRoleResponseConverter.toProjectRoleUserDTO(
+                projectRoleConverter.toProjectRoleUser(EXTERNAL_STUDENT, 0, 1L)
+            )
+        })
+        assertNotNull(roles.projectRoles.find {
+            it == projectRoleResponseConverter.toProjectRoleUserDTO(
+                projectRoleConverter.toProjectRoleUser(EXTERNAL_TEACHER, 0, 1L)
+            )
+        })
     }
 
     private companion object {
         private val UNKONW_ROLE_ID = -1L
 
-        private val AUTENTIA = Organization(1, "Autentia", emptyList())
-        private val INTERNAL_TRAINING = Project(1, "Internal training", true, true, AUTENTIA, emptyList())
+        private val AUTENTIA = Organization(1, "Autentia")
+        private val INTERNAL_TRAINING = Project(1, "Internal training", true, true, AUTENTIA)
         private val INTERNAL_STUDENT =
-            ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 1440, TimeUnit.MINUTES, true, false)
         private val INTERNAL_TEACHER =
-            ProjectRole(2, "Internal Teacher", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(
+                2,
+                "Internal Teacher",
+                RequireEvidence.WEEKLY,
+                INTERNAL_TRAINING,
+                2880,
+                TimeUnit.MINUTES,
+                true,
+                false
+            )
 
-        private val OTHER_COMPANY = Organization(2, "Other S.A.", emptyList())
-        private val EXTERNAL_TRAINING = Project(2, "External training", true, true, OTHER_COMPANY, emptyList())
+        private val OTHER_COMPANY = Organization(2, "Other S.A.")
+        private val EXTERNAL_TRAINING = Project(2, "External training", true, true, OTHER_COMPANY)
         private val EXTERNAL_STUDENT =
-            ProjectRole(3, "External student", RequireEvidence.WEEKLY, EXTERNAL_TRAINING, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(
+                3,
+                "External student",
+                RequireEvidence.WEEKLY,
+                EXTERNAL_TRAINING,
+                0,
+                TimeUnit.MINUTES,
+                true,
+                false
+            )
         private val EXTERNAL_TEACHER =
-            ProjectRole(4, "External teacher", RequireEvidence.WEEKLY, EXTERNAL_TRAINING, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(
+                4,
+                "External teacher",
+                RequireEvidence.WEEKLY,
+                EXTERNAL_TRAINING,
+                0,
+                TimeUnit.MINUTES,
+                true,
+                false
+            )
+        private val authenticatedUser = ClientAuthentication("1", mapOf("roles" to listOf("user")))
     }
 }

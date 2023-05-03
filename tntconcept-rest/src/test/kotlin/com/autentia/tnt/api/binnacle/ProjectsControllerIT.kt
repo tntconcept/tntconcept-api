@@ -60,7 +60,8 @@ internal class ProjectsControllerIT {
             1L,
             "Vacaciones",
             true,
-            true
+            true,
+            1L
         )
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)

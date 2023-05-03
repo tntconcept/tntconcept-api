@@ -7,10 +7,11 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 data class ProjectRole(
     val id: Long,
     val name: String,
+    val requireEvidence: RequireEvidence,
     val project: Project,
     val maxAllowed: Int,
     val timeUnit: TimeUnit,
-    val requireEvidence: RequireEvidence,
+    val isWorkingTime: Boolean,
     val isApprovalRequired: Boolean
 ) {
     fun getRemainingInUnits(calendar: Calendar, activities: List<Activity>): Int {

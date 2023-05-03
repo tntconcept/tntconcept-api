@@ -1,7 +1,8 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.*
+import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
+import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
@@ -9,19 +10,17 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
-import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
-import java.time.Month
-import org.junit.jupiter.api.Assertions.assertEquals
 
 internal class ActivityRetrievalByIdUseCaseTest {
 
@@ -49,14 +48,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
     private companion object{
         private val USER = createUser()
         private val YESTERDAY = LocalDate.now().minusDays(1)
-        private val ORGANIZATION_DTO = OrganizationResponseDTO(1L, "Dummy Organization")
-
-        private val PROJECT_RESPONSE_DTO = ProjectResponseDTO(
-            1L,
-            "Dummy Project",
-            open = true,
-            billable = false
-        )
         private val PROJECT_ROLE = ProjectRole(
             10L,
             "Dummy Project role",
@@ -85,18 +76,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
             "Dummy description",
             PROJECT_ROLE,
             USER.id,
-            true,
-            approvalState = ApprovalState.NA
-        )
-
-        val savedActivity = Activity(
-            2L,
-            LocalDate.of(2020, Month.JULY, 2).atStartOfDay(),
-            LocalDate.of(2020, Month.JULY, 2).atStartOfDay().plusMinutes(540),
-            540,
-            "Dummy description",
-            PROJECT_ROLE,
-            33L,
             true,
             approvalState = ApprovalState.NA
         )

@@ -17,5 +17,5 @@ data class Organization(
     @JsonIgnore
     val projects: List<Project>
 ) {
-    fun toDomain() = com.autentia.tnt.binnacle.core.domain.Organization(id)
+    fun toDomain() = com.autentia.tnt.binnacle.core.domain.Organization(id, name)
 }

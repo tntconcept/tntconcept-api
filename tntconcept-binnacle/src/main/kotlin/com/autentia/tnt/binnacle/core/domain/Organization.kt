@@ -1,3 +1,3 @@
 package com.autentia.tnt.binnacle.core.domain
 
-data class Organization(val id: Long)
+data class Organization(val id: Long, val name: String)

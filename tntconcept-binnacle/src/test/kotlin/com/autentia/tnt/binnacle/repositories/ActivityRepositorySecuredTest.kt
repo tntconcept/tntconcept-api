@@ -110,6 +110,34 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
+    fun `test findByProjectRoleIds should throw IllegalStateException if there is not logged user`() {
+
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findByProjectRoleIds(LocalDateTime.now(), LocalDateTime.now(), listOf(1L))
+        }
+    }
+
+    @Test
+    fun `test findByProjectRoleIds should return only user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val userActivity = createActivity()
+        val projectRoleIds = listOf(1L)
+        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findByProjectRoleIds(startDate, endDate, projectRoleIds, userActivity.userId)).doReturn(
+            listOf(userActivity)
+        )
+
+        assertEquals(
+            listOf(userActivity),
+            activityRepositorySecured.findByProjectRoleIds(startDate, endDate, projectRoleIds)
+        )
+    }
+
+    @Test
     fun `test findByProjectId should throw IllegalStateException if there is not logged user`() {
 
         whenever(securityService.authentication).thenReturn(Optional.empty())

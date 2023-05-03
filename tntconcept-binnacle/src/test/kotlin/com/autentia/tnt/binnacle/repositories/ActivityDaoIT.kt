@@ -369,7 +369,7 @@ internal class ActivityDaoIT {
                 todayActivity, yesterdayActivity, activityForTwoDays
             )
         )
-        var retrievedActivities = activityDao.findByApprovalState(ApprovalState.PENDING)
+        val retrievedActivities = activityDao.findByApprovalState(ApprovalState.PENDING)
 
         assertEquals(2, retrievedActivities.size)
         assertTrue(retrievedActivities.contains(savedActivities.elementAt(1)))
@@ -576,6 +576,58 @@ internal class ActivityDaoIT {
 
         val expectedActivities = listOf(todayActivity, theDayBeforeYesterdayActivity)
         val result = activityDao.findByProjectRoleIdAndUserId(projectRole.id, userId)
+
+        assertEquals(expectedActivities, result)
+    }
+
+    @Test
+    fun `should find by project roles and user id`() {
+        val todayActivity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED
+        )
+        val yesterdayActivity = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = createProjectRole(2L),
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val theDayBeforeYesterdayActivity = Activity(
+            start = yesterday.minusDays(1L).atTime(8, 0, 0),
+            end = yesterday.minusDays(1L).atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 3",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        activityDao.saveAll(
+            listOf(
+                todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
+            )
+        )
+
+        val expectedActivities = listOf(theDayBeforeYesterdayActivity)
+        val result = activityDao.findByProjectRoleIds(
+            yesterday.minusDays(1L).atTime(8, 0, 0),
+            yesterday.atTime(17, 0, 0),
+            listOf(projectRole.id),
+            userId
+        )
 
         assertEquals(expectedActivities, result)
     }

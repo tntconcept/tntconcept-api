@@ -9,9 +9,12 @@ class ProjectResponseConverter {
 
     fun toProjectResponseDTO(project: Project): ProjectResponseDTO = ProjectResponseDTO(
         id = project.id,
-        billable = project.billable,
         name = project.name,
-        open = project.open
+        open = project.open,
+        billable = project.billable,
+        organizationId = project.organization.id
     )
 
+    fun toProjectResponseDTO(project: com.autentia.tnt.binnacle.core.domain.Project): ProjectResponseDTO =
+        ProjectResponseDTO(project.id, project.name, project.open, project.billable, project.organization.id)
 }

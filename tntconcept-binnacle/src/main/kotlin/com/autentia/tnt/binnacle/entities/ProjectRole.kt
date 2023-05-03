@@ -43,10 +43,11 @@ data class ProjectRole(
         com.autentia.tnt.binnacle.core.domain.ProjectRole(
             id,
             name,
+            requireEvidence,
             project.toDomain(),
             maxAllowed,
             timeUnit,
-            requireEvidence,
+            isWorkingTime,
             isApprovalRequired
         )
 }

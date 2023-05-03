@@ -67,9 +67,9 @@ internal class ActivityRepositorySecured(
         return activityDao.find(startDate, endDate, userIdsFiltered)
     }
 
-    override fun findOfLatestProjects(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
+    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findOfLatestProjects(startDate, endDate, authentication.id())
+        return activityDao.findOfLatestProjects(start, end, authentication.id())
     }
 
     override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
@@ -93,6 +93,14 @@ internal class ActivityRepositorySecured(
     override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return activityDao.find(start, end, projectRoleId, authentication.id())
+    }
+
+    override fun findByProjectRoleIds(
+        start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>
+    ): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findByProjectRoleIds(start, end, projectRoleIds, authentication.id())
+
     }
 
     override fun save(activity: Activity): Activity {
