@@ -17,7 +17,8 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.*
+import java.util.Locale
+import java.util.Optional
 
 internal class ActivityApprovalUseCaseTest {
 
@@ -51,8 +52,14 @@ internal class ActivityApprovalUseCaseTest {
     @Test
     fun `should approve activity`() {
         val user = createUser()
-        val activity = createActivity(ApprovalState.ACCEPTED)
-        val activityResponseDTO = createActivityResponseDTO(activityId, activity.start, activity.end, activity.hasEvidences, activity.approvalState)
+        val activity = createActivity(approvalState = ApprovalState.ACCEPTED)
+        val activityResponseDTO = createActivityResponseDTO(
+            activityId,
+            activity.start,
+            activity.end,
+            activity.hasEvidences,
+            activity.approvalState
+        )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
         whenever(userService.getAuthenticatedUser()).thenReturn(user)

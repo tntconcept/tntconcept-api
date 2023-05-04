@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -17,6 +18,8 @@ import org.mockito.BDDMockito.mock
 import org.mockito.BDDMockito.verify
 import org.mockito.BDDMockito.verifyNoInteractions
 import org.mockito.BDDMockito.willDoNothing
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -81,7 +84,6 @@ internal class ActivityServiceTest {
     fun `get activities between start and end date`() {
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)
-        val userId = 1L
 
         whenever(
             activityRepository.find(
@@ -292,6 +294,15 @@ internal class ActivityServiceTest {
 
         val approvedActivity = activityService.approveActivityById(activityWithoutImageSaved.id as Long)
         assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
+    }
+
+    @Test
+    fun `approve activity with not allowed state`() {
+        doReturn(activityWithoutImageToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
+            .findById(any())
+        assertThrows<InvalidActivityApprovalStateException> {
+            activityService.approveActivityById(any())
+        }
     }
 
     @Test
