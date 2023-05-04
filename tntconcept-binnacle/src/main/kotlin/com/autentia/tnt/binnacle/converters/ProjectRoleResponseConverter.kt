@@ -9,8 +9,6 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import jakarta.inject.Singleton
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 
 
 @Singleton
@@ -24,9 +22,22 @@ class ProjectRoleResponseConverter internal constructor(
         organizationId = projectRole.project.organization.id,
         projectId = projectRole.project.id,
         maxAllowed = projectRole.maxAllowed,
+        isWorkingTime = projectRole.isWorkingTime,
         timeUnit = projectRole.timeUnit,
         requireEvidence = projectRole.requireEvidence,
         requireApproval = projectRole.isApprovalRequired
+    )
+
+    fun toProjectRoleUser(projectRole: ProjectRole, userId: Long) = ProjectRoleUser(
+        projectRole.id,
+        projectRole.name,
+        projectRole.project.organization.id,
+        projectRole.project.id,
+        projectRole.maxAllowed,
+        projectRole.timeUnit,
+        projectRole.requireEvidence,
+        projectRole.isApprovalRequired,
+        userId
     )
 
     fun toProjectRoleUserDTO(projectRole: ProjectRoleUser): ProjectRoleUserDTO = ProjectRoleUserDTO(

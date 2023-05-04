@@ -1,7 +1,11 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityService
@@ -23,8 +27,23 @@ internal class ProjectRolesByProjectIdUseCaseTest {
 
         doReturn(listOf(PROJECT_ROLE)).whenever(projectRoleRepository).getAllByProjectId(PROJECT_ID)
 
-        assertEquals(listOf(ProjectRoleDTO( PROJECT_ID, "Dummy Role", ORGANIZATION.id, PROJECT_ID, PROJECT_ROLE.maxAllowed, PROJECT_ROLE.timeUnit, PROJECT_ROLE.requireEvidence, PROJECT_ROLE.isApprovalRequired)), projectRolesByProjectIdUseCase.get(
-            PROJECT_ID.toInt()))
+        assertEquals(
+            listOf(
+                ProjectRoleDTO(
+                    PROJECT_ID,
+                    "Dummy Role",
+                    ORGANIZATION.id,
+                    PROJECT_ID,
+                    PROJECT_ROLE.maxAllowed,
+                    PROJECT_ROLE.isWorkingTime,
+                    PROJECT_ROLE.timeUnit,
+                    PROJECT_ROLE.requireEvidence,
+                    PROJECT_ROLE.isApprovalRequired
+                )
+            ), projectRolesByProjectIdUseCase.get(
+                PROJECT_ID.toInt()
+            )
+        )
     }
 
     private companion object{
