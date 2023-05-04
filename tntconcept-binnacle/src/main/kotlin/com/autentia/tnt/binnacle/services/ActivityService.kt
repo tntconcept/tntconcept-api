@@ -20,8 +20,14 @@ internal class ActivityService(
     private val activityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
-    private val activityRequestBodyConverter: ActivityRequestBodyConverter
+    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
 ) {
+
+    @Transactional
+    @ReadOnly
+    fun getActivitiesMissingEvidenceOnce(): List<Activity> {
+        return activityRepository.findActivitiesMissingEvidenceOnceWithoutSecurity()
+    }
 
     @Transactional
     @ReadOnly

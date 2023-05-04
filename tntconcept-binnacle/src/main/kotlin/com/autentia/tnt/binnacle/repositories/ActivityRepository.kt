@@ -8,6 +8,8 @@ import java.time.LocalDateTime
 
 internal interface ActivityRepository {
 
+    fun findActivitiesMissingEvidenceOnceWithoutSecurity(): List<Activity>
+
     fun findById(id: Long): Activity?
 
     fun findByIdWithoutSecurity(id: Long): Activity?

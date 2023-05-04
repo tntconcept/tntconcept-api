@@ -596,6 +596,13 @@ internal class ActivityRepositorySecuredTest {
         }
     }
 
+    @Test
+    fun `find activities without evidence once`() {
+        activityRepositorySecured.findActivitiesMissingEvidenceOnceWithoutSecurity()
+
+        verify(activityDao).findWithMissingEvidenceOnce()
+    }
+
     private companion object {
         private const val userId = 1L
         private const val adminUserId = 3L

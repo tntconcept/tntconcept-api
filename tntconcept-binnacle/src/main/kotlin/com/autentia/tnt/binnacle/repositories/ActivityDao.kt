@@ -43,10 +43,14 @@ internal interface ActivityDao : CrudRepository<Activity, Long> {
                 "ORDER BY a.start "
     )
     fun findIntervals(
-        startDate: LocalDateTime, endDate: LocalDateTime, projectRoleId: Long, userId: Long
+        startDate: LocalDateTime, endDate: LocalDateTime, projectRoleId: Long, userId: Long,
     ): List<ActivityInterval>
 
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity>
 
+    @Query(
+        "SELECT a FROM Activity a WHERE a.projectRole.requireEvidence = 'ONCE' AND a.hasEvidences = true",
+    )
+    fun findWithMissingEvidenceOnce(): List<Activity>
 }

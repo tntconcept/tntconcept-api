@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.*
@@ -416,11 +417,56 @@ internal class ActivityDaoIT {
         assertEquals(expectedActivities, result)
     }
 
+    @Test
+    fun `should find activities without evidence and required evidence once`() {
+        val projectRole = createProjectRole().copy(id = 4L, requireEvidence = RequireEvidence.ONCE);
+        val projectRoleWithoutEvidencesNeeded = createProjectRole().copy(id = 5L, requireEvidence = RequireEvidence.NO)
+        val activityWithoutEvidence = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityWithEvidence = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityWithoutEvidenceNeeded = Activity(
+            start = yesterday.atTime(8, 0, 0),
+            end = yesterday.atTime(17, 0, 0),
+            duration = 540,
+            description = "Test activity 2",
+            projectRole = projectRoleWithoutEvidencesNeeded,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        activityDao.saveAll(listOf(activityWithoutEvidence, activityWithEvidence, activityWithoutEvidenceNeeded))
+
+        val result = activityDao.findWithMissingEvidenceOnce()
+
+        val expectedResults = listOf(activityWithoutEvidence)
+        assertEquals(expectedResults, result)
+    }
+
+
     private companion object {
         private val today = LocalDate.now()
         private val yesterday = LocalDate.now().minusDays(1)
         private const val userId = 1L
-        private const val otherUserId = 2L
         private val projectRole = createProjectRole()
     }
 }

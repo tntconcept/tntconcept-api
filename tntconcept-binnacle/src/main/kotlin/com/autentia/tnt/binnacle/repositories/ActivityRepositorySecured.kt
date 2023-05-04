@@ -17,6 +17,10 @@ internal class ActivityRepositorySecured(
     private val activityDao: ActivityDao,
     private val securityService: SecurityService,
 ) : ActivityRepository {
+    override fun findActivitiesMissingEvidenceOnceWithoutSecurity(): List<Activity> {
+        //TODO: add security to this method
+        return activityDao.findWithMissingEvidenceOnce()
+    }
 
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
@@ -46,7 +50,7 @@ internal class ActivityRepositorySecured(
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isAdmin()) {
-           return activityDao.findByApprovalState(approvalState)
+            return activityDao.findByApprovalState(approvalState)
         } else {
             return activityDao.findByApprovalStateAndUserId(approvalState, authentication.id())
         }
@@ -59,7 +63,7 @@ internal class ActivityRepositorySecured(
 
     override fun findWorkedMinutes(
         startDate: LocalDateTime,
-        endDate: LocalDateTime
+        endDate: LocalDateTime,
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
         return activityDao.findWorkedMinutes(startDate, endDate, authentication.id())
@@ -90,7 +94,7 @@ internal class ActivityRepositorySecured(
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
 
-        if(authentication.isNotAdmin()) {
+        if (authentication.isNotAdmin()) {
             require(activity.userId == authentication.id()) { "User cannot update activity" }
         }
 
