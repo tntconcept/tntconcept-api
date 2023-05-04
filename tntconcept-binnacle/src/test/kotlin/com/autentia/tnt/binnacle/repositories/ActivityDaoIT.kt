@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -170,12 +169,17 @@ internal class ActivityDaoIT {
 
     @Test
     fun `should find activities filtered by period of time, user and opened projects`() {
-
         val project = projectRepository.findById(5).get()
+        val openedProject = projectRepository.findById(1).get()
 
         projectRepository.update(
             Project(
                 project.id, project.name, false, project.billable, project.organization, project.projectRoles
+            )
+        )
+        projectRepository.update(
+            Project(
+                openedProject.id, openedProject.name, true, openedProject.billable, openedProject.organization, openedProject.projectRoles
             )
         )
 
@@ -184,7 +188,7 @@ internal class ActivityDaoIT {
             end = today.atTime(12, 0, 0),
             duration = 120,
             description = "Test activity",
-            projectRole = createProjectRole(),
+            projectRole = createProjectRole(1L, openedProject),
             userId = userId,
             billable = false,
             hasEvidences = false,
@@ -206,14 +210,12 @@ internal class ActivityDaoIT {
             end = yesterday.minusDays(8).atTime(23, 59, 59),
             duration = 960,
             description = "Test activity 3",
-            projectRole = createProjectRole(),
+            projectRole = createProjectRole(1L, openedProject),
             userId = userId,
             billable = false,
             hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
-
-
         val savedActivities = activityDao.saveAll(
             listOf(
                 todayActivity, yesterdayActivity, activityForTwoDays

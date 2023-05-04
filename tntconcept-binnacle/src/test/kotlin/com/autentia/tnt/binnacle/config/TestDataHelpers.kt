@@ -119,6 +119,17 @@ internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
     TimeUnit.MINUTES
 )
 
+internal fun createProjectRole(id: Long = 1L, project: Project): ProjectRole = ProjectRole(
+    id,
+    "Dummy Project role",
+    RequireEvidence.WEEKLY,
+    project,
+    0,
+    true,
+    false,
+    TimeUnit.MINUTES
+)
+
 internal fun createActivity() = Activity(
     1,
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
