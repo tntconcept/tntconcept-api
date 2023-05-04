@@ -7,11 +7,12 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.annotation.Query
 import io.micronaut.data.annotation.Repository
 import io.micronaut.data.jpa.annotation.EntityGraph
+import io.micronaut.data.jpa.repository.JpaSpecificationExecutor
 import io.micronaut.data.repository.CrudRepository
 import java.time.LocalDateTime
 
 @Repository
-internal interface ActivityDao : CrudRepository<Activity, Long> {
+internal interface ActivityDao : CrudRepository<Activity, Long>, JpaSpecificationExecutor<Activity> {
 
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun findByIdAndUserId(id: Long, userId: Long): Activity?

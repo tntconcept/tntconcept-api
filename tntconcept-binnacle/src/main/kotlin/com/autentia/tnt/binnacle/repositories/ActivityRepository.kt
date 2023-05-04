@@ -4,10 +4,11 @@ import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDateTime
 
 internal interface ActivityRepository {
-
+    fun findAll(activitySpecification: Specification<Activity>): List<Activity>
     fun findById(id: Long): Activity?
 
     fun findByIdWithoutSecurity(id: Long): Activity?

@@ -1,6 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
@@ -18,8 +18,7 @@ import javax.validation.Valid
 @Controller("/api/activity")
 @Validated
 internal class ActivityController(
-    private val activitiesBetweenDateUseCase: ActivitiesBetweenDateUseCase,
-    private val activitiesByApprovalStateUseCase: ActivitiesByApprovalStateUseCase,
+    private val activityByFilterUserCase: ActivitiesByFilterUseCase,
     private val activityRetrievalUseCase: ActivityRetrievalByIdUseCase,
     private val activityCreationUseCase: ActivityCreationUseCase,
     private val activityUpdateUseCase: ActivityUpdateUseCase,
@@ -29,20 +28,11 @@ internal class ActivityController(
     private val activityApprovalUseCase: ActivityApprovalUseCase,
 ) {
 
-    @Get
-    @Operation(summary = "Gets activities between two dates.")
-    internal fun get(
-        startDate: LocalDate?,
-        endDate: LocalDate?,
-        approvalState: ApprovalState?
-    ): List<ActivityResponseDTO> {
-        require((startDate != null && endDate != null) || approvalState != null) { "Invalid parameters" }
-        when{
-            startDate != null && endDate != null -> return activitiesBetweenDateUseCase.getActivities(startDate, endDate)
-            approvalState != null -> return activitiesByApprovalStateUseCase.getActivities(approvalState)
-        }
-        return emptyList()
-    }
+    @Get("{?activityFilterDTO*}")
+    @Operation(summary = "Gets activities with specified filters")
+    internal fun get(activityFilterDTO: ActivityFilterDTO): List<ActivityResponseDTO> =
+        activityByFilterUserCase.getActivities(activityFilterDTO)
+
 
     @Get("/{id}")
     @Operation(summary = "Gets an activity by its id.")
@@ -118,6 +108,7 @@ internal class ActivityController(
 
     @Error
     internal fun onActivityAlreadyApproved(request: HttpRequest<*>, e: InvalidActivityApprovalStateException) =
-        HttpResponse.status<HttpStatus>(HttpStatus.CONFLICT).body(ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", e.message))
+        HttpResponse.status<HttpStatus>(HttpStatus.CONFLICT)
+            .body(ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", e.message))
 
 }
