@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.config
 
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Holiday
@@ -13,12 +12,8 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
 import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -104,11 +99,6 @@ internal fun createOrganization(id: Long = 1L) = Organization(
     projects = listOf()
 )
 
-internal fun createOrganizationResponseDTO(id: Long = 1L) = OrganizationResponseDTO(
-    id = id,
-    name = "Dummy Organization",
-)
-
 internal fun createProject(id: Long = 1L) = Project(
     id = id,
     name = "Dummy Project",
@@ -116,13 +106,6 @@ internal fun createProject(id: Long = 1L) = Project(
     billable = false,
     projectRoles = listOf(),
     organization = createOrganization()
-)
-
-internal fun createProjectResponseDTO(id: Long = 1L, open: Boolean = false, billable: Boolean = false) = ProjectResponseDTO(
-    id = id,
-    name = "Dummy Project",
-    open = open,
-    billable = billable
 )
 
 internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
@@ -157,42 +140,6 @@ internal fun createDomainActivity() = com.autentia.tnt.binnacle.core.domain.Acti
     com.autentia.tnt.binnacle.core.domain.ProjectRole(1L, TimeUnit.MINUTES)
 )
 
-internal fun createProjectRoleResponseDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) =
-    ProjectRoleUserDTO(
-        id = id,
-        name = "Dummy Project Role",
-        1L,
-        1L,
-        10,
-        5,
-        TimeUnit.MINUTES,
-        requireEvidence = requireEvidence,
-        false,
-        1L
-    )
-
-
-internal fun createActivityResponse(
-    id: Long,
-    start: LocalDateTime,
-    end: LocalDateTime,
-    hasEvidences: Boolean,
-    approvalState: ApprovalState = ApprovalState.NA
-) = ActivityResponse(
-    id = id,
-    start = start,
-    end = end,
-    duration = 60,
-    description = "",
-    projectRole = createProjectRole(),
-    userId = 1L,
-    billable = false,
-    organization = createOrganization(),
-    project = createProject(),
-    hasEvidences = hasEvidences,
-    approvalState = approvalState
-)
-
 internal fun createActivityResponseDTO(
     id: Long,
     start: LocalDateTime,
@@ -209,24 +156,3 @@ internal fun createActivityResponseDTO(
     userId = 1L,
     approvalState = approvalState
 )
-
-internal fun createActivityRequestBodyDTO(
-    id: Long,
-    start: LocalDateTime,
-    end: LocalDateTime,
-    projectRoleId: Long,
-    hasEvidences: Boolean
-) =
-    ActivityRequestBodyDTO(
-        id,
-        start,
-        end,
-        "New activity",
-        false,
-        projectRoleId,
-        hasEvidences,
-    )
-
-
-
-
