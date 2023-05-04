@@ -20,9 +20,15 @@ import jakarta.inject.Singleton
 @Singleton
 class ActivitiesByFilterUseCase internal constructor(
     private val activityService: ActivityService,
-    private val activityResponseConverter: ActivityResponseConverter
+    private val activityResponseConverter: ActivityResponseConverter,
 ) {
     fun getActivities(activityFilter: ActivityFilterDTO): List<ActivityResponseDTO> {
+        val predicate: Specification<Activity> = getPredicateFromActivityFilter(activityFilter)
+        val activities = activityService.getActivities(predicate)
+        return activityResponseConverter.mapActivitiesToActivitiesResponseDTO(activities)
+    }
+
+    private fun getPredicateFromActivityFilter(activityFilter: ActivityFilterDTO): Specification<Activity> {
         var predicate: Specification<Activity> = ActivityPredicates.ALL
 
         if (activityFilter.approvalState !== null) {
@@ -43,9 +49,6 @@ class ActivitiesByFilterUseCase internal constructor(
         } else if (activityFilter.organizationId !== null) {
             predicate = PredicateBuilder.and(predicate, organizationId(activityFilter.organizationId))
         }
-
-        val activities = activityService.getActivities(predicate)
-
-        return activityResponseConverter.mapActivitiesToActivitiesResponseDTO(activities)
+        return predicate
     }
 }

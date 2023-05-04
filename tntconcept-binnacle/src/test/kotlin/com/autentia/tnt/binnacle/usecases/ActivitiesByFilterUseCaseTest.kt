@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.any
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 
@@ -23,19 +22,6 @@ internal class ActivitiesByFilterUseCaseTest {
     private val activityResponseConverter = mock<ActivityResponseConverter>()
     private val activitiesByFilterUseCase =
         ActivitiesByFilterUseCase(activityService, activityResponseConverter)
-
-    @Test
-    fun `test get activities`() {
-        whenever(activityService.getActivities(any())).thenReturn(listOf(activity))
-        whenever(activityResponseConverter.mapActivitiesToActivitiesResponseDTO(listOf(activity))).thenReturn(
-            activitiesResponseDTO
-        )
-
-        val activities =
-            activitiesByFilterUseCase.getActivities(ActivityFilterDTO(startDate = startDate, endDate = endDate))
-
-        assertEquals(activitiesResponseDTO, activities)
-    }
 
     @Test
     fun `get activities by approval state`() {
@@ -78,10 +64,16 @@ internal class ActivitiesByFilterUseCaseTest {
                 ActivityStartDateLessOrEqualSpecification(activityFilterDTO.startDate!!),
                 ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.endDate!!)
             )
-        activitiesByFilterUseCase.getActivities(activityFilterDTO)
+        whenever(activityService.getActivities(compositedSpecification)).thenReturn(listOf(activity))
+        whenever(activityResponseConverter.mapActivitiesToActivitiesResponseDTO(listOf(activity))).thenReturn(
+            activitiesResponseDTO
+        )
 
+        val activities = activitiesByFilterUseCase.getActivities(activityFilterDTO)
+
+        val expectedActivities = activitiesResponseDTO
         verify(activityService).getActivities(compositedSpecification)
-
+        assertEquals(expectedActivities, activities)
     }
 
     @Test
@@ -154,8 +146,8 @@ internal class ActivitiesByFilterUseCaseTest {
     }
 
     private companion object {
-        val startDate = LocalDate.of(2023, 4, 15)
-        val endDate = LocalDate.of(2023, 4, 17)
+        val startDate: LocalDate = LocalDate.of(2023, 4, 15)
+        val endDate: LocalDate = LocalDate.of(2023, 4, 17)
         val intervalResponseDTO = IntervalResponseDTO(
             start = startDate.atStartOfDay(),
             end = endDate.atStartOfDay(),
