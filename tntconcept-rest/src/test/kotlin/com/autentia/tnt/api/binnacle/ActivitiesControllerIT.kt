@@ -302,7 +302,7 @@ internal class ActivitiesControllerIT {
             2,
             ACTIVITY_REQUEST_BODY_DTO.billable,
             OrganizationResponseDTO(6, "organization"),
-            ProjectResponseDTO(5, "project", true, true),
+            ProjectResponseDTO(5, "project", true, true, 1L),
             ACTIVITY_REQUEST_BODY_DTO.hasImage,
         )
 

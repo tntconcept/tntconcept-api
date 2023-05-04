@@ -8,7 +8,6 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectRoleRecentDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectRoleByUserIdsUseCase
 import io.micronaut.http.HttpRequest.GET
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.HttpStatus.NOT_FOUND
@@ -30,6 +29,7 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
+
 @Deprecated("Use ProjectRoleControllerIT instead")
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -43,9 +43,6 @@ internal class ProjectRolesControllerIT {
 
     @get:MockBean(ProjectRoleByIdUseCase::class)
     internal val projectRoleByIdUseCase = mock<ProjectRoleByIdUseCase>()
-
-    @get:MockBean(ProjectRoleByUserIdsUseCase::class)
-    internal val projectRoleByUserIdsUseCase = mock<ProjectRoleByUserIdsUseCase>()
 
     @get:MockBean(LatestProjectRolesForAuthenticatedUserUseCase::class)
     internal val latestProjectRolesForAuthenticatedUserUseCase = mock<LatestProjectRolesForAuthenticatedUserUseCase>()
@@ -67,6 +64,7 @@ internal class ProjectRolesControllerIT {
             1L,
             1L,
             10,
+            true,
             TimeUnit.MINUTES,
             RequireEvidence.WEEKLY,
             true

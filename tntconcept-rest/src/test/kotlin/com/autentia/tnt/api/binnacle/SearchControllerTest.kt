@@ -2,9 +2,9 @@ package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.OrganizationDescriptionDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectDescriptionDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDescriptionDTO
+import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
 import com.autentia.tnt.binnacle.usecases.SearchByRoleIdUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -61,17 +61,19 @@ internal class SearchControllerTest {
     private companion object {
         private val UNKNOWN_ROLE_ID = -1L
 
-        private val AUTENTIA = OrganizationDescriptionDTO(1, "Autentia")
-        private val TRAINING = ProjectDescriptionDTO(1, "Formación Autentia", true, false, AUTENTIA.id)
-        private val STUDENT = ProjectRoleDescriptionDTO(
+        private val AUTENTIA = OrganizationResponseDTO(1, "Autentia")
+        private val TRAINING = ProjectResponseDTO(1, "Formación Autentia", true, false, AUTENTIA.id)
+        private val STUDENT = ProjectRoleUserDTO(
             1,
             "Alumno en formación",
-            RequireEvidence.NO,
+            AUTENTIA.id,
             TRAINING.id,
             480,
+            240,
+            TimeUnit.MINUTES,
+            RequireEvidence.NO,
             true,
-            false,
-            TimeUnit.MINUTES
+            1L
         )
     }
 }
