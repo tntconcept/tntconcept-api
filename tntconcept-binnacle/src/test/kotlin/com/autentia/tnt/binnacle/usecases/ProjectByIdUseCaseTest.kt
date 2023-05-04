@@ -55,7 +55,8 @@ internal class ProjectByIdUseCaseTest {
             PROJECT.id,
             PROJECT.name,
             PROJECT.open,
-            PROJECT.billable
+            PROJECT.billable,
+            1L
         )
     }
 

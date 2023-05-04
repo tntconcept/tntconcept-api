@@ -33,6 +33,7 @@ internal class ProjectRoleByIdUseCaseTest {
                 projectRole.project.organization.id,
                 projectRole.project.id,
                 projectRole.maxAllowed,
+                projectRole.isWorkingTime,
                 projectRole.timeUnit,
                 projectRole.requireEvidence,
                 projectRole.isApprovalRequired

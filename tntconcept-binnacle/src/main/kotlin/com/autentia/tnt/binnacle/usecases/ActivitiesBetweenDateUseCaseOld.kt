@@ -7,7 +7,7 @@ import com.autentia.tnt.binnacle.services.UserService
 import jakarta.inject.Singleton
 import java.time.LocalDate
 
-@Deprecated("Use ActivitiesBetweenDateUseCase instead")
+@Deprecated("Use ActivitiesByFilterUseCase instead")
 @Singleton
 class ActivitiesBetweenDateUseCaseOld internal constructor(
     private val activityService: ActivitiesService,

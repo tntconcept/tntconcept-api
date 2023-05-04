@@ -11,7 +11,7 @@ class ProjectResponseConverter {
         id = project.id,
         billable = project.billable,
         name = project.name,
-        open = project.open
+        open = project.open,
+        organizationId = project.organization.id
     )
-
 }

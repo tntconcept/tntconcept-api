@@ -4,10 +4,12 @@ import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import com.autentia.tnt.security.application.isAdmin
 import com.autentia.tnt.security.application.isNotAdmin
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
@@ -17,6 +19,9 @@ internal class ActivityRepositorySecured(
     private val activityDao: ActivityDao,
     private val securityService: SecurityService,
 ) : ActivityRepository {
+    override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
+        activityDao.findAll(addUserFilterIfNecessary(activitySpecification))
+
     override fun findActivitiesMissingEvidenceOnceWithoutSecurity(): List<Activity> {
         //TODO: add security to this method
         return activityDao.findWithMissingEvidenceOnce()
@@ -50,9 +55,9 @@ internal class ActivityRepositorySecured(
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isAdmin()) {
-            return activityDao.findByApprovalState(approvalState)
+            activityDao.findByApprovalState(approvalState)
         } else {
-            return activityDao.findByApprovalStateAndUserId(approvalState, authentication.id())
+            activityDao.findByApprovalStateAndUserId(approvalState, authentication.id())
         }
     }
 
@@ -122,4 +127,12 @@ internal class ActivityRepositorySecured(
         activityDao.deleteById(id)
     }
 
+    private fun addUserFilterIfNecessary(activitySpecification: Specification<Activity>): Specification<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.isNotAdmin()) {
+            activitySpecification.and(ActivityPredicates.userId(authentication.id()))
+        } else {
+            activitySpecification
+        }
+    }
 }
