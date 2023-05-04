@@ -239,10 +239,10 @@ internal class ActivityControllerIT {
         val updatedActivity = ACTIVITY_RESPONSE_DTO.copy(
             description = putActivity.description
         )
-        doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(putActivity)
+        doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(putActivity, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
-            PUT("/api/activity", ACTIVITY_PUT_JSON),
+            PUT("/api/activity", ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
         )
 
         assertEquals(OK, response.status)
@@ -266,11 +266,11 @@ internal class ActivityControllerIT {
         expectedResponseStatus: HttpStatus,
         expectedErrorCode: String
     ) {
-        doThrow(exception).whenever(activityUpdateUseCase).updateActivity(ACTIVITY_REQUEST_BODY_DTO)
+        doThrow(exception).whenever(activityUpdateUseCase).updateActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                PUT("/api/activity", ACTIVITY_POST_JSON),
+                PUT("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 

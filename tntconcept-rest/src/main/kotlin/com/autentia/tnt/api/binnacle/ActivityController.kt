@@ -61,8 +61,10 @@ internal class ActivityController(
 
     @Put
     @Operation(summary = "Updates an existing activity.")
-    internal fun put(@Valid @Body activityRequest: ActivityRequestBodyDTO): ActivityResponseDTO =
-        activityUpdateUseCase.updateActivity(activityRequest)
+    internal fun put(@Valid @Body activityRequest: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO {
+        return activityUpdateUseCase.updateActivity(activityRequest, locale)
+    }
+
 
     @Delete("/{id}")
     @Operation(summary = "Deletes an activity by its id.")
