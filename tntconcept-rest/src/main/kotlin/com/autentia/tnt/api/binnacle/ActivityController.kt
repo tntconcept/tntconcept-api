@@ -69,8 +69,8 @@ internal class ActivityController(
 
     @Post("/{id}/approve")
     @Operation(summary = "Approve an existing activity by id.")
-    internal fun approve(id: Long): ActivityResponseDTO =
-        activityApprovalUseCase.approveActivity(id)
+    internal fun approve(@Body id: Long, locale: Locale): ActivityResponseDTO =
+        activityApprovalUseCase.approveActivity(id, locale)
 
     @Error
     internal fun onTimeIntervalException(request: HttpRequest<*>, e: TimeIntervalException) =

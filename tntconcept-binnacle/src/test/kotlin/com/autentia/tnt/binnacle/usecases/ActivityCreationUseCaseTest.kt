@@ -18,7 +18,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.ApproveActivityMailService
+import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -38,7 +38,7 @@ internal class ActivityCreationUseCaseTest {
     private val user = createUser()
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
-    private val approveActivityMailService = mock<ApproveActivityMailService>()
+    private val pendingApproveActivityMailService = mock<PendingApproveActivityMailService>()
     private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleService = ProjectRoleService(projectRoleRepository)
@@ -57,7 +57,7 @@ internal class ActivityCreationUseCaseTest {
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
         ),
-        approveActivityMailService,
+        pendingApproveActivityMailService,
     )
 
     @Test
@@ -84,7 +84,7 @@ internal class ActivityCreationUseCaseTest {
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         assertEquals(expectedResponseDTO, result)
-        verify(approveActivityMailService, times(1)).sendApprovalActivityMail(
+        verify(pendingApproveActivityMailService, times(1)).sendApprovalActivityMail(
             activityResponseConverter.mapActivityToActivityResponse(activity),
             user.username,
             Locale.ENGLISH
@@ -102,7 +102,7 @@ internal class ActivityCreationUseCaseTest {
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         assertEquals(expectedResponseDTO, result)
-        verify(approveActivityMailService, times(0)).sendApprovalActivityMail(
+        verify(pendingApproveActivityMailService, times(0)).sendApprovalActivityMail(
             activityResponseConverter.mapActivityToActivityResponse(activity),
             user.email,
             Locale.ENGLISH

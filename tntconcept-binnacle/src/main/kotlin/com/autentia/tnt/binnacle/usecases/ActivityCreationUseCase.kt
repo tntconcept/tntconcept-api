@@ -4,11 +4,11 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.ApproveActivityMailService
+import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
-import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.validation.Validated
 import jakarta.inject.Singleton
@@ -25,7 +25,7 @@ class ActivityCreationUseCase internal constructor(
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val approveActivityMailService: ApproveActivityMailService,
+    private val pendingApproveActivityMailService: PendingApproveActivityMailService,
 ) {
 
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO {
@@ -46,7 +46,7 @@ class ActivityCreationUseCase internal constructor(
         )
 
         if (activityResponse.projectRole.isApprovalRequired){
-            approveActivityMailService.sendApprovalActivityMail(activityResponse, user.username, locale)
+            pendingApproveActivityMailService.sendApprovalActivityMail(activityResponse, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(activityResponse)
