@@ -28,7 +28,7 @@ class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
 
     private fun getProjectRolesMissingEvidenceByUser(): Map<User, List<ProjectRole>> {
         val activeUsers: List<User> = userService.findActive()
-        val activitiesMissingEvidence: List<Activity> = getActivitiesMissingEvidenceOnce();
+        val activitiesMissingEvidence: List<Activity> = getActivitiesMissingEvidenceOnce()
         val activitiesMissingEvidenceByUser = groupActivitiesByUser(activitiesMissingEvidence, activeUsers)
         return getProjectRolesByUserFromActivities(activitiesMissingEvidenceByUser)
     }
@@ -45,7 +45,6 @@ class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
         )
         return activityService.getActivities(predicate)
     }
-
 
     private fun groupActivitiesByUser(
         activitiesMissingEvidence: List<Activity>,
@@ -72,8 +71,7 @@ class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
             project.name,
             projectRoleNames,
             user.email,
-            Locale.ENGLISH
+            Locale.forLanguageTag("es")
         )
     }
-
 }

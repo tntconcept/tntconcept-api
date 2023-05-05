@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import io.micronaut.context.MessageSource
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
@@ -13,7 +12,7 @@ internal class ActivityEvidenceMissingMailService(
     private val messageBuilder: ActivityEvidenceMissingMessageBuilder,
     private val appProperties: AppProperties,
 ) {
-    
+
     fun sendEmail(
         organizationName: String,
         projectName: String,
