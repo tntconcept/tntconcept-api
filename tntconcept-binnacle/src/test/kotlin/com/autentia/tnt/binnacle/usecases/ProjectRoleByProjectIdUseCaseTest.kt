@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
+import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
@@ -32,8 +33,9 @@ internal class ProjectRoleByProjectIdUseCaseTest {
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activityCalendarFactory)
     private val projectRoleResponseConverter = ProjectRoleResponseConverter()
+    private val projectRoleConverter = ProjectRoleConverter()
     private val projectRoleByProjectIdUseCase =
-        ProjectRoleByProjectIdUseCase(activityService, activityCalendarService, securityService, projectRoleRepository, projectRoleResponseConverter)
+        ProjectRoleByProjectIdUseCase(activityService, activityCalendarService, securityService, projectRoleRepository, projectRoleResponseConverter, projectRoleConverter)
 
     @Test
     fun `return the expected project role`() {
