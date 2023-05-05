@@ -11,6 +11,7 @@ import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalTime
@@ -21,7 +22,7 @@ internal class ActivityService(
     private val activityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
-    private val activityRequestBodyConverter: ActivityRequestBodyConverter
+    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
 ) {
 
     @Transactional
@@ -37,6 +38,13 @@ internal class ActivityService(
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
         return activityRepository.find(startDateMinHour, endDateMaxHour)
     }
+
+    @Transactional
+    @ReadOnly
+    fun getActivities(activitySpecification: Specification<Activity>): List<Activity> {
+        return activityRepository.findAll(activitySpecification)
+    }
+
 
     @Transactional
     @ReadOnly
@@ -122,7 +130,7 @@ internal class ActivityService(
 
         // Delete stored image
         if (!activityRequest.hasEvidences && oldActivity.hasEvidences) {
-            activityImageService.deleteActivityImage(activityRequest.id!!, oldActivity.insertDate!!)
+            activityImageService.deleteActivityImage(activityRequest.id, oldActivity.insertDate!!)
         }
 
         return activityRepository.update(

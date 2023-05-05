@@ -3,8 +3,13 @@ package com.autentia.tnt.binnacle.entities
 import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.*
 
-enum class RequireEvidence{
-    NO, ONCE, WEEKLY
+enum class RequireEvidence {
+    NO, ONCE, WEEKLY;
+
+    companion object {
+        fun isRequired(requireEvidence: RequireEvidence) = listOfRequired().contains(requireEvidence)
+        private fun listOfRequired() = listOf(ONCE, WEEKLY)
+    }
 }
 
 enum class TimeUnit{

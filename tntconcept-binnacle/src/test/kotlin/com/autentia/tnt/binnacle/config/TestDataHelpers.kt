@@ -130,8 +130,8 @@ internal fun createProjectRole(id: Long = 1L, project: Project): ProjectRole = P
     TimeUnit.MINUTES
 )
 
-internal fun createActivity() = Activity(
-    1,
+internal fun createActivity(id: Long? = 1) = Activity(
+    id,
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
     60,
