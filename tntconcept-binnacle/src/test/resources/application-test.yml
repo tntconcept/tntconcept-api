@@ -17,9 +17,9 @@ jpa:
   default:
     properties:
       hibernate:
-        #        show_sql: true
-        #        format_sql: true
-        dialect: "org.hibernate.dialect.MySQL5InnoDBDialect"
+        show_sql: true
+        format_sql: true
+        #dialect: "org.hibernate.dialect.MySQL5InnoDBDialect"
         physical_naming_strategy: 'org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl'
     entity-scan:
       packages: 'com.autentia.tnt.binnacle.entities'

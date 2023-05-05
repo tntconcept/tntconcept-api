@@ -12,7 +12,7 @@ enum class RequireEvidence {
     }
 }
 
-enum class TimeUnit{
+enum class TimeUnit {
     MINUTES, DAYS
 }
 
@@ -42,5 +42,5 @@ data class ProjectRole(
     val isApprovalRequired: Boolean,
 
     @Enumerated(EnumType.STRING)
-    val timeUnit: TimeUnit
+    val timeUnit: TimeUnit,
 )

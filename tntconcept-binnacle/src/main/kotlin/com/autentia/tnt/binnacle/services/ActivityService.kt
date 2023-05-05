@@ -26,12 +26,6 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesMissingEvidenceOnce(): List<Activity> {
-        return activityRepository.findActivitiesMissingEvidenceOnceWithoutSecurity()
-    }
-
-    @Transactional
-    @ReadOnly
     fun getActivityById(id: Long): Activity {
         return activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
     }

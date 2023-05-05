@@ -18,6 +18,10 @@ internal object ActivityPredicates {
     internal fun projectId(projectId: Long) = ActivityProjectIdSpecification(projectId)
     internal fun organizationId(organizationId: Long) = ActivityOrganizationIdSpecification(organizationId)
     internal fun userId(userId: Long) = ActivityUserIdSpecification(userId)
+    internal fun projectRoleRequiresEvidence(requireEvidence: RequireEvidence) =
+        ActivityProjectRoleRequiresEvidenceSpecification(requireEvidence)
+
+    internal fun hasNotEvidence() = ActivityHasNotEvidenceSpecification()
 }
 
 class ActivityIdSpecification(private val id: Long) : Specification<Activity> {
@@ -222,6 +226,58 @@ class ActivityUserIdSpecification(private val userId: Long) : Specification<Acti
     override fun hashCode(): Int {
         return userId.hashCode()
     }
+}
 
+class ActivityProjectRoleRequiresEvidenceSpecification(private val requireEvidence: RequireEvidence) :
+    Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder,
+    ): Predicate? {
+        return criteriaBuilder.equal(
+            root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
+            requireEvidence
+        )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityProjectRoleRequiresEvidenceSpecification) return false
+
+        return requireEvidence == other.requireEvidence
+    }
+
+    override fun hashCode(): Int {
+        return requireEvidence.hashCode()
+    }
+
+    override fun toString(): String {
+        return "activity.projectRole.requireEvidence=${requireEvidence}"
+    }
+}
+
+
+class ActivityHasNotEvidenceSpecification : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder,
+    ): Predicate? {
+        return criteriaBuilder.isFalse(root.get("hasEvidences"))
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return other is ActivityHasNotEvidenceSpecification
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+
+    override fun toString(): String {
+        return "activity.hasEvidence"
+    }
 
 }

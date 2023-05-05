@@ -49,9 +49,4 @@ internal interface ActivityDao : CrudRepository<Activity, Long>, JpaSpecificatio
 
     @EntityGraph(value = "fetch-activity-with-project-and-organization")
     fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity>
-
-    @Query(
-        "SELECT a FROM Activity a WHERE a.projectRole.requireEvidence = 'ONCE' AND a.hasEvidences = true",
-    )
-    fun findWithMissingEvidenceOnce(): List<Activity>
 }

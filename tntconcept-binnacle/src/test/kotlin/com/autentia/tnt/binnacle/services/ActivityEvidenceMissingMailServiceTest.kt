@@ -10,16 +10,16 @@ import org.mockito.kotlin.*
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class ActivityEvidenceMailServiceTest {
+internal class ActivityEvidenceMissingMailServiceTest {
 
     @Nested
     @DisplayName("Send emails test")
     inner class ServiceTest {
         private val mailService = mock<MailService>()
-        private val messageBuilder = mock<ActivityEvidenceMessageBuilder>()
+        private val messageBuilder = mock<ActivityEvidenceMissingMessageBuilder>()
         private val appProperties = AppProperties()
 
-        private val sut = ActivityEvidenceMailService(mailService, messageBuilder, appProperties)
+        private val sut = ActivityEvidenceMissingMailService(mailService, messageBuilder, appProperties)
 
         @AfterEach
         fun resetMocks() = reset(mailService, messageBuilder)
@@ -57,7 +57,8 @@ internal class ActivityEvidenceMailServiceTest {
 
             doReturn("Subject").`when`(messageBuilder).buildSubject(locale, organizationName, projectName)
             doReturn("Body").`when`(messageBuilder).buildBody(locale, organizationName, projectName, roles)
-            doReturn(Result.success("OK")).`when`(mailService).send(anyString(), anyList(), anyString(), anyString(), anyOrNull())
+            doReturn(Result.success("OK")).`when`(mailService)
+                .send(anyString(), anyList(), anyString(), anyString(), anyOrNull())
 
             // When
             sut.sendEmail(organizationName, projectName, roles, toUserEmail, locale)
@@ -68,7 +69,13 @@ internal class ActivityEvidenceMailServiceTest {
             val expectedSubject = "Subject"
             val expectedBody = "Body"
 
-            verify(mailService).send(eq(expectedFrom), eq(expectedTo), eq(expectedSubject), eq(expectedBody), anyOrNull())
+            verify(mailService).send(
+                eq(expectedFrom),
+                eq(expectedTo),
+                eq(expectedSubject),
+                eq(expectedBody),
+                anyOrNull()
+            )
             verify(messageBuilder).buildSubject(locale, organizationName, projectName)
             verify(messageBuilder).buildBody(locale, organizationName, projectName, roles)
         }
@@ -80,7 +87,7 @@ internal class ActivityEvidenceMailServiceTest {
     inner class MessageBuilderTest {
         private val messageSource = mock<MessageSource>()
 
-        private val sut = ActivityEvidenceMessageBuilder(messageSource)
+        private val sut = ActivityEvidenceMissingMessageBuilder(messageSource)
 
         @AfterEach
         fun resetMocks() = reset(messageSource)
@@ -93,14 +100,19 @@ internal class ActivityEvidenceMailServiceTest {
             val projectName = "Project"
 
             doReturn(Optional.of("Falta evidencia $organizationName - $projectName")).`when`(messageSource)
-                    .getMessage("mail.request.evidenceActivity.subject", locale, organizationName, projectName)
+                .getMessage("mail.request.evidenceActivity.subject", locale, organizationName, projectName)
 
             // When
             val subject = sut.buildSubject(locale, organizationName, projectName)
 
             // Then
             assertThat(subject).isEqualTo("Falta evidencia $organizationName - $projectName")
-            verify(messageSource).getMessage("mail.request.evidenceActivity.subject", locale, organizationName, projectName)
+            verify(messageSource).getMessage(
+                "mail.request.evidenceActivity.subject",
+                locale,
+                organizationName,
+                projectName
+            )
         }
 
         @Test
@@ -118,14 +130,19 @@ internal class ActivityEvidenceMailServiceTest {
                 ¡Gracias!
             """.trimIndent()
 
-            doReturn(Optional.of(evidenceBody)).`when`(messageSource).getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
+            doReturn(Optional.of(evidenceBody)).`when`(messageSource)
+                .getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
 
             // When
             val body = sut.buildBody(locale, organizationName, projectName, roleNames)
 
             // Then
             assertThat(body).isEqualTo(evidenceBody)
-            verify(messageSource).getMessage("mail.request.evidenceActivity.template", locale, "Organization - Project - Role one")
+            verify(messageSource).getMessage(
+                "mail.request.evidenceActivity.template",
+                locale,
+                "Organization - Project - Role one"
+            )
         }
 
         @Test
@@ -145,7 +162,8 @@ internal class ActivityEvidenceMailServiceTest {
                 ¡Gracias!
             """.trimIndent()
 
-            doReturn(Optional.of(evidenceBody)).`when`(messageSource).getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
+            doReturn(Optional.of(evidenceBody)).`when`(messageSource)
+                .getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
 
             // When
             val body = sut.buildBody(locale, organizationName, projectName, roleNames)

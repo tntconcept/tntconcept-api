@@ -7,14 +7,10 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
-import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.ProjectRoleService
-import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import jakarta.inject.Singleton
-import java.util.Locale
+import java.util.*
 
 @Singleton
 class ActivityUpdateUseCase internal constructor(
@@ -26,7 +22,7 @@ class ActivityUpdateUseCase internal constructor(
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
     private val timeIntervalConverter: TimeIntervalConverter,
-    private val activityEvidenceMailService: ActivityEvidenceMailService
+    private val activityPendingApprovalMailService: ActivityPendingApprovalMailService,
 ) {
     fun updateActivity(activityRequest: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO {
         val user = userService.getAuthenticatedUser()
@@ -52,7 +48,7 @@ class ActivityUpdateUseCase internal constructor(
                 activityResponse.hasEvidences
             )
         ) {
-            activityEvidenceMailService.sendActivityEvidenceMail(activityResponse, user.username, locale)
+            activityPendingApprovalMailService.sendActivityEvidenceMail(activityResponse, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(activityResponse)

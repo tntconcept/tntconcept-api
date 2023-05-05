@@ -6,7 +6,9 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.services.ActivityEvidenceMissingMailService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.Test
@@ -15,16 +17,20 @@ import org.mockito.kotlin.*
 class ActivityEvidenceOnceMissingReminderUseCaseTest {
 
     private val activityService: ActivityService = mock()
-    private val activityEvidenceMailService: ActivityEvidenceMailService = mock()
+    private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService = mock()
     private val userService: UserService = mock()
     private val activityEvidenceOnceMissingReminderUseCase = ActivityEvidenceOnceMissingReminderUseCase(
-        activityService, activityEvidenceMailService, userService
+        activityService, activityEvidenceMissingMailService, userService
     )
 
     @Test
     fun `should call ActivityEvidenceMailService`() {
+        val predicate = PredicateBuilder.and(
+            ActivityPredicates.hasNotEvidence(),
+            ActivityPredicates.projectRoleRequiresEvidence(RequireEvidence.ONCE)
+        )
         whenever(userService.findActive()).thenReturn(listOf(user, otherUser))
-        whenever(activityService.getActivitiesMissingEvidenceOnce()).thenReturn(
+        whenever(activityService.getActivities(predicate)).thenReturn(
             listOf(
                 createActivity().copy(projectRole = projectRole, userId = user.id),
                 createActivity().copy(projectRole = projectRole2, userId = user.id),
@@ -36,28 +42,28 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
 
         activityEvidenceOnceMissingReminderUseCase.sendReminders()
 
-        verify(activityEvidenceMailService).sendEmail(
+        verify(activityEvidenceMissingMailService).sendEmail(
             eq(project.organization.name),
             eq(project.name),
             eq(setOf(projectRole.name, projectRole2.name)),
             eq(user.email),
             any()
         )
-        verify(activityEvidenceMailService).sendEmail(
+        verify(activityEvidenceMissingMailService).sendEmail(
             eq(project.organization.name),
             eq(project.name),
             eq(setOf(projectRole2.name)),
             eq(otherUser.email),
             any()
         )
-        verify(activityEvidenceMailService).sendEmail(
+        verify(activityEvidenceMissingMailService).sendEmail(
             eq(otherProject.organization.name),
             eq(otherProject.name),
             eq(setOf(projectRoleFromOtherProject.name)),
             eq(user.email),
             any()
         )
-        verify(activityEvidenceMailService).sendEmail(
+        verify(activityEvidenceMissingMailService).sendEmail(
             eq(otherProject.organization.name),
             eq(otherProject.name),
             eq(setOf(projectRoleFromOtherProject.name)),

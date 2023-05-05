@@ -5,6 +5,8 @@ import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.*
@@ -19,6 +21,9 @@ internal class ActivityDaoIT {
 
     @Inject
     private lateinit var activityDao: ActivityDao
+
+    @Inject
+    private lateinit var projectRoleDao: ProjectRoleDao
 
     @Test
     fun `should find activity by id`() {
@@ -419,8 +424,10 @@ internal class ActivityDaoIT {
 
     @Test
     fun `should find activities without evidence and required evidence once`() {
-        val projectRole = createProjectRole().copy(id = 4L, requireEvidence = RequireEvidence.ONCE);
-        val projectRoleWithoutEvidencesNeeded = createProjectRole().copy(id = 5L, requireEvidence = RequireEvidence.NO)
+        val projectRole = projectRoleDao.findById(1L).get()
+        val projectRoleEdited = projectRole.copy(requireEvidence = RequireEvidence.ONCE)
+        projectRoleDao.update(projectRoleEdited)
+        val projectRoleWithoutEvidenceOnce = projectRoleDao.findById(2).get()
         val activityWithoutEvidence = Activity(
             start = yesterday.atTime(8, 0, 0),
             end = yesterday.atTime(17, 0, 0),
@@ -436,7 +443,7 @@ internal class ActivityDaoIT {
             start = yesterday.atTime(8, 0, 0),
             end = yesterday.atTime(17, 0, 0),
             duration = 540,
-            description = "Test activity 2",
+            description = "Test activity 3",
             projectRole = projectRole,
             userId = userId,
             billable = false,
@@ -447,8 +454,8 @@ internal class ActivityDaoIT {
             start = yesterday.atTime(8, 0, 0),
             end = yesterday.atTime(17, 0, 0),
             duration = 540,
-            description = "Test activity 2",
-            projectRole = projectRoleWithoutEvidencesNeeded,
+            description = "Test activity 4",
+            projectRole = projectRoleWithoutEvidenceOnce,
             userId = userId,
             billable = false,
             hasEvidences = false,
@@ -456,7 +463,11 @@ internal class ActivityDaoIT {
         )
         activityDao.saveAll(listOf(activityWithoutEvidence, activityWithEvidence, activityWithoutEvidenceNeeded))
 
-        val result = activityDao.findWithMissingEvidenceOnce()
+        val predicate = PredicateBuilder.and(
+            ActivityPredicates.hasNotEvidence(),
+            ActivityPredicates.projectRoleRequiresEvidence(RequireEvidence.ONCE)
+        )
+        val result = activityDao.findAll(predicate)
 
         val expectedResults = listOf(activityWithoutEvidence)
         assertEquals(expectedResults, result)

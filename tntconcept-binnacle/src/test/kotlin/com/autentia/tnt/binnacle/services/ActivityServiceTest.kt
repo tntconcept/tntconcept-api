@@ -330,14 +330,6 @@ internal class ActivityServiceTest {
         )
     }
 
-    @Test
-    fun `find without evidence once should call dao`() {
-        activityService.getActivitiesMissingEvidenceOnce()
-
-        verify(activityRepository).findActivitiesMissingEvidenceOnceWithoutSecurity()
-    }
-
-
     private companion object {
         private val USER = createUser()
 

@@ -11,9 +11,6 @@ internal interface ActivityRepository {
 
     fun findAll(activitySpecification: Specification<Activity>): List<Activity>
 
-    fun findActivitiesMissingEvidenceOnceWithoutSecurity(): List<Activity>
-
-
     fun findById(id: Long): Activity?
 
     fun findByIdWithoutSecurity(id: Long): Activity?

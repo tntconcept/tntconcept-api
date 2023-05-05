@@ -21,12 +21,7 @@ internal class ActivityRepositorySecured(
 ) : ActivityRepository {
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
         activityDao.findAll(addUserFilterIfNecessary(activitySpecification))
-
-    override fun findActivitiesMissingEvidenceOnceWithoutSecurity(): List<Activity> {
-        //TODO: add security to this method
-        return activityDao.findWithMissingEvidenceOnce()
-    }
-
+    
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
 

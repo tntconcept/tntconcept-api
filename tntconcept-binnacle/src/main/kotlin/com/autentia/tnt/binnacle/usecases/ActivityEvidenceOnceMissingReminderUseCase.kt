@@ -1,19 +1,19 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
+import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.services.ActivityEvidenceMissingMailService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
+import io.micronaut.data.jpa.repository.criteria.Specification
 import jakarta.inject.Singleton
 import java.util.*
 
 @Singleton
 class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
     private val activityService: ActivityService,
-    private val activityEvidenceMailService: ActivityEvidenceMailService,
+    private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService,
     private val userService: UserService,
 ) {
     fun sendReminders() {
@@ -28,8 +28,7 @@ class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
 
     private fun getProjectRolesMissingEvidenceByUser(): Map<User, List<ProjectRole>> {
         val activeUsers: List<User> = userService.findActive()
-        //TODO: migrate to find by predicate
-        val activitiesMissingEvidence: List<Activity> = activityService.getActivitiesMissingEvidenceOnce()
+        val activitiesMissingEvidence: List<Activity> = getActivitiesMissingEvidenceOnce();
         val activitiesMissingEvidenceByUser = groupActivitiesByUser(activitiesMissingEvidence, activeUsers)
         return getProjectRolesByUserFromActivities(activitiesMissingEvidenceByUser)
     }
@@ -37,6 +36,14 @@ class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
     private fun notifyMissingEvidencesToUser(user: User, rolesMissingEvidence: List<ProjectRole>) {
         val rolesGroupedByProject: Map<Project, List<ProjectRole>> = rolesMissingEvidence.groupBy { it.project }
         rolesGroupedByProject.forEach { notifyMissingProjectEvidenceToUser(user, it.key, it.value) }
+    }
+
+    private fun getActivitiesMissingEvidenceOnce(): List<Activity> {
+        val predicate: Specification<Activity> = PredicateBuilder.and(
+            ActivityPredicates.hasNotEvidence(),
+            ActivityPredicates.projectRoleRequiresEvidence(RequireEvidence.ONCE)
+        )
+        return activityService.getActivities(predicate)
     }
 
 
@@ -60,7 +67,7 @@ class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
 
     private fun notifyMissingProjectEvidenceToUser(user: User, project: Project, projectRoleList: List<ProjectRole>) {
         val projectRoleNames = projectRoleList.map { it.name }.toSet()
-        activityEvidenceMailService.sendEmail(
+        activityEvidenceMissingMailService.sendEmail(
             project.organization.name,
             project.name,
             projectRoleNames,
