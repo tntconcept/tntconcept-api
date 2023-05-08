@@ -52,28 +52,28 @@ internal class VacationController(
     private val privateHolidayPeriodCreateUseCase: PrivateHolidayPeriodCreateUseCase,
     private val privateHolidayPeriodUpdateUseCase: PrivateHolidayPeriodUpdateUseCase,
     private val privateHolidayPeriodDeleteUseCase: PrivateHolidayPeriodDeleteUseCase
-) {
+    ) {
 
-    @Get
-    @Operation(summary = "Retrieves holidays within a given charge year.")
-    internal fun getPrivateHolidaysByChargeYear(chargeYear: Int): HolidayResponseDTO =
-        privateHolidaysByChargeYearUseCase.get(chargeYear)
+        @Get
+        @Operation(summary = "Retrieves holidays within a given charge year.")
+        internal fun getPrivateHolidaysByChargeYear(chargeYear: Int): HolidayResponseDTO =
+            privateHolidaysByChargeYearUseCase.get(chargeYear)
 
-    @Get("/details")
-    @Operation(summary = "Retrieves details for a holiday within a given charge year.")
-    internal fun getPrivateHolidayDetails(chargeYear: Int): VacationDetailsDTO {
-        val vacationsByChargeYear = privateHolidaysByChargeYearUseCase.get(chargeYear).vacations
-        return privateHolidayDetailsUseCase.get(chargeYear, vacationsByChargeYear)
-    }
+        @Get("/details")
+        @Operation(summary = "Retrieves details for a holiday within a given charge year.")
+        internal fun getPrivateHolidayDetails(chargeYear: Int): VacationDetailsDTO {
+            val vacationsByChargeYear = privateHolidaysByChargeYearUseCase.get(chargeYear).vacations
+            return privateHolidayDetailsUseCase.get(chargeYear, vacationsByChargeYear)
+        }
 
-    @Get("/days")
-    @Operation(summary = "Retrieves holidays within a given period.")
-    internal fun getPrivateHolidaysPeriodDays(startDate: LocalDate, endDate: LocalDate): Int =
-        privateHolidaysPeriodDaysUseCase.get(startDate, endDate)
+        @Get("/days")
+        @Operation(summary = "Retrieves holidays within a given period.")
+        internal fun getPrivateHolidaysPeriodDays(startDate: LocalDate, endDate: LocalDate): Int =
+            privateHolidaysPeriodDaysUseCase.get(startDate, endDate)
 
-    @Post
-    @Operation(summary = "Creates a holiday period.")
-    internal fun createPrivateHolidayPeriod(
+        @Post
+        @Operation(summary = "Creates a holiday period.")
+        internal fun createPrivateHolidayPeriod(
         @Body @Valid requestVacationDTO: RequestVacationDTO,
         locale: Locale
     ): List<CreateVacationResponseDTO> =

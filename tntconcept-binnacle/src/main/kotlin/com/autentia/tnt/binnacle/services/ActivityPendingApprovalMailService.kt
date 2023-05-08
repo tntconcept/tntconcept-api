@@ -36,7 +36,7 @@ internal class ActivityPendingApprovalMailService(
 
         val subject = messageSource
             .getMessage("mail.activity.evidence.subject", locale, username)
-            .orElse(null) ?: error("Cannot find message mail.request.approveActivity.subject")
+            .orElse(null) ?: error("Cannot find message mail.activity.evidence.subject")
 
         mailService.send(appProperties.mail.from, appProperties.binnacle.activitiesApprovers, subject, body)
             .onFailure { logger.error("Error sending evidence activity email", it) }
