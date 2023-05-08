@@ -110,7 +110,7 @@ internal class UserWorkTimeUseCaseTest {
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), eq(USER))
-        verify(activityService, times(2)).getActivitiesBetweenDates(any())
+        verify(activityService, times(2)).getUserActivitiesBetweenDates(any(), any())
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)
     }

@@ -151,7 +151,7 @@ app:
 
       # https://docs.micronaut.io/2.2.3/api/io/micronaut/scheduling/cron/CronExpression.html
       # Every day at 03:00 h UTC
-      cron-expression: '0 0 3 * * ?'
+      cron-expression: '0 */5 * * * ?'
 
       report:
         path: /tmp
