@@ -6,39 +6,39 @@ import io.micronaut.context.MessageSource
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.Locale
 
 @Singleton
-internal class ApproveActivityMailService(
+internal class ActivityEvidenceMailService(
     private val mailService: MailService,
     private val messageSource: MessageSource,
     private val appProperties: AppProperties
 ) {
-    fun sendApprovalActivityMail(activity: ActivityResponse, username: String, locale: Locale){
+    fun sendActivityEvidenceMail(activity: ActivityResponse, username: String, locale: Locale) {
         if (!appProperties.mail.enabled) {
-            logger.info("Mailing of approval activities is disabled")
+            logger.info("Mailing of activity evidence is disabled")
             return
         }
         val body = messageSource
             .getMessage(
-                "mail.request.approveActivity.template",
+                "mail.activity.evidence.template",
                 locale,
                 username,
                 activity.start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 activity.end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 activity.description
             )
-            .orElse(null) ?: error("Cannot find message mail.request.approveActivity.template")
+            .orElse(null) ?: error("Cannot find message mail.activity.evidence.template")
 
         val subject = messageSource
-            .getMessage("mail.request.approveActivity.subject", locale, username)
-            .orElse(null) ?: error("Cannot find message mail.request.approveActivity.subject")
+            .getMessage("mail.activity.evidence.subject", locale, username)
+            .orElse(null) ?: error("Cannot find message mail.activity.evidence.subject")
 
         mailService.send(appProperties.mail.from, appProperties.binnacle.activitiesApprovers, subject, body)
-            .onFailure { logger.error("Error sending activity approve email", it) }
+            .onFailure { logger.error("Error sending evidence activity email", it) }
     }
 
     private companion object {
-        private val logger = LoggerFactory.getLogger(ApproveActivityMailService::class.java)
+        private val logger = LoggerFactory.getLogger(ActivityEvidenceMailService::class.java)
     }
 }
