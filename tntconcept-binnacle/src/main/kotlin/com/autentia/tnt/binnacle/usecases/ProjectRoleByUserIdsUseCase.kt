@@ -34,15 +34,16 @@ class ProjectRoleByUserIdsUseCase internal constructor(
         val projectRoles = mutableListOf<ProjectRoleUser>()
         userIds.forEach { userId ->
             val userProjectRoles =
-                activities.map { it.projectRole }.distinct().map(ProjectRole::toDomain).map { projectRole ->
-                    val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
-                        projectRole,
-                        activities.map(Activity::toDomain),
-                        currentYearTimeInterval.getDateInterval(),
-                        userId
-                    )
-                    projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
-                }
+                activities.asSequence().filter { it.userId == userId }.map { it.projectRole.toDomain() }.distinct()
+                    .map { projectRole ->
+                        val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
+                            projectRole,
+                            activities.map(Activity::toDomain),
+                            currentYearTimeInterval.getDateInterval(),
+                            userId
+                        )
+                        projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
+                    }.toList()
             projectRoles.addAll(userProjectRoles)
         }
 

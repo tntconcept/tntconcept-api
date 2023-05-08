@@ -7,6 +7,7 @@ import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDateTime
 
 internal interface ActivityRepository {
+
     fun findAll(activitySpecification: Specification<Activity>): List<Activity>
     fun findById(id: Long): Activity?
 

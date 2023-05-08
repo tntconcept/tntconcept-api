@@ -38,14 +38,13 @@ internal class ProjectRoleByUserIdsUseCaseTest {
         val activities = listOf(
             createActivity().copy(projectRole = projectRole1).copy(start = TODAY.minusDays(15).atTime(7,30,0)).copy(end = TODAY.minusDays(15).atTime(9,0,0)).copy(userId = USER_ID1),
             createActivity().copy(projectRole = projectRole2).copy(userId = USER_ID2),
-            createActivity().copy(projectRole = projectRole2).copy(userId = USER_ID2).copy(start = TODAY.minusDays(2).atStartOfDay()).copy(end = TODAY.minusDays(2).atTime(9,0,0)),
+            createActivity().copy(projectRole = projectRole2).copy(userId = USER_ID1).copy(start = TODAY.minusDays(2).atStartOfDay()).copy(end = TODAY.minusDays(2).atTime(9,0,0)),
         )
 
         whenever(activityService.getActivities(timeInterval, userIds)).thenReturn(activities)
 
         val expectedProjectRoles = listOf(
             buildProjectRoleUserDTO(1L, 30, 120, USER_ID1),
-            buildProjectRoleUserDTO(1L, 120, 120, USER_ID2),
             buildProjectRoleUserDTO(2L, 0, 0, USER_ID2),
             buildProjectRoleUserDTO(2L, 0, 0, USER_ID1),
         )
