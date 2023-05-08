@@ -1,8 +1,11 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
@@ -15,7 +18,8 @@ import javax.transaction.Transactional
 class ProjectRoleByUserIdsUseCase internal constructor(
     private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
-    private val projectRoleResponseConverter: ProjectRoleResponseConverter
+    private val projectRoleResponseConverter: ProjectRoleResponseConverter,
+    private val projectRoleConverter: ProjectRoleConverter
 ) {
 
     @Transactional
@@ -27,10 +31,22 @@ class ProjectRoleByUserIdsUseCase internal constructor(
         val activities =
             activityService.getActivities(currentYearTimeInterval, userIds)
 
-        val remainingGroupedByProjectRoleAndUserId = activityCalendarService.getRemainingGroupedByProjectRoleAndUser(
-            activities.map(Activity::toDomain), currentYearTimeInterval.getDateInterval()
-        )
+        val projectRoles = mutableListOf<ProjectRoleUser>()
+        userIds.forEach { userId ->
+            val userProjectRoles =
+                activities.map { it.projectRole }.distinct().map(ProjectRole::toDomain).map { projectRole ->
+                    val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
+                        projectRole,
+                        activities.map(Activity::toDomain),
+                        currentYearTimeInterval.getDateInterval(),
+                        userId
+                    )
+                    projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
+                }
+            projectRoles.addAll(userProjectRoles)
+        }
 
-        return remainingGroupedByProjectRoleAndUserId.map(projectRoleResponseConverter::toProjectRoleUserDTO)
+
+        return projectRoles.map(projectRoleResponseConverter::toProjectRoleUserDTO)
     }
 }
