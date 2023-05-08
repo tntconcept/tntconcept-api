@@ -9,7 +9,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Singleton
-internal class ApproveActivityMailService(
+internal class PendingApproveActivityMailService(
     private val mailService: MailService,
     private val messageSource: MessageSource,
     private val appProperties: AppProperties
@@ -21,24 +21,24 @@ internal class ApproveActivityMailService(
         }
         val body = messageSource
             .getMessage(
-                "mail.request.approveActivity.template",
+                "mail.request.pendingApproveActivity.template",
                 locale,
                 username,
                 activity.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 activity.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 activity.description
             )
-            .orElse(null) ?: error("Cannot find message mail.request.approveActivity.template")
+            .orElse(null) ?: error("Cannot find message mail.request.pendingApproveActivity.template")
 
         val subject = messageSource
-            .getMessage("mail.request.approveActivity.subject", locale, username)
-            .orElse(null) ?: error("Cannot find message mail.request.approveActivity.subject")
+            .getMessage("mail.request.pendingApproveActivity.subject", locale, username)
+            .orElse(null) ?: error("Cannot find message mail.request.pendingApproveActivity.subject")
 
         mailService.send(appProperties.mail.from, appProperties.binnacle.activitiesApprovers, subject, body)
             .onFailure { logger.error("Error sending activity approve email", it) }
     }
 
     private companion object {
-        private val logger = LoggerFactory.getLogger(ApproveActivityMailService::class.java)
+        private val logger = LoggerFactory.getLogger(PendingApproveActivityMailService::class.java)
     }
 }

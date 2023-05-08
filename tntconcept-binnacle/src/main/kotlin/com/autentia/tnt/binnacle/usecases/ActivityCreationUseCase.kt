@@ -7,7 +7,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.ApproveActivityMailService
+import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -26,7 +26,7 @@ class ActivityCreationUseCase internal constructor(
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val approveActivityMailService: ApproveActivityMailService,
+    private val pendingApproveActivityMailService: PendingApproveActivityMailService,
 ) {
 
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO {
@@ -36,13 +36,14 @@ class ActivityCreationUseCase internal constructor(
             ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
         )
 
-        val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, duration, projectRole, user)
+        val activityToCreate =
+            activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole, user)
 
         activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
         val activityCreated = activityService.createActivity(activityToCreate, activityRequestBody.imageFile)
 
         if (activityCreated.projectRole.isApprovalRequired) {
-            approveActivityMailService.sendApprovalActivityMail(activityCreated, user.username, locale)
+            pendingApproveActivityMailService.sendApprovalActivityMail(activityCreated, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(activityCreated)

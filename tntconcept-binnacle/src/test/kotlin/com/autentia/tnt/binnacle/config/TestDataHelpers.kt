@@ -99,6 +99,7 @@ internal fun createOrganization(id: Long = 1L) = Organization(
     name = "Dummy Organization",
     projects = listOf()
 )
+
 internal fun createProject(id: Long = 1L) = Project(
     id = id,
     name = "Dummy Project",
@@ -119,8 +120,19 @@ internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
     TimeUnit.MINUTES
 )
 
-internal fun createActivity() = Activity(
-    1,
+internal fun createProjectRole(id: Long = 1L, project: Project): ProjectRole = ProjectRole(
+    id,
+    "Dummy Project role",
+    RequireEvidence.WEEKLY,
+    project,
+    0,
+    true,
+    false,
+    TimeUnit.MINUTES
+)
+
+internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = ApprovalState.NA) = Activity(
+    id,
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
     60,
@@ -131,7 +143,7 @@ internal fun createActivity() = Activity(
     1L,
     null,
     false,
-    ApprovalState.NA
+   approvalState
 )
 
 internal fun createActivity(projectRole: ProjectRole) = Activity(

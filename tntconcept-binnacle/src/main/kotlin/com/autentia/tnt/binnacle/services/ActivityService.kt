@@ -2,13 +2,13 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalTime
@@ -34,6 +34,13 @@ internal class ActivityService(
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
         return activityRepository.find(startDateMinHour, endDateMaxHour)
     }
+
+    @Transactional
+    @ReadOnly
+    fun getActivities(activitySpecification: Specification<Activity>): List<Activity> {
+        return activityRepository.findAll(activitySpecification)
+    }
+
 
     @Transactional
     @ReadOnly
@@ -107,8 +114,6 @@ internal class ActivityService(
 
         val oldActivity = activityRepository
             .findById(activityToUpdate.id!!) ?: throw ActivityNotFoundException(activityToUpdate.id)
-
-        activityToUpdate.insertDate = toLocalDateTime(oldActivity.insertDate)
 
         // Update stored image
         if (activityToUpdate.hasEvidences) {

@@ -44,9 +44,6 @@ internal class ActivityControllerIT {
 
     private lateinit var client: BlockingHttpClient
 
-    @get:MockBean(ActivitiesBetweenDateUseCase::class)
-    internal val activitiesBetweenDateUseCase = mock<ActivitiesBetweenDateUseCase>()
-
     @get:MockBean(ActivityRetrievalByIdUseCase::class)
     internal val activityRetrievalUseCase = mock<ActivityRetrievalByIdUseCase>()
 
@@ -68,8 +65,8 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityApprovalUseCase::class)
     internal val activityApprovalUseCase = mock<ActivityApprovalUseCase>()
 
-    @get:MockBean(ActivitiesByApprovalStateUseCase::class)
-    internal val activitiesByApprovalStateUseCase = mock<ActivitiesByApprovalStateUseCase>()
+    @get:MockBean(ActivitiesByFilterUseCase::class)
+    internal val activitiesByFilterUseCase = mock<ActivitiesByFilterUseCase>()
 
     @BeforeAll
     fun setup() {
@@ -82,7 +79,14 @@ internal class ActivityControllerIT {
         val endDate = LocalDate.of(2018, JANUARY, 31)
         val activities = listOf(ACTIVITY_RESPONSE_DTO)
 
-        doReturn(activities).whenever(activitiesBetweenDateUseCase).getActivities(startDate, endDate)
+        whenever(
+            activitiesByFilterUseCase.getActivities(
+                ActivityFilterDTO(
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            )
+        ).thenReturn(activities)
 
         val response = client.exchangeList<ActivityResponseDTO>(
             GET("/api/activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
@@ -97,7 +101,9 @@ internal class ActivityControllerIT {
         val approvalState = ApprovalState.PENDING
         val activities = listOf(ACTIVITY_RESPONSE_DTO)
 
-        whenever(activitiesByApprovalStateUseCase.getActivities(approvalState)).thenReturn(activities)
+        whenever(activitiesByFilterUseCase.getActivities(ActivityFilterDTO(approvalState = approvalState))).thenReturn(
+            activities
+        )
 
         val response = client.exchangeList<ActivityResponseDTO>(
             GET("/api/activity?approvalState=${approvalState}"),
@@ -108,16 +114,39 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `get all activities should return bad request response`() {
-        val expectedErrorCode = ErrorResponse("ILLEGAL_ARGUMENT", "Invalid parameters")
-        val ex = assertThrows<HttpClientResponseException> {
-            client.exchangeList<ActivityResponseDTO>(
-                GET("/api/activity"),
+    fun `get activities by filter`() {
+        val startDate = LocalDate.of(2018, JANUARY, 1)
+        val approvalState = ApprovalState.PENDING
+        val endDate = LocalDate.of(2018, JANUARY, 31)
+        val organizationId = 1L
+        val projectId = 1L
+        val roleId = 1L
+        val activitiesFilter =
+            ActivityFilterDTO(
+                startDate,
+                endDate,
+                ApprovalState.PENDING,
+                organizationId,
+                projectId,
+                roleId
             )
-        }
+        val activities = listOf(ACTIVITY_RESPONSE_DTO)
+        whenever(activitiesByFilterUseCase.getActivities(activitiesFilter)).thenReturn(activities)
 
-        assertEquals(BAD_REQUEST, ex.status)
-        assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get())
+        val response = client.exchangeList<ActivityResponseDTO>(
+            GET(
+                "/api/activity?" +
+                        "approvalState=${approvalState}" +
+                        "&startDate=${startDate.toJson()}" +
+                        "&endDate=${endDate.toJson()}" +
+                        "&organizationId=${organizationId}" +
+                        "&projectId=${projectId}" +
+                        "&roleId=${roleId}"
+            ),
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(activities, response.body.get())
     }
 
     @Test
@@ -176,7 +205,8 @@ internal class ActivityControllerIT {
 
     @Test
     fun `post a new activity`() {
-        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase)
+            .createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
             POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -216,7 +246,7 @@ internal class ActivityControllerIT {
     fun `fail if try to post an activity and a exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
@@ -239,10 +269,10 @@ internal class ActivityControllerIT {
         val updatedActivity = ACTIVITY_RESPONSE_DTO.copy(
             description = putActivity.description
         )
-        doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(putActivity)
+        doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(putActivity, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
-            PUT("/api/activity", ACTIVITY_PUT_JSON),
+            PUT("/api/activity", ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
         )
 
         assertEquals(OK, response.status)
@@ -264,13 +294,13 @@ internal class ActivityControllerIT {
     fun `fail if try to put an activity and exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
-        doThrow(exception).whenever(activityUpdateUseCase).updateActivity(ACTIVITY_REQUEST_BODY_DTO)
+        doThrow(exception).whenever(activityUpdateUseCase).updateActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                PUT("/api/activity", ACTIVITY_POST_JSON),
+                PUT("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -301,7 +331,7 @@ internal class ActivityControllerIT {
     fun `fail if try to delete an activity and exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(activityDeletionUseCase).deleteActivityById(ACTIVITY_RESPONSE_DTO.id)
 
@@ -317,10 +347,10 @@ internal class ActivityControllerIT {
 
     @Test
     fun `approve an activity`() {
-        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
-            POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "")
+            POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
@@ -328,8 +358,16 @@ internal class ActivityControllerIT {
     }
 
     private fun activityApprovalFailedProvider() = arrayOf(
-        arrayOf(UserPermissionException(), NOT_FOUND, ErrorResponse("RESOURCE_NOT_FOUND", "You don't have permission to access the resource")),
-        arrayOf(InvalidActivityApprovalStateException(), CONFLICT, ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", "Activity could not been approved"))
+        arrayOf(
+            UserPermissionException(),
+            NOT_FOUND,
+            ErrorResponse("RESOURCE_NOT_FOUND", "You don't have permission to access the resource")
+        ),
+        arrayOf(
+            InvalidActivityApprovalStateException(),
+            CONFLICT,
+            ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", "Activity could not been approved")
+        )
     )
 
     @ParameterizedTest
@@ -339,11 +377,11 @@ internal class ActivityControllerIT {
         expectedResponseStatus: HttpStatus,
         expectedErrorResponse: ErrorResponse?,
     ) {
-        doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id)
+        doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Unit>(
-                POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", ""),
+                POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -385,18 +423,20 @@ internal class ActivityControllerIT {
         """.trimIndent()
 
 
-
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             ACTIVITY_REQUEST_BODY_DTO.billable,
             ACTIVITY_REQUEST_BODY_DTO.description,
             ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
             2L,
             ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
-            IntervalResponseDTO(ACTIVITY_REQUEST_BODY_DTO.interval.start,
+            IntervalResponseDTO(
+                ACTIVITY_REQUEST_BODY_DTO.interval.start,
                 ACTIVITY_REQUEST_BODY_DTO.interval.end,
-                240, TimeUnit.MINUTES),
+                240, TimeUnit.MINUTES
+            ),
             42,
-            ApprovalState.ACCEPTED)
+            ApprovalState.ACCEPTED
+        )
 
         private val ACTIVITY_PUT_JSON = """
             {

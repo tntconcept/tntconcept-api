@@ -18,6 +18,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.UserService
@@ -30,8 +31,11 @@ import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
+import java.util.Locale
 
 internal class ActivityUpdateUseCaseTest {
 
@@ -40,6 +44,7 @@ internal class ActivityUpdateUseCaseTest {
     private val activityValidator = mock<ActivityValidator>()
     private val projectRoleService = mock<ProjectRoleService>()
     private val userService = mock<UserService>()
+    private val activityEvidenceMailService = mock<ActivityEvidenceMailService>()
 
     private val activityUpdateUseCase = ActivityUpdateUseCase(
         activityService,
@@ -50,7 +55,8 @@ internal class ActivityUpdateUseCaseTest {
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
-        )
+        ),
+        activityEvidenceMailService
     )
 
     private val projectRole = createDomainProjectRole().copy(id = 10L)
@@ -61,9 +67,11 @@ internal class ActivityUpdateUseCaseTest {
 
         doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
 
+        doReturn(todayActivity).whenever(activityService).getActivityById(todayActivity.id!!)
+
         doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(null))
 
-        assertEquals(todayActivityResponseDTO, activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO))
+        assertEquals(todayActivityResponseDTO, activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH))
     }
 
     @Test
@@ -73,7 +81,81 @@ internal class ActivityUpdateUseCaseTest {
         doAnswer { throw Exception() }.whenever(activityValidator)
             .checkActivityIsValidForUpdate(activityToUpdate, activityToUpdate, USER)
 
-        assertThrows<Exception> { activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO) }
+        assertThrows<Exception> { activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH) }
+    }
+
+    @Test
+    fun `test email is not sent, only project role requireEvidence is true `() {
+
+        val activity = todayActivity.copy(
+            approvalState = ApprovalState.ACCEPTED,
+            projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY)
+        )
+
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+
+        doReturn(projectRole).whenever(projectRoleService)
+            .getByProjectRoleId(projectRole.id)
+
+        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
+
+        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
+
+        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO.copy(hasEvidences = false), Locale.ENGLISH)
+
+        verify(activityEvidenceMailService, times(0)).sendActivityEvidenceMail(
+            activity,
+            USER.username,
+            Locale.ENGLISH
+        )
+    }
+
+    @Test
+    fun `test email is not sent, only requireEvidence is true and approval state is pending `() {
+
+        val activity = todayActivity.copy(
+            approvalState = ApprovalState.PENDING,
+            projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY)
+        )
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+
+        doReturn(projectRole).whenever(projectRoleService)
+            .getByProjectRoleId(projectRole.id)
+
+        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
+        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
+
+        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
+
+        verify(activityEvidenceMailService, times(0)).sendActivityEvidenceMail(
+            activity,
+            USER.username,
+            Locale.ENGLISH
+        )
+    }
+
+    @Test
+    fun `test email is sent, requireEvidence is true, approval state is pending and hasEvidences is true`() {
+
+        val activity = todayActivity.copy(
+            approvalState = ApprovalState.PENDING,
+            projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY),
+            hasEvidences = true
+        )
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+
+        doReturn(projectRole).whenever(projectRoleService)
+            .getByProjectRoleId(projectRole.id)
+        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
+        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
+
+        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
+
+        verify(activityEvidenceMailService, times(1)).sendActivityEvidenceMail(
+            activity,
+            USER.username,
+            Locale.ENGLISH
+        )
     }
 
     private companion object {

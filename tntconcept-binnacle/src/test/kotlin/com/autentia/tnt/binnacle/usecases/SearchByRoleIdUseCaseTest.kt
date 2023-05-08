@@ -73,6 +73,8 @@ internal class SearchByRoleIdUseCaseTest {
 
     @Test
     fun `return an unique element for Organization, Project and Role when search only for one projectRole`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
         val rolesForSearch = listOf(INTERNAL_STUDENT.id)
         val activity = createDomainActivity().copy(projectRole = INTERNAL_STUDENT)
 
@@ -185,7 +187,9 @@ internal class SearchByRoleIdUseCaseTest {
                 RequireEvidence.WEEKLY,
                 EXTERNAL_TRAINING,
                 0,
-                TimeUnit.MINUTES,
+
+                TimeUnit.MINUTES
+            ,
                 true,
                 false
             )
@@ -200,6 +204,10 @@ internal class SearchByRoleIdUseCaseTest {
                 true,
                 false
             )
-        private val authenticatedUser = ClientAuthentication("1", mapOf("roles" to listOf("user")))
+        private val authenticatedUser =
+            ClientAuthentication(
+                "1",
+                mapOf("roles" to listOf("user"))
+            )
     }
 }

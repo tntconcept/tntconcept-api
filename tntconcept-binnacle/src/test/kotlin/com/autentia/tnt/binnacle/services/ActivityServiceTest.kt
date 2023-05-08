@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
@@ -37,7 +36,6 @@ internal class ActivityServiceTest {
     private val activityRepository = mock<ActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
-    private val activityRequestBodyConverter = ActivityRequestBodyConverter()
     private val activityService = ActivityService(
         activityRepository,
         projectRoleRepository,
@@ -270,7 +268,7 @@ internal class ActivityServiceTest {
 
         val activityToReturn = Activity.of(activityToUpdate, projectRole)
 
-        given(activityRepository.update(Activity.of(activityToUpdate, projectRole))).willReturn(activityToReturn)
+        given(activityRepository.update(activityToReturn)).willReturn(activityToReturn)
 
         val result = activityService.updateActivity(activityToUpdate, image)
 

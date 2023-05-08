@@ -25,7 +25,6 @@ class SearchByRoleIdUseCase internal constructor(
     ) {
 
     fun getDescriptions(roleIds: List<Long>): SearchResponseDTO {
-
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
         val projectRoleIds = roleIds.distinct()

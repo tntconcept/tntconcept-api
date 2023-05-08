@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -30,6 +31,8 @@ data class Activity private constructor(
     }
 
     fun isMoreThanOneDay() = projectRole.timeUnit === TimeUnit.DAYS || timeInterval.getDuration().toDays().toInt() > 0
+    fun activityCanBeApproved() =
+        RequireEvidence.isRequired(projectRole.requireEvidence) && approvalState === ApprovalState.PENDING && hasEvidences
 
     companion object {
 
@@ -76,9 +79,5 @@ data class Activity private constructor(
             false,
             ApprovalState.NA,
         )
-
-        private fun getDateAtTimeIfNecessary(
-            date: LocalDateTime, timeUnit: TimeUnit, localTime: LocalTime
-        ): LocalDateTime = if (timeUnit === TimeUnit.DAYS) date.toLocalDate().atTime(localTime) else date
     }
 }

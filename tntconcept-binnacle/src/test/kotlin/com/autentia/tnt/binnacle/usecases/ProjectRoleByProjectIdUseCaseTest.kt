@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
+import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
@@ -32,8 +33,9 @@ internal class ProjectRoleByProjectIdUseCaseTest {
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activityCalendarFactory)
     private val projectRoleResponseConverter = ProjectRoleResponseConverter()
+    private val projectRoleConverter = ProjectRoleConverter()
     private val projectRoleByProjectIdUseCase =
-        ProjectRoleByProjectIdUseCase(activityService, activityCalendarService, securityService, projectRoleRepository, projectRoleResponseConverter)
+        ProjectRoleByProjectIdUseCase(activityService, activityCalendarService, securityService, projectRoleRepository, projectRoleResponseConverter, projectRoleConverter)
 
     @Test
     fun `return the expected project role`() {
@@ -114,9 +116,6 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
         private val PROJECT = Project(1L, "Dummy project", true, false, ORGANIZATION, listOf())
-
-        private val PROJECT_ROLE =
-            ProjectRole(PROJECT_ID, "Dummy Role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
         private val authentication =
             ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("admin")))

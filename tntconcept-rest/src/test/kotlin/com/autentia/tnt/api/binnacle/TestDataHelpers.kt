@@ -36,6 +36,7 @@ internal fun createUser(hiringDate: LocalDate): User = User(
     active = true
 )
 
+
 internal fun createVacationRequestDTO(startDate: LocalDate, endDate: LocalDate) = RequestVacationDTO(
     id = null,
     startDate = startDate,
@@ -74,11 +75,11 @@ internal fun createProject(id: Long = 1L) = Project(
 
 internal fun createProjectResponseDTO(id: Long = 1L, open: Boolean = false, billable: Boolean = false) =
     ProjectResponseDTO(
-        id = id,
-        name = "Dummy Project",
-        open = open,
-        billable = billable,
-        organizationId = 1L
+        id,
+        "Dummy Project",
+        open,
+        billable,
+        1L
     )
 
 internal fun createProjectRoleUserDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) = ProjectRoleUserDTO(

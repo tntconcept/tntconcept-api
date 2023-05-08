@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
@@ -31,12 +32,13 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val holidayService = mock<HolidayService>()
     private val securityService = mock<SecurityService>()
+    private val projectRoleConverter = ProjectRoleConverter()
 
     private val calendarFactory = CalendarFactory(holidayService)
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activityCalendarFactory)
     private val latestProjectRolesForAuthenticatedUserUseCase = LatestProjectRolesForAuthenticatedUserUseCase(
-        projectRoleRepository, projectRoleResponseConverter, activityService, activityCalendarService, securityService
+        projectRoleRepository, projectRoleResponseConverter, activityService, activityCalendarService, securityService, projectRoleConverter
     )
 
     @Test
