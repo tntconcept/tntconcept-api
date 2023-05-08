@@ -1,6 +1,8 @@
 package com.autentia.tnt.binnacle.entities
 
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.core.utils.toDate
+import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.micronaut.data.annotation.DateCreated
 import java.time.LocalDateTime
@@ -69,16 +71,77 @@ data class Activity(
     @Enumerated(EnumType.STRING)
     var approvalState: ApprovalState,
 ) {
+    fun getTimeInterval() = TimeInterval.of(start, end)
+
+
+    fun toDomain() =
+        com.autentia.tnt.binnacle.core.domain.Activity.of(
+            id,
+            getTimeInterval(),
+            duration,
+            description,
+            projectRole.toDomain(),
+            userId,
+            billable,
+            departmentId,
+            toLocalDateTime(insertDate),
+            hasEvidences,
+            approvalState,
+
+            )
 
     companion object {
+
+        fun of(
+            activity: com.autentia.tnt.binnacle.core.domain.Activity, projectRole: ProjectRole
+        ) =
+            Activity(
+                activity.id,
+                activity.getStart(),
+                activity.getEnd(),
+                activity.duration,
+                activity.description,
+                projectRole,
+                activity.userId,
+                activity.billable,
+                activity.departmentId,
+                toDate(activity.insertDate),
+                activity.hasEvidences,
+                activity.approvalState
+            )
+
+        fun of(
+            id: Long?,
+            start: LocalDateTime,
+            end: LocalDateTime,
+            duration: Int,
+            description: String,
+            projectRole: ProjectRole,
+            userId: Long,
+            billable: Boolean,
+            departmentId: Long?,
+            insertDate: Date?,
+            hasEvidences: Boolean,
+            approvalState: ApprovalState
+        ) =
+            Activity(
+                id,
+                start,
+                end,
+                duration,
+                description,
+                projectRole,
+                userId,
+                billable,
+                departmentId,
+                insertDate,
+                hasEvidences,
+                approvalState
+            )
+
         fun emptyActivity(projectRole: ProjectRole): Activity = Activity(
             0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
             false, 0, null, false, ApprovalState.NA
         )
     }
-
-    fun getTimeInterval() = TimeInterval.of(start, end)
-
-    fun toDomain() =
-        com.autentia.tnt.binnacle.core.domain.Activity(start, end, projectRole.toDomain(), userId)
 }

@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.core.domain
 
 
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 
@@ -35,4 +36,6 @@ data class ProjectRole(
         } else {
             maxAllowed - activities.sumOf { activity -> activity.getDurationByCountingWorkableDays(calendar) }
         }
+
+    fun getApprovalState() = if (isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
 }

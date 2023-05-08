@@ -50,4 +50,17 @@ data class ProjectRole(
             isWorkingTime,
             isApprovalRequired
         )
+
+    companion object {
+        fun of(projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole, project: Project) = ProjectRole(
+            projectRole.id,
+            projectRole.name,
+            projectRole.requireEvidence,
+            project,
+            projectRole.maxAllowed,
+            projectRole.isWorkingTime,
+            projectRole.isApprovalRequired,
+            projectRole.timeUnit
+        )
+    }
 }

@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.config
 
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Holiday
@@ -20,12 +21,12 @@ import java.time.LocalDateTime
 import java.time.Month
 
 internal fun createUser(): User = createUser(LocalDate.of(2020, Month.JANUARY, 1))
-internal fun createUser(hiringDate: LocalDate): User = User(
-    id = 1L,
+internal fun createUser(hiringDate: LocalDate, id: Long = 1L, name: String = "John Doe"): User = User(
+    id = id,
     hiringDate = hiringDate,
     username = "jdoe",
     password = "secret",
-    name = "John Doe",
+    name = name,
     email = "jdoe@doe.com",
     dayDuration = 480,
     photoUrl = "",
@@ -148,14 +149,38 @@ internal fun createActivity(projectRole: ProjectRole) = Activity(
     ApprovalState.NA
 )
 
-internal fun createDomainActivity() = com.autentia.tnt.binnacle.core.domain.Activity(
-    LocalDateTime.of(2023, 3, 1, 13, 5, 25),
-    LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
-    createDomainProjectRole(),
-    1L
-)
+internal fun createDomainActivity(
+    start: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25),
+    end: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
+    duration: Int = 60,
+    projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = createDomainProjectRole()
+) =
+    com.autentia.tnt.binnacle.core.domain.Activity.of(
+        1L,
+        TimeInterval.of(
+            start,
+            end
+        ),
+        duration,
+        "Description",
+        projectRole,
+        1L,
+        true,
+        null,
+        null,
+        false,
+        ApprovalState.NA
+
+    )
 
 internal fun createDomainProjectRole() = createProjectRole().toDomain()
+
+internal fun createDomainUser(
+    id: Long = 1L,
+    name: String = "John Doe",
+    hiringDate: LocalDate = LocalDate.of(2020, Month.JANUARY, 1)
+) =
+    createUser(hiringDate, id, name).toDomain()
 
 internal fun createActivityResponseDTO(
     id: Long,

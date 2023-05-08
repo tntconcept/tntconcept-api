@@ -1,6 +1,15 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.core.domain.*
+import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
+import com.autentia.tnt.binnacle.core.domain.Activity
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
+import com.autentia.tnt.binnacle.core.domain.DailyWorkingTime
+import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
+import com.autentia.tnt.binnacle.core.domain.ProjectRole
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.math.BigDecimal
@@ -146,7 +155,7 @@ internal class ActivityCalendarService(
 
     @Transactional
     @ReadOnly
-    fun getDurationByCountingWorkingDays(activity: Activity): Int {
+    fun getDurationByCountingWorkingDays(activity: ActivityTimeInterval): Int {
         val calendar = calendarFactory.create(activity.getDateInterval())
         return activity.getDurationByCountingWorkableDays(calendar)
     }

@@ -1,24 +1,84 @@
 package com.autentia.tnt.binnacle.core.domain
 
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import java.time.LocalDateTime
+import java.time.LocalTime
 
-
-data class Activity(val start: LocalDateTime, val end: LocalDateTime, val projectRole: ProjectRole, val userId: Long) {
-    private fun getTimeInterval() = TimeInterval.of(start, end)
-    fun isOneDay() = start.toLocalDate().isEqual(end.toLocalDate())
-    fun getDateInterval() = DateInterval.of(start.toLocalDate(), end.toLocalDate())
-    fun getDurationByCountingWorkableDays(calendar: Calendar): Int =
-        getDurationByCountingDays(calendar.getWorkableDays(getDateInterval()).size)
-
-    fun getDurationByCountingDays(numberOfDays: Int) =
-        if (projectRole.timeUnit == TimeUnit.MINUTES) {
-            getTimeInterval().getDuration().toMinutes().toInt()
-        } else {
-            numberOfDays * 8 * 60
+data class Activity private constructor(
+    val id: Long? = null,
+    override val timeInterval: TimeInterval,
+    val duration: Int,
+    val description: String,
+    val projectRole: ProjectRole,
+    val userId: Long,
+    val billable: Boolean,
+    val departmentId: Long?,
+    var insertDate: LocalDateTime? = null,
+    val hasEvidences: Boolean,
+    var approvalState: ApprovalState
+) : ActivityTimeInterval(timeInterval, projectRole.timeUnit) {
+    fun getStart() = timeInterval.start
+    fun getEnd() = timeInterval.end
+    fun getYearOfStart() = timeInterval.getYearOfStart()
+    fun getYearOfEnd() = timeInterval.getYearOfEnd()
+    fun getDurationInUnits(): Int {
+        if (timeUnit === TimeUnit.DAYS) {
+            return duration / (60 * 8)
         }
+        return duration
+    }
 
-    fun isInTheTimeInterval(timeInterval: TimeInterval) =
-          (start.isBefore(timeInterval.end) || start.isEqual(timeInterval.end))
-                    && (end.isAfter(timeInterval.start) || end.isEqual(timeInterval.start))
+    fun isMoreThanOneDay() = projectRole.timeUnit === TimeUnit.DAYS || timeInterval.getDuration().toDays().toInt() > 0
+
+    companion object {
+
+        fun of(
+            id: Long?,
+            timeInterval: TimeInterval,
+            duration: Int,
+            description: String,
+            projectRole: ProjectRole,
+            userId: Long,
+            billable: Boolean,
+            departmentId: Long?,
+            insertDate: LocalDateTime?,
+            hasEvidences: Boolean,
+            approvalState: ApprovalState,
+        ) =
+            Activity(
+                id,
+                TimeInterval.of(
+                    getDateAtTimeIfNecessary(timeInterval.start, projectRole.timeUnit, LocalTime.MIN),
+                    getDateAtTimeIfNecessary(timeInterval.end, projectRole.timeUnit, LocalTime.of(23, 59, 59))
+                ),
+                duration,
+                description,
+                projectRole,
+                userId,
+                billable,
+                departmentId,
+                insertDate,
+                hasEvidences,
+                approvalState
+            )
+
+        fun emptyActivity(projectRole: ProjectRole, user: User) = Activity(
+            0,
+            TimeInterval.of(LocalDateTime.MIN, LocalDateTime.MIN),
+            0,
+            "Empty activity",
+            projectRole,
+            user.id,
+            false,
+            null,
+            LocalDateTime.MIN,
+            false,
+            ApprovalState.NA,
+        )
+
+        private fun getDateAtTimeIfNecessary(
+            date: LocalDateTime, timeUnit: TimeUnit, localTime: LocalTime
+        ): LocalDateTime = if (timeUnit === TimeUnit.DAYS) date.toLocalDate().atTime(localTime) else date
+    }
 }

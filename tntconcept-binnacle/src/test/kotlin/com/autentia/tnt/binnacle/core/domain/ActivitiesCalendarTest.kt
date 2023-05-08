@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.core.utils.myDatesUntil
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.HolidayService
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -23,17 +24,26 @@ class ActivitiesCalendarTest {
 
     private val projectRoleInMinutes = createDomainProjectRole()
     private val projectRoleInDays = projectRoleInMinutes.copy(timeUnit = TimeUnit.DAYS)
-    private val activityInMinutes = Activity(
-        dateTime, dateTimePlusOneHour, projectRoleInMinutes, 1L
+    private val activityInMinutes = Activity.of(
+        1L,
+        TimeInterval.of(dateTime, dateTimePlusOneHour),
+        60,
+        "Description",
+        projectRoleInMinutes,
+        1L,
+        true,
+        null,
+        LocalDateTime.now(),
+        false,
+        ApprovalState.NA
     )
     private val activityInDays =
         activityInMinutes.copy(
-            start = dateTime, end = dateTimePlusTwoDays, projectRole = projectRoleInDays
+            timeInterval = TimeInterval.of(dateTime, dateTimePlusTwoDays), projectRole = projectRoleInDays
         )
     private val activityOutOfInterval =
         activityInMinutes.copy(
-            start = dateTime.plusMonths(1),
-            end = dateTimePlusTwoDays.plusMonths(1),
+            timeInterval = TimeInterval.of(dateTime.plusMonths(1), dateTimePlusTwoDays.plusMonths(1)),
             projectRole = projectRoleInDays
         )
     private val activities = listOf(activityInMinutes, activityInDays)

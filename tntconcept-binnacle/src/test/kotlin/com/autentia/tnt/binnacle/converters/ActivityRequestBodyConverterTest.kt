@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.converters
 
-import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.entities.Activity
@@ -10,7 +9,6 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -19,17 +17,6 @@ import java.time.Month
 internal class ActivityRequestBodyConverterTest {
 
     private val activityRequestBodyConverter = ActivityRequestBodyConverter()
-
-    @Test
-    fun `given ActivityRequestBodyDTO should return domain ActivityRequestBody with converted values`() {
-
-        val result = activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(
-            ACTIVITY_REQUEST_BODY_DTO, createProjectRole(), 75
-        )
-
-        assertEquals(ACTIVITY_REQUEST_BODY, result)
-    }
-
 
     @Test
     fun `given domain ActivityRequestBody should return domain Activity with converted values`() {
@@ -53,17 +40,6 @@ internal class ActivityRequestBodyConverterTest {
             1,
             false,
             null
-        )
-
-        private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
-            ACTIVITY_REQUEST_BODY.id,
-            ACTIVITY_REQUEST_BODY.start,
-            ACTIVITY_REQUEST_BODY.end,
-            ACTIVITY_REQUEST_BODY.description,
-            ACTIVITY_REQUEST_BODY.billable,
-            ACTIVITY_REQUEST_BODY.projectRoleId,
-            ACTIVITY_REQUEST_BODY.hasEvidences,
-            ACTIVITY_REQUEST_BODY.imageFile,
         )
 
         val DUMMY_ORGANIZATION = Organization(1L, "Dummy Organization", listOf())

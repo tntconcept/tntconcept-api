@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.HolidayService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,19 +22,35 @@ class ActivityTest {
 
     @Test
     fun `test isOneDay shold return true`() {
-        assertTrue(createDomainActivity().copy(start = dateTime, end = dateTimePlusOneHour).isOneDay())
+        assertTrue(
+            createDomainActivity().copy(timeInterval = TimeInterval.of(dateTime, dateTimePlusOneHour)).isOneDay()
+        )
     }
 
     @Test
     fun `test isOneDay shold return false`() {
-        assertFalse(createDomainActivity().copy(start = dateTime, end = dateTime.plusDays(1)).isOneDay())
+        assertFalse(
+            createDomainActivity().copy(timeInterval = TimeInterval.of(dateTime, dateTime.plusDays(1))).isOneDay()
+        )
     }
 
     @Test
     fun `test getDurationByCountingDays in minutes `() {
         assertEquals(
             60,
-            Activity(dateTime, dateTimePlusOneHour, createDomainProjectRole(), 1L).getDurationByCountingDays(0)
+            Activity.of(
+                1L,
+                TimeInterval.of(dateTime, dateTimePlusOneHour),
+                60,
+                "Description",
+                createDomainProjectRole(),
+                1L,
+                true,
+                null,
+                LocalDateTime.now(),
+                false,
+                ApprovalState.NA
+            ).getDurationByCountingDays(0)
         )
     }
 
@@ -41,11 +58,21 @@ class ActivityTest {
     fun `test getDurationByCountingDays in days `() {
         assertEquals(
             480,
-            Activity(
-                dateTime,
-                dateTimePlusOneHour,
+            Activity.of(
+                1L,
+                TimeInterval.of(
+                    dateTime,
+                    dateTimePlusOneHour
+                ),
+                60,
+                "Description",
                 createDomainProjectRole().copy(timeUnit = TimeUnit.DAYS),
-                1L
+                1L,
+                true,
+                null,
+                LocalDateTime.now(),
+                false,
+                ApprovalState.NA
             ).getDurationByCountingDays(1)
         )
     }
@@ -54,7 +81,19 @@ class ActivityTest {
     fun `test getDurationByCountingDays of days should return zero duration `() {
         assertEquals(
             0,
-            Activity(dateTime, dateTime, createDomainProjectRole(), 1L).getDurationByCountingDays(1)
+            Activity.of(
+                1L,
+                TimeInterval.of(dateTime, dateTime),
+                60,
+                "Description",
+                createDomainProjectRole(),
+                1L,
+                true,
+                null,
+                LocalDateTime.now(),
+                false,
+                ApprovalState.NA
+            ).getDurationByCountingDays(1)
         )
     }
 
@@ -63,9 +102,19 @@ class ActivityTest {
     fun `test getDurationByCountingWorkableDays in minutes `() {
         assertEquals(
             60,
-            Activity(dateTime, dateTimePlusOneHour, createDomainProjectRole(), 1L).getDurationByCountingWorkableDays(
-                calendar
-            )
+            Activity.of(
+                1L,
+                TimeInterval.of(dateTime, dateTimePlusOneHour),
+                60,
+                "Description",
+                createDomainProjectRole(),
+                1L,
+                true,
+                null,
+                LocalDateTime.now(),
+                false,
+                ApprovalState.NA
+            ).getDurationByCountingWorkableDays(calendar)
         )
     }
 
@@ -73,11 +122,21 @@ class ActivityTest {
     fun `test getDurationByCountingWorkableDays in days `() {
         assertEquals(
             480,
-            Activity(
-                dateTime,
-                dateTimePlusOneHour,
+            Activity.of(
+                1L,
+                TimeInterval.of(
+                    dateTime,
+                    dateTimePlusOneHour
+                ),
+                480,
+                "Description",
                 createDomainProjectRole().copy(timeUnit = TimeUnit.DAYS),
-                1L
+                1L,
+                true,
+                null,
+                LocalDateTime.now(),
+                false,
+                ApprovalState.NA
             ).getDurationByCountingWorkableDays(calendar)
         )
     }
@@ -87,9 +146,19 @@ class ActivityTest {
     fun `test getDurationByCountingWorkableDays should return zero duration `() {
         assertEquals(
             0,
-            Activity(dateTime, dateTime, createDomainProjectRole(), 1L).getDurationByCountingWorkableDays(
-                calendar
-            )
+            Activity.of(
+                1L,
+                TimeInterval.of(dateTime, dateTime),
+                0,
+                "Description",
+                createDomainProjectRole(),
+                1L,
+                true,
+                null,
+                LocalDateTime.now(),
+                false,
+                ApprovalState.NA
+            ).getDurationByCountingWorkableDays(calendar)
         )
     }
 }

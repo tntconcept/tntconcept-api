@@ -1,12 +1,13 @@
 package com.autentia.tnt.binnacle.core.services
 
+import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
-import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -38,36 +39,40 @@ internal class WorkedTimeServiceTest {
     private val otherProjectRole = createDomainProjectRole().copy(id = 2L)
     private val projectRoleInDays = createDomainProjectRole().copy(id = 3L, timeUnit = TimeUnit.DAYS)
     private val activities = listOf(
-        Activity(
-            LocalDateTime.parse("2021-01-01T10:00:00"),
-            LocalDateTime.parse("2021-01-01T10:00:00").plusHours(hours),
-            projectRole,
-            1L
+        createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.parse("2021-01-01T10:00:00"),
+                LocalDateTime.parse("2021-01-01T10:00:00").plusHours(hours)
+            ),
+            projectRole = projectRole
         ),
-
-        Activity(
-            LocalDateTime.parse("2021-01-02T10:00:00"),
-            LocalDateTime.parse("2021-01-02T10:00:00").plusHours(hours),
-            projectRole,
-            1L
+        createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.parse("2021-01-02T10:00:00"),
+                LocalDateTime.parse("2021-01-02T10:00:00").plusHours(hours)
+            ),
+            projectRole = projectRole
         ),
-        Activity(
-            LocalDateTime.parse("2021-02-01T10:00:00"),
-            LocalDateTime.parse("2021-02-01T10:00:00").plusHours(hours),
-            projectRole,
-            1L
+        createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.parse("2021-02-01T10:00:00"),
+                LocalDateTime.parse("2021-02-01T10:00:00").plusHours(hours)
+            ),
+            projectRole = projectRole
         ),
-        Activity(
-            LocalDateTime.parse("2021-02-03T10:00:00"),
-            LocalDateTime.parse("2021-02-03T10:00:00").plusHours(hours),
-            otherProjectRole,
-            1L
+        createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.parse("2021-02-03T10:00:00"),
+                LocalDateTime.parse("2021-02-03T10:00:00").plusHours(hours)
+            ),
+            projectRole = otherProjectRole
         ),
-        Activity(
-            LocalDateTime.parse("2021-03-15T00:00:00"),
-            LocalDateTime.parse("2021-03-15T00:00:00").plusMonths(1L),
-            projectRoleInDays,
-            1L
+        createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.parse("2021-03-15T00:00:00"),
+                LocalDateTime.parse("2021-03-15T00:00:00").plusMonths(1L)
+            ),
+            projectRole = projectRoleInDays
         ),
     )
 

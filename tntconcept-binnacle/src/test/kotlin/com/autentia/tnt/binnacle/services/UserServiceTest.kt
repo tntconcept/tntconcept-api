@@ -1,32 +1,29 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.repositories.UserRepository
-import io.micronaut.security.authentication.ClientAuthentication
+import com.autentia.tnt.binnacle.repositories.UserRepositorySecured
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.util.*
+import java.util.Optional
 
 internal class UserServiceTest {
 
-    private val userRepository = mock<UserRepository>()
+    private val userRepositorySecured =  mock<UserRepositorySecured>()
     private val securityService = mock<SecurityService>()
 
-    private var userService = UserService(userRepository, securityService)
+    private var userService = UserService(userRepositorySecured)
 
     @Test
     fun `get authenticated user`() {
-        val authentication = ClientAuthentication("1", emptyMap())
         val user = createUser()
-        doReturn(Optional.of(authentication)).whenever(securityService).authentication
-        doReturn(Optional.of(user)).whenever(userRepository).findById(1)
+        doReturn(Optional.of(user)).whenever(userRepositorySecured).findByAuthenticatedUser()
 
         val authenticatedUser = userService.getAuthenticatedUser()
 
@@ -41,22 +38,21 @@ internal class UserServiceTest {
     }
 
     @Test
-    fun `fail if cannot find t authenticated user`() {
-        val authentication = ClientAuthentication("1", emptyMap())
-        doReturn(Optional.of(authentication)).whenever(securityService).authentication
-        doReturn(Optional.empty<User>()).whenever(userRepository).findById(any())
+    fun `get user by username`() {
+        val user = createUser()
+        doReturn(user).whenever(userRepositorySecured).findByUsername(user.username)
 
-        assertThrows<IllegalStateException> { userService.getAuthenticatedUser() }
+        userService.getUserByUserName(user.username)
+
+        verify(userRepositorySecured, times(1)).findByUsername(user.username)
     }
 
     @Test
-    fun `find active users`() {
-        val users = listOf(mock(User::class.java))
+    fun `fail if there isn't authenticated user fetching the user by username`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        doReturn(users).whenever(userRepository).findByActiveTrue()
-
-        val result = userService.findActive()
-
-        assertEquals(users, result)
+        assertThrows<IllegalStateException> { userService.getUserByUserName(createUser().username) }
     }
+
+
 }

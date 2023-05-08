@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.exception.NoImageInActivityException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.services.ActivityImageService
@@ -21,7 +22,7 @@ class ActivityImageRetrievalUseCase internal constructor(
 
         if (activityValidator.userHasAccess(activity, user)) {
             if (activity.hasEvidences) {
-                return activityImageService.getActivityImageAsBase64(id, activity.insertDate!!)
+                return activityImageService.getActivityImageAsBase64(id, toDate(activity.insertDate)!!)
             } else {
                 throw NoImageInActivityException(id)
             }

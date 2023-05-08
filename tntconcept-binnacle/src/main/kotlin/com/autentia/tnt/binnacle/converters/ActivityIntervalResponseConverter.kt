@@ -9,6 +9,12 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ActivityIntervalResponseConverter {
+    fun toIntervalResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = IntervalResponseDTO(
+        start = activity.getStart(),
+        end = activity.getEnd(),
+        duration = activity.getDurationInUnits(),
+        timeUnit = activity.timeUnit
+    )
 
     fun mapActivityToIntervalResponseDTO(activity: Activity) = IntervalResponseDTO(
         start = activity.start,

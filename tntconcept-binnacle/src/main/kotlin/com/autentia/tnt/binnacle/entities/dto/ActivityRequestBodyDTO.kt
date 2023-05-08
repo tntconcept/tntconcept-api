@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.entities.dto
 
-import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
 import javax.validation.constraints.Size
@@ -26,7 +25,4 @@ data class ActivityRequestBodyDTO(
         hasEvidences: Boolean,
         imageFile: String? = null
     ) : this(id, TimeIntervalRequestDTO(start, end), description, billable, projectRoleId, hasEvidences, imageFile)
-
-    fun toDomain(projectRole: ProjectRole, userId: Long) =
-        com.autentia.tnt.binnacle.core.domain.Activity(interval.start, interval.end, projectRole, userId)
 }

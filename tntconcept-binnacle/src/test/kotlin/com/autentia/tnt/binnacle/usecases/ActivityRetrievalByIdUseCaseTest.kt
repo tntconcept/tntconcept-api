@@ -1,9 +1,9 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
@@ -66,27 +66,35 @@ internal class ActivityRetrievalByIdUseCaseTest {
             TimeUnit.MINUTES
         )
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(10L, "Dummy Project role", PROJECT_ROLE.project.organization.id, PROJECT_ROLE.project.id, PROJECT_ROLE.maxAllowed, PROJECT_ROLE.maxAllowed, PROJECT_ROLE.timeUnit, PROJECT_ROLE.requireEvidence, PROJECT_ROLE.isApprovalRequired, USER.id)
+        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
+            10L,
+            "Dummy Project role",
+            PROJECT_ROLE.project.organization.id,
+            PROJECT_ROLE.project.id,
+            PROJECT_ROLE.maxAllowed,
+            PROJECT_ROLE.maxAllowed,
+            PROJECT_ROLE.timeUnit,
+            PROJECT_ROLE.requireEvidence,
+            PROJECT_ROLE.isApprovalRequired,
+            USER.id
+        )
 
-        val yesterdayActivity = Activity(
-            2L,
+        val yesterdayActivity = createDomainActivity(
             YESTERDAY.atStartOfDay(),
             YESTERDAY.atStartOfDay().plusMinutes(540L),
-            540,
-            "Dummy description",
-            PROJECT_ROLE,
-            USER.id,
-            true,
-            approvalState = ApprovalState.NA
-        )
+            540
+        ).copy(projectRole = PROJECT_ROLE.toDomain())
+
         val yesterdayActivityResponseDTO = ActivityResponseDTO(
             true,
-            "Dummy description",
+            "Description",
             false,
-            2L,
+            1L,
             PROJECT_ROLE_RESPONSE_DTO.id,
-            IntervalResponseDTO(YESTERDAY.atStartOfDay(),
-                YESTERDAY.atStartOfDay().plusMinutes(540L), 540, PROJECT_ROLE.timeUnit),
+            IntervalResponseDTO(
+                YESTERDAY.atStartOfDay(),
+                YESTERDAY.atStartOfDay().plusMinutes(540L), 540, PROJECT_ROLE.timeUnit
+            ),
             USER.id,
             approvalState = ApprovalState.NA
         )

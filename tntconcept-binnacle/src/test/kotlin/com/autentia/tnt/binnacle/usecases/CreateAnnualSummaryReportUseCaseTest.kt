@@ -1,11 +1,11 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummaryAlert
-import com.autentia.tnt.binnacle.core.domain.UserAnnualWorkSummary
 import com.autentia.tnt.binnacle.core.domain.TimeSummary
+import com.autentia.tnt.binnacle.core.domain.UserAnnualWorkSummary
 import com.autentia.tnt.binnacle.services.AnnualWorkSummaryService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.WorkSummaryMailService
@@ -68,11 +68,11 @@ internal class CreateAnnualSummaryReportUseCaseTest {
 
         val expectedSummaries = mutableMapOf<Long, UserAnnualWorkSummary>()
         if (userShouldBeInEmail) {
-            expectedSummaries[user.id] = UserAnnualWorkSummary(user.mapToDomain(), summaryForUser)
+            expectedSummaries[user.id] = UserAnnualWorkSummary(user.toDomain(), summaryForUser)
         }
         if (userWithDifferentIdShouldBeInEmail) {
             expectedSummaries[userWithDifferentId.id] =
-                UserAnnualWorkSummary(userWithDifferentId.mapToDomain(), summaryForUserWithDifferentId)
+                UserAnnualWorkSummary(userWithDifferentId.toDomain(), summaryForUserWithDifferentId)
         }
         val report = mock<File>()
         if (shouldSendEmail) {

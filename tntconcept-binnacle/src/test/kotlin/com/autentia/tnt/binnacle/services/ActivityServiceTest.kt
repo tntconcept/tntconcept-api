@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.BDDMockito.given
-import org.mockito.BDDMockito.mock
 import org.mockito.BDDMockito.verify
 import org.mockito.BDDMockito.verifyNoInteractions
 import org.mockito.BDDMockito.willDoNothing
@@ -43,24 +41,15 @@ internal class ActivityServiceTest {
     private val activityService = ActivityService(
         activityRepository,
         projectRoleRepository,
-        activityImageService,
-        activityRequestBodyConverter
+        activityImageService
     )
 
     init {
         whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
     }
 
-    private val activityWithImageToSave = activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-        activityWithImageRequest,
-        projectRole,
-        USER
-    )
-    private val activityWithoutImageToSave = activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-        activityWithoutImageRequest,
-        projectRole,
-        USER
-    )
+    private val activityWithImageToSave = Activity.of(activityWithImage, projectRole)
+    private val activityWithoutImageToSave = Activity.of(activityWithoutImage, projectRole)
 
     private val activityWithImageSaved =
         activityWithImageToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
@@ -74,13 +63,13 @@ internal class ActivityServiceTest {
 
     @Test
     fun `get activity by id`() {
-        whenever(activityRepository.findById(activityWithoutImageSaved.id as Long)).thenReturn(
+        whenever(activityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(
             activityWithoutImageSaved
         )
 
-        val actual = activityService.getActivityById(activityWithoutImageSaved.id as Long)
+        val actual = activityService.getActivityById(activityWithoutImageSaved.id!!)
 
-        assertEquals(activityWithoutImageSaved, actual)
+        assertEquals(activityWithoutImageSaved.toDomain(), actual)
     }
 
     @Test
@@ -173,9 +162,9 @@ internal class ActivityServiceTest {
     fun `create activity`() {
         whenever(activityRepository.save(activityWithoutImageToSave)).thenReturn(activityWithoutImageSaved)
 
-        val result = activityService.createActivity(activityWithoutImageRequest, USER)
+        val result = activityService.createActivity(activityWithoutImage, null)
 
-        assertEquals(activityWithoutImageSaved, result)
+        assertEquals(activityWithoutImageSaved.toDomain(), result)
         verifyNoInteractions(activityImageService)
     }
 
@@ -183,12 +172,12 @@ internal class ActivityServiceTest {
     fun `create activity and store image file`() {
         whenever(activityRepository.save(activityWithImageToSave)).thenReturn(activityWithImageSaved)
 
-        val result = activityService.createActivity(activityWithImageRequest, USER)
+        val result = activityService.createActivity(activityWithImage, image)
 
-        assertEquals(activityWithImageSaved, result)
+        assertEquals(activityWithImageSaved.toDomain(), result)
         verify(activityImageService).storeActivityImage(
             activityWithImageSaved.id!!,
-            activityWithImageRequest.imageFile,
+            image,
             activityWithImageSaved.insertDate!!
         )
     }
@@ -197,65 +186,73 @@ internal class ActivityServiceTest {
     fun `create activity with nonexistent project role`() {
         whenever(projectRoleRepository.findById(99)).thenReturn(null)
 
-        activityWithoutImageRequest.copy(projectRoleId = 99)
+        val activityWithoutImageAndNonExistentRole =
+            activityWithoutImage.copy(projectRole = projectRole.toDomain().copy(id = 88))
 
         assertThrows<IllegalStateException> {
-            activityService.createActivity(activityWithoutImageRequest.copy(projectRoleId = 99), USER)
+            activityService.createActivity(
+                activityWithoutImageAndNonExistentRole,
+                null
+            )
         }
     }
 
     @Test
     fun `update activity`() {
-        val activityRequest = ActivityRequestBody(
+        val activity = com.autentia.tnt.binnacle.core.domain.Activity.of(
             activityWithoutImageSaved.id,
-            TODAY_NOON,
-            TODAY_NOON.plusMinutes(120),
+            TimeInterval.of(
+                TODAY_NOON,
+                TODAY_NOON.plusMinutes(120)
+            ),
             120,
             "Description...",
+            projectRole.toDomain(),
+            1L,
             false,
-            projectRole.id,
+            null,
+            null,
             false,
-            null
+            ApprovalState.NA,
         )
 
         whenever(activityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(activityWithoutImageSaved)
 
-        val savedActivity = mock(Activity::class.java)
+        val savedActivity = Activity.of(activity, projectRole)
 
-        val activityToSave = activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-            activityRequest,
-            projectRole,
-            USER,
-            activityWithoutImageSaved.insertDate
-        )
-        whenever(activityRepository.update(activityToSave)).thenReturn(savedActivity)
+        whenever(activityRepository.update(Activity.of(activity, projectRole))).thenReturn(savedActivity)
 
-        val result = activityService.updateActivity(activityRequest, USER)
+        val result = activityService.updateActivity(activity, null)
 
-        assertEquals(savedActivity, result)
+        assertEquals(activity, result)
         verifyNoInteractions(activityImageService)
     }
 
     @Test
     fun `update activity and update the stored image`() {
         val activityId = 90L
-        val activityRequest = ActivityRequestBody(
+        val activityToUpdate = com.autentia.tnt.binnacle.core.domain.Activity.of(
             activityId,
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
+            TimeInterval.of(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
+            ),
             120,
             "Description...",
-            false,
-            projectRole.id,
+            projectRole.toDomain(),
+            1L,
             true,
-            "Base64 format...",
+            null,
+            null,
+            true,
+            ApprovalState.NA
         )
         val oldActivityInsertDate = Date()
         val oldActivity = Activity(
             id = activityId,
-            start = activityRequest.start,
+            start = activityToUpdate.getStart(),
             duration = 120,
-            end = activityRequest.start.plusHours(2L),
+            end = activityToUpdate.getStart().plusHours(2L),
             description = "Test activity",
             projectRole = projectRole,
             userId = USER.id,
@@ -269,27 +266,18 @@ internal class ActivityServiceTest {
 
         // Store the new image in the same old activity path
         willDoNothing().given(activityImageService)
-            .storeActivityImage(activityRequest.id!!, activityRequest.imageFile, oldActivityInsertDate)
+            .storeActivityImage(activityToUpdate.id!!, image, oldActivityInsertDate)
 
-        val activityToReturn = mock(Activity::class.java)
+        val activityToReturn = Activity.of(activityToUpdate, projectRole)
 
-        given(
-            activityRepository.update(
-                activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                    activityRequest,
-                    projectRole,
-                    USER,
-                    oldActivityInsertDate
-                )
-            )
-        ).willReturn(activityToReturn)
+        given(activityRepository.update(Activity.of(activityToUpdate, projectRole))).willReturn(activityToReturn)
 
-        val result = activityService.updateActivity(activityRequest, USER)
+        val result = activityService.updateActivity(activityToUpdate, image)
 
-        assertThat(result).isEqualTo(activityToReturn)
+        assertThat(result).isEqualTo(activityToUpdate)
         verify(activityImageService).storeActivityImage(
-            activityRequest.id!!,
-            activityRequest.imageFile,
+            activityToUpdate.id!!,
+            image,
             oldActivityInsertDate
         )
     }
@@ -297,24 +285,29 @@ internal class ActivityServiceTest {
     @Test
     fun `update activity and delete the stored image`() {
         val activityId = 90L
-        val activityRequest = ActivityRequestBody(
+        val activity = com.autentia.tnt.binnacle.core.domain.Activity.of(
             activityId,
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
+            TimeInterval.of(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
+            ),
             120,
             "Description...",
-            false,
-            projectRole.id,
+            projectRole.toDomain(),
+            1L,
             false,
             null,
+            null,
+            false,
+            ApprovalState.NA
         )
 
         val oldActivityInsertDate = Date()
         val oldActivity = Activity(
             id = activityId,
-            start = activityRequest.start,
+            start = activity.getStart(),
             duration = 120,
-            end = activityRequest.start.plusHours(2L),
+            end = activity.getStart().plusHours(2L),
             description = "Test activity",
             projectRole = projectRole,
             userId = USER.id,
@@ -329,22 +322,13 @@ internal class ActivityServiceTest {
         // Delete the old activity image
         given(activityImageService.deleteActivityImage(activityId, oldActivityInsertDate)).willReturn(true)
 
-        val savedActivity = mock<Activity>()
+        val savedActivity = Activity.of(activity, projectRole)
 
-        given(
-            activityRepository.update(
-                activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                    activityRequest,
-                    projectRole,
-                    USER,
-                    oldActivityInsertDate
-                )
-            )
-        ).willReturn(savedActivity)
+        given(activityRepository.update(Activity.of(activity, projectRole))).willReturn(savedActivity)
 
-        val result = activityService.updateActivity(activityRequest, USER)
+        val result = activityService.updateActivity(activity, "")
 
-        assertThat(result).isEqualTo(savedActivity)
+        assertThat(result).isEqualTo(activity)
         verify(activityImageService).deleteActivityImage(activityId, oldActivityInsertDate)
     }
 
@@ -407,29 +391,41 @@ internal class ActivityServiceTest {
 
         private const val notFoundActivityId = 1L
 
-        private val activityWithoutImageRequest = ActivityRequestBody(
+        private val activityWithoutImage = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null,
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60),
+            TimeInterval.of(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
+            ),
             60,
             "Dummy description",
+            projectRole.toDomain(),
+            1L,
             false,
-            projectRole.id,
-            false,
+            1L,
             null,
+            false,
+            ApprovalState.NA
         )
 
-        private val activityWithImageRequest = ActivityRequestBody(
+        private val activityWithImage = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null,
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120),
+            TimeInterval.of(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
+            ),
             120,
             "Description...",
+            projectRole.toDomain(),
+            1L,
             false,
-            projectRole.id,
+            1L,
+            null,
             true,
-            "Base64 format...",
+            ApprovalState.NA
         )
+
+        private val image = "Base64 format..."
     }
 
 }

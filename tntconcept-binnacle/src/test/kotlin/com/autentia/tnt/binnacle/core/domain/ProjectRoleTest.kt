@@ -36,7 +36,7 @@ class ProjectRoleTest {
                     calendar,
                     listOf(
                         createDomainActivity().copy(
-                            start = dateTime, end = dateTimePlusOneDay, projectRole = projectRole
+                            timeInterval = TimeInterval.of(dateTime, dateTimePlusOneDay), projectRole = projectRole
                         )
                     )
                 )

@@ -1,13 +1,12 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.config.createUser
+import com.autentia.tnt.binnacle.config.createDomainActivity
+import com.autentia.tnt.binnacle.config.createDomainProjectRole
+import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
-import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
@@ -51,34 +50,34 @@ internal class ActivityUpdateUseCaseTest {
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
-        ),
-        TimeIntervalConverter()
+        )
     )
 
-    private val projectRole = createProjectRole().copy(id = 10L)
+    private val projectRole = createDomainProjectRole().copy(id = 10L)
 
     @Test
     fun `return updated activity for the authenticated user when it is valid`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
         doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
 
-        doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(USER))
+        doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(null))
 
         assertEquals(todayActivityResponseDTO, activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO))
     }
 
     @Test
     fun `rethrow any exception from the validator`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
-        doAnswer { throw Exception() }.whenever(activityValidator).checkActivityIsValidForUpdate(activityToUpdate, USER)
+        doAnswer { throw Exception() }.whenever(activityValidator)
+            .checkActivityIsValidForUpdate(activityToUpdate, activityToUpdate, USER)
 
         assertThrows<Exception> { activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO) }
     }
 
     private companion object {
-        private val USER = createUser()
+        private val USER = createDomainUser()
         private val TODAY = LocalDateTime.now()
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
 
@@ -101,23 +100,15 @@ internal class ActivityUpdateUseCaseTest {
             PROJECT_ROLE.id,
             false,
         )
-        private val todayActivity = Activity(
-            1,
+        private val todayActivity = createDomainActivity(
             TODAY,
             TODAY.plusMinutes(75L),
             75,
-            "New activity",
-            PROJECT_ROLE,
-            USER.id,
-            false,
-            null,
-            null,
-            false,
-            approvalState = ApprovalState.NA
+            PROJECT_ROLE.toDomain(),
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
-            false,
-            "New activity",
+            true,
+            "Description",
             false,
             1,
             PROJECT_ROLE_RESPONSE_DTO.id,
@@ -125,15 +116,18 @@ internal class ActivityUpdateUseCaseTest {
             USER.id,
             approvalState = ApprovalState.NA
         )
-        private val activityToUpdate = ActivityRequestBody(
+        private val activityToUpdate = com.autentia.tnt.binnacle.core.domain.Activity.of(
             1L,
-            TODAY,
-            TODAY.plusMinutes(75L),
+            TimeInterval.of(TODAY, TODAY.plusMinutes(75L)),
             75,
             "New activity",
+            PROJECT_ROLE.toDomain(),
+            1L,
             false,
-            PROJECT_ROLE.id,
-            false
+            null,
+            LocalDateTime.now(),
+            false,
+            ApprovalState.NA
         )
     }
 }

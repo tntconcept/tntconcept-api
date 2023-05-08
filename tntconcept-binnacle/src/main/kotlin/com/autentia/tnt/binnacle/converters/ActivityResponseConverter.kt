@@ -10,6 +10,17 @@ class ActivityResponseConverter(
     private val activityIntervalResponseConverter: ActivityIntervalResponseConverter
 ) {
 
+    fun toActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = ActivityResponseDTO(
+        billable = activity.billable,
+        description = activity.description,
+        hasEvidences = activity.hasEvidences,
+        id = activity.id!!,
+        projectRoleId = activity.projectRole.id,
+        interval = activityIntervalResponseConverter.toIntervalResponseDTO(activity),
+        userId = activity.userId,
+        approvalState = activity.approvalState
+    )
+
     fun mapActivityToActivityResponseDTO(activity: Activity) = ActivityResponseDTO(
         billable = activity.billable,
         description = activity.description,

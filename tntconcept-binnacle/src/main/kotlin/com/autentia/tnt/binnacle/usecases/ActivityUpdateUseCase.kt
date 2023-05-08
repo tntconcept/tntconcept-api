@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -20,22 +20,22 @@ class ActivityUpdateUseCase internal constructor(
     private val userService: UserService,
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
-    private val activityResponseConverter: ActivityResponseConverter,
-    private val timeIntervalConverter: TimeIntervalConverter
+    private val activityResponseConverter: ActivityResponseConverter
 ) {
     fun updateActivity(activityRequest: ActivityRequestBodyDTO): ActivityResponseDTO {
-        val user = userService.getAuthenticatedUser()
+
+        val user = userService.getAuthenticatedDomainUser()
         val projectRole = projectRoleService.getByProjectRoleId(activityRequest.projectRoleId)
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            activityRequest.toDomain(projectRole.toDomain(), user.id)
+            ActivityTimeInterval.of(activityRequest.interval.toDomain(), projectRole.timeUnit)
         )
-        val activityRequestBody =
-            activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(
-                activityRequest, projectRole, duration
-            )
-        activityValidator.checkActivityIsValidForUpdate(activityRequestBody, user)
-        return activityResponseConverter.mapActivityToActivityResponseDTO(
-            activityService.updateActivity(activityRequestBody, user)
-        )
+
+        val activityToUpdate = activityRequestBodyConverter.toActivity(activityRequest, duration, projectRole, user)
+        val currentActivity = activityService.getActivityById(activityRequest.id!!)
+
+        activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
+        val updatedActivity = activityService.updateActivity(activityToUpdate, activityRequest.imageFile)
+
+        return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
 }

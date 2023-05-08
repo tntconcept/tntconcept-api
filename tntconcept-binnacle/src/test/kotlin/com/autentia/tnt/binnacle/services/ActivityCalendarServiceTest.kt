@@ -2,10 +2,11 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
-import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -40,15 +41,16 @@ class ActivityCalendarServiceTest {
         createDomainActivity().copy(projectRole = projectRoleInMinutes)
     private val activityWithDecimals =
         activityInMinutes.copy(
-            start = dateTime,
-            end = dateTime.plusMinutes(80),
+            timeInterval = TimeInterval.of(dateTime, dateTime.plusMinutes(80)),
             projectRole = projectRoleInMinutes,
             userId = 2
         )
     private val activityInDays =
         activityInMinutes.copy(
-            start = LocalDateTime.of(2023, 4, 3, 0, 0, 0),
-            end = LocalDateTime.of(2023, 4, 4, 23, 59, 59),
+            timeInterval = TimeInterval.of(
+                LocalDateTime.of(2023, 4, 3, 0, 0, 0),
+                LocalDateTime.of(2023, 4, 4, 23, 59, 59)
+            ),
             projectRole = createDomainProjectRole().copy(id = 2L, timeUnit = TimeUnit.DAYS, maxAllowed = 1440)
         )
     private val activities = listOf(activityInMinutes, activityWithDecimals, activityInDays)

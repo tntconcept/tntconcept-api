@@ -1,8 +1,8 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
@@ -38,13 +38,13 @@ internal class ActivityImageRetrievalUseCaseTest {
     fun `return image in base 64 from service`() {
         doReturn(USER).whenever(userService).getAuthenticatedUser()
 
-        doReturn(todayActivity).whenever(activityService).getActivityById(ID)
+        doReturn(todayActivity).whenever(activityService).getActivityById(todayActivity.id!!)
 
         doReturn(true).whenever(activityValidator).userHasAccess(todayActivity, USER)
 
-        doReturn(IMAGE).whenever(activityImageService).getActivityImageAsBase64(ID, TODAY_DATE)
+        doReturn(IMAGE).whenever(activityImageService).getActivityImageAsBase64(todayActivity.id!!, TODAY_DATE)
 
-        assertEquals(IMAGE, activityImageRetrievalUseCase.getActivityImage(ID))
+        assertEquals(IMAGE, activityImageRetrievalUseCase.getActivityImage(1L))
     }
 
     @Test
@@ -96,34 +96,18 @@ internal class ActivityImageRetrievalUseCaseTest {
         )
         private val PROJECT_ROLE = ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
-        private val todayActivity = Activity(
-            ID,
+        private val todayActivity = createDomainActivity(
             TODAY,
             TODAY.plusMinutes(60),
-            60,
-            "Dummy description",
-            PROJECT_ROLE,
-            USER.id,
-            true,
-            null,
-            TODAY_DATE,
-            true,
-            ApprovalState.NA
-        )
+            60
+        ).copy(projectRole = PROJECT_ROLE.toDomain(), hasEvidences = true, insertDate = toLocalDateTime(TODAY_DATE))
 
-        val activityWithoutImage = Activity(
-            ID,
+        val activityWithoutImage = createDomainActivity(
             TODAY,
             TODAY.plusMinutes(60),
-            60,
-            "Dummy description",
-            PROJECT_ROLE,
-            USER.id,
-            true,
-            null,
-            TODAY_DATE,
-            false,
-            ApprovalState.NA
+            60
+        ).copy(
+            projectRole = PROJECT_ROLE.toDomain(), insertDate = toLocalDateTime(TODAY_DATE)
         )
     }
 }
