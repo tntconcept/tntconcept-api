@@ -37,6 +37,7 @@ internal class AppProperties {
 
         var notWorkableProjects: List<Int> = emptyList()
         var workSummary = WorkSummaryProperties()
+        var missingEvidencesNotification = MissingEvidencesNotificationProperties()
 
 
         @ConfigurationProperties("work-summary")
