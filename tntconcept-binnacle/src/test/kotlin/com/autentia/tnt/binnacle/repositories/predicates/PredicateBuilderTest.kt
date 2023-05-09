@@ -62,7 +62,7 @@ class PredicateBuilderTest {
     @Test
     fun `Predicate can be composed of one OR predicate another empty predicate`() {
         val predicate = PredicateBuilder.or(GreaterThan(2), EmptySpecification())
-        val reversePredicate = PredicateBuilder.or(GreaterThan(2), EmptySpecification())
+        val reversePredicate = PredicateBuilder.or(EmptySpecification(), GreaterThan(2))
 
         assertThat(predicate.toString()).isEqualTo("GreaterThan(2)").isEqualTo(reversePredicate.toString())
     }
