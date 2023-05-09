@@ -27,7 +27,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
         @Test
         fun `should not send email when enabled property is set to false`() {
             // Given
-            appProperties.binnacle.activityEvidence.enabled = false
+            appProperties.binnacle.missingEvidencesNotification.enabled = false
             appProperties.mail.from = "fromTest@email.com"
 
             val organizationName = "Organization"
@@ -46,7 +46,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
         @Test
         fun `should send email when enabled property is set to true`() {
             // Given
-            appProperties.binnacle.activityEvidence.enabled = true
+            appProperties.binnacle.missingEvidencesNotification.enabled = true
             appProperties.mail.from = "fromTest@email.com"
 
             val organizationName = "Organization"

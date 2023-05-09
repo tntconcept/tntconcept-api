@@ -25,7 +25,7 @@ internal class ActivityEvidenceMissingMailService(
         require(toUserEmail.isNotEmpty())
         require(projectRoleNames.isNotEmpty())
 
-        if (!appProperties.binnacle.activityEvidence.enabled) {
+        if (!appProperties.binnacle.missingEvidencesNotification.enabled) {
             logger.info("Mailing of activity evidence is disabled")
             return
         }
