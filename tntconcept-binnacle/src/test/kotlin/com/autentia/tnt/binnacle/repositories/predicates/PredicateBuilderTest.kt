@@ -12,12 +12,12 @@ class PredicateBuilderTest {
 
     @Test
     fun `Predicate can be composed of two AND clauses`() {
-        val predicate = PredicateBuilder.and(LessThan(5), GreaterThan(2))
+        val predicate = PredicateBuilder.and(LessThan(5), GreaterThan(2));
         val reversePredicate = PredicateBuilder.and(GreaterThan(2), LessThan(5))
 
         assertThat(predicate).isEqualTo(reversePredicate)
         assertThat(predicate.toString()).isEqualTo("(LessThan(5) AND GreaterThan(2))")
-        assertThat(reversePredicate.toString()).isEqualTo("(GreaterThan(2) AND LessThan(5))")
+        assertThat(reversePredicate.toString()).isEqualTo("(GreaterThan(2) AND LessThan(5))");
     }
 
     @Test
@@ -62,7 +62,7 @@ class PredicateBuilderTest {
     @Test
     fun `Predicate can be composed of one OR predicate another empty predicate`() {
         val predicate = PredicateBuilder.or(GreaterThan(2), EmptySpecification())
-        val reversePredicate = PredicateBuilder.or(GreaterThan(2), EmptySpecification())
+        val reversePredicate = PredicateBuilder.or(EmptySpecification(), GreaterThan(2))
 
         assertThat(predicate.toString()).isEqualTo("GreaterThan(2)").isEqualTo(reversePredicate.toString())
     }
@@ -182,3 +182,4 @@ private class NotEqual(private val value: Long) : Specification<DummyClass> {
         return "NotEqual($value)"
     }
 }
+
