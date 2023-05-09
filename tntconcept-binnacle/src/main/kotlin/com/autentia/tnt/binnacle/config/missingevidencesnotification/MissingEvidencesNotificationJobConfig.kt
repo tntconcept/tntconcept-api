@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.config.missingevidencesnotification
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.usecases.ActivityEvidenceOnceMissingReminderUseCase
 import io.micronaut.context.annotation.Context
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.TaskScheduler
@@ -9,13 +10,14 @@ import jakarta.inject.Named
 
 @Context
 internal class MissingEvidencesNotificationJobConfig(
-    private val appProperties: AppProperties,
-    @Named(TaskExecutors.SCHEDULED) taskScheduler: TaskScheduler
+        private val appProperties: AppProperties,
+        private val activityEvidenceOnceMissingReminderUseCase: ActivityEvidenceOnceMissingReminderUseCase,
+        @Named(TaskExecutors.SCHEDULED) taskScheduler: TaskScheduler
 ) {
-    init{
-        if (appProperties.binnacle.missingEvidencesNotification.onceCronExpression != null){
+    init {
+        if (appProperties.binnacle.missingEvidencesNotification.onceCronExpression != null) {
             taskScheduler.schedule(appProperties.binnacle.missingEvidencesNotification.onceCronExpression) {
-                println("HEllO")
+                activityEvidenceOnceMissingReminderUseCase.sendReminders()
             }
         }
     }

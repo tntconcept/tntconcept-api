@@ -24,9 +24,9 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
     )
 
     @Test
-    fun `Should call ActivityEvidenceMailService`() {
+    fun `Should call ActivityEvidenceMailService with each project that requires ONCE evidence`() {
         // Given: A set of active users with activities for a role that require ONCE evidence
-        val allUsers = listOf(user, otherUser)
+        val allUsers = listOf(user, otherUser, anotherUser)
         val allUserIds = allUsers.map { it.id }.toList()
         val listOfActivities = listOf(
                 createActivity().copy(projectRole = projectRole, userId = user.id),
@@ -89,7 +89,7 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
         // Then: The email services is not called
         verifyNoInteractions(activityEvidenceMissingMailService)
     }
-    
+
     companion object {
         private fun buildActivitiesPredicate(allUserIds: List<Long>) = PredicateBuilder.and(
                 PredicateBuilder.and(ActivityPredicates.hasNotEvidence(),
@@ -112,5 +112,6 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
         private val projectRoleFromOtherProject = projectRole.copy(id = 4, project = otherProject)
         private val user = createUser().copy(id = 2)
         private val otherUser = createUser().copy(id = 3, email = "other.user@example.com")
+        private val anotherUser = createUser().copy(id = 4, email = "asd.user@example.com")
     }
 }
