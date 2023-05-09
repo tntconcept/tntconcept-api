@@ -67,7 +67,7 @@
                 <directory>${basedir}/src/main/resources</directory>
                 <filtering>true</filtering>
                 <includes>
-                    <include>application.yml</include>
+                    <include>application.properties</include>
                 </includes>
             </resource>
         </resources>
