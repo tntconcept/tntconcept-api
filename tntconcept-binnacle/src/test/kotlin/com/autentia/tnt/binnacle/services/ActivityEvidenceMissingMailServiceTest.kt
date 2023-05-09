@@ -58,7 +58,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
             doReturn("Subject").`when`(messageBuilder).buildSubject(locale, organizationName, projectName)
             doReturn("Body").`when`(messageBuilder).buildBody(locale, organizationName, projectName, roles)
             doReturn(Result.success("OK")).`when`(mailService)
-                .send(anyString(), anyList(), anyString(), anyString(), anyOrNull())
+                    .send(anyString(), anyList(), anyString(), anyString(), anyOrNull())
 
             // When
             sut.sendEmail(organizationName, projectName, roles, toUserEmail, locale)
@@ -70,11 +70,11 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val expectedBody = "Body"
 
             verify(mailService).send(
-                eq(expectedFrom),
-                eq(expectedTo),
-                eq(expectedSubject),
-                eq(expectedBody),
-                anyOrNull()
+                    eq(expectedFrom),
+                    eq(expectedTo),
+                    eq(expectedSubject),
+                    eq(expectedBody),
+                    anyOrNull()
             )
             verify(messageBuilder).buildSubject(locale, organizationName, projectName)
             verify(messageBuilder).buildBody(locale, organizationName, projectName, roles)
@@ -100,7 +100,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val projectName = "Project"
 
             doReturn(Optional.of("Falta evidencia $organizationName - $projectName")).`when`(messageSource)
-                .getMessage("mail.request.evidenceActivity.subject", locale, organizationName, projectName)
+                    .getMessage("mail.request.evidenceActivity.subject", locale, organizationName, projectName)
 
             // When
             val subject = sut.buildSubject(locale, organizationName, projectName)
@@ -108,10 +108,10 @@ internal class ActivityEvidenceMissingMailServiceTest {
             // Then
             assertThat(subject).isEqualTo("Falta evidencia $organizationName - $projectName")
             verify(messageSource).getMessage(
-                "mail.request.evidenceActivity.subject",
-                locale,
-                organizationName,
-                projectName
+                    "mail.request.evidenceActivity.subject",
+                    locale,
+                    organizationName,
+                    projectName
             )
         }
 
@@ -124,14 +124,14 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val roleNames = setOf("Role one")
 
             val evidenceBody = """
-                Cada 7 días es necesario adjuntar al menos una evidencia de tu participación en el proyecto.
+                Cada día es necesario adjuntar al menos una evidencia de tu participación en el proyecto.
                 Como por ejemplo una captura de pantalla o foto de tu histórico en el repositorio de código o de tus issues en la herramienta de seguimiento de proyecto.
                 Organization - Project - Role one
                 ¡Gracias!
             """.trimIndent()
 
             doReturn(Optional.of(evidenceBody)).`when`(messageSource)
-                .getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
+                    .getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
 
             // When
             val body = sut.buildBody(locale, organizationName, projectName, roleNames)
@@ -139,9 +139,9 @@ internal class ActivityEvidenceMissingMailServiceTest {
             // Then
             assertThat(body).isEqualTo(evidenceBody)
             verify(messageSource).getMessage(
-                "mail.request.evidenceActivity.template",
-                locale,
-                "Organization - Project - Role one"
+                    "mail.request.evidenceActivity.template",
+                    locale,
+                    "Organization - Project - Role one"
             )
         }
 
@@ -154,7 +154,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val roleNames = setOf("Role one", "Role two", "Role three")
 
             val evidenceBody = """
-                Cada 7 días es necesario adjuntar al menos una evidencia de tu participación en el proyecto.
+                Cada día es necesario adjuntar al menos una evidencia de tu participación en el proyecto.
                 Como por ejemplo una captura de pantalla o foto de tu histórico en el repositorio de código o de tus issues en la herramienta de seguimiento de proyecto.
                 Organization - Project - Role one
                 Organization - Project - Role two
@@ -163,7 +163,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
             """.trimIndent()
 
             doReturn(Optional.of(evidenceBody)).`when`(messageSource)
-                .getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
+                    .getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
 
             // When
             val body = sut.buildBody(locale, organizationName, projectName, roleNames)

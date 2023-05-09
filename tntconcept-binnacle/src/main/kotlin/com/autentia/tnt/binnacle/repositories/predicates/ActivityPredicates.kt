@@ -9,8 +9,7 @@ internal object ActivityPredicates {
 
     internal val ALL = EmptySpecification<Activity>()
     internal fun id(id: Long) = ActivityIdSpecification(id)
-    internal fun approvalState(approvalState: ApprovalState): Specification<Activity> =
-        ActivityApprovalStateSpecification(approvalState)
+    internal fun approvalState(approvalState: ApprovalState): Specification<Activity> = ActivityApprovalStateSpecification(approvalState)
 
     internal fun roleId(roleId: Long) = ActivityRoleIdSpecification(roleId)
     internal fun startDateLessThanOrEqualTo(date: LocalDate) = ActivityStartDateLessOrEqualSpecification(date)
@@ -19,16 +18,41 @@ internal object ActivityPredicates {
     internal fun organizationId(organizationId: Long) = ActivityOrganizationIdSpecification(organizationId)
     internal fun userId(userId: Long) = ActivityUserIdSpecification(userId)
     internal fun projectRoleRequiresEvidence(requireEvidence: RequireEvidence) =
-        ActivityProjectRoleRequiresEvidenceSpecification(requireEvidence)
+            ActivityProjectRoleRequiresEvidenceSpecification(requireEvidence)
 
     internal fun hasNotEvidence() = ActivityHasNotEvidenceSpecification()
+
+    internal fun belongsToUsers(userIds: List<Long>) = ActivityBelongsToUsers(userIds)
+}
+
+class ActivityBelongsToUsers(private val userIds: List<Long>) : Specification<Activity> {
+
+    override fun toPredicate(root: Root<Activity>, query: CriteriaQuery<*>, criteriaBuilder: CriteriaBuilder): Predicate? {
+        return root.get<Long>("userId").`in`(userIds)
+    }
+
+    override fun toString(): String {
+        return "activity.userId IN $userIds"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityBelongsToUsers) return false
+
+        return userIds == other.userIds
+    }
+
+    override fun hashCode(): Int {
+        return userIds.hashCode()
+    }
+
 }
 
 class ActivityIdSpecification(private val id: Long) : Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(root.get<Long>("id"), id)
     }
@@ -39,11 +63,11 @@ class ActivityIdSpecification(private val id: Long) : Specification<Activity> {
 }
 
 class ActivityApprovalStateSpecification(private val approvalState: ApprovalState) :
-    Specification<Activity> {
+        Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(root.get<ApprovalState>("approvalState"), approvalState)
     }
@@ -68,9 +92,9 @@ class ActivityApprovalStateSpecification(private val approvalState: ApprovalStat
 
 class ActivityRoleIdSpecification(private val roleId: Long) : Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(root.get<ProjectRole>("projectRole").get<Long>("id"), roleId)
     }
@@ -95,13 +119,13 @@ class ActivityRoleIdSpecification(private val roleId: Long) : Specification<Acti
 
 class ActivityProjectIdSpecification(private val projectId: Long) : Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(
-            root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
-                .join<ProjectRole, Project>("project", JoinType.INNER).get<Long>("id"), projectId
+                root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
+                        .join<ProjectRole, Project>("project", JoinType.INNER).get<Long>("id"), projectId
         )
     }
 
@@ -123,14 +147,14 @@ class ActivityProjectIdSpecification(private val projectId: Long) : Specificatio
 
 class ActivityOrganizationIdSpecification(private val organizationId: Long) : Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(
-            root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
-                .join<ProjectRole, Project>("project", JoinType.INNER).join<Project, Organization>("organization")
-                .get<Long>("id"), organizationId
+                root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
+                        .join<ProjectRole, Project>("project", JoinType.INNER).join<Project, Organization>("organization")
+                        .get<Long>("id"), organizationId
         )
     }
 
@@ -152,9 +176,9 @@ class ActivityOrganizationIdSpecification(private val organizationId: Long) : Sp
 
 class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate) : Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.lessThanOrEqualTo(root.get("start"), startDate.atTime(23, 59, 59))
     }
@@ -179,9 +203,9 @@ class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate
 
 class ActivityEndDateGreaterOrEqualSpecification(private val endDate: LocalDate) : Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.greaterThanOrEqualTo(root.get("end"), endDate.atStartOfDay())
     }
@@ -205,9 +229,9 @@ class ActivityEndDateGreaterOrEqualSpecification(private val endDate: LocalDate)
 
 class ActivityUserIdSpecification(private val userId: Long) : Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(root.get<Long>("userId"), userId)
     }
@@ -229,15 +253,15 @@ class ActivityUserIdSpecification(private val userId: Long) : Specification<Acti
 }
 
 class ActivityProjectRoleRequiresEvidenceSpecification(private val requireEvidence: RequireEvidence) :
-    Specification<Activity> {
+        Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.equal(
-            root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
-            requireEvidence
+                root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
+                requireEvidence
         )
     }
 
@@ -260,9 +284,9 @@ class ActivityProjectRoleRequiresEvidenceSpecification(private val requireEviden
 
 class ActivityHasNotEvidenceSpecification : Specification<Activity> {
     override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
+            root: Root<Activity>,
+            query: CriteriaQuery<*>,
+            criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.isFalse(root.get("hasEvidences"))
     }
