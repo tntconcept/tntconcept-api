@@ -165,3 +165,8 @@ app:
         enabled: true
         to: ${app.binnacle.vacations-approvers}
         send-alerts-only: false
+
+    missing-evidences-notification:
+      enabled: true
+      onceCronExpression: '0 0 0 3 * * ?'
+      weeklyCronExpression: '0 0 0 3 * * ?'
