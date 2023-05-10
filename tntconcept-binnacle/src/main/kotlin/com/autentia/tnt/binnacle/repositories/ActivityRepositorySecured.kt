@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import com.autentia.tnt.security.application.isAdmin
@@ -125,7 +126,7 @@ internal class ActivityRepositorySecured(
     private fun addUserFilterIfNecessary(activitySpecification: Specification<Activity>): Specification<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isNotAdmin()) {
-            activitySpecification.and(ActivityPredicates.userId(authentication.id()))
+            PredicateBuilder.and(activitySpecification, ActivityPredicates.userId(authentication.id()))
         } else {
             activitySpecification
         }

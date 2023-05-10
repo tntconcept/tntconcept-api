@@ -35,11 +35,11 @@ class ActivitiesByFilterUseCase internal constructor(
             predicate = PredicateBuilder.and(predicate, approvalState(activityFilter.approvalState))
         }
 
-        if (activityFilter.startDate !== null) {
-            predicate = PredicateBuilder.and(predicate, startDateLessThanOrEqualTo(activityFilter.startDate))
-        }
         if (activityFilter.endDate !== null) {
-            predicate = PredicateBuilder.and(predicate, endDateGreaterThanOrEqualTo(activityFilter.endDate))
+            predicate = PredicateBuilder.and(predicate, startDateLessThanOrEqualTo(activityFilter.endDate))
+        }
+        if (activityFilter.startDate !== null) {
+            predicate = PredicateBuilder.and(predicate, endDateGreaterThanOrEqualTo(activityFilter.startDate))
         }
 
         if (activityFilter.roleId !== null) {
