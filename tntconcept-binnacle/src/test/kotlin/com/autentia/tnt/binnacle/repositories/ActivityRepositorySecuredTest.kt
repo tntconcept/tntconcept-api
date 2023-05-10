@@ -14,10 +14,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito
-import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.argThat
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -50,14 +47,11 @@ internal class ActivityRepositorySecuredTest {
         val activitySpecification = PredicateBuilder.and(ActivityPredicates.ALL, ActivityPredicates.userId(userId))
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findAll(any())).thenReturn(activities)
+        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
 
         val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
 
         assertEquals(activities, result)
-        Mockito.verify(activityDao).findAll(argThat { argActivitySpecification ->
-            activitySpecification.toString() == argActivitySpecification.toString()
-        })
     }
 
     @Test
@@ -79,14 +73,11 @@ internal class ActivityRepositorySecuredTest {
         val activitySpecification = ActivityPredicates.ALL
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.findAll(any())).thenReturn(activities)
+        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
 
         val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
 
         assertEquals(activities, result)
-        Mockito.verify(activityDao).findAll(argThat { argActivitySpecification ->
-            activitySpecification.toString() == argActivitySpecification.toString()
-        })
     }
 
     @Test
