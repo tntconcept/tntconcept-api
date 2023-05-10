@@ -6,21 +6,21 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.services.ActivityEvidenceMissingMailService
-import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 
 class ActivityEvidenceOnceMissingReminderUseCaseTest {
 
-    private val activityService: ActivityService = mock()
+    private val activityRepository: ActivityRepository = mock()
     private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService = mock()
     private val userService: UserService = mock()
     private val activityEvidenceOnceMissingReminderUseCase = ActivityEvidenceOnceMissingReminderUseCase(
-            activityService, activityEvidenceMissingMailService, userService
+            activityRepository, activityEvidenceMissingMailService, userService
     )
 
     @Test
@@ -36,9 +36,9 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
                 createActivity().copy(projectRole = projectRoleFromOtherProject, userId = otherUser.id)
         )
         whenever(userService.findActive()).thenReturn(allUsers)
-        val predicate = buildActivitiesPredicate(allUserIds);
+        val predicate = buildActivitiesPredicate(allUserIds)
         doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any())
-        whenever(activityService.getActivities(predicate)).thenReturn(listOfActivities)
+        whenever(activityRepository.findAll(predicate)).thenReturn(listOfActivities)
 
         // When: Use case is called
         activityEvidenceOnceMissingReminderUseCase.sendReminders()
@@ -80,8 +80,8 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
         val allUsers = listOf(user, otherUser)
         val allUserIds = allUsers.map { it.id }.toList()
         whenever(userService.findActive()).thenReturn(allUsers)
-        val predicate = buildActivitiesPredicate(allUserIds);
-        whenever(activityService.getActivities(predicate)).thenReturn(listOf())
+        val predicate = buildActivitiesPredicate(allUserIds)
+        whenever(activityRepository.findAll(predicate)).thenReturn(listOf())
 
         // When: Use cas is called
         activityEvidenceOnceMissingReminderUseCase.sendReminders()

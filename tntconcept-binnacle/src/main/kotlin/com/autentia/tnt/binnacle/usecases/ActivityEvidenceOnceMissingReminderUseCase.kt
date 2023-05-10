@@ -1,25 +1,33 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.belongsToUsers
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.hasNotEvidence
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.projectRoleRequiresEvidence
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.services.ActivityEvidenceMissingMailService
-import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import io.micronaut.data.jpa.repository.criteria.Specification
+import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Inject
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.*
+import javax.transaction.Transactional
 
 @Singleton
-class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
-        private val activityService: ActivityService,
+class ActivityEvidenceOnceMissingReminderUseCase @Inject internal constructor(
+        @param:Named("Internal") private val activityRepository: ActivityRepository,
         private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService,
         private val userService: UserService,
 ) {
+
+    @Transactional
+    @ReadOnly
     fun sendReminders() {
         val rolesMissingEvidenceByUser: Map<User, List<ProjectRole>> = getProjectRolesMissingEvidenceByUser()
+
         rolesMissingEvidenceByUser.forEach { (user, rolesMissingEvidence) ->
             notifyMissingEvidencesToUser(user, rolesMissingEvidence)
         }
@@ -27,7 +35,8 @@ class ActivityEvidenceOnceMissingReminderUseCase internal constructor(
 
     private fun getProjectRolesMissingEvidenceByUser(): Map<User, List<ProjectRole>> {
         val activeUsers: List<User> = userService.findActive()
-        val activitiesMissingEvidence: List<Activity> = activityService.getActivities(
+
+        val activitiesMissingEvidence: List<Activity> = activityRepository.findAll(
                 getActivitiesMissingEvidenceOncePredicate(activeUsers.map { it.id }.toList())
         )
 
