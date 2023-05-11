@@ -28,7 +28,8 @@ internal class ActivityApprovalUseCaseTest {
     private val approvedActivityMailService = mock<ApprovedActivityMailService>()
 
     private val activityApprovalUseCase: ActivityApprovalUseCase = ActivityApprovalUseCase(
-            activityService, securityService, converter, userService, approvedActivityMailService)
+        activityService, securityService, converter, userService, approvedActivityMailService
+    )
 
     @Test
     fun `should throw Illegal State Exception if user is not authenticated`() {
@@ -54,11 +55,11 @@ internal class ActivityApprovalUseCaseTest {
         val activity = createActivity(approvalState = ApprovalState.ACCEPTED)
         val domainActivity = activity.toDomain()
         val activityResponseDTO = createActivityResponseDTO(
-                activityId,
-                activity.start,
-                activity.end,
-                activity.hasEvidences,
-                activity.approvalState
+            activityId,
+            activity.start,
+            activity.end,
+            activity.hasEvidences,
+            activity.approvalState
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
@@ -70,9 +71,9 @@ internal class ActivityApprovalUseCaseTest {
 
         assertThat(result).isEqualTo(activityResponseDTO)
         verify(approvedActivityMailService, times(1)).sendApprovedActivityMail(
-                activity,
-                user,
-                Locale.ENGLISH
+            activity,
+            user,
+            Locale.ENGLISH
         )
     }
 
@@ -80,8 +81,8 @@ internal class ActivityApprovalUseCaseTest {
         private const val activityId = 1L
         private const val userId = 1L
         private val authenticationWithAdminRole =
-                ClientAuthentication(userId.toString(), mapOf("roles" to listOf("admin")))
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("admin")))
         private val authenticationWithoutAdminRole =
-                ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 }
