@@ -5,6 +5,9 @@ import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,6 +29,58 @@ internal class ActivityRepositorySecuredTest {
     private val activityDao = mock<ActivityDao>()
 
     private var activityRepositorySecured = ActivityRepositorySecured(activityDao, securityService)
+
+    @Test
+    fun `find all with user id filter`() {
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA
+            )
+        )
+        val activitySpecification = PredicateBuilder.and(ActivityPredicates.ALL, ActivityPredicates.userId(userId))
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
+
+        val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find all without user id filter`() {
+        val activities = listOf(
+            Activity(
+                id = 2L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA
+            )
+        )
+        val activitySpecification = ActivityPredicates.ALL
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
+
+        val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
+
+        assertEquals(activities, result)
+    }
 
     @Test
     fun `find activity should throw illegal state exception`() {

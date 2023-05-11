@@ -32,6 +32,17 @@ class ActivityIdSpecification(private val id: Long) : Specification<Activity> {
     override fun toString(): String {
         return "activity.id==$id"
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityIdSpecification) return false
+
+        return id == other.id
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
 }
 
 class ActivityApprovalStateSpecification(private val approvalState: ApprovalState) :
@@ -58,8 +69,6 @@ class ActivityApprovalStateSpecification(private val approvalState: ApprovalStat
     override fun hashCode(): Int {
         return approvalState.hashCode()
     }
-
-
 }
 
 class ActivityRoleIdSpecification(private val roleId: Long) : Specification<Activity> {
@@ -85,8 +94,6 @@ class ActivityRoleIdSpecification(private val roleId: Long) : Specification<Acti
     override fun hashCode(): Int {
         return roleId.hashCode()
     }
-
-
 }
 
 class ActivityProjectIdSpecification(private val projectId: Long) : Specification<Activity> {
@@ -169,8 +176,6 @@ class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate
     override fun hashCode(): Int {
         return startDate.hashCode()
     }
-
-
 }
 
 class ActivityEndDateGreaterOrEqualSpecification(private val endDate: LocalDate) : Specification<Activity> {
@@ -196,7 +201,6 @@ class ActivityEndDateGreaterOrEqualSpecification(private val endDate: LocalDate)
     override fun hashCode(): Int {
         return endDate.hashCode()
     }
-
 }
 
 class ActivityUserIdSpecification(private val userId: Long) : Specification<Activity> {
@@ -222,6 +226,4 @@ class ActivityUserIdSpecification(private val userId: Long) : Specification<Acti
     override fun hashCode(): Int {
         return userId.hashCode()
     }
-
-
 }
