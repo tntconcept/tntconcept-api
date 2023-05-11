@@ -19,13 +19,13 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ActivitiesByFilterUseCase internal constructor(
-    private val activityService: ActivityService,
-    private val activityResponseConverter: ActivityResponseConverter,
+        private val activityService: ActivityService,
+        private val activityResponseConverter: ActivityResponseConverter,
 ) {
     fun getActivities(activityFilter: ActivityFilterDTO): List<ActivityResponseDTO> {
         val predicate: Specification<Activity> = getPredicateFromActivityFilter(activityFilter)
         val activities = activityService.getActivities(predicate)
-        return activityResponseConverter.mapActivitiesToActivitiesResponseDTO(activities)
+        return activities.map { activityResponseConverter.toActivityResponseDTO(it) }
     }
 
     private fun getPredicateFromActivityFilter(activityFilter: ActivityFilterDTO): Specification<Activity> {
@@ -35,11 +35,11 @@ class ActivitiesByFilterUseCase internal constructor(
             predicate = PredicateBuilder.and(predicate, approvalState(activityFilter.approvalState))
         }
 
-        if (activityFilter.startDate !== null) {
-            predicate = PredicateBuilder.and(predicate, startDateLessThanOrEqualTo(activityFilter.startDate))
-        }
         if (activityFilter.endDate !== null) {
-            predicate = PredicateBuilder.and(predicate, endDateGreaterThanOrEqualTo(activityFilter.endDate))
+            predicate = PredicateBuilder.and(predicate, startDateLessThanOrEqualTo(activityFilter.endDate))
+        }
+        if (activityFilter.startDate !== null) {
+            predicate = PredicateBuilder.and(predicate, endDateGreaterThanOrEqualTo(activityFilter.startDate))
         }
 
         if (activityFilter.roleId !== null) {

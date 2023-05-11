@@ -9,6 +9,12 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ActivityIntervalResponseConverter {
+    fun toIntervalResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = IntervalResponseDTO(
+        start = activity.getStart(),
+        end = activity.getEnd(),
+        duration = activity.getDurationInUnits(),
+        timeUnit = activity.timeUnit
+    )
 
     fun mapActivityToIntervalResponseDTO(activity: Activity) = IntervalResponseDTO(
         start = activity.start,
@@ -22,13 +28,13 @@ class ActivityIntervalResponseConverter {
         end = activityResponse.end,
         duration = intervalDurationToTimeUnit(activityResponse),
         timeUnit = activityResponse.projectRole.timeUnit
-
     )
 
     private fun intervalDurationToTimeUnit(activityResponse: ActivityResponse): Int {
         val durationToDays = TimeInterval.of(activityResponse.start, activityResponse.end).getDuration().toDays().toInt()
         return if (activityResponse.projectRole.timeUnit == TimeUnit.DAYS) durationToDays else activityResponse.duration
     }
+
     private fun intervalDurationToTimeUnit(activity: Activity): Int {
         val durationToDays = activity.getTimeInterval().getDuration().toDays().toInt()
         return if (activity.projectRole.timeUnit == TimeUnit.DAYS) durationToDays else activity.duration

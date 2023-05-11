@@ -18,9 +18,9 @@ import javax.transaction.Transactional
 
 @Singleton
 class ActivityEvidenceOnceMissingReminderUseCase @Inject internal constructor(
-        @param:Named("Internal") private val activityRepository: ActivityRepository,
-        private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService,
-        private val userService: UserService,
+    @param:Named("Internal") private val activityRepository: ActivityRepository,
+    private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService,
+    private val userService: UserService,
 ) {
 
     @Transactional
@@ -37,7 +37,7 @@ class ActivityEvidenceOnceMissingReminderUseCase @Inject internal constructor(
         val activeUsers: List<User> = userService.findActive()
 
         val activitiesMissingEvidence: List<Activity> = activityRepository.findAll(
-                getActivitiesMissingEvidenceOncePredicate(activeUsers.map { it.id }.toList())
+            getActivitiesMissingEvidenceOncePredicate(activeUsers.map { it.id }.toList())
         )
 
         val activitiesMissingEvidenceByUser = mutableMapOf<User, List<Activity>>()
@@ -52,8 +52,8 @@ class ActivityEvidenceOnceMissingReminderUseCase @Inject internal constructor(
 
     private fun getActivitiesMissingEvidenceOncePredicate(listOfUserIds: List<Long>): Specification<Activity> {
         return PredicateBuilder.and(
-                PredicateBuilder.and(hasNotEvidence(), projectRoleRequiresEvidence(RequireEvidence.ONCE)),
-                belongsToUsers(listOfUserIds)
+            PredicateBuilder.and(hasNotEvidence(), projectRoleRequiresEvidence(RequireEvidence.ONCE)),
+            belongsToUsers(listOfUserIds)
         )
     }
 
@@ -65,11 +65,11 @@ class ActivityEvidenceOnceMissingReminderUseCase @Inject internal constructor(
     private fun notifyMissingProjectEvidenceToUser(user: User, project: Project, projectRoleList: List<ProjectRole>) {
         val projectRoleNames = projectRoleList.map { it.name }.toSet()
         activityEvidenceMissingMailService.sendEmail(
-                project.organization.name,
-                project.name,
-                projectRoleNames,
-                user.email,
-                Locale.forLanguageTag("es")
+            project.organization.name,
+            project.name,
+            projectRoleNames,
+            user.email,
+            Locale.forLanguageTag("es")
         )
     }
 }

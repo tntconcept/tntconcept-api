@@ -20,7 +20,7 @@ internal class ActivityDeletionUseCaseTest {
     private val activityValidator = mock<ActivityValidator>()
     private val userService = mock<UserService>()
 
-    private val useCase = ActivityDeletionUseCase(activityService, userService, activityValidator)
+    private val useCase = ActivityDeletionUseCase(activityService, activityValidator)
 
     @Test
     fun `call the service to delete the activity`() {
@@ -33,7 +33,7 @@ internal class ActivityDeletionUseCaseTest {
     @Test
     fun `throw not found exception from the validator`() {
         doReturn(user).whenever(userService).getAuthenticatedUser()
-        doThrow(ActivityNotFoundException(1L)).whenever(activityValidator).checkActivityIsValidForDeletion(1L, user)
+        doThrow(ActivityNotFoundException(1L)).whenever(activityValidator).checkActivityIsValidForDeletion(1L)
 
         assertThrows<ActivityNotFoundException> {
             useCase.deleteActivityById(1L)

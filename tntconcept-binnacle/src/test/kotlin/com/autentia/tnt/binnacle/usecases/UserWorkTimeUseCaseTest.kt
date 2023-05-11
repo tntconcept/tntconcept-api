@@ -11,6 +11,8 @@ import com.autentia.tnt.binnacle.core.services.TimeSummaryService
 import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
@@ -108,7 +110,7 @@ internal class UserWorkTimeUseCaseTest {
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), eq(USER))
-        verify(activityService, times(2)).getUserActivitiesBetweenDates(any(), eq(USER.id))
+        verify(activityService, times(2)).getUserActivitiesBetweenDates(any(), any())
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)
     }
@@ -250,22 +252,8 @@ internal class UserWorkTimeUseCaseTest {
                 AnnualBalance(worked, target, notConsumedVacations, balance)
             ),
             mapOf(
-                Month.JANUARY to MonthlyBalance(
-                    workable,
-                    workedJanuary,
-                    recommendedJanuary,
-                    balanceJanuary,
-                    rolesJanuary,
-                    Duration.parse("8h")
-                ),
-                Month.FEBRUARY to MonthlyBalance(
-                    workable,
-                    workedFebruary,
-                    recommendedFebruary,
-                    balanceFebruary,
-                    rolesFebruary,
-                    Duration.parse("8h")
-                ),
+                Month.JANUARY to MonthlyBalance(workable, workedJanuary, recommendedJanuary, balanceJanuary, rolesJanuary, Duration.parse("8h")),
+                Month.FEBRUARY to MonthlyBalance(workable, workedFebruary, recommendedFebruary, balanceFebruary, rolesFebruary, Duration.parse("8h")),
             )
         )
 

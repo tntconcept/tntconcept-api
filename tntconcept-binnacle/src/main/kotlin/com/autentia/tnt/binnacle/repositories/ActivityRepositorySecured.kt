@@ -1,10 +1,10 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import com.autentia.tnt.security.application.isAdmin
@@ -18,11 +18,11 @@ import java.time.LocalDateTime
 @Singleton
 @Primary
 internal class ActivityRepositorySecured(
-        private val activityDao: ActivityDao,
-        private val securityService: SecurityService,
+    private val activityDao: ActivityDao,
+    private val securityService: SecurityService,
 ) : ActivityRepository {
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
-            activityDao.findAll(addUserFilterIfNecessary(activitySpecification))
+        activityDao.findAll(addUserFilterIfNecessary(activitySpecification))
 
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
@@ -63,9 +63,30 @@ internal class ActivityRepositorySecured(
         return activityDao.findByProjectRoleIdAndUserId(projectRoleId, authentication.id())
     }
 
+    override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        val userIdsFiltered = if (!authentication.isAdmin()) {
+            userIds.filter { it == authentication.id() }
+        } else {
+            userIds
+        }
+
+        return activityDao.find(startDate, endDate, userIdsFiltered)
+    }
+
+    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findOfLatestProjects(start, end, authentication.id())
+    }
+
+    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findByProjectId(start, end, projectId, authentication.id())
+    }
+
     override fun findWorkedMinutes(
-            startDate: LocalDateTime,
-            endDate: LocalDateTime,
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
         return activityDao.findWorkedMinutes(startDate, endDate, authentication.id())
@@ -76,9 +97,17 @@ internal class ActivityRepositorySecured(
         return activityDao.findOverlapped(startDate, endDate, authentication.id())
     }
 
-    override fun findIntervals(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<ActivityInterval> {
+    override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findIntervals(start, end, projectRoleId, authentication.id())
+        return activityDao.find(start, end, projectRoleId, authentication.id())
+    }
+
+    override fun findByProjectRoleIds(
+        start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>
+    ): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findByProjectRoleIds(start, end, projectRoleIds, authentication.id())
+
     }
 
     override fun save(activity: Activity): Activity {
@@ -127,7 +156,7 @@ internal class ActivityRepositorySecured(
     private fun addUserFilterIfNecessary(activitySpecification: Specification<Activity>): Specification<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isNotAdmin()) {
-            activitySpecification.and(ActivityPredicates.userId(authentication.id()))
+            PredicateBuilder.and(activitySpecification, ActivityPredicates.userId(authentication.id()))
         } else {
             activitySpecification
         }

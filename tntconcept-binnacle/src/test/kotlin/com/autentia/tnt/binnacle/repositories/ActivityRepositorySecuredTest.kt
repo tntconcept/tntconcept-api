@@ -1,11 +1,13 @@
 package com.autentia.tnt.binnacle.repositories
 
+import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,11 +15,13 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.*
+import java.util.Optional
 
 internal class ActivityRepositorySecuredTest {
 
@@ -25,6 +29,58 @@ internal class ActivityRepositorySecuredTest {
     private val activityDao = mock<ActivityDao>()
 
     private var activityRepositorySecured = ActivityRepositorySecured(activityDao, securityService)
+
+    @Test
+    fun `find all with user id filter`() {
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA
+            )
+        )
+        val activitySpecification = PredicateBuilder.and(ActivityPredicates.ALL, ActivityPredicates.userId(userId))
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
+
+        val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find all without user id filter`() {
+        val activities = listOf(
+            Activity(
+                id = 2L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA
+            )
+        )
+        val activitySpecification = ActivityPredicates.ALL
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
+
+        val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
+
+        assertEquals(activities, result)
+    }
 
     @Test
     fun `find activity should throw illegal state exception`() {
@@ -81,6 +137,84 @@ internal class ActivityRepositorySecuredTest {
 
         assertNull(result)
         verify(activityDao).findByIdAndUserId(activityId, userId)
+    }
+
+    @Test
+    fun `test findOfLatestProjects should throw IllegalStateException if there is not logged user`() {
+
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findOfLatestProjects(LocalDateTime.now(), LocalDateTime.now())
+        }
+    }
+
+    @Test
+    fun `test findOfLatestProjects should return only user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val userActivity = createActivity()
+
+        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findOfLatestProjects(startDate, endDate, userActivity.userId)).doReturn(
+            listOf(userActivity)
+        )
+
+        assertEquals(listOf(userActivity), activityRepositorySecured.findOfLatestProjects(startDate, endDate))
+    }
+
+    @Test
+    fun `test findByProjectRoleIds should throw IllegalStateException if there is not logged user`() {
+
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findByProjectRoleIds(LocalDateTime.now(), LocalDateTime.now(), listOf(1L))
+        }
+    }
+
+    @Test
+    fun `test findByProjectRoleIds should return only user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val userActivity = createActivity()
+        val projectRoleIds = listOf(1L)
+        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findByProjectRoleIds(startDate, endDate, projectRoleIds, userActivity.userId)).doReturn(
+            listOf(userActivity)
+        )
+
+        assertEquals(
+            listOf(userActivity),
+            activityRepositorySecured.findByProjectRoleIds(startDate, endDate, projectRoleIds)
+        )
+    }
+
+    @Test
+    fun `test findByProjectId should throw IllegalStateException if there is not logged user`() {
+
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+        assertThrows<IllegalStateException> {
+            activityRepositorySecured.findByProjectId(LocalDateTime.now(), LocalDateTime.now(), 1L)
+        }
+    }
+
+    @Test
+    fun `test findByProjectId should return only user activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val userActivity = createActivity()
+
+        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(activityDao.findByProjectId(startDate, endDate, 1L, userActivity.userId)).doReturn(
+            listOf(userActivity)
+        )
+
+        assertEquals(listOf(userActivity), activityRepositorySecured.findByProjectId(startDate, endDate, 1L))
     }
 
     @Test
@@ -564,17 +698,13 @@ internal class ActivityRepositorySecuredTest {
             LocalTime.MAX
         )
         val intervals = listOf(
-            ActivityInterval(
-                today.atTime(10, 0, 0),
-                today.atTime(12, 0, 0),
-                TimeUnit.MINUTES
-            )
+            createActivity().copy(start = today.atTime(10, 0, 0), end = today.atTime(12, 0, 0))
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.findIntervals(startDate, endDate, projectRole.id, adminUserId)).thenReturn(intervals)
+        whenever(activityDao.find(startDate, endDate, projectRole.id, adminUserId)).thenReturn(intervals)
 
-        val result: List<ActivityInterval> = activityRepositorySecured.findIntervals(
+        val result = activityRepositorySecured.find(
             startDate, endDate, projectRole.id
         )
 
@@ -590,7 +720,7 @@ internal class ActivityRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> {
-            activityRepositorySecured.findIntervals(
+            activityRepositorySecured.find(
                 startDate, endDate, projectRole.id
             )
         }

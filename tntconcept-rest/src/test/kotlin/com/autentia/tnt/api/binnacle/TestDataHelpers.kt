@@ -75,10 +75,10 @@ internal fun createProject(id: Long = 1L) = Project(
 
 internal fun createProjectResponseDTO(id: Long = 1L, open: Boolean = false, billable: Boolean = false) =
     ProjectResponseDTO(
-        id = id,
-        name = "Dummy Project",
-        open = open,
-        billable = billable,
+        id,
+        "Dummy Project",
+        open,
+        billable,
         1L
     )
 

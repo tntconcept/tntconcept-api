@@ -1,12 +1,12 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.config.createUser
+import com.autentia.tnt.binnacle.config.createDomainActivity
+import com.autentia.tnt.binnacle.config.createDomainProjectRole
+import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
-import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -28,8 +28,8 @@ internal class ActivityUpdateUseCaseTest {
     private val activityValidator = mock<ActivityValidator>()
     private val projectRoleService = mock<ProjectRoleService>()
     private val userService = mock<UserService>()
-    private val activityPendingApprovalMailService = mock<ActivityPendingApprovalMailService>()
-    private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
+    private val activityEvidenceMailService = mock<ActivityEvidenceMailService>()
+
     private val activityUpdateUseCase = ActivityUpdateUseCase(
         activityService,
         activityCalendarService,
@@ -37,29 +37,33 @@ internal class ActivityUpdateUseCaseTest {
         userService,
         activityValidator,
         ActivityRequestBodyConverter(),
-        activityResponseConverter,
-        TimeIntervalConverter(),
-        activityPendingApprovalMailService
+        ActivityResponseConverter(
+            ActivityIntervalResponseConverter()
+        ),
+        activityEvidenceMailService
     )
 
-    private val projectRole = createProjectRole().copy(id = 10L)
+    private val projectRole = createDomainProjectRole().copy(id = 10L)
 
     @Test
     fun `return updated activity for the authenticated user when it is valid`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
         doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
 
-        doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(USER))
+        doReturn(todayActivity).whenever(activityService).getActivityById(todayActivity.id!!)
+
+        doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(null))
 
         assertEquals(todayActivityResponseDTO, activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH))
     }
 
     @Test
     fun `rethrow any exception from the validator`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
-        doAnswer { throw Exception() }.whenever(activityValidator).checkActivityIsValidForUpdate(activityToUpdate, USER)
+        doAnswer { throw Exception() }.whenever(activityValidator)
+            .checkActivityIsValidForUpdate(activityToUpdate, activityToUpdate, USER)
 
         assertThrows<Exception> { activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH) }
     }
@@ -72,17 +76,19 @@ internal class ActivityUpdateUseCaseTest {
             projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY)
         )
 
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
         doReturn(projectRole).whenever(projectRoleService)
             .getByProjectRoleId(projectRole.id)
 
-        doReturn(activity).whenever(activityService).updateActivity(any(), eq(USER))
+        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
+
+        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
 
         activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO.copy(hasEvidences = false), Locale.ENGLISH)
 
-        verify(activityPendingApprovalMailService, times(0)).sendActivityEvidenceMail(
-            activityResponseConverter.mapActivityToActivityResponse(activity),
+        verify(activityEvidenceMailService, times(0)).sendActivityEvidenceMail(
+            activity,
             USER.username,
             Locale.ENGLISH
         )
@@ -95,17 +101,18 @@ internal class ActivityUpdateUseCaseTest {
             approvalState = ApprovalState.PENDING,
             projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY)
         )
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
         doReturn(projectRole).whenever(projectRoleService)
             .getByProjectRoleId(projectRole.id)
 
-        doReturn(activity).whenever(activityService).updateActivity(any(), eq(USER))
+        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
+        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
 
         activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
 
-        verify(activityPendingApprovalMailService, times(0)).sendActivityEvidenceMail(
-            activityResponseConverter.mapActivityToActivityResponse(activity),
+        verify(activityEvidenceMailService, times(0)).sendActivityEvidenceMail(
+            activity,
             USER.username,
             Locale.ENGLISH
         )
@@ -119,24 +126,24 @@ internal class ActivityUpdateUseCaseTest {
             projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY),
             hasEvidences = true
         )
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
         doReturn(projectRole).whenever(projectRoleService)
             .getByProjectRoleId(projectRole.id)
-
-        doReturn(activity).whenever(activityService).updateActivity(any(), eq(USER))
+        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
+        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
 
         activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
 
-        verify(activityPendingApprovalMailService, times(1)).sendActivityEvidenceMail(
-            activityResponseConverter.mapActivityToActivityResponse(activity),
+        verify(activityEvidenceMailService, times(1)).sendActivityEvidenceMail(
+            activity,
             USER.username,
             Locale.ENGLISH
         )
     }
 
     private companion object {
-        private val USER = createUser()
+        private val USER = createDomainUser()
         private val TODAY = LocalDateTime.now()
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
 
@@ -148,6 +155,7 @@ internal class ActivityUpdateUseCaseTest {
             projectRoles = listOf(),
             organization = ORGANIZATION
         )
+
         private val PROJECT_ROLE =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
         private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
@@ -171,23 +179,15 @@ internal class ActivityUpdateUseCaseTest {
             PROJECT_ROLE.id,
             false,
         )
-        private val todayActivity = Activity(
-            1,
+        private val todayActivity = createDomainActivity(
             TODAY,
             TODAY.plusMinutes(75L),
             75,
-            "New activity",
-            PROJECT_ROLE,
-            USER.id,
-            false,
-            null,
-            null,
-            false,
-            approvalState = ApprovalState.NA
+            PROJECT_ROLE.toDomain(),
         )
         private val todayActivityResponseDTO = ActivityResponseDTO(
-            false,
-            "New activity",
+            true,
+            "Description",
             false,
             1,
             PROJECT_ROLE_RESPONSE_DTO.id,
@@ -195,15 +195,18 @@ internal class ActivityUpdateUseCaseTest {
             USER.id,
             approvalState = ApprovalState.NA
         )
-        private val activityToUpdate = ActivityRequestBody(
+        private val activityToUpdate = com.autentia.tnt.binnacle.core.domain.Activity.of(
             1L,
-            TODAY,
-            TODAY.plusMinutes(75L),
+            TimeInterval.of(TODAY, TODAY.plusMinutes(75L)),
             75,
             "New activity",
+            PROJECT_ROLE.toDomain(),
+            1L,
             false,
-            PROJECT_ROLE.id,
-            false
+            null,
+            LocalDateTime.now(),
+            false,
+            ApprovalState.NA
         )
     }
 }

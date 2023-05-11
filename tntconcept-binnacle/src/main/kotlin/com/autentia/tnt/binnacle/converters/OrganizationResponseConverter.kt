@@ -13,4 +13,6 @@ class OrganizationResponseConverter {
             organization.name
         )
 
+    fun toOrganizationResponseDTO(organization: com.autentia.tnt.binnacle.core.domain.Organization) =
+        OrganizationResponseDTO(organization.id, organization.name)
 }

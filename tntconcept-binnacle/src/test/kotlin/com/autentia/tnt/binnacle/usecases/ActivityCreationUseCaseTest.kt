@@ -1,10 +1,10 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createUser
+import com.autentia.tnt.binnacle.config.createDomainUser
+import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
@@ -36,16 +36,15 @@ import java.util.Locale
 
 internal class ActivityCreationUseCaseTest {
 
-    private val user = createUser()
+    private val user = createDomainUser()
     private val activityService = mock<ActivityService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val pendingApproveActivityMailService = mock<PendingApproveActivityMailService>()
-    private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleService = ProjectRoleService(projectRoleRepository)
     private val activityRepository = mock<ActivityRepository>()
     private val activityValidator =
-        ActivityValidator(activityRepository, activityCalendarService, projectRoleRepository)
+        ActivityValidator(activityService, activityRepository, activityCalendarService, projectRoleRepository)
     private val userService = mock<UserService>()
 
     private val activityCreationUseCase = ActivityCreationUseCase(
@@ -58,16 +57,20 @@ internal class ActivityCreationUseCaseTest {
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
         ),
-        TimeIntervalConverter(),
         pendingApproveActivityMailService,
     )
 
     @Test
     fun `created activity`() {
-        val activity = createActivity(userId = user.id)
-        whenever(userService.getAuthenticatedUser()).thenReturn(user)
-        whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
-        whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
+        val activity = createActivity(userId = user.id).toDomain()
+        whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
+        whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectRoleRepository.findById(any())).thenReturn(
+            ProjectRole.of(
+                activity.projectRole,
+                createProject()
+            )
+        )
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
@@ -77,17 +80,22 @@ internal class ActivityCreationUseCaseTest {
 
     @Test
     fun `created activity with approval required`() {
-        val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_APPROVAL)
-        whenever(userService.getAuthenticatedUser()).thenReturn(user)
-        whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
-        whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
+        val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_APPROVAL).toDomain()
+        whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
+        whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectRoleRepository.findById(any())).thenReturn(
+            ProjectRole.of(
+                activity.projectRole,
+                createProject()
+            )
+        )
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         assertEquals(expectedResponseDTO, result)
         verify(pendingApproveActivityMailService, times(1)).sendApprovalActivityMail(
-            activityResponseConverter.mapActivityToActivityResponse(activity),
+            activity,
             user.username,
             Locale.ENGLISH
         )
@@ -95,17 +103,23 @@ internal class ActivityCreationUseCaseTest {
 
     @Test
     fun `created activity without approval required`() {
-        val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_NO_APPROVAL)
-        whenever(userService.getAuthenticatedUser()).thenReturn(user)
-        whenever(activityService.createActivity(any(), eq(user))).thenReturn(activity)
-        whenever(projectRoleRepository.findById(any())).thenReturn(activity.projectRole)
+        val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_NO_APPROVAL).toDomain()
+        whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
+
+        whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectRoleRepository.findById(any())).thenReturn(
+            ProjectRole.of(
+                activity.projectRole,
+                createProject()
+            )
+        )
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         assertEquals(expectedResponseDTO, result)
         verify(pendingApproveActivityMailService, times(0)).sendApprovalActivityMail(
-            activityResponseConverter.mapActivityToActivityResponse(activity),
+            activity,
             user.email,
             Locale.ENGLISH
         )

@@ -1,11 +1,9 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
-import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
 import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -18,16 +16,15 @@ import javax.transaction.Transactional
 
 @Singleton
 internal class ActivityService(
-    private val activityRepository: ActivityRepository,
-    private val projectRoleRepository: ProjectRoleRepository,
-    private val activityImageService: ActivityImageService,
-    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
+        private val activityRepository: ActivityRepository,
+        private val projectRoleRepository: ProjectRoleRepository,
+        private val activityImageService: ActivityImageService
 ) {
 
     @Transactional
     @ReadOnly
-    fun getActivityById(id: Long): Activity {
-        return activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
+    fun getActivityById(id: Long): com.autentia.tnt.binnacle.core.domain.Activity {
+        return activityRepository.findById(id)?.toDomain() ?: throw ActivityNotFoundException(id)
     }
 
     @Transactional
@@ -40,8 +37,8 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivities(activitySpecification: Specification<Activity>): List<Activity> {
-        return activityRepository.findAll(activitySpecification)
+    fun getActivities(activitySpecification: Specification<Activity>): List<com.autentia.tnt.binnacle.core.domain.Activity> {
+        return activityRepository.findAll(activitySpecification).map { it.toDomain() }
     }
 
 
@@ -53,64 +50,86 @@ internal class ActivityService(
         return activityRepository.findWithoutSecurity(startDateMinHour, endDateMaxHour, userId)
     }
 
+    @Transactional
+    @ReadOnly
+    fun getActivities(timeInterval: TimeInterval, userIds: List<Long>): List<Activity> =
+            activityRepository.find(timeInterval.start, timeInterval.end, userIds)
 
     @Transactional
     @ReadOnly
-    fun getActivitiesForAGivenProjectRoleAndUser(projectRoleId: Long, userId: Long): List<Activity> =
-        activityRepository.find(projectRoleId)
+    fun getActivitiesByProjectId(timeInterval: TimeInterval, projectId: Long): List<Activity> =
+            activityRepository.findByProjectId(timeInterval.start, timeInterval.end, projectId)
+
+    @Transactional
+    @ReadOnly
+    fun getActivitiesByProjectRoleIds(timeInterval: TimeInterval, projectRoleIds: List<Long>) =
+            activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds)
+                    .map(Activity::toDomain)
+
+    @Transactional
+    @ReadOnly
+    fun getActivitiesApprovalState(approvalState: ApprovalState): List<Activity> {
+        return activityRepository.find(approvalState)
+    }
+
+    @Transactional
+    @ReadOnly
+    fun getActivitiesOfLatestProjects(timeInterval: TimeInterval) =
+            activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end)
 
     @Transactional(rollbackOn = [Exception::class])
-    fun createActivity(activityRequest: ActivityRequestBody, user: User): Activity {
+    fun createActivity(
+            activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity,
+            imageFile: String?
+    ): com.autentia.tnt.binnacle.core.domain.Activity {
         val projectRole = projectRoleRepository
-            .findById(activityRequest.projectRoleId)
-            ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+                .findById(activityToCreate.projectRole.id)
+                ?: error { "Cannot find projectRole with id = ${activityToCreate.projectRole.id}" }
 
-        val savedActivity = activityRepository.save(
-            activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                activityRequest, projectRole, user
-            )
-        )
+        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
 
-        if (activityRequest.hasEvidences) {
+        if (activityToCreate.hasEvidences) {
             activityImageService.storeActivityImage(
-                savedActivity.id!!,
-                activityRequest.imageFile,
-                savedActivity.insertDate!!
+                    savedActivity.id!!,
+                    imageFile,
+                    savedActivity.insertDate!!
             )
         }
 
-        return savedActivity
+        return savedActivity.toDomain()
     }
 
+    fun filterActivitiesByTimeInterval(
+            filterTimeInterval: TimeInterval,
+            activities: List<Activity>
+    ) = activities.map(Activity::toDomain).filter { it.isInTheTimeInterval(filterTimeInterval) }.toList()
+
     @Transactional(rollbackOn = [Exception::class])
-    fun updateActivity(activityRequest: ActivityRequestBody, user: User): Activity {
+    fun updateActivity(
+            activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity, imageFile: String?
+    ): com.autentia.tnt.binnacle.core.domain.Activity {
         val projectRole = projectRoleRepository
-            .findById(activityRequest.projectRoleId)
-            ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
+                .findById(activityToUpdate.projectRole.id)
+                ?: error { "Cannot find projectRole with id = ${activityToUpdate.projectRole.id}" }
 
         val oldActivity = activityRepository
-            .findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
-
+                .findById(activityToUpdate.id!!) ?: throw ActivityNotFoundException(activityToUpdate.id)
 
         // Update stored image
-        if (activityRequest.hasEvidences) {
+        if (activityToUpdate.hasEvidences) {
             activityImageService.storeActivityImage(
-                activityRequest.id,
-                activityRequest.imageFile,
-                oldActivity.insertDate!!
+                    activityToUpdate.id,
+                    imageFile,
+                    oldActivity.insertDate!!
             )
         }
 
         // Delete stored image
-        if (!activityRequest.hasEvidences && oldActivity.hasEvidences) {
-            activityImageService.deleteActivityImage(activityRequest.id, oldActivity.insertDate!!)
+        if (!activityToUpdate.hasEvidences && oldActivity.hasEvidences) {
+            activityImageService.deleteActivityImage(activityToUpdate.id, oldActivity.insertDate!!)
         }
 
-        return activityRepository.update(
-            activityRequestBodyConverter.mapActivityRequestBodyToActivity(
-                activityRequest, projectRole, user, oldActivity.insertDate
-            )
-        )
+        return activityRepository.update(Activity.of(activityToUpdate, projectRole)).toDomain()
     }
 
     @Transactional(rollbackOn = [Exception::class])
@@ -121,18 +140,20 @@ internal class ActivityService(
         }
         activityToApprove.approvalState = ApprovalState.ACCEPTED
         return activityRepository.update(
-            activityToApprove
+                activityToApprove
         )
     }
 
     @Transactional
     fun deleteActivityById(id: Long) {
         val activityToDelete =
-            activityRepository
-                .findById(id) ?: throw ActivityNotFoundException(id)
+                activityRepository
+                        .findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasEvidences) {
             activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
         }
         activityRepository.deleteById(id)
     }
+
+    fun getProjectRoleActivities(projectRoleId: Long): List<Activity> = activityRepository.find(projectRoleId)
 }

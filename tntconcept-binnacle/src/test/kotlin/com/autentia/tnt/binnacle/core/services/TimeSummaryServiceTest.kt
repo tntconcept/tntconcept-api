@@ -1,22 +1,22 @@
 package com.autentia.tnt.binnacle.core.services
 
+import com.autentia.tnt.binnacle.config.createDomainActivity
+import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.config.getHolidaysFrom2022
 import com.autentia.tnt.binnacle.config.getVacationsInOneMonth2022
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
-import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.AnnualBalance
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.PreviousAnnualBalance
-import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.core.domain.YearAnnualBalance
 import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
-import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -171,42 +171,55 @@ internal class TimeSummaryServiceTest {
 
     @Test
     fun `return roles list grouped by month, projectRole and worked time for that role`() {
-        val act1 = Activity(
-            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
-            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(5),
-            ProjectRole(10L, TimeUnit.MINUTES)
-        )
-        val act2 = Activity(
-            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
-            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(6),
-            ProjectRole(10L, TimeUnit.MINUTES)
-        )
-        val act3 = Activity(
-            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
-            LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(6),
-            ProjectRole(3L, TimeUnit.MINUTES)
+        val act1 = createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
+                LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(5)
+            ), projectRole = createDomainProjectRole().copy(id = 10L)
         )
 
-        val act4 = Activity(
-            LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0),
-            LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0).plusHours(10),
-            ProjectRole(5L, TimeUnit.MINUTES)
+        val act2 = createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
+                LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(6)
+            ),
+            projectRole = createDomainProjectRole().copy(id = 10L),
         )
-        val act5 = Activity(
-            LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0),
-            LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0).plusHours(6),
-            ProjectRole(1L, TimeUnit.MINUTES)
+        val act3 = createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0),
+                LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 8, 0, 0).plusHours(6)
+            ),
+            projectRole = createDomainProjectRole().copy(id = 3L),
         )
 
-        val act6 = Activity(
-            LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0),
-            LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0).plusHours(10),
-            ProjectRole(5L, TimeUnit.MINUTES)
+        val act4 = createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0),
+                LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0).plusHours(10)
+            ),
+            projectRole = createDomainProjectRole().copy(id = 5L),
         )
-        val act7 = Activity(
-            LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0),
-            LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0).plusHours(10),
-            ProjectRole(5L, TimeUnit.MINUTES)
+        val act5 = createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0),
+                LocalDateTime.of(LocalDate.now().year, Month.FEBRUARY, 8, 0, 0).plusHours(6)
+            ),
+            projectRole = createDomainProjectRole().copy(id = 1L),
+        )
+        val act6 = createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0),
+                LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0).plusHours(10)
+            ),
+            projectRole = createDomainProjectRole().copy(id = 5L),
+        )
+        val act7 = createDomainActivity().copy(
+            timeInterval = TimeInterval.of(
+                LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0),
+                LocalDateTime.of(LocalDate.now().year, Month.MARCH, 8, 0, 0).plusHours(10)
+            ),
+            projectRole = createDomainProjectRole().copy(id = 5L),
         )
 
         val activities = listOf(act1, act2, act3, act4, act5, act6, act7)
@@ -278,41 +291,59 @@ internal class TimeSummaryServiceTest {
             .flatMap { it.days }
             .count { it.year == date.year }
 
-        val correspondingVacations = 23
+        const val correspondingVacations = 23
 
         val activities = listOf(
-            Activity(
-                LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0),
-                LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0).plusHours(8),
-                ProjectRole(1, TimeUnit.MINUTES)
+            createDomainActivity().copy(
+                timeInterval =
+                TimeInterval.of(
+                    LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0),
+                    LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0).plusHours(8)
+                ),
+                projectRole = createDomainProjectRole().copy(id = 1L)
             ),
-            Activity(
-                LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0),
-                LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0).plusHours(8),
-                ProjectRole(2, TimeUnit.MINUTES)
+            createDomainActivity().copy(
+                timeInterval =
+                TimeInterval.of(
+                    LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0),
+                    LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0).plusHours(8)
+                ),
+                projectRole = createDomainProjectRole().copy(id = 2L)
             ),
-            Activity(
-                LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0),
-                LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0).plusHours(8),
-                ProjectRole(3, TimeUnit.MINUTES)
+            createDomainActivity().copy(
+                timeInterval =
+                TimeInterval.of(
+                    LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0),
+                    LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0).plusHours(8)
+                ),
+                projectRole = createDomainProjectRole().copy(id = 3L)
             ),
         )
 
         val previousActivities = listOf(
-            Activity(
-                LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0),
-                LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0).plusHours(8),
-                ProjectRole(1, TimeUnit.MINUTES)
+            createDomainActivity().copy(
+                timeInterval =
+                TimeInterval.of(
+                    LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0),
+                    LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0).plusHours(8)
+                ),
+                projectRole = createDomainProjectRole().copy(id = 1L),
             ),
-            Activity(
-                LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0),
-                LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0).plusHours(8),
-                ProjectRole(2, TimeUnit.MINUTES)
+            createDomainActivity().copy(
+                timeInterval =
+                TimeInterval.of(
+                    LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0),
+                    LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0).plusHours(8)
+                ),
+                projectRole = createDomainProjectRole().copy(id = 2L),
             ),
-            Activity(
-                LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0),
-                LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0).plusHours(8),
-                ProjectRole(3, TimeUnit.MINUTES)
+            createDomainActivity().copy(
+                timeInterval =
+                TimeInterval.of(
+                    LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0),
+                    LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0).plusHours(8)
+                ),
+                projectRole = createDomainProjectRole().copy(id = 3L),
             ),
         )
 
@@ -323,5 +354,4 @@ internal class TimeSummaryServiceTest {
         val PREVIOUS_BALANCE = WORKED - TARGET
 
     }
-
 }

@@ -20,7 +20,7 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
     private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService = mock()
     private val userService: UserService = mock()
     private val activityEvidenceOnceMissingReminderUseCase = ActivityEvidenceOnceMissingReminderUseCase(
-            activityRepository, activityEvidenceMissingMailService, userService
+        activityRepository, activityEvidenceMissingMailService, userService
     )
 
     @Test
@@ -29,11 +29,11 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
         val allUsers = listOf(user, otherUser, anotherUser)
         val allUserIds = allUsers.map { it.id }.toList()
         val listOfActivities = listOf(
-                createActivity().copy(projectRole = projectRole, userId = user.id),
-                createActivity().copy(projectRole = projectRole2, userId = user.id),
-                createActivity().copy(projectRole = projectRole2, userId = otherUser.id),
-                createActivity().copy(projectRole = projectRoleFromOtherProject, userId = user.id),
-                createActivity().copy(projectRole = projectRoleFromOtherProject, userId = otherUser.id)
+            createActivity().copy(projectRole = projectRole, userId = user.id),
+            createActivity().copy(projectRole = projectRole2, userId = user.id),
+            createActivity().copy(projectRole = projectRole2, userId = otherUser.id),
+            createActivity().copy(projectRole = projectRoleFromOtherProject, userId = user.id),
+            createActivity().copy(projectRole = projectRoleFromOtherProject, userId = otherUser.id)
         )
         whenever(userService.findActive()).thenReturn(allUsers)
         val predicate = buildActivitiesPredicate(allUserIds)
@@ -45,32 +45,32 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
 
         // Then: Verify email is sent for role, user and project
         verify(activityEvidenceMissingMailService).sendEmail(
-                eq(project.organization.name),
-                eq(project.name),
-                eq(setOf(projectRole.name, projectRole2.name)),
-                eq(user.email),
-                any()
+            eq(project.organization.name),
+            eq(project.name),
+            eq(setOf(projectRole.name, projectRole2.name)),
+            eq(user.email),
+            any()
         )
         verify(activityEvidenceMissingMailService).sendEmail(
-                eq(project.organization.name),
-                eq(project.name),
-                eq(setOf(projectRole2.name)),
-                eq(otherUser.email),
-                any()
+            eq(project.organization.name),
+            eq(project.name),
+            eq(setOf(projectRole2.name)),
+            eq(otherUser.email),
+            any()
         )
         verify(activityEvidenceMissingMailService).sendEmail(
-                eq(otherProject.organization.name),
-                eq(otherProject.name),
-                eq(setOf(projectRoleFromOtherProject.name)),
-                eq(user.email),
-                any()
+            eq(otherProject.organization.name),
+            eq(otherProject.name),
+            eq(setOf(projectRoleFromOtherProject.name)),
+            eq(user.email),
+            any()
         )
         verify(activityEvidenceMissingMailService).sendEmail(
-                eq(otherProject.organization.name),
-                eq(otherProject.name),
-                eq(setOf(projectRoleFromOtherProject.name)),
-                eq(otherUser.email),
-                any()
+            eq(otherProject.organization.name),
+            eq(otherProject.name),
+            eq(setOf(projectRoleFromOtherProject.name)),
+            eq(otherUser.email),
+            any()
         )
     }
 
@@ -92,21 +92,24 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
 
     companion object {
         private fun buildActivitiesPredicate(allUserIds: List<Long>) = PredicateBuilder.and(
-                PredicateBuilder.and(ActivityPredicates.hasNotEvidence(),
-                        ActivityPredicates.projectRoleRequiresEvidence(RequireEvidence.ONCE)),
-                ActivityPredicates.belongsToUsers(allUserIds))
+            PredicateBuilder.and(
+                ActivityPredicates.hasNotEvidence(),
+                ActivityPredicates.projectRoleRequiresEvidence(RequireEvidence.ONCE)
+            ),
+            ActivityPredicates.belongsToUsers(allUserIds)
+        )
 
         private val project = createProject()
         private val otherProject = createProject().copy(id = 4L, name = "MyProjectRole")
         private val projectRole = ProjectRole(
-                id = 2L,
-                name = "MyProjectRole",
-                requireEvidence = RequireEvidence.ONCE,
-                project = project,
-                isApprovalRequired = true,
-                maxAllowed = 2,
-                timeUnit = TimeUnit.DAYS,
-                isWorkingTime = true
+            id = 2L,
+            name = "MyProjectRole",
+            requireEvidence = RequireEvidence.ONCE,
+            project = project,
+            isApprovalRequired = true,
+            maxAllowed = 2,
+            timeUnit = TimeUnit.DAYS,
+            isWorkingTime = true
         )
         private val projectRole2 = projectRole.copy(id = 3, name = "MyOtherProjectRole", project = project)
         private val projectRoleFromOtherProject = projectRole.copy(id = 4, project = otherProject)

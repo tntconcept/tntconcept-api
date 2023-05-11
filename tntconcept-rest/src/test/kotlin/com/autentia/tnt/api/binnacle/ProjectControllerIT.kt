@@ -3,10 +3,10 @@ package com.autentia.tnt.api.binnacle
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectRolesByProjectIdUseCase
+import com.autentia.tnt.binnacle.usecases.ProjectRoleByProjectIdUseCase
 import io.micronaut.http.HttpRequest.GET
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.HttpStatus.NOT_FOUND
@@ -44,8 +44,8 @@ internal class ProjectControllerIT {
     @get:MockBean(ProjectByIdUseCase::class)
     internal val projectByIdUseCase = mock<ProjectByIdUseCase>()
 
-    @get:MockBean(ProjectRolesByProjectIdUseCase::class)
-    internal val projectRolesByProjectIdUseCase = mock<ProjectRolesByProjectIdUseCase>()
+    @get:MockBean(ProjectRoleByProjectIdUseCase::class)
+    internal val projectRoleByProjectIdUseCase = mock<ProjectRoleByProjectIdUseCase>()
 
 
     @BeforeAll
@@ -66,7 +66,7 @@ internal class ProjectControllerIT {
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)
 
-        val response = client.exchangeObject<ProjectResponseDTO>(GET("/api/projects/${projectRequestBody.id}"))
+        val response = client.exchangeObject<ProjectResponseDTO>(GET("/api/project/${projectRequestBody.id}"))
 
         assertEquals(OK, response.status)
         assertEquals(projectRequestBody, response.body.get())
@@ -76,28 +76,27 @@ internal class ProjectControllerIT {
     @Test
     fun `return all project roles by project id`() {
 
-        val projectId = 1
+        val projectId = 3L
 
-        val projectRoleRequestBody = ProjectRoleDTO(
+        val projectRoleUser = ProjectRoleUserDTO(
             1L,
             "Vacaciones",
-            1L,
-            1L,
-            0,
-            true,
+            2L,
+            3L,
+            960,
+            480,
             TimeUnit.MINUTES,
             RequireEvidence.NO,
-            true
+            true,
+            4L
         )
 
-        doReturn(listOf(projectRoleRequestBody)).whenever(projectRolesByProjectIdUseCase).get(projectId)
+        doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId)
 
-        val response = client.exchangeList<ProjectRoleDTO>(GET("/api/projects/$projectId/roles"))
+        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project/$projectId/role"))
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(projectRoleRequestBody), response.body.get())
-
-
+        assertEquals(listOf(projectRoleUser), response.body.get())
     }
 
     @ParameterizedTest
