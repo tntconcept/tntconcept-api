@@ -19,8 +19,8 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ActivitiesByFilterUseCase internal constructor(
-        private val activityService: ActivityService,
-        private val activityResponseConverter: ActivityResponseConverter,
+    private val activityService: ActivityService,
+    private val activityResponseConverter: ActivityResponseConverter,
 ) {
     fun getActivities(activityFilter: ActivityFilterDTO): List<ActivityResponseDTO> {
         val predicate: Specification<Activity> = getPredicateFromActivityFilter(activityFilter)

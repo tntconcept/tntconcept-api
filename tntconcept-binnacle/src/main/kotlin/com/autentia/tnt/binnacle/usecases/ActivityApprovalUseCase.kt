@@ -13,11 +13,11 @@ import java.util.Locale
 
 @Singleton
 class ActivityApprovalUseCase internal constructor(
-        private val activityService: ActivityService,
-        private val securityService: SecurityService,
-        private val activityResponseConverter: ActivityResponseConverter,
-        private val userService: UserService,
-        private val approvedActivityMailService: ApprovedActivityMailService
+    private val activityService: ActivityService,
+    private val securityService: SecurityService,
+    private val activityResponseConverter: ActivityResponseConverter,
+    private val userService: UserService,
+    private val approvedActivityMailService: ApprovedActivityMailService
 ) {
     fun approveActivity(id: Long, locale: Locale): ActivityResponseDTO {
         securityService.checkAdminRole()
