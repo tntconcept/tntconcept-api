@@ -29,7 +29,7 @@ class CreateAnnualSummaryReportUseCase internal constructor(
                 val workingTime = userTimeSummaryUseCase.getTimeSummary(date, user)
                 val summary = annualWorkSummaryService.createAnnualWorkSummary(user, year, workingTime)
                 if (isShouldBeShown(summary)) {
-                    summaries[user.id] = UserAnnualWorkSummary(user.mapToDomain(), summary)
+                    summaries[user.id] = UserAnnualWorkSummary(user.toDomain(), summary)
                 }
             }
 

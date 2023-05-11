@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
-import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import jakarta.inject.Singleton
@@ -10,6 +9,17 @@ import jakarta.inject.Singleton
 class ActivityResponseConverter(
     private val activityIntervalResponseConverter: ActivityIntervalResponseConverter
 ) {
+
+    fun toActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = ActivityResponseDTO(
+        billable = activity.billable,
+        description = activity.description,
+        hasEvidences = activity.hasEvidences,
+        id = activity.id!!,
+        projectRoleId = activity.projectRole.id,
+        interval = activityIntervalResponseConverter.toIntervalResponseDTO(activity),
+        userId = activity.userId,
+        approvalState = activity.approvalState
+    )
 
     fun mapActivityToActivityResponseDTO(activity: Activity) = ActivityResponseDTO(
         billable = activity.billable,
@@ -49,16 +59,9 @@ class ActivityResponseConverter(
             activityResponse.approvalState
         )
 
-    fun toActivity(activity: Activity) =
-        com.autentia.tnt.binnacle.core.domain.Activity(
-            activity.start,
-            activity.end,
-            ProjectRole(activity.projectRole.id, activity.projectRole.timeUnit)
-        )
-
-    fun mapActivitiesToActivitiesResponseDTO(activities: List<Activity>): List<ActivityResponseDTO>  {
+    fun mapActivitiesToActivitiesResponseDTO(activities: List<Activity>): List<ActivityResponseDTO> {
         val activitiesResponseDTO = mutableListOf<ActivityResponseDTO>()
-        activities.forEach {activity ->
+        activities.forEach { activity ->
 
             val activityResponseDTO = ActivityResponseDTO(
                 billable = activity.billable,
@@ -74,5 +77,4 @@ class ActivityResponseConverter(
         }
         return activitiesResponseDTO
     }
-
 }

@@ -6,3 +6,4 @@ data class SearchResponseDTO(
     val projects: List<ProjectResponseDTO>,
     val projectRoles: List<ProjectRoleUserDTO>
 )
+

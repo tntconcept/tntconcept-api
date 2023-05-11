@@ -51,8 +51,8 @@ data class User(
     val active: Boolean,
 ) {
 
-    fun mapToDomain(): com.autentia.tnt.binnacle.core.domain.User =
-        com.autentia.tnt.binnacle.core.domain.User(this.id, this.name)
+    fun toDomain(): com.autentia.tnt.binnacle.core.domain.User =
+        com.autentia.tnt.binnacle.core.domain.User(id, username, name, departmentId, hiringDate, email)
 
     fun getAnnualWorkingHoursByYear(year: Int): Duration {
         if (agreementYearDuration != null && agreementYearDuration > 0) {

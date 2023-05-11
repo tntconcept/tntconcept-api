@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
+import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
 import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummaryAlert
 import com.autentia.tnt.binnacle.core.domain.User
@@ -28,8 +29,8 @@ internal class CsvReportPrinterTest {
     fun `given file and summaries should print csv`() {
         val file = File("target/test-report.csv")
         val fileWriter = FileWriter(file, false)
-        val user1 = User(1L, "userName1")
-        val user2 = User(2L, "userName2")
+        val user1 = createDomainUser(1L, "userName1")
+        val user2 = createDomainUser(2L, "userName2")
         val summaries = mapOf(
             user1.id to UserAnnualWorkSummary(
                 user1,

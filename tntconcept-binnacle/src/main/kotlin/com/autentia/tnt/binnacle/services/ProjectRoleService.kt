@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -13,8 +12,7 @@ internal class ProjectRoleService(private val projectRoleRepository: ProjectRole
 
     @Transactional
     @ReadOnly
-    fun getAllByIds(ids: List<Int>): List<ProjectRole> =
-        projectRoleRepository.getAllByIdIn(ids.map(Int::toLong))
+    fun getAllByIds(ids: List<Long>) = projectRoleRepository.getAllByIdIn(ids).map { it.toDomain() }
 
     @Transactional
     @ReadOnly
@@ -23,11 +21,6 @@ internal class ProjectRoleService(private val projectRoleRepository: ProjectRole
 
     @Transactional
     @ReadOnly
-    fun getByProjectRoleId(projectRoleId: Long): ProjectRole =
-        projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)
-
-    @Transactional
-    @ReadOnly
-    fun getByUserIds(userIds: List<Long>): List<ProjectRoleUser> =
-        projectRoleRepository.findDistinctRolesByUserIds(userIds)
+    fun getByProjectRoleId(projectRoleId: Long) =
+        projectRoleRepository.findById(projectRoleId)?.toDomain() ?: throw ProjectRoleNotFoundException(projectRoleId)
 }

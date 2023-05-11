@@ -12,6 +12,6 @@ class ActivityRetrievalByIdUseCase internal constructor(
 ) {
     fun getActivityById(id: Long): ActivityResponseDTO? {
         val activity = activityService.getActivityById(id)
-        return activityResponseConverter.mapActivityToActivityResponseDTO(activity)
+        return activityResponseConverter.toActivityResponseDTO(activity)
     }
 }

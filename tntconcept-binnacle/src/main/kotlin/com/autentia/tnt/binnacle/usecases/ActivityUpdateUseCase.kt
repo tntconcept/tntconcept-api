@@ -2,9 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.RequireEvidence
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -25,41 +23,34 @@ class ActivityUpdateUseCase internal constructor(
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val timeIntervalConverter: TimeIntervalConverter,
     private val activityEvidenceMailService: ActivityEvidenceMailService
 ) {
     fun updateActivity(activityRequest: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO {
-        val user = userService.getAuthenticatedUser()
+
+        val user = userService.getAuthenticatedDomainUser()
         val projectRole = projectRoleService.getByProjectRoleId(activityRequest.projectRoleId)
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            timeIntervalConverter.toTimeInterval(activityRequest.interval), projectRole.timeUnit
+            ActivityTimeInterval.of(activityRequest.interval.toDomain(), projectRole.timeUnit)
         )
 
-        val activityRequestBody =
-            activityRequestBodyConverter.mapActivityRequestBodyDTOToActivityRequestBody(
-                activityRequest, projectRole, duration
-            )
+        val currentActivity = activityService.getActivityById(activityRequest.id!!)
 
-        activityValidator.checkActivityIsValidForUpdate(activityRequestBody, user)
-
-        val activityResponse = activityResponseConverter.mapActivityToActivityResponse(
-            activityService.updateActivity(activityRequestBody, user)
+        val activityToUpdate = activityRequestBodyConverter.toActivity(
+            activityRequest,
+            duration,
+            currentActivity.insertDate,
+            projectRole,
+            user
         )
 
-        if (activityCanBeApproved(
-                activityResponse.projectRole.requireEvidence,
-                activityResponse.approvalState,
-                activityResponse.hasEvidences
-            )
-        ) {
-            activityEvidenceMailService.sendActivityEvidenceMail(activityResponse, user.username, locale)
+        activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
+        val updatedActivity = activityService.updateActivity(activityToUpdate, activityRequest.imageFile)
+
+
+        if (updatedActivity.activityCanBeApproved()) {
+            activityEvidenceMailService.sendActivityEvidenceMail(updatedActivity, user.username, locale)
         }
 
-        return activityResponseConverter.toActivityResponseDTO(activityResponse)
+        return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
-
-    fun activityCanBeApproved(requireEvidence: RequireEvidence, approvalState: ApprovalState, hasEvidences: Boolean?) =
-        RequireEvidence.isRequired(requireEvidence) &&
-                approvalState === ApprovalState.PENDING &&
-                hasEvidences == true
 }

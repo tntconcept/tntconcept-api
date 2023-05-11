@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.entities.dto
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import java.time.LocalDateTime
 
 data class ActivityResponseDTO(
         val billable: Boolean,

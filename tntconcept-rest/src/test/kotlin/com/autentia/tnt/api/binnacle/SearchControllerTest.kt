@@ -59,7 +59,7 @@ internal class SearchControllerTest {
     }
 
     private companion object {
-        private val UNKNOWN_ROLE_ID = -1L
+        private const val UNKNOWN_ROLE_ID = -1L
 
         private val AUTENTIA = OrganizationResponseDTO(1, "Autentia")
         private val TRAINING = ProjectResponseDTO(1, "Formación Autentia", true, false, AUTENTIA.id)
@@ -68,11 +68,11 @@ internal class SearchControllerTest {
             "Alumno en formación",
             AUTENTIA.id,
             TRAINING.id,
-            480,
-            240,
+            1440,
+            60,
             TimeUnit.MINUTES,
-            RequireEvidence.NO,
-            true,
+            RequireEvidence.WEEKLY,
+            false,
             1L
         )
     }

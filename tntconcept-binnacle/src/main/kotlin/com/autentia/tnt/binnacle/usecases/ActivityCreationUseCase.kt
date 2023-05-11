@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.converters.TimeIntervalConverter
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -26,31 +26,26 @@ class ActivityCreationUseCase internal constructor(
     private val activityValidator: ActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val timeIntervalConverter: TimeIntervalConverter,
     private val pendingApproveActivityMailService: PendingApproveActivityMailService,
 ) {
 
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO {
-        val user = userService.getAuthenticatedUser()
+        val user = userService.getAuthenticatedDomainUser()
         val projectRole = projectRoleService.getByProjectRoleId(activityRequestBody.projectRoleId)
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            timeIntervalConverter.toTimeInterval(activityRequestBody.interval), projectRole.timeUnit
+            ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
         )
 
-        val activityRequest = activityRequestBodyConverter
-            .mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBody, projectRole, duration)
+        val activityToCreate =
+            activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole, user)
 
-        activityValidator.checkActivityIsValidForCreation(activityRequest, user)
-        val activityResponse = activityResponseConverter.mapActivityToActivityResponse(
-            activityService.createActivity(
-                activityRequest, user
-            )
-        )
+        activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
+        val activityCreated = activityService.createActivity(activityToCreate, activityRequestBody.imageFile)
 
-        if (activityResponse.projectRole.isApprovalRequired){
-            pendingApproveActivityMailService.sendApprovalActivityMail(activityResponse, user.username, locale)
+        if (activityCreated.projectRole.isApprovalRequired) {
+            pendingApproveActivityMailService.sendApprovalActivityMail(activityCreated, user.username, locale)
         }
 
-        return activityResponseConverter.toActivityResponseDTO(activityResponse)
+        return activityResponseConverter.toActivityResponseDTO(activityCreated)
     }
 }

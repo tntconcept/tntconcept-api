@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivitySummaryConverter
 import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivitySummaryDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
@@ -20,7 +21,7 @@ class ActivitiesSummaryUseCase internal constructor(
     fun getActivitiesSummary(startDate: LocalDate, endDate: LocalDate): List<ActivitySummaryDTO> {
         val dateInterval = DateInterval.of(startDate, endDate)
         val activities =
-            activityService.getActivitiesBetweenDates(dateInterval).map(activityResponseConverter::toActivity)
+            activityService.getActivitiesBetweenDates(dateInterval).map(Activity::toDomain)
         val activityDurationSummaryInHours =
             activityCalendarService.getActivityDurationSummaryInHours(activities, dateInterval)
         return activitiesSummaryConverter.toListActivitySummaryDTO(activityDurationSummaryInHours)

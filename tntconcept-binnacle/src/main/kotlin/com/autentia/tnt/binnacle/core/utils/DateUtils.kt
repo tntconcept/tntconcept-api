@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.core.utils
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.EnumSet
@@ -89,5 +90,22 @@ fun ClosedRange<LocalDateTime>.overlaps(other: ClosedRange<LocalDateTime>): Bool
 fun minDate(start: LocalDate, end: LocalDate) = listOf(start, end).min()
 fun maxDate(start: LocalDate, end: LocalDate) = listOf(start, end).max()
 
-fun minDateTime(start: LocalDateTime, end: LocalDateTime) = listOf(start, end).min()
-fun maxDateTime(start: LocalDateTime, end: LocalDateTime) = listOf(start, end).max()
+fun toLocalDate(date: Date?): LocalDate? {
+    date ?: return null
+    return LocalDate.ofInstant(date.toInstant(), ZoneId.systemDefault())
+}
+
+fun toDate(date: LocalDate?): Date? {
+    date ?: return null
+    return Date.from(date.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant())
+}
+
+fun toLocalDateTime(date: Date?): LocalDateTime? {
+    date ?: return null
+    return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault())
+}
+
+fun toDate(date: LocalDateTime?): Date? {
+    date ?: return null
+    return Date.from(date.atZone(ZoneId.systemDefault()).toInstant());
+}

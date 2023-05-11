@@ -1,27 +1,30 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectRoleByProjectIdUseCase
+import com.autentia.tnt.binnacle.usecases.ProjectRolesByProjectIdUseCase
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.swagger.v3.oas.annotations.Operation
 
-@Controller("/api/project")
-internal class ProjectController(
+@Controller("/api/projects")
+@Deprecated("Use ProjectController instead")
+internal class ProjectsController(
     private val projectByIdUseCase: ProjectByIdUseCase,
-    private val projectRoleByProjectIdUseCase: ProjectRoleByProjectIdUseCase
+    private val projectRolesByProjectIdUseCase: ProjectRolesByProjectIdUseCase,
 ) {
+
     @Operation(summary = "Retrieves a project´s information from its ID")
     @Get("/{id}")
     fun getProjectById(id: Long): ProjectResponseDTO {
         return projectByIdUseCase.get(id)
     }
 
+    @Deprecated("Use ProjectRoleControllerInstead")
     @Operation(summary = "Retrieves a list of project roles from a project ID")
-    @Get("/{projectId}/role")
-    fun getProjectRolesByProjectId(projectId: Long): List<ProjectRoleUserDTO> {
-        return projectRoleByProjectIdUseCase.get(projectId)
+    @Get("/{id}/roles")
+    fun getProjectRolesByProjectId(id: Int): List<ProjectRoleDTO> {
+        return projectRolesByProjectIdUseCase.get(id)
     }
 }

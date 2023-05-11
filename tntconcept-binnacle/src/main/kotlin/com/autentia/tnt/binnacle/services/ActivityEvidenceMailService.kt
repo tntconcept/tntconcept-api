@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import io.micronaut.context.MessageSource
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
@@ -14,7 +13,11 @@ internal class ActivityEvidenceMailService(
     private val messageSource: MessageSource,
     private val appProperties: AppProperties
 ) {
-    fun sendActivityEvidenceMail(activity: ActivityResponse, username: String, locale: Locale) {
+    fun sendActivityEvidenceMail(
+        activity: com.autentia.tnt.binnacle.core.domain.Activity,
+        username: String,
+        locale: Locale
+    ) {
         if (!appProperties.mail.enabled) {
             logger.info("Mailing of activity evidence is disabled")
             return
@@ -24,8 +27,8 @@ internal class ActivityEvidenceMailService(
                 "mail.activity.evidence.template",
                 locale,
                 username,
-                activity.start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                activity.end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                activity.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                activity.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 activity.description
             )
             .orElse(null) ?: error("Cannot find message mail.activity.evidence.template")

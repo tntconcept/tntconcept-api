@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -8,6 +7,7 @@ import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDateTime
 
 internal interface ActivityRepository {
+
     fun findAll(activitySpecification: Specification<Activity>): List<Activity>
     fun findById(id: Long): Activity?
 
@@ -15,7 +15,14 @@ internal interface ActivityRepository {
 
     fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
 
+    fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity>
+
     fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
+
+    fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity>
+    fun findByProjectRoleIds(start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>): List<Activity>
+    fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity>
+    fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity>
 
     fun find(approvalState: ApprovalState): List<Activity>
 
@@ -26,8 +33,6 @@ internal interface ActivityRepository {
 
     fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
 
-    fun findIntervals(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<ActivityInterval>
-
     fun save(activity: Activity): Activity
 
     fun saveWithoutSecurity(activity: Activity): Activity
@@ -37,4 +42,5 @@ internal interface ActivityRepository {
     fun updateWithoutSecurity(activity: Activity): Activity
 
     fun deleteById(id: Long)
+
 }

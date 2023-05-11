@@ -38,12 +38,12 @@ internal class OrganizationControllerTest {
 
     @Test
     fun `return all projects by organization`() {
-        val organizationId = 1L
-        val project = Project(1, "Dummy Project", true, true, createOrganization(id = 1L), listOf())
+        val organization = createOrganization()
+        val project = Project(1, "Dummy Project", true, true, organization, listOf())
 
-        doReturn(listOf(project)).whenever(imputableProjectsByOrganizationIdUseCase).get(organizationId)
+        doReturn(listOf(project)).whenever(imputableProjectsByOrganizationIdUseCase).get(organization.id)
 
-        val result = organizationController.getOrganizationsProjects(organizationId)
+        val result = organizationController.getOrganizationsProjects(organization.id)
 
         val expectedProjectDTO = ProjectResponseDTO(1, "Dummy Project", true, true, 1L)
         assertEquals(listOf(expectedProjectDTO), result)

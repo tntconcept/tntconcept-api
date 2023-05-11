@@ -13,15 +13,18 @@ import javax.transaction.Transactional
 class UserService internal constructor(
     private val userRepository: UserRepository,
 ) {
-
     fun getAuthenticatedUser(): User =
         userRepository.findByAuthenticatedUser()
             .orElseThrow { IllegalStateException("There isn't authenticated user") }
 
+    fun getAuthenticatedDomainUser(): com.autentia.tnt.binnacle.core.domain.User =
+        userRepository.findByAuthenticatedUser()
+            .orElseThrow { IllegalStateException("There isn't authenticated user") }.toDomain()
+
     fun findActive(): List<User> =
         userRepository.findByActiveTrue()
 
-    fun findAll(): List<User>  =
+    fun findAll(): List<User> =
         userRepository.find()
 
 

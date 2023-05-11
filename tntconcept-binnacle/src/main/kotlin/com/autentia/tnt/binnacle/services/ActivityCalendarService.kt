@@ -1,9 +1,15 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
+import com.autentia.tnt.binnacle.core.domain.Activity
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.core.domain.DailyWorkingTime
+import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
+import com.autentia.tnt.binnacle.core.domain.ProjectRole
+import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.math.BigDecimal
@@ -94,53 +100,71 @@ internal class ActivityCalendarService(
         return activitiesCalendar.activitiesCalendarMap
     }
 
-    @Transactional
-    @ReadOnly
-    fun getSumActivitiesDuration(
-        calendar: Calendar, activitiesIntervals: List<ActivityInterval>
-    ): Int {
-        return if (activitiesIntervals.isEmpty()) {
-            0
-        } else {
-            activitiesIntervals.sumOf {
-                getDurationByCountingWorkingDays(
-                    TimeInterval.of(it.start, it.end), it.timeUnit, calendar.getWorkableDays(
-                        DateInterval.of(it.start.toLocalDate(), it.end.toLocalDate())
+    fun getRemainingOfProjectRoleForUser(projectRole: ProjectRole, activities: List<Activity>, dateInterval: DateInterval, userId: Long): Int{
+        val calendar = createCalendar(dateInterval)
+        return projectRole.getRemainingInUnits(calendar, filterActivities(activities, projectRole, userId))
+    }
+
+    fun getRemainingGroupedByProjectRoleAndUser(
+        activities: List<Activity>, dateInterval: DateInterval
+    ): List<ProjectRoleUser> =
+        getRemainingGroupedByProjectRoleAndUser(activities, dateInterval, null)
+
+    fun getRemainingGroupedByProjectRoleAndUser(
+        activities: List<Activity>, dateInterval: DateInterval, filterTimeInterval: TimeInterval?
+    ): List<ProjectRoleUser> {
+        val calendar = createCalendar(dateInterval)
+
+        val filteredActivities = filterActivitiesByTimeInterval(filterTimeInterval, activities)
+
+        return filteredActivities.groupBy { activity -> activity.projectRole }
+            .mapValues { projectRoleActivities -> projectRoleActivities.value.groupBy { activity -> activity.userId } }
+            .map { userActivitiesGroupedByProjectRole ->
+                userActivitiesGroupedByProjectRole.value.map { userActivities ->
+                    val projectRole = userActivitiesGroupedByProjectRole.key
+                    ProjectRoleUser(
+                        projectRole.id,
+                        projectRole.name,
+                        projectRole.project.organization.id,
+                        projectRole.project.id,
+                        projectRole.getMaxAllowedInUnits(),
+                        projectRole.getRemainingInUnits(calendar, filterActivities(activities, projectRole, userActivities.key)),
+                        projectRole.timeUnit,
+                        projectRole.requireEvidence,
+                        projectRole.isApprovalRequired,
+                        userActivities.key
                     )
-                )
-            }
-        }
+                }
+            }.flatten()
+    }
+
+    private fun filterActivities(
+        activities: List<Activity>,
+        projectRole: ProjectRole,
+        userId: Long
+    ) = activities.filter { it.projectRole == projectRole && it.userId == userId }
+
+    private fun filterActivitiesByTimeInterval(
+        filterTimeInterval: TimeInterval?,
+        activities: List<Activity>
+    ) = if (filterTimeInterval != null) {
+        activities.filter { it.isInTheTimeInterval(filterTimeInterval) }.toList()
+    } else {
+        activities
     }
 
     @Transactional
     @ReadOnly
-    fun getDurationByCountingWorkingDays(timeInterval: TimeInterval, timeUnit: TimeUnit): Int {
-        val calendar = calendarFactory.create(timeInterval.getDateInterval())
-        return getDurationByCountingWorkingDays(timeInterval, timeUnit, calendar.workableDays)
+    fun getDurationByCountingWorkingDays(activity: ActivityTimeInterval): Int {
+        val calendar = calendarFactory.create(activity.getDateInterval())
+        return activity.getDurationByCountingWorkableDays(calendar)
     }
-
-    fun getDurationByCountingWorkingDays(
-        calendar: Calendar, timeInterval: TimeInterval, timeUnit: TimeUnit
-    ) = getDurationByCountingWorkingDays(
-        timeInterval, timeUnit, calendar.getWorkableDays(timeInterval.getDateInterval())
-    )
-
-    fun getDurationByCountingWorkingDays(
-        timeInterval: TimeInterval, timeUnit: TimeUnit, workableDays: List<LocalDate>
-    ) = getDurationByCountingNumberOfDays(timeInterval, timeUnit, workableDays.size)
 
     fun getDurationByCountingNumberOfDays(activities: List<Activity>, numberOfDays: Int) =
         activities.sumOf { getDurationByCountingNumberOfDays(it, numberOfDays) }
 
     fun getDurationByCountingNumberOfDays(activity: Activity, numberOfDays: Int) =
-        getDurationByCountingNumberOfDays(activity.getTimeInterval(), activity.projectRole.timeUnit, numberOfDays)
-
-    fun getDurationByCountingNumberOfDays(timeInterval: TimeInterval, timeUnit: TimeUnit, numberOfDays: Int) =
-        if (timeUnit == TimeUnit.MINUTES) {
-            timeInterval.getDuration().toMinutes().toInt()
-        } else {
-            numberOfDays * 8 * 60
-        }
+        activity.getDurationByCountingDays(numberOfDays)
 
     private companion object {
         private val MINUTES_IN_HOUR = BigDecimal(60)

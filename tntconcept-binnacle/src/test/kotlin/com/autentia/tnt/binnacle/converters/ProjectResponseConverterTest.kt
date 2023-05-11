@@ -38,6 +38,7 @@ internal class ProjectResponseConverterTest {
 
     @Test
     fun `given Project list should return ProjectResponseDTO list with converted values`() {
+        val organization = createOrganization()
         //Given
         val projectList = listOf(
             Project(
@@ -46,7 +47,7 @@ internal class ProjectResponseConverterTest {
                 open = false,
                 billable = false,
                 projectRoles = listOf(),
-                organization = createOrganization(1L)
+                organization = organization
             ),
             Project(
                 id = 2,
@@ -54,7 +55,7 @@ internal class ProjectResponseConverterTest {
                 open = false,
                 billable = true,
                 projectRoles = listOf(),
-                organization = createOrganization(1L)
+                organization = organization
             ),
         )
 

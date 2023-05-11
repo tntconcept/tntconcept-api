@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
+import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,14 +17,14 @@ internal class ProjectRoleServiceTest {
 
     @Test
     fun `return the expected project roles`() {
-        val projectRoles = listOf(mock<ProjectRole>())
-        val ids = listOf(1, 2)
+        val projectRoles = listOf(createProjectRole())
+        val ids = listOf(1L)
 
-        doReturn(projectRoles).whenever(projectRoleRepository).getAllByIdIn(ids.map(Int::toLong))
+        doReturn(projectRoles).whenever(projectRoleRepository).getAllByIdIn(ids)
 
         val actual = projectRoleService.getAllByIds(ids)
 
-        assertEquals(projectRoles, actual)
+        assertEquals(projectRoles.map { it.toDomain() }, actual)
     }
 
     @Test

@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.ActivityInterval
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -62,6 +61,27 @@ internal class ActivityRepositorySecured(
         return activityDao.findByProjectRoleIdAndUserId(projectRoleId, authentication.id())
     }
 
+    override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        val userIdsFiltered = if (!authentication.isAdmin()) {
+            userIds.filter { it == authentication.id() }
+        } else {
+            userIds
+        }
+
+        return activityDao.find(startDate, endDate, userIdsFiltered)
+    }
+
+    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findOfLatestProjects(start, end, authentication.id())
+    }
+
+    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findByProjectId(start, end, projectId, authentication.id())
+    }
+
     override fun findWorkedMinutes(
         startDate: LocalDateTime,
         endDate: LocalDateTime
@@ -75,9 +95,17 @@ internal class ActivityRepositorySecured(
         return activityDao.findOverlapped(startDate, endDate, authentication.id())
     }
 
-    override fun findIntervals(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<ActivityInterval> {
+    override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findIntervals(start, end, projectRoleId, authentication.id())
+        return activityDao.find(start, end, projectRoleId, authentication.id())
+    }
+
+    override fun findByProjectRoleIds(
+        start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>
+    ): List<Activity> {
+        val authentication = securityService.checkAuthentication()
+        return activityDao.findByProjectRoleIds(start, end, projectRoleIds, authentication.id())
+
     }
 
     override fun save(activity: Activity): Activity {
