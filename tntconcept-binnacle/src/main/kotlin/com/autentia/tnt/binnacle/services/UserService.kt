@@ -24,7 +24,7 @@ class UserService internal constructor(
     fun findActive(): List<User> =
         userRepository.findByActiveTrue()
 
-    fun findAll(): List<User> =
+    fun findAllActive(): List<User> =
         userRepository.find()
 
 
