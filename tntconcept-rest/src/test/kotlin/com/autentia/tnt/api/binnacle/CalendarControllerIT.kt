@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.usecases.CalendarWorkableDaysUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysByChargeYearUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.BlockingHttpClient
