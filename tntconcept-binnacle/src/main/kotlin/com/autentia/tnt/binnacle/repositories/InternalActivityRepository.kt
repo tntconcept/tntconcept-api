@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 
 @Singleton
 internal class InternalActivityRepository(private val activityDao: ActivityDao) : ActivityRepository {
+
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
         activityDao.findAll(activitySpecification)
 
@@ -67,6 +68,26 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
 
     override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
         throw NotImplementedError()
+    }
+
+    fun findByIdAndUserId(id: Long, userId: Long): Activity? {
+        TODO("Not yet implemented")
+    }
+
+    fun findByApprovalState(approvalState: ApprovalState): List<Activity> {
+        TODO("Not yet implemented")
+    }
+
+    fun findByApprovalStateAndUserId(approvalState: ApprovalState, userId: Long): List<Activity> {
+        TODO("Not yet implemented")
+    }
+
+    fun findByProjectRoleIdAndUserId(id: Long, userId: Long): List<Activity> {
+        TODO("Not yet implemented")
+    }
+
+    fun findOfLatestProjects(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
+        TODO("Not yet implemented")
     }
 
     override fun save(activity: Activity): Activity {

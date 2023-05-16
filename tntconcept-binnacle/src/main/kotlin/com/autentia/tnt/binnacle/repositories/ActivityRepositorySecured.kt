@@ -19,18 +19,20 @@ import java.time.LocalDateTime
 @Primary
 internal class ActivityRepositorySecured(
     private val activityDao: ActivityDao,
+    private val internalActivityRepository: InternalActivityRepository,
     private val securityService: SecurityService,
 ) : ActivityRepository {
+
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
-        activityDao.findAll(addUserFilterIfNecessary(activitySpecification))
+        internalActivityRepository.findAll(addUserFilterIfNecessary(activitySpecification))
 
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
 
         return if (authentication.isAdmin()) {
-            activityDao.findById(id).orElse(null)
+            internalActivityRepository.findById(id)
         } else {
-            activityDao.findByIdAndUserId(id, authentication.id())
+            internalActivityRepository.findByIdAndUserId(id, authentication.id())
         }
     }
 
@@ -41,7 +43,7 @@ internal class ActivityRepositorySecured(
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.find(startDate, endDate, authentication.id())
+        return internalActivityRepository.find(startDate, endDate, authentication.id())
     }
 
     override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
@@ -52,15 +54,15 @@ internal class ActivityRepositorySecured(
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isAdmin()) {
-            activityDao.findByApprovalState(approvalState)
+            internalActivityRepository.findByApprovalState(approvalState)
         } else {
-            activityDao.findByApprovalStateAndUserId(approvalState, authentication.id())
+            internalActivityRepository.findByApprovalStateAndUserId(approvalState, authentication.id())
         }
     }
 
     override fun find(projectRoleId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findByProjectRoleIdAndUserId(projectRoleId, authentication.id())
+        return internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, authentication.id())
     }
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
@@ -76,7 +78,7 @@ internal class ActivityRepositorySecured(
 
     override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findOfLatestProjects(start, end, authentication.id())
+        return internalActivityRepository.findOfLatestProjects(start, end, authentication.id())
     }
 
     override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {

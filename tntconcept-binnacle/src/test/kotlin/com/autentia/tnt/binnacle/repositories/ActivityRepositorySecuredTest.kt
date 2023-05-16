@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import io.micronaut.security.authentication.ClientAuthentication
@@ -27,8 +26,9 @@ internal class ActivityRepositorySecuredTest {
 
     private val securityService = mock<SecurityService>()
     private val activityDao = mock<ActivityDao>()
+    private val internalActivityRepository = mock<InternalActivityRepository>()
 
-    private var activityRepositorySecured = ActivityRepositorySecured(activityDao, securityService)
+    private var activityRepositorySecured = ActivityRepositorySecured(activityDao, internalActivityRepository, securityService)
 
     @Test
     fun `find all with user id filter`() {
@@ -49,7 +49,7 @@ internal class ActivityRepositorySecuredTest {
         val activitySpecification = PredicateBuilder.and(ActivityPredicates.ALL, ActivityPredicates.userId(userId))
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
+        whenever(internalActivityRepository.findAll(activitySpecification)).thenReturn(activities)
 
         val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
 
@@ -75,7 +75,7 @@ internal class ActivityRepositorySecuredTest {
         val activitySpecification = ActivityPredicates.ALL
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
+        whenever(internalActivityRepository.findAll(activitySpecification)).thenReturn(activities)
 
         val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
 
@@ -98,7 +98,7 @@ internal class ActivityRepositorySecuredTest {
             hasEvidences = false,
             approvalState = ApprovalState.NA
         )
-        whenever(activityDao.findByIdAndUserId(activityId, userId)).thenReturn(activity)
+        whenever(internalActivityRepository.findByIdAndUserId(activityId, userId)).thenReturn(activity)
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> { activityRepositorySecured.findById(activityId) }
@@ -119,7 +119,7 @@ internal class ActivityRepositorySecuredTest {
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
-        whenever(activityDao.findById(activityId)).thenReturn(Optional.of(activity))
+        whenever(internalActivityRepository.findById(activityId)).thenReturn(activity)
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
 
         val result = activityRepositorySecured.findById(activityId)
@@ -136,7 +136,7 @@ internal class ActivityRepositorySecuredTest {
         val result = activityRepositorySecured.findById(activityId)
 
         assertNull(result)
-        verify(activityDao).findByIdAndUserId(activityId, userId)
+        verify(internalActivityRepository).findByIdAndUserId(activityId, userId)
     }
 
     @Test
@@ -157,7 +157,7 @@ internal class ActivityRepositorySecuredTest {
         val userActivity = createActivity()
 
         whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findOfLatestProjects(startDate, endDate, userActivity.userId)).doReturn(
+        whenever(internalActivityRepository.findOfLatestProjects(startDate, endDate, userActivity.userId)).doReturn(
             listOf(userActivity)
         )
 
@@ -302,7 +302,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.find(startDate, endDate, adminUserId)).thenReturn(activities)
+        whenever(internalActivityRepository.find(startDate, endDate, adminUserId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.find(
             startDate, endDate
@@ -560,7 +560,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.findByApprovalState(ApprovalState.NA)).thenReturn(activities)
+        whenever(internalActivityRepository.findByApprovalState(ApprovalState.NA)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.find(
             ApprovalState.NA
@@ -587,7 +587,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findByApprovalStateAndUserId(ApprovalState.NA, userId)).thenReturn(activities)
+        whenever(internalActivityRepository.findByApprovalStateAndUserId(ApprovalState.NA, userId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.find(
             ApprovalState.NA
@@ -625,7 +625,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.findByProjectRoleIdAndUserId(projectRole.id, adminUserId)).thenReturn(activities)
+        whenever(internalActivityRepository.findByProjectRoleIdAndUserId(projectRole.id, adminUserId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.find(
             projectRole.id
