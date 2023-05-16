@@ -182,7 +182,7 @@ internal class ActivityRepositorySecuredTest {
         val userActivity = createActivity()
         val projectRoleIds = listOf(1L)
         whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findByProjectRoleIds(startDate, endDate, projectRoleIds, userActivity.userId)).doReturn(
+        whenever(internalActivityRepository.findByProjectRoleIds(startDate, endDate, projectRoleIds, userActivity.userId)).doReturn(
             listOf(userActivity)
         )
 
@@ -210,7 +210,7 @@ internal class ActivityRepositorySecuredTest {
         val userActivity = createActivity()
 
         whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findByProjectId(startDate, endDate, 1L, userActivity.userId)).doReturn(
+        whenever(internalActivityRepository.findByProjectId(startDate, endDate, 1L, userActivity.userId)).doReturn(
             listOf(userActivity)
         )
 
@@ -226,7 +226,7 @@ internal class ActivityRepositorySecuredTest {
         val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findWorkedMinutes(startDate, endDate, userId)).thenReturn(workedTime)
+        whenever(internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)).thenReturn(workedTime)
 
         val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
             startDate, endDate
@@ -333,7 +333,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.empty())
-        whenever(activityDao.find(startDate, endDate, userId)).thenReturn(activities)
+        whenever(internalActivityRepository.find(startDate, endDate, userId)).thenReturn(activities)
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findWorkedMinutes(
@@ -398,7 +398,7 @@ internal class ActivityRepositorySecuredTest {
             approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.save(activity)).thenReturn(expectedActivity)
+        whenever(internalActivityRepository.save(activity)).thenReturn(expectedActivity)
 
         val result = activityRepositorySecured.save(activity)
 
@@ -450,7 +450,7 @@ internal class ActivityRepositorySecuredTest {
             approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findById(activity.id)).thenReturn(Optional.empty())
+        whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(null)
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.update(activity)
@@ -472,8 +472,8 @@ internal class ActivityRepositorySecuredTest {
             approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findById(activity.id)).thenReturn(Optional.of(activity))
-        whenever(activityDao.update(activity)).thenReturn(activity)
+        whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(activity)
+        whenever(internalActivityRepository.update(activity)).thenReturn(activity)
 
         val result = activityRepositorySecured.update(activity)
 
@@ -535,11 +535,11 @@ internal class ActivityRepositorySecuredTest {
             approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findById(activity.id)).thenReturn(Optional.of(activity))
+        whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(activity)
 
         activityRepositorySecured.deleteById(1L)
 
-        verify(activityDao).deleteById(1L)
+        verify(internalActivityRepository).deleteById(1L)
     }
 
     @Test
@@ -667,7 +667,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.findOverlapped(startDate, endDate, adminUserId)).thenReturn(activities)
+        whenever(internalActivityRepository.findOverlapped(startDate, endDate, adminUserId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.findOverlapped(
             startDate, endDate
@@ -702,7 +702,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(activityDao.find(startDate, endDate, projectRole.id, adminUserId)).thenReturn(intervals)
+        whenever(internalActivityRepository.find(startDate, endDate, projectRole.id, adminUserId)).thenReturn(intervals)
 
         val result = activityRepositorySecured.find(
             startDate, endDate, projectRole.id

@@ -73,7 +73,7 @@ internal class ActivityRepositorySecured(
             userIds
         }
 
-        return activityDao.find(startDate, endDate, userIdsFiltered)
+        return internalActivityRepository.find(startDate, endDate, userIdsFiltered)
     }
 
     override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
@@ -83,7 +83,7 @@ internal class ActivityRepositorySecured(
 
     override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findByProjectId(start, end, projectId, authentication.id())
+        return internalActivityRepository.findByProjectId(start, end, projectId, authentication.id())
     }
 
     override fun findWorkedMinutes(
@@ -91,24 +91,24 @@ internal class ActivityRepositorySecured(
         endDate: LocalDateTime,
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findWorkedMinutes(startDate, endDate, authentication.id())
+        return internalActivityRepository.findWorkedMinutes(startDate, endDate, authentication.id())
     }
 
     override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findOverlapped(startDate, endDate, authentication.id())
+        return internalActivityRepository.findOverlapped(startDate, endDate, authentication.id())
     }
 
     override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.find(start, end, projectRoleId, authentication.id())
+        return internalActivityRepository.find(start, end, projectRoleId, authentication.id())
     }
 
     override fun findByProjectRoleIds(
         start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findByProjectRoleIds(start, end, projectRoleIds, authentication.id())
+        return internalActivityRepository.findByProjectRoleIds(start, end, projectRoleIds, authentication.id())
 
     }
 
@@ -116,7 +116,7 @@ internal class ActivityRepositorySecured(
         val authentication = securityService.checkAuthentication()
         require(activity.userId == authentication.id()) { "User cannot save activity" }
 
-        return activityDao.save(activity)
+        return internalActivityRepository.save(activity)
     }
 
     override fun saveWithoutSecurity(activity: Activity): Activity {
@@ -131,10 +131,11 @@ internal class ActivityRepositorySecured(
             require(activity.userId == authentication.id()) { "User cannot update activity" }
         }
 
-        val activityToUpdate = activityDao.findById(activity.id)
-        require(activityToUpdate.isPresent) { "Activity to update does not exist" }
+        val activityToUpdate = activity.id?.let { internalActivityRepository.findById(it) }
 
-        return activityDao.update(activity)
+        require(activityToUpdate != null) { "Activity to update does not exist" }
+
+        return internalActivityRepository.update(activity)
     }
 
     override fun updateWithoutSecurity(activity: Activity): Activity {
@@ -147,12 +148,12 @@ internal class ActivityRepositorySecured(
 
     override fun deleteById(id: Long) {
         val authentication = securityService.checkAuthentication()
-        val activityToDelete = activityDao.findById(id)
+        val activityToDelete = internalActivityRepository.findById(id)
 
-        require(activityToDelete.isPresent) { "Activity with id $id does not exist" }
-        require(activityToDelete.get().userId == authentication.id()) { "User cannot delete activity" }
+        require(activityToDelete != null) { "Activity with id $id does not exist" }
+        require(activityToDelete.userId == authentication.id()) { "User cannot delete activity" }
 
-        activityDao.deleteById(id)
+        internalActivityRepository.deleteById(id)
     }
 
     private fun addUserFilterIfNecessary(activitySpecification: Specification<Activity>): Specification<Activity> {
