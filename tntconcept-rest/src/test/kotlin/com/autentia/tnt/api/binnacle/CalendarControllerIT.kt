@@ -43,7 +43,7 @@ internal class CalendarControllerIT {
         whenever(calendarWorkableDaysUseCase.get(startDate, endDate)).thenReturn(3)
 
         val response = client.exchangeObject<Int>(
-            HttpRequest.GET("/api/calendar/workable-days?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}")
+            HttpRequest.GET("/api/calendar/workable-days/count?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}")
         )
 
         assertEquals(HttpStatus.OK, response.status)
