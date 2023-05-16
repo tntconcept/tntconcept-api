@@ -35,7 +35,7 @@ class UserRepositorySecuredTest {
     }
 
     @Test
-    fun `find all users when the rol is not admin and authenticated user is not found shouls return IllegalStateException`() {
+    fun `find all users when the rol is not admin and authenticated user is not found should return IllegalStateException`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         whenever(userDao.findById(userId)).thenReturn(Optional.empty())
 
