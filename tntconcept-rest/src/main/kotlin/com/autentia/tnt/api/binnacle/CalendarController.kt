@@ -12,10 +12,9 @@ internal class CalendarController(
     private val calendarWorkableDaysUseCase: CalendarWorkableDaysUseCase,
 ) {
 
-    @Get("/workable-days")
+    @Get("/workable-days/count")
     @Operation(summary = "Retrieves workable days within a given period.")
-    internal fun getWorkableDays(@QueryValue startDate: LocalDate, @QueryValue endDate: LocalDate): Int =
+    internal fun getNumberOfWorkableDays(@QueryValue startDate: LocalDate, @QueryValue endDate: LocalDate): Int =
         calendarWorkableDaysUseCase.get(startDate, endDate)
-
 
 }
