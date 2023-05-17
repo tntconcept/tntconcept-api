@@ -74,16 +74,25 @@ internal class ActivityRepositorySecured(
 
     override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()){
+        if (authentication.isNotAdmin()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findOfLatestProjects(start, end, userId)
 
     }
 
-    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
+    override fun findByProjectId(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectId: Long,
+        userId: Long
+    ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findByProjectId(start, end, projectId, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectId(start, end, projectId, userId)
+
     }
 
     override fun findWorkedMinutes(

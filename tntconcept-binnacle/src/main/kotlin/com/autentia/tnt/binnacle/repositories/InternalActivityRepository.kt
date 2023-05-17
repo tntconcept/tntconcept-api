@@ -57,8 +57,13 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         return activityDao.findOfLatestProjects(start, end, userId)
     }
 
-    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
-        throw NotImplementedError()
+    override fun findByProjectId(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectId: Long,
+        userId: Long
+    ): List<Activity> {
+        return activityDao.findByProjectId(start, end, projectId, userId)
     }
 
     override fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly> {
@@ -70,10 +75,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
     fun findByIdAndUserId(id: Long, userId: Long): Activity? {
-        TODO("Not yet implemented")
-    }
-
-    fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long, id: Long): List<Activity> {
         TODO("Not yet implemented")
     }
 

@@ -146,14 +146,32 @@ class InternalActivityRepositoryTest {
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
         )
-        val activities = listOf(createActivity().copy(
-            start = startDate,
-            end = endDate
-        ))
+        val activities = listOf(
+            createActivity().copy(
+                start = startDate,
+                end = endDate
+            )
+        )
 
         whenever(activityDao.findOfLatestProjects(startDate, endDate, userId)).thenReturn(activities)
 
         val result = internalActivityRepository.findOfLatestProjects(startDate, endDate, userId)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find by project id should retrieve activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val projectId = 1L
+        val activities = listOf(createActivity())
+
+        whenever(activityDao.findByProjectId(startDate, endDate, projectId, userId)).thenReturn(activities)
+
+        val result = internalActivityRepository.findByProjectId(startDate, endDate, projectId, userId)
 
         assertEquals(activities, result)
     }

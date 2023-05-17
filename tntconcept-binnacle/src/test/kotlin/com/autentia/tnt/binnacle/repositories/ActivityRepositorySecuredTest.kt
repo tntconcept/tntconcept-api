@@ -227,7 +227,16 @@ internal class ActivityRepositorySecuredTest {
 
         whenever(securityService.authentication).thenReturn(Optional.empty())
         assertThrows<IllegalStateException> {
-            activityRepositorySecured.findByProjectId(LocalDateTime.now(), LocalDateTime.now(), 1L)
+            activityRepositorySecured.findByProjectId(LocalDateTime.now(), LocalDateTime.now(), 1L, userId)
+        }
+    }
+
+    @Test
+    fun `test findByProjectId should throw IllegalArgumentException if userId differs from logged user and is not admin`() {
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.findByProjectId(LocalDateTime.now(), LocalDateTime.now(), 1L, adminUserId)
         }
     }
 
@@ -244,7 +253,7 @@ internal class ActivityRepositorySecuredTest {
             listOf(userActivity)
         )
 
-        assertEquals(listOf(userActivity), activityRepositorySecured.findByProjectId(startDate, endDate, 1L))
+        assertEquals(listOf(userActivity), activityRepositorySecured.findByProjectId(startDate, endDate, 1L, userId))
     }
 
     @Test

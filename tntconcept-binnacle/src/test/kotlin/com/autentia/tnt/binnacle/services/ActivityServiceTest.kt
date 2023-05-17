@@ -142,10 +142,9 @@ internal class ActivityServiceTest {
 
     @Test
     fun `get activities by project should call repository`() {
-
-        doReturn(activities).whenever(activityRepository).findByProjectId(timeInterval.start, timeInterval.end, 1L)
-
-        assertEquals(activities, activityService.getActivitiesByProjectId(timeInterval, 1L))
+        val userId = 1L
+        whenever(activityRepository.findByProjectId(timeInterval.start, timeInterval.end, 1L, userId)).thenReturn(activities)
+        assertEquals(activities, activityService.getActivitiesByProjectId(timeInterval, 1L, userId))
     }
 
     @Test
