@@ -14,6 +14,9 @@ internal object ActivityPredicates {
 
     internal fun roleId(roleId: Long) = ActivityRoleIdSpecification(roleId)
     internal fun startDateLessThanOrEqualTo(date: LocalDate) = ActivityStartDateLessOrEqualSpecification(date)
+    internal fun startDateBetweenDates(startDate: LocalDate, endDate: LocalDate) =
+        ActivityStartDateBetweenDatesSpecification(startDate, endDate)
+
     internal fun endDateGreaterThanOrEqualTo(date: LocalDate) = ActivityEndDateGreaterOrEqualSpecification(date)
     internal fun projectId(projectId: Long) = ActivityProjectIdSpecification(projectId)
     internal fun organizationId(organizationId: Long) = ActivityOrganizationIdSpecification(organizationId)
@@ -22,6 +25,7 @@ internal object ActivityPredicates {
     internal fun projectRoleRequiresEvidence(requireEvidence: RequireEvidence) =
         ActivityProjectRoleRequiresEvidenceSpecification(requireEvidence)
 
+    internal fun withoutEvidence() = ActivityMissingEvidenceSpecification()
     internal fun hasNotEvidence() = ActivityHasNotEvidenceSpecification()
 
     internal fun belongsToUsers(userIds: List<Long>) = ActivityBelongsToUsers(userIds)
@@ -82,6 +86,79 @@ class ActivityProjectRoleRequiresEvidenceSpecification(private val requireEviden
     }
 }
 
+class ActivityMissingEvidenceSpecification : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        val activitiesWithoutOnce = getActivitiesWithoutOnce(criteriaBuilder, root)
+        val activitiesWithoutWeekly = criteriaBuilder.and(
+            criteriaBuilder.equal(
+                root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
+                RequireEvidence.WEEKLY
+            ),
+            getNotExistsSubQuery(root, query, criteriaBuilder)
+        )
+        return criteriaBuilder.or(activitiesWithoutOnce, activitiesWithoutWeekly)
+    }
+
+    private fun getNotExistsSubQuery(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        val subQuery = query.subquery(Activity::class.java)
+        val subQueryRoot = subQuery.from(Activity::class.java)
+        subQuery.select(subQueryRoot)
+        val startBetween: Expression<LocalDate> = criteriaBuilder.function(
+            "SUBDATE",
+            LocalDate::class.java,
+            subQueryRoot.get<LocalDate>("start"),
+            criteriaBuilder.literal(7)
+        )
+        val endBetween: Expression<LocalDate> = criteriaBuilder.function(
+            "ADDDATE",
+            LocalDate::class.java,
+            subQueryRoot.get<LocalDate>("start"),
+            criteriaBuilder.literal(7)
+        )
+        val activityDateBetweenCondition = criteriaBuilder.between(root.get("start"), startBetween, endBetween)
+
+        val where = subQuery.where(
+            criteriaBuilder.and(
+                criteriaBuilder.equal(root.get<Long>("userId"), subQueryRoot.get<User>("userId")),
+                criteriaBuilder.equal(
+                    root.get<ProjectRole>("projectRole").get<Long>("id"),
+                    subQueryRoot.get<ProjectRole>("projectRole").get<Long>("id")
+                ),
+                criteriaBuilder.or(
+                    criteriaBuilder.isTrue(subQueryRoot.get("hasEvidences")),
+                    criteriaBuilder.like(subQueryRoot.get("description"), "###Autocreated evidence###%")
+                ),
+                activityDateBetweenCondition
+            )
+        )
+        return criteriaBuilder.not(
+            criteriaBuilder.exists(
+                where
+            )
+        )
+    }
+
+    private fun getActivitiesWithoutOnce(
+        criteriaBuilder: CriteriaBuilder,
+        root: Root<Activity>
+    ): Predicate? = criteriaBuilder.and(
+        criteriaBuilder.equal(
+            root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
+            RequireEvidence.ONCE
+        ),
+        criteriaBuilder.isFalse(root.get("hasEvidences")),
+        criteriaBuilder.notLike(root.get("description"), "###Autocreated evidence###%")
+    )
+
+}
 
 class ActivityHasNotEvidenceSpecification : Specification<Activity> {
     override fun toPredicate(
@@ -89,7 +166,10 @@ class ActivityHasNotEvidenceSpecification : Specification<Activity> {
         query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
-        return criteriaBuilder.isFalse(root.get("hasEvidences"))
+        return criteriaBuilder.and(
+            criteriaBuilder.isFalse(root["hasEvidences"]),
+            criteriaBuilder.notLike(root["description"], "###Autocreated evidence###%")
+        )
     }
 
     override fun equals(other: Any?): Boolean {
@@ -102,7 +182,7 @@ class ActivityHasNotEvidenceSpecification : Specification<Activity> {
     }
 
     override fun toString(): String {
-        return "activity.hasEvidence"
+        return "(activity.hasEvidence || activity.description LIKE '###Autocreated evidence###%')"
     }
 }
 
@@ -260,6 +340,35 @@ class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate
 
     override fun hashCode(): Int {
         return startDate.hashCode()
+    }
+}
+
+class ActivityStartDateBetweenDatesSpecification(private val startDate: LocalDate, private val endDate: LocalDate) :
+    Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder,
+    ): Predicate? {
+        return criteriaBuilder.between(root.get("start"), startDate, endDate)
+    }
+
+    override fun toString(): String {
+        return "activity.start BETWEEN $startDate AND $endDate"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityStartDateBetweenDatesSpecification) return false
+
+        if (startDate != other.startDate) return false
+        return endDate == other.endDate
+    }
+
+    override fun hashCode(): Int {
+        var result = startDate.hashCode()
+        result = 31 * result + endDate.hashCode()
+        return result
     }
 }
 
