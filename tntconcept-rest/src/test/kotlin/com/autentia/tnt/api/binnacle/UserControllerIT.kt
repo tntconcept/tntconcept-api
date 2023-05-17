@@ -73,8 +73,8 @@ internal class UserControllerIT {
     }
 
     @Test
-    fun `get users`() {
-        whenever(usersRetrievalUseCase.getAllUsers()).thenReturn(listOf(USER_RESPONSE_DTO))
+    fun `get all active users`() {
+        whenever(usersRetrievalUseCase.getAllActiveUsers()).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponseDTO>(
             HttpRequest.GET("/api/user"),
@@ -88,15 +88,7 @@ internal class UserControllerIT {
         private val USER_RESPONSE_DTO = UserResponseDTO(
             1L,
             "username",
-            2L,
-            "name",
-            "photoUrl",
-            dayDuration = 24,
-            WorkingAgreement(3L, emptySet()),
-            null,
-            LocalDate.now(),
-            "email",
-            "role",
+            "Name surname",
         )
     }
 

@@ -1,12 +1,14 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.config.createUser
+import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
+import junit.framework.TestCase.assertEquals
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
-import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.never
@@ -19,13 +21,25 @@ class UserRepositorySecuredTest {
     private val userRepositorySecured = UserRepositorySecured(userDao, securityService)
 
     @Test
-    fun `find all users when the rol is not admin`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+    fun `find all users when the rol is not admin should return only authenticated user`() {
+        val user = createUser().copy(id = userId)
 
-        val actual = userRepositorySecured.find()
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+        whenever(userDao.findById(userId)).thenReturn(Optional.of(user))
+
+        val users = userRepositorySecured.find()
 
         verify(userDao, never()).findByActiveTrue()
-        assertEquals(actual, emptyList<User>())
+        assertEquals(1, users.size)
+        assertTrue(users.contains(user))
+    }
+
+    @Test
+    fun `find all users when the rol is not admin and authenticated user is not found should return IllegalStateException`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+        whenever(userDao.findById(userId)).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> { userRepositorySecured.find() }
     }
 
     @Test
