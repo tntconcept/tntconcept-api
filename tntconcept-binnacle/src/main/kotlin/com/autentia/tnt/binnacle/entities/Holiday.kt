@@ -2,8 +2,8 @@ package com.autentia.tnt.binnacle.entities
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDateTime
-import javax.persistence.Entity
-import javax.persistence.Id
+import jakarta.persistence.Entity
+import jakarta.persistence.Id
 
 @Entity
 data class Holiday(

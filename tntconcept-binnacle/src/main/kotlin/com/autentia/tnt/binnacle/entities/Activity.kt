@@ -7,18 +7,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import io.micronaut.data.annotation.DateCreated
 import java.time.LocalDateTime
 import java.util.Date
-import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
-import javax.persistence.FetchType.LAZY
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.persistence.NamedAttributeNode
-import javax.persistence.NamedEntityGraph
-import javax.persistence.NamedSubgraph
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType.LAZY
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.NamedAttributeNode
+import jakarta.persistence.NamedEntityGraph
+import jakarta.persistence.NamedSubgraph
 
 enum class ApprovalState {
     NA, PENDING, ACCEPTED

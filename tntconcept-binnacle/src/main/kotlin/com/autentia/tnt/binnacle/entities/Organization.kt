@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.entities
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
-import javax.persistence.*
+import jakarta.persistence.*
 
 @Entity
 data class Organization(

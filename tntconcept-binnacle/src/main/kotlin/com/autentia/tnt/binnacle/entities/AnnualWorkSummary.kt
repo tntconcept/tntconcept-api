@@ -1,9 +1,9 @@
 package com.autentia.tnt.binnacle.entities
 
 import java.math.BigDecimal
-import javax.persistence.EmbeddedId
-import javax.persistence.Entity
-import javax.validation.constraints.Digits
+import jakarta.persistence.EmbeddedId
+import jakarta.persistence.Entity
+import jakarta.validation.constraints.Digits
 
 @Entity
 data class AnnualWorkSummary(

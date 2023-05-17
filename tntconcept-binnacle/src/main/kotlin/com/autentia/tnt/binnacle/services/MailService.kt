@@ -7,7 +7,7 @@ import io.micronaut.email.MultipartBody
 import io.micronaut.http.MediaType
 import jakarta.inject.Singleton
 import java.io.File
-import javax.mail.internet.InternetAddress
+import jakarta.mail.internet.InternetAddress
 
 @Singleton
 internal class MailService(

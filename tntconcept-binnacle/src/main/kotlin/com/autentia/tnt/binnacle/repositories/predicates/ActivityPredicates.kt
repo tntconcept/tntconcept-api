@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.repositories.predicates
 import com.autentia.tnt.binnacle.entities.*
 import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDate
-import javax.persistence.criteria.*
+import jakarta.persistence.criteria.*
 
 internal object ActivityPredicates {
 

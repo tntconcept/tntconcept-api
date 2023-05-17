@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.entities.dto
 
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
-import javax.validation.constraints.Size
+import jakarta.validation.constraints.Size
 
 @Introspected
 data class ActivityRequestBodyDTO(

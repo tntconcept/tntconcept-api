@@ -14,7 +14,7 @@ import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.validation.Validated
 import jakarta.inject.Singleton
 import java.util.Locale
-import javax.validation.Valid
+import jakarta.validation.Valid
 
 @Singleton
 @Validated

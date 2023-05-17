@@ -8,7 +8,7 @@ import com.autentia.tnt.binnacle.services.HookActivityService
 import com.autentia.tnt.binnacle.services.UserService
 import io.micronaut.validation.Validated
 import jakarta.inject.Singleton
-import javax.validation.Valid
+import jakarta.validation.Valid
 
 @Singleton
 @Validated

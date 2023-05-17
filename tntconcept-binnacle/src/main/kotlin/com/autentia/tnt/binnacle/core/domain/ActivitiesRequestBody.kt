@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import java.time.LocalDateTime
-import javax.validation.constraints.Size
+import jakarta.validation.constraints.Size
 @Deprecated("Use ActivityRequestBody instead")
 data class ActivitiesRequestBody(
     val id: Long? = null,

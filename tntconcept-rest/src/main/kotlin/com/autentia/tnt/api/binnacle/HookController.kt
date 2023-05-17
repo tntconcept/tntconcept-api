@@ -22,7 +22,7 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import java.time.LocalDate
-import javax.validation.Valid
+import jakarta.validation.Valid
 
 @Controller("/api-hook")
 @Validated

@@ -13,7 +13,7 @@ import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import java.time.LocalDate
 import java.util.*
-import javax.validation.Valid
+import jakarta.validation.Valid
 
 @Controller("/api/activity")
 @Validated

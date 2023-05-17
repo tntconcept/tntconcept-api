@@ -1,8 +1,8 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import java.time.LocalDate
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
 
 data class RequestVacation (
     val id: Long? = null,

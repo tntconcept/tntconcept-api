@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import java.time.LocalDateTime
-import javax.validation.constraints.Size
+import jakarta.validation.constraints.Size
 
 data class ActivityRequestBody(
 

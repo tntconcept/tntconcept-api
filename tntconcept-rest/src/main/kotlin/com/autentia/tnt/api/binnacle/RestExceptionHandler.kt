@@ -7,7 +7,7 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
-import javax.validation.ConstraintViolationException
+import jakarta.validation.ConstraintViolationException
 
 @Controller("/")
 internal class RestExceptionHandler {

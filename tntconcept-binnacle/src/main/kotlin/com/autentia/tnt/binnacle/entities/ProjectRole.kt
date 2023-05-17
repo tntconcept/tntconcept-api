@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.entities
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import javax.persistence.*
+import jakarta.persistence.*
 
 enum class RequireEvidence {
     NO, ONCE, WEEKLY;

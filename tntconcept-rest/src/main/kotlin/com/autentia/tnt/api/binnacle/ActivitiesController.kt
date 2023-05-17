@@ -20,7 +20,7 @@ import io.micronaut.http.annotation.Put
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import java.time.LocalDate
-import javax.validation.Valid
+import jakarta.validation.Valid
 
 @Deprecated("Use Activity controller instead")
 @Controller("/api/activities")

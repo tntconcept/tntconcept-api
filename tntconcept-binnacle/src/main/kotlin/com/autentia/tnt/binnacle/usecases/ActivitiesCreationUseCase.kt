@@ -9,7 +9,7 @@ import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivitiesValidator
 import io.micronaut.validation.Validated
 import jakarta.inject.Singleton
-import javax.validation.Valid
+import jakarta.validation.Valid
 
 @Deprecated("Use ActivityCreationUseCase instead")
 @Singleton
