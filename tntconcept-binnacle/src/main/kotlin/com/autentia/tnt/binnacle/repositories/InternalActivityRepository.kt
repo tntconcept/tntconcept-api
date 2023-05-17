@@ -18,10 +18,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         throw NotImplementedError()
     }
 
-    override fun findByIdWithoutSecurity(id: Long): Activity? {
-        throw NotImplementedError()
-    }
-
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
         throw NotImplementedError()
     }
@@ -116,21 +112,12 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         throw NotImplementedError()
     }
 
-    override fun saveWithoutSecurity(activity: Activity): Activity {
-        throw NotImplementedError()
-    }
-
     override fun update(activity: Activity): Activity {
-        throw NotImplementedError()
-    }
-
-    override fun updateWithoutSecurity(activity: Activity): Activity {
         throw NotImplementedError()
     }
 
     override fun deleteById(id: Long) {
         throw NotImplementedError()
     }
-
 
 }
