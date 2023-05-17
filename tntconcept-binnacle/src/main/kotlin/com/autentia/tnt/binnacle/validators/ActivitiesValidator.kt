@@ -97,6 +97,7 @@ internal class ActivitiesValidator(
         activityRepository.findWorkedMinutes(
             LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
             LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
+            user.id
         )
 
     @Transactional

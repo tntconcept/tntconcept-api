@@ -268,7 +268,7 @@ internal class ActivityRepositorySecuredTest {
         whenever(internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)).thenReturn(workedTime)
 
         val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
-            startDate, endDate
+            startDate, endDate, userId
         )
 
         assertEquals(workedTime, result)
@@ -284,7 +284,22 @@ internal class ActivityRepositorySecuredTest {
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findWorkedMinutes(
-                startDate, endDate
+                startDate, endDate, userId
+            )
+        }
+    }
+
+    @Test
+    fun `find worked minutes should throw IllegalArgumentException if user id differs from logged user and is not admin`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.findWorkedMinutes(
+                startDate, endDate, adminUserId
             )
         }
     }

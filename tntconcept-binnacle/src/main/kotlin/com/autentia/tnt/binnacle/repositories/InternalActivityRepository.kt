@@ -66,8 +66,13 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         return activityDao.findByProjectId(start, end, projectId, userId)
     }
 
-    override fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly> {
-        throw NotImplementedError()
+    @Deprecated("Use findIntervals function instead")
+    override fun findWorkedMinutes(
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+        userId: Long
+    ): List<ActivityTimeOnly> {
+        return activityDao.findWorkedMinutes(startDate, endDate, userId)
     }
 
     override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
@@ -75,10 +80,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
     fun findByIdAndUserId(id: Long, userId: Long): Activity? {
-        TODO("Not yet implemented")
-    }
-
-    fun findWorkedMinutes(startDate: LocalDateTime?, endDate: LocalDateTime?, userId: Long): List<ActivityTimeOnly> {
         TODO("Not yet implemented")
     }
 

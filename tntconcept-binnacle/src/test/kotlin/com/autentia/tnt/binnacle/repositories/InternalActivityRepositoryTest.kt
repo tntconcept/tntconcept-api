@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
@@ -172,6 +173,27 @@ class InternalActivityRepositoryTest {
         whenever(activityDao.findByProjectId(startDate, endDate, projectId, userId)).thenReturn(activities)
 
         val result = internalActivityRepository.findByProjectId(startDate, endDate, projectId, userId)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find activities by worked minutes`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(
+            ActivityTimeOnly(
+                startDate = startDate,
+                duration = 10,
+                1L
+            )
+        )
+
+        whenever(activityDao.findWorkedMinutes(startDate, endDate, userId)).thenReturn(activities)
+
+        val result = internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)
 
         assertEquals(activities, result)
     }

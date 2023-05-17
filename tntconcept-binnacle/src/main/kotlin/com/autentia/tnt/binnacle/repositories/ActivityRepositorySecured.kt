@@ -95,12 +95,17 @@ internal class ActivityRepositorySecured(
 
     }
 
+    @Deprecated("Use findIntervals function instead")
     override fun findWorkedMinutes(
         startDate: LocalDateTime,
         endDate: LocalDateTime,
+        userId: Long
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findWorkedMinutes(startDate, endDate, authentication.id())
+        if (authentication.isNotAdmin()){
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)
     }
 
     override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {

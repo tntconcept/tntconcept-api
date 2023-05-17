@@ -32,7 +32,7 @@ internal interface ActivityRepository {
     fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity>
 
     @Deprecated("Use findIntervals function instead")
-    fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly>
+    fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
 
     fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
 
