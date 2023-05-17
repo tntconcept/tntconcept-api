@@ -25,7 +25,6 @@ import java.util.*
 internal class ActivityRepositorySecuredTest {
 
     private val securityService = mock<SecurityService>()
-    private val activityDao = mock<ActivityDao>()
     private val internalActivityRepository = mock<InternalActivityRepository>()
 
     private var activityRepositorySecured =
@@ -540,7 +539,6 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `delete activity should throw IllegalArgumentException if activity does not exist`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findById(1L)).thenReturn(Optional.empty())
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.deleteById(1L)
