@@ -37,7 +37,7 @@ internal class ActivitiesService(
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
         return activityRepository
-            .find(startDateMinHour, endDateMaxHour)
+            .findByUserId(startDateMinHour, endDateMaxHour, userId)
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
     }
 

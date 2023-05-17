@@ -36,10 +36,14 @@ internal class ActivityRepositorySecured(
         }
     }
 
-    override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
+    override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.find(startDate, endDate, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(userId == authentication.id()) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByUserId(startDate, endDate, userId)
     }
+
 
     override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         //TODO: Add security to this method!!!

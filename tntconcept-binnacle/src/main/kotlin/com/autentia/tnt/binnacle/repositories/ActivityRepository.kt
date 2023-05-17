@@ -12,7 +12,7 @@ internal interface ActivityRepository {
 
     fun findById(id: Long): Activity?
 
-    fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
+    fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
     fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity>
 

@@ -20,7 +20,7 @@ import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.Optional
+import java.util.*
 
 internal class ActivityRepositorySecuredTest {
 
@@ -28,7 +28,8 @@ internal class ActivityRepositorySecuredTest {
     private val activityDao = mock<ActivityDao>()
     private val internalActivityRepository = mock<InternalActivityRepository>()
 
-    private var activityRepositorySecured = ActivityRepositorySecured(activityDao, internalActivityRepository, securityService)
+    private var activityRepositorySecured =
+        ActivityRepositorySecured(activityDao, internalActivityRepository, securityService)
 
     @Test
     fun `find all with user id filter`() {
@@ -182,7 +183,14 @@ internal class ActivityRepositorySecuredTest {
         val userActivity = createActivity()
         val projectRoleIds = listOf(1L)
         whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(internalActivityRepository.findByProjectRoleIds(startDate, endDate, projectRoleIds, userActivity.userId)).doReturn(
+        whenever(
+            internalActivityRepository.findByProjectRoleIds(
+                startDate,
+                endDate,
+                projectRoleIds,
+                userActivity.userId
+            )
+        ).doReturn(
             listOf(userActivity)
         )
 
@@ -281,7 +289,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `find activities between dates should retrieve user logged activities`() {
+    fun `find activities between dates should retrieve other user activities if logged user is admin`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
@@ -302,12 +310,59 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(internalActivityRepository.find(startDate, endDate, adminUserId)).thenReturn(activities)
+        whenever(internalActivityRepository.findByUserId(startDate, endDate, userId)).thenReturn(activities)
 
-        val result: List<Activity> = activityRepositorySecured.find(
-            startDate, endDate
+        val result: List<Activity> = activityRepositorySecured.findByUserId(
+            startDate, endDate, userId
         )
 
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find activities between dates should not retrieve other user activities if logged user is not admin`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.findByUserId(
+                startDate, endDate, adminUserId
+            )
+        }
+    }
+
+    @Test
+    fun `find activities between dates should retrieve logged user activities if user is not admin`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(internalActivityRepository.findByUserId(startDate, endDate, userId)).thenReturn(activities)
+
+
+        val result = activityRepositorySecured.findByUserId(
+            startDate, endDate, userId
+        )
         assertEquals(activities, result)
     }
 
@@ -587,7 +642,9 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(internalActivityRepository.findByApprovalStateAndUserId(ApprovalState.NA, userId)).thenReturn(activities)
+        whenever(internalActivityRepository.findByApprovalStateAndUserId(ApprovalState.NA, userId)).thenReturn(
+            activities
+        )
 
         val result: List<Activity> = activityRepositorySecured.find(
             ApprovalState.NA
@@ -625,7 +682,9 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(internalActivityRepository.findByProjectRoleIdAndUserId(projectRole.id, adminUserId)).thenReturn(activities)
+        whenever(internalActivityRepository.findByProjectRoleIdAndUserId(projectRole.id, adminUserId)).thenReturn(
+            activities
+        )
 
         val result: List<Activity> = activityRepositorySecured.find(
             projectRole.id

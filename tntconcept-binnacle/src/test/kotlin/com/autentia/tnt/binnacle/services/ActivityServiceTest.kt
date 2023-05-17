@@ -78,18 +78,20 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `get activities between start and end date`() {
+    fun `get activities between start and end date with userId`() {
+        val userId = 1L
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)
 
         whenever(
-            activityRepository.find(
+            activityRepository.findByUserId(
                 startDate.atTime(LocalTime.MIN),
-                endDate.atTime(LocalTime.MAX)
+                endDate.atTime(LocalTime.MAX),
+                userId
             )
         ).thenReturn(listOf(activityWithoutImageSaved))
 
-        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate))
+        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
 
         assertEquals(listOf(activityWithoutImageSaved), actual)
     }

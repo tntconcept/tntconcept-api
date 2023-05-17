@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.jpa.repository.criteria.Specification
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
+import java.util.Optional
 
 
 @Singleton
@@ -15,11 +16,12 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         activityDao.findAll(activitySpecification)
 
     override fun findById(id: Long): Activity? {
-        throw NotImplementedError()
-    }
-
-    override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
-        throw NotImplementedError()
+        val activity: Optional<Activity> = activityDao.findById(id)
+        return if (activity.isPresent){
+            activity.get()
+        }else {
+            null
+        }
     }
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
@@ -36,6 +38,10 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
 
     override fun find(projectRoleId: Long): List<Activity> {
         throw NotImplementedError()
+    }
+
+    override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
+        return activityDao.find(startDate, endDate, userId)
     }
 
     override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {

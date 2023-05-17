@@ -34,7 +34,7 @@ import java.time.Month
 import kotlin.time.Duration
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
-internal class UserWorkTimeUseCaseTest {
+internal class UserTimeSummaryUseCaseTest {
     private val userService = mock<UserService>()
     private val holidayService = mock<HolidayService>()
     private val annualWorkSummaryService = mock<AnnualWorkSummaryService>()
@@ -59,6 +59,7 @@ internal class UserWorkTimeUseCaseTest {
 
     @Test
     fun `given date should return working time`() {
+        val userId = 1L
         whenever(userService.getAuthenticatedUser()).thenReturn(USER)
         whenever(annualWorkSummaryService.getAnnualWorkSummary(USER, TODAY_LAST_YEAR.minusYears(1).year)).thenReturn(
             annualWorkSummary
@@ -72,11 +73,12 @@ internal class UserWorkTimeUseCaseTest {
         ).thenReturn(vacations)
         vacations.add(vacation)
         whenever(
-            activityService.getActivitiesBetweenDates(
+            activityService.getUserActivitiesBetweenDates(
                 DateInterval.of(
                     FIRST_DAY_LAST_YEAR,
                     LAST_DAY_LAST_YEAR
-                )
+                ),
+                userId
             )
         ).thenReturn(listOf(LAST_YEAR_ACTIVITY))
         whenever(
