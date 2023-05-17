@@ -37,7 +37,7 @@ class ActivityEvidenceMissingReminderUseCaseTest {
         )
         whenever(userService.findActive()).thenReturn(allUsers)
         val predicate = buildActivitiesPredicate(allUserIds)
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
         whenever(activityRepository.findAll(predicate)).thenReturn(listOfActivities)
 
         // When: Use case is called
@@ -47,28 +47,41 @@ class ActivityEvidenceMissingReminderUseCaseTest {
         verify(activityEvidenceMissingMailService).sendEmail(
             eq(project.organization.name),
             eq(project.name),
-            eq(setOf(projectRole.name, projectRole2.name)),
+            eq(projectRole2.name),
+            eq(projectRole2.requireEvidence),
+            eq(user.email),
+            any()
+        )
+
+        verify(activityEvidenceMissingMailService).sendEmail(
+            eq(project.organization.name),
+            eq(project.name),
+            eq(projectRole.name),
+            eq(projectRole.requireEvidence),
             eq(user.email),
             any()
         )
         verify(activityEvidenceMissingMailService).sendEmail(
             eq(project.organization.name),
             eq(project.name),
-            eq(setOf(projectRole2.name)),
+            eq(projectRole2.name),
+            eq(projectRole2.requireEvidence),
             eq(otherUser.email),
             any()
         )
         verify(activityEvidenceMissingMailService).sendEmail(
             eq(otherProject.organization.name),
             eq(otherProject.name),
-            eq(setOf(projectRoleFromOtherProject.name)),
+            eq(projectRoleFromOtherProject.name),
+            eq(projectRoleFromOtherProject.requireEvidence),
             eq(user.email),
             any()
         )
         verify(activityEvidenceMissingMailService).sendEmail(
             eq(otherProject.organization.name),
             eq(otherProject.name),
-            eq(setOf(projectRoleFromOtherProject.name)),
+            eq(projectRoleFromOtherProject.name),
+            eq(projectRoleFromOtherProject.requireEvidence),
             eq(otherUser.email),
             any()
         )
