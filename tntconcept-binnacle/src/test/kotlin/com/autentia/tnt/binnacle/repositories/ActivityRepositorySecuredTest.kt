@@ -525,20 +525,8 @@ internal class ActivityRepositorySecuredTest {
 
     @Test
     fun `delete activity should throw IllegalArgumentException if activity does not exist`() {
-        val activity = Activity(
-            id = 1L,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
-        )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(activityDao.findById(activity.id)).thenReturn(Optional.empty())
+        whenever(activityDao.findById(1L)).thenReturn(Optional.empty())
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.deleteById(1L)
