@@ -104,6 +104,34 @@ class InternalActivityRepositoryTest {
         assertEquals(activities, result)
     }
 
+    @Test
+    fun `find by project role ids should retrieve activities with user id`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val projectRoleIds = listOf(1L)
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+        whenever(activityDao.findByProjectRoleIds(startDate, endDate, projectRoleIds, userId)).thenReturn(activities)
+
+        val result = internalActivityRepository.findByProjectRoleIds(startDate, endDate, projectRoleIds, userId)
+
+        assertEquals(activities, result)
+    }
+
     private companion object {
         private const val userId = 1L
         private val today = LocalDate.now()

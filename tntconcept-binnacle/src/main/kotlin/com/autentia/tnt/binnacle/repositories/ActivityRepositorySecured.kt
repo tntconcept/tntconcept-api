@@ -99,11 +99,16 @@ internal class ActivityRepositorySecured(
     }
 
     override fun findByProjectRoleIds(
-        start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectRoleIds: List<Long>,
+        userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findByProjectRoleIds(start, end, projectRoleIds, authentication.id())
-
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectRoleIds(start, end, projectRoleIds, userId)
     }
 
     override fun save(activity: Activity): Activity {

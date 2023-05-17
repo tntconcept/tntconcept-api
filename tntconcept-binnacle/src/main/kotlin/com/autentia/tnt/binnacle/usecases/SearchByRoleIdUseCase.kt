@@ -31,7 +31,7 @@ class SearchByRoleIdUseCase internal constructor(
         val currentYearTimeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
 
         val projectRoles = projectRoleService.getAllByIds(projectRoleIds)
-        val activities = activityService.getActivitiesByProjectRoleIds(currentYearTimeInterval, projectRoleIds)
+        val activities = activityService.getActivitiesByProjectRoleIds(currentYearTimeInterval, projectRoleIds, userId)
 
         val projectRoleUsers = projectRoles.map { projectRole ->
             val remainingOfProjectRole = activityCalendarService.getRemainingOfProjectRoleForUser(

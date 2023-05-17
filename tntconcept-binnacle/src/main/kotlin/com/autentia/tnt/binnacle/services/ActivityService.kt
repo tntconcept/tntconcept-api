@@ -64,8 +64,8 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesByProjectRoleIds(timeInterval: TimeInterval, projectRoleIds: List<Long>) =
-        activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds)
+    fun getActivitiesByProjectRoleIds(timeInterval: TimeInterval, projectRoleIds: List<Long>, userId: Long) =
+        activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds, userId)
             .map(Activity::toDomain)
 
     @Transactional
