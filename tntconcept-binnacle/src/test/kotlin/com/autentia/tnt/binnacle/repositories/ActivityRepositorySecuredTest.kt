@@ -29,7 +29,7 @@ internal class ActivityRepositorySecuredTest {
     private val internalActivityRepository = mock<InternalActivityRepository>()
 
     private var activityRepositorySecured =
-        ActivityRepositorySecured(activityDao, internalActivityRepository, securityService)
+        ActivityRepositorySecured(internalActivityRepository, securityService)
 
     @Test
     fun `find all with user id filter`() {

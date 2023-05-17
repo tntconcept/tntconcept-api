@@ -18,7 +18,6 @@ import java.time.LocalDateTime
 @Singleton
 @Primary
 internal class ActivityRepositorySecured(
-    private val activityDao: ActivityDao,
     private val internalActivityRepository: InternalActivityRepository,
     private val securityService: SecurityService,
 ) : ActivityRepository {
