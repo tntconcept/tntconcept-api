@@ -554,7 +554,7 @@ internal class ActivityRepositorySecuredTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(internalActivityRepository.findByApprovalState(ApprovalState.NA)).thenReturn(activities)
+        whenever(internalActivityRepository.find(ApprovalState.NA)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.find(
             ApprovalState.NA
@@ -604,7 +604,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `find by project role should return activities`() {
+    fun `find by project role and user id should return activities`() {
         val activities = listOf(
             Activity(
                 id = 1L,
@@ -625,8 +625,9 @@ internal class ActivityRepositorySecuredTest {
             activities
         )
 
-        val result: List<Activity> = activityRepositorySecured.find(
-            projectRole.id
+        val result: List<Activity> = activityRepositorySecured.findByProjectRoleIdAndUserId(
+            projectRole.id,
+            adminUserId
         )
 
         assertEquals(activities, result)
@@ -637,8 +638,21 @@ internal class ActivityRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> {
-            activityRepositorySecured.find(
-                projectRole.id
+            activityRepositorySecured.findByProjectRoleIdAndUserId(
+                projectRole.id,
+                userId
+            )
+        }
+    }
+
+    @Test
+    fun `find activities by project role should throw IllegalArgumentException when user id differs from logged user id and is not admin`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.findByProjectRoleIdAndUserId(
+                projectRole.id,
+                adminUserId
             )
         }
     }

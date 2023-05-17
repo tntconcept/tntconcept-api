@@ -160,6 +160,82 @@ class InternalActivityRepositoryTest {
         assertEquals(activities, result)
     }
 
+    @Test
+    fun `find by approval state should retrieve activities`() {
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.ACCEPTED,
+            )
+        )
+        val approvalState = ApprovalState.ACCEPTED
+
+        whenever(activityDao.findByApprovalState(approvalState)).thenReturn(activities)
+
+        val result = internalActivityRepository.find(approvalState)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find by approval state and user id should retrieve activities`() {
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.ACCEPTED,
+            )
+        )
+        val approvalState = ApprovalState.ACCEPTED
+
+        whenever(activityDao.findByApprovalStateAndUserId(approvalState, userId)).thenReturn(activities)
+
+        val result = internalActivityRepository.findByApprovalStateAndUserId(approvalState, userId)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find by project role and user id should retrieve activities`() {
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.ACCEPTED,
+            )
+        )
+        val projectRoleId = 1L
+
+        whenever(activityDao.findByProjectRoleIdAndUserId(projectRoleId, userId)).thenReturn(activities)
+
+        val result = internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
+
+        assertEquals(activities, result)
+    }
+
+
     private companion object {
         private const val userId = 1L
         private val today = LocalDate.now()

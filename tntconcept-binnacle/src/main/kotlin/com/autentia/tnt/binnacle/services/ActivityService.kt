@@ -157,5 +157,6 @@ internal class ActivityService(
         activityRepository.deleteById(id)
     }
 
-    fun getProjectRoleActivities(projectRoleId: Long): List<Activity> = activityRepository.find(projectRoleId)
+    fun getProjectRoleActivities(projectRoleId: Long, userId: Long): List<Activity> =
+        activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
 }

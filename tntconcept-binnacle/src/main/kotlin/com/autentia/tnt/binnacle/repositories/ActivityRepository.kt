@@ -29,7 +29,7 @@ internal interface ActivityRepository {
 
     fun find(approvalState: ApprovalState): List<Activity>
 
-    fun find(projectRoleId: Long): List<Activity>
+    fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity>
 
     @Deprecated("Use findIntervals function instead")
     fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly>

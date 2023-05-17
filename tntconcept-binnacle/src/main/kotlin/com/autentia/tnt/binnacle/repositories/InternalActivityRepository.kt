@@ -6,7 +6,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.jpa.repository.criteria.Specification
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
-import java.util.Optional
+import java.util.*
 
 
 @Singleton
@@ -29,11 +29,15 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
     override fun find(approvalState: ApprovalState): List<Activity> {
-        throw NotImplementedError()
+        return activityDao.findByApprovalState(approvalState)
     }
 
-    override fun find(projectRoleId: Long): List<Activity> {
-        throw NotImplementedError()
+    fun findByApprovalStateAndUserId(approvalState: ApprovalState, userId: Long): List<Activity> {
+        return activityDao.findByApprovalStateAndUserId(approvalState, userId)
+    }
+
+    override fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity> {
+        return activityDao.findByProjectRoleIdAndUserId(projectRoleId, userId)
     }
 
     override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
@@ -66,18 +70,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
     fun findByIdAndUserId(id: Long, userId: Long): Activity? {
-        TODO("Not yet implemented")
-    }
-
-    fun findByApprovalState(approvalState: ApprovalState): List<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    fun findByApprovalStateAndUserId(approvalState: ApprovalState, userId: Long): List<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    fun findByProjectRoleIdAndUserId(id: Long, userId: Long): List<Activity> {
         TODO("Not yet implemented")
     }
 

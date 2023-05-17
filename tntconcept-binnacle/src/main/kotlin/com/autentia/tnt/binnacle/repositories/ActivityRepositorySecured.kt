@@ -47,15 +47,18 @@ internal class ActivityRepositorySecured(
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isAdmin()) {
-            internalActivityRepository.findByApprovalState(approvalState)
+            internalActivityRepository.find(approvalState)
         } else {
             internalActivityRepository.findByApprovalStateAndUserId(approvalState, authentication.id())
         }
     }
 
-    override fun find(projectRoleId: Long): List<Activity> {
+    override fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
     }
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {

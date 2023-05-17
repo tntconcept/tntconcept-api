@@ -113,12 +113,13 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `get activities by project role id`() {
+    fun `get activities by project role id and user id`() {
         val expectedProjectRoleActivities = listOf(activityWithoutImageSaved, activityWithImageToSave)
+        val userId = 1L
 
-        whenever(activityRepository.find(1L)).thenReturn(expectedProjectRoleActivities)
+        whenever(activityRepository.findByProjectRoleIdAndUserId(1L, userId)).thenReturn(expectedProjectRoleActivities)
 
-        val result = activityService.getProjectRoleActivities(1L)
+        val result = activityService.getProjectRoleActivities(1L, userId)
 
         assertEquals(expectedProjectRoleActivities, result)
     }
