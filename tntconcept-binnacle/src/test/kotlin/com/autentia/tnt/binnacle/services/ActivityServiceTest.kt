@@ -279,7 +279,7 @@ internal class ActivityServiceTest {
 
         assertThat(result).isEqualTo(activityToUpdate)
         verify(activityImageService).storeActivityImage(
-            activityToUpdate.id,
+            activityToUpdate.id!!,
             image,
             oldActivityInsertDate
         )
