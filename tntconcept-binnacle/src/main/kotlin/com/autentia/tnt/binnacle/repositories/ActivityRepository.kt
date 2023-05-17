@@ -16,8 +16,6 @@ internal interface ActivityRepository {
 
     fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity>
 
-    fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity>
-
     fun findByProjectRoleIds(
         start: LocalDateTime,
         end: LocalDateTime,

@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -41,7 +40,7 @@ class InternalActivityRepositoryTest {
 
         val result = internalActivityRepository.findAll(ActivityPredicates.ALL)
 
-        Assertions.assertEquals(activities, result)
+        assertEquals(activities, result)
     }
 
     @Test
@@ -128,6 +127,35 @@ class InternalActivityRepositoryTest {
         whenever(activityDao.findByProjectRoleIds(startDate, endDate, projectRoleIds, userId)).thenReturn(activities)
 
         val result = internalActivityRepository.findByProjectRoleIds(startDate, endDate, projectRoleIds, userId)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find between dates and by userIds should retrieve activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val userIds = listOf(userId)
+        val activities = listOf(
+            Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+            )
+        )
+
+        whenever(activityDao.find(startDate, endDate, userIds)).thenReturn(activities)
+
+        val result = internalActivityRepository.find(startDate, endDate, userIds)
 
         assertEquals(activities, result)
     }

@@ -25,11 +25,7 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
-        throw NotImplementedError()
-    }
-
-    override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
-        throw NotImplementedError()
+        return activityDao.find(startDate, endDate, userIds)
     }
 
     override fun find(approvalState: ApprovalState): List<Activity> {
@@ -44,14 +40,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         return activityDao.find(startDate, endDate, userId)
     }
 
-    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
-        throw NotImplementedError()
-    }
-
-    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
-        throw NotImplementedError()
-    }
-
     override fun findByProjectRoleIds(
         start: LocalDateTime,
         end: LocalDateTime,
@@ -59,6 +47,14 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         userId: Long
     ): List<Activity> {
         return activityDao.findByProjectRoleIds(start, end, projectRoleIds, userId)
+    }
+
+    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
+        throw NotImplementedError()
+    }
+
+    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
+        throw NotImplementedError()
     }
 
     override fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly> {
@@ -100,10 +96,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, id: Long): List<Activity> {
         TODO("Not yet implemented")
 
-    }
-
-    fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long, id: Long): List<Activity> {
-        TODO("Not yet implemented")
     }
 
     override fun save(activity: Activity): Activity {

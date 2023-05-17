@@ -92,11 +92,6 @@ internal class ActivityRepositorySecured(
         return internalActivityRepository.findOverlapped(startDate, endDate, authentication.id())
     }
 
-    override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
-        val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.find(start, end, projectRoleId, authentication.id())
-    }
-
     override fun findByProjectRoleIds(
         start: LocalDateTime,
         end: LocalDateTime,

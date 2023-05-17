@@ -351,37 +351,6 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `find activities should throw IllegalStateException`() {
-        val startDate = today.atTime(LocalTime.MIN)
-        val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
-        )
-        val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
-        )
-
-        whenever(securityService.authentication).thenReturn(Optional.empty())
-        whenever(internalActivityRepository.find(startDate, endDate, userId)).thenReturn(activities)
-
-        assertThrows<IllegalStateException> {
-            activityRepositorySecured.findWorkedMinutes(
-                startDate, endDate
-            )
-        }
-    }
-
-    @Test
     fun `save activity should throw IllegalStateException if user is not authenticated`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
@@ -718,41 +687,6 @@ internal class ActivityRepositorySecuredTest {
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findOverlapped(
                 startDate, endDate
-            )
-        }
-    }
-
-    @Test
-    fun `find intervals should return activities`() {
-        val startDate = today.atTime(LocalTime.MIN)
-        val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
-        )
-        val intervals = listOf(
-            createActivity().copy(start = today.atTime(10, 0, 0), end = today.atTime(12, 0, 0))
-        )
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(internalActivityRepository.find(startDate, endDate, projectRole.id, adminUserId)).thenReturn(intervals)
-
-        val result = activityRepositorySecured.find(
-            startDate, endDate, projectRole.id
-        )
-
-        assertEquals(intervals, result)
-    }
-
-    @Test
-    fun `find intervals should throw IllegalStateException`() {
-        val startDate = today.atTime(LocalTime.MIN)
-        val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
-        )
-        whenever(securityService.authentication).thenReturn(Optional.empty())
-
-        assertThrows<IllegalStateException> {
-            activityRepositorySecured.find(
-                startDate, endDate, projectRole.id
             )
         }
     }
