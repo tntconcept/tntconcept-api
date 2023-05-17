@@ -170,12 +170,26 @@ internal class ActivityRepositorySecuredTest {
 
         whenever(securityService.authentication).thenReturn(Optional.empty())
         assertThrows<IllegalStateException> {
-            activityRepositorySecured.findByProjectRoleIds(LocalDateTime.now(), LocalDateTime.now(), listOf(1L))
+            activityRepositorySecured.findByProjectRoleIds(LocalDateTime.now(), LocalDateTime.now(), listOf(1L), userId)
         }
     }
 
     @Test
-    fun `test findByProjectRoleIds should return only user activities`() {
+    fun `test findByProjectRoleIds should throw IllegalArgumentException if user id is not user logged and is not admin`() {
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.findByProjectRoleIds(
+                LocalDateTime.now(),
+                LocalDateTime.now(),
+                listOf(1L),
+                adminUserId
+            )
+        }
+    }
+
+    @Test
+    fun `test findByProjectRoleIds should return only user activities if user logged is not admin`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
@@ -196,7 +210,7 @@ internal class ActivityRepositorySecuredTest {
 
         assertEquals(
             listOf(userActivity),
-            activityRepositorySecured.findByProjectRoleIds(startDate, endDate, projectRoleIds)
+            activityRepositorySecured.findByProjectRoleIds(startDate, endDate, projectRoleIds, userId)
         )
     }
 

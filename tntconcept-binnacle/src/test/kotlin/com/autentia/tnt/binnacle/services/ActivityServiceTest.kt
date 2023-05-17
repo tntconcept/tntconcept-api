@@ -3,13 +3,7 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -29,7 +23,7 @@ import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.Date
+import java.util.*
 
 internal class ActivityServiceTest {
 
@@ -156,6 +150,32 @@ internal class ActivityServiceTest {
         doReturn(activities).whenever(activityRepository).findOfLatestProjects(timeInterval.start, timeInterval.end)
 
         assertEquals(activities, activityService.getActivitiesOfLatestProjects(timeInterval))
+    }
+
+    @Test
+    fun `get activities by project role ids with user id`() {
+        val userId = 1L
+        val startDate = LocalDate.of(2019, 1, 1)
+        val endDate = LocalDate.of(2019, 1, 31)
+        val projectRoles = listOf(1L)
+        val timeInterval = TimeInterval.of(
+            startDate.atTime(LocalTime.MIN),
+            endDate.atTime(LocalTime.MAX)
+        )
+        val expectedActivities = activities.map(Activity::toDomain)
+
+        whenever(
+            activityRepository.findByProjectRoleIds(
+                startDate.atTime(LocalTime.MIN),
+                endDate.atTime(LocalTime.MAX),
+                projectRoles,
+                userId
+            )
+        ).thenReturn(activities)
+
+        val result = activityService.getActivitiesByProjectRoleIds(timeInterval, projectRoles, userId)
+
+        assertEquals(expectedActivities, result)
     }
 
     @Test

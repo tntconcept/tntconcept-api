@@ -5,14 +5,7 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodNotValidException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
+import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -45,16 +38,20 @@ internal class ActivityValidator(
 
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(Activity.emptyActivity(activityToCreate.projectRole, user), activityToCreate)
+        checkIfIsExceedingMaxHoursForRole(
+            Activity.emptyActivity(activityToCreate.projectRole, user),
+            activityToCreate,
+            user.id
+        )
     }
 
-    private fun checkIfIsExceedingMaxHoursForRole(currentActivity: Activity, activityToUpdate: Activity) {
+    private fun checkIfIsExceedingMaxHoursForRole(currentActivity: Activity, activityToUpdate: Activity, userId: Long) {
         checkIfIsExceedingMaxHoursForRole(
-            currentActivity, activityToUpdate, activityToUpdate.getYearOfStart()
+            currentActivity, activityToUpdate, activityToUpdate.getYearOfStart(), userId
         )
         if (activityToUpdate.getYearOfStart() != activityToUpdate.getYearOfEnd()) {
             checkIfIsExceedingMaxHoursForRole(
-                currentActivity, activityToUpdate, activityToUpdate.timeInterval.end.year
+                currentActivity, activityToUpdate, activityToUpdate.timeInterval.end.year, userId
             )
         }
     }
@@ -62,7 +59,8 @@ internal class ActivityValidator(
     private fun checkIfIsExceedingMaxHoursForRole(
         currentActivity: Activity,
         activityToUpdate: Activity,
-        year: Int
+        year: Int,
+        userId: Long
     ) {
         if (activityToUpdate.projectRole.maxAllowed > 0) {
 
@@ -73,7 +71,11 @@ internal class ActivityValidator(
             val currentActivityDuration = currentActivity.getDurationByCountingWorkableDays(yearCalendar)
             val activityToUpdateDuration = activityToUpdate.getDurationByCountingWorkableDays(yearCalendar)
             val activities =
-                activityService.getActivitiesByProjectRoleIds(yearTimeInterval, listOf(activityToUpdate.projectRole.id))
+                activityService.getActivitiesByProjectRoleIds(
+                    yearTimeInterval,
+                    listOf(activityToUpdate.projectRole.id),
+                    userId
+                )
             val totalRegisteredDurationForThisRole =
                 activities.sumOf { it.getDurationByCountingWorkableDays(yearCalendar) }
 
@@ -124,7 +126,7 @@ internal class ActivityValidator(
 
             activityToUpdate.isMoreThanOneDay() && activityToUpdate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
         }
-        checkIfIsExceedingMaxHoursForRole(currentActivity, activityToUpdate)
+        checkIfIsExceedingMaxHoursForRole(currentActivity, activityToUpdate, user.id)
     }
 
 

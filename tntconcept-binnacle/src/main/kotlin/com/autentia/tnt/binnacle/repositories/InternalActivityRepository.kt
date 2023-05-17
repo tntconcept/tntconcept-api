@@ -6,7 +6,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.jpa.repository.criteria.Specification
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
-import java.util.Optional
+import java.util.*
 
 
 @Singleton
@@ -17,9 +17,9 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
 
     override fun findById(id: Long): Activity? {
         val activity: Optional<Activity> = activityDao.findById(id)
-        return if (activity.isPresent){
+        return if (activity.isPresent) {
             activity.get()
-        }else {
+        } else {
             null
         }
     }
@@ -45,14 +45,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
     override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
-        throw NotImplementedError()
-    }
-
-    override fun findByProjectRoleIds(
-        start: LocalDateTime,
-        end: LocalDateTime,
-        projectRoleIds: List<Long>
-    ): List<Activity> {
         throw NotImplementedError()
     }
 
@@ -109,9 +101,13 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         TODO("Not yet implemented")
     }
 
-    fun findByProjectRoleIds(start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>, id: Long): List<Activity> {
-        TODO("Not yet implemented")
-
+    override fun findByProjectRoleIds(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectRoleIds: List<Long>,
+        userId: Long
+    ): List<Activity> {
+        return activityDao.findByProjectRoleIds(start, end, projectRoleIds, userId)
     }
 
     override fun save(activity: Activity): Activity {
