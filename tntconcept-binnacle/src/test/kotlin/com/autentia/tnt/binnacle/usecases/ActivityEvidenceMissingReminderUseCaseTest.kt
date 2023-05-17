@@ -14,12 +14,12 @@ import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
 
-class ActivityEvidenceOnceMissingReminderUseCaseTest {
+class ActivityEvidenceMissingReminderUseCaseTest {
 
     private val activityRepository: ActivityRepository = mock()
     private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService = mock()
     private val userService: UserService = mock()
-    private val activityEvidenceOnceMissingReminderUseCase = ActivityEvidenceOnceMissingReminderUseCase(
+    private val activityEvidenceMissingReminderUseCase = ActivityEvidenceMissingReminderUseCase(
         activityRepository, activityEvidenceMissingMailService, userService
     )
 
@@ -41,7 +41,7 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
         whenever(activityRepository.findAll(predicate)).thenReturn(listOfActivities)
 
         // When: Use case is called
-        activityEvidenceOnceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders()
 
         // Then: Verify email is sent for role, user and project
         verify(activityEvidenceMissingMailService).sendEmail(
@@ -84,7 +84,7 @@ class ActivityEvidenceOnceMissingReminderUseCaseTest {
         whenever(activityRepository.findAll(predicate)).thenReturn(listOf())
 
         // When: Use cas is called
-        activityEvidenceOnceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders()
 
         // Then: The email services is not called
         verifyNoInteractions(activityEvidenceMissingMailService)

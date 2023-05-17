@@ -17,7 +17,7 @@ import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
-class ActivityEvidenceOnceMissingReminderUseCase @Inject internal constructor(
+class ActivityEvidenceMissingReminderUseCase @Inject internal constructor(
     @param:Named("Internal") private val activityRepository: ActivityRepository,
     private val activityEvidenceMissingMailService: ActivityEvidenceMissingMailService,
     private val userService: UserService,
