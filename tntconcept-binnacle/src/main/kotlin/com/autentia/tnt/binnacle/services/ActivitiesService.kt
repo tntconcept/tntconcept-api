@@ -10,6 +10,7 @@ import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.LocalTime
@@ -19,6 +20,7 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivitiesService(
     private val activityRepository: ActivityRepository,
+    @param:Named("Internal") private val internalActivityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService,
     private val activityRequestBodyConverter: ActivitiesRequestBodyConverter,
@@ -43,11 +45,11 @@ internal class ActivitiesService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesBetweenDatesWithoutSecurity(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivitiesResponse> {
+    fun getUserActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivitiesResponse> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
-        return activityRepository
-            .findWithoutSecurity(startDateMinHour, endDateMaxHour, userId)
+        return internalActivityRepository
+            .findByUserId(startDateMinHour, endDateMaxHour, userId)
             .map { activityResponseConverter.mapActivityToActivityResponse(it) }
     }
 

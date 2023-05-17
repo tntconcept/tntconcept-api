@@ -10,6 +10,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.LocalTime
 import javax.transaction.Transactional
@@ -17,6 +18,7 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivityService(
     private val activityRepository: ActivityRepository,
+    @param:Named("Internal") private val internalActivityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService
 ) {
@@ -47,7 +49,7 @@ internal class ActivityService(
     fun getUserActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
         val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
-        return activityRepository.findWithoutSecurity(startDateMinHour, endDateMaxHour, userId)
+        return internalActivityRepository.findByUserId(startDateMinHour, endDateMaxHour, userId)
     }
 
     @Transactional

@@ -44,10 +44,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         return activityDao.find(startDate, endDate, userId)
     }
 
-    override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
-        throw NotImplementedError()
-    }
-
     override fun findByProjectRoleIds(
         start: LocalDateTime,
         end: LocalDateTime,

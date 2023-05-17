@@ -13,6 +13,7 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,10 +35,12 @@ import java.util.Date
 internal class ActivityServiceTest {
 
     private val activityRepository = mock<ActivityRepository>()
+    private val internalActivityRepository = mock<InternalActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
     private val activityService = ActivityService(
         activityRepository,
+        internalActivityRepository,
         projectRoleRepository,
         activityImageService
     )
@@ -103,7 +106,7 @@ internal class ActivityServiceTest {
         val userId = 1L
 
         whenever(
-            activityRepository.findWithoutSecurity(
+            internalActivityRepository.findByUserId(
                 startDate.atTime(LocalTime.MIN),
                 endDate.atTime(LocalTime.MAX),
                 userId
