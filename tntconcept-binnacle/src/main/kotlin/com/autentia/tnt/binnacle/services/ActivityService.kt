@@ -76,8 +76,8 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesOfLatestProjects(timeInterval: TimeInterval) =
-        activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end)
+    fun getActivitiesOfLatestProjects(timeInterval: TimeInterval, userId: Long) =
+        activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(

@@ -23,7 +23,7 @@ internal interface ActivityRepository {
         userId: Long
     ): List<Activity>
 
-    fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity>
+    fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity>
 
     fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity>
 

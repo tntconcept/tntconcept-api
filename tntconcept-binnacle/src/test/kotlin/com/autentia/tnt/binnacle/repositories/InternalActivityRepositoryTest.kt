@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 
+import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -21,18 +22,7 @@ class InternalActivityRepositoryTest {
     @Test
     fun `find all activities`() {
         val activities = listOf(
-            Activity(
-                id = 2L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA
-            )
+            createActivity()
         )
         val activitySpecification = ActivityPredicates.ALL
 
@@ -46,18 +36,7 @@ class InternalActivityRepositoryTest {
     @Test
     fun `find activity by id`() {
         val activityId = 1L
-        val activity = Activity(
-            id = activityId,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = 2L,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
-        )
+        val activity = createActivity()
         whenever(activityDao.findById(activityId)).thenReturn(Optional.of(activity))
 
         val result = internalActivityRepository.findById(activityId)
@@ -83,18 +62,7 @@ class InternalActivityRepositoryTest {
             LocalTime.MAX
         )
         val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
+            createActivity()
         )
         whenever(activityDao.find(startDate, endDate, userId)).thenReturn(activities)
 
@@ -111,18 +79,7 @@ class InternalActivityRepositoryTest {
         )
         val projectRoleIds = listOf(1L)
         val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
+            createActivity()
         )
         whenever(activityDao.findByProjectRoleIds(startDate, endDate, projectRoleIds, userId)).thenReturn(activities)
 
@@ -138,20 +95,7 @@ class InternalActivityRepositoryTest {
             LocalTime.MAX
         )
         val userIds = listOf(userId)
-        val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
-        )
+        val activities = listOf(createActivity())
 
         whenever(activityDao.find(startDate, endDate, userIds)).thenReturn(activities)
 
@@ -162,20 +106,7 @@ class InternalActivityRepositoryTest {
 
     @Test
     fun `find by approval state should retrieve activities`() {
-        val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.ACCEPTED,
-            )
-        )
+        val activities = listOf(createActivity())
         val approvalState = ApprovalState.ACCEPTED
 
         whenever(activityDao.findByApprovalState(approvalState)).thenReturn(activities)
@@ -187,20 +118,7 @@ class InternalActivityRepositoryTest {
 
     @Test
     fun `find by approval state and user id should retrieve activities`() {
-        val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.ACCEPTED,
-            )
-        )
+        val activities = listOf(createActivity(approvalState = ApprovalState.ACCEPTED))
         val approvalState = ApprovalState.ACCEPTED
 
         whenever(activityDao.findByApprovalStateAndUserId(approvalState, userId)).thenReturn(activities)
@@ -212,25 +130,30 @@ class InternalActivityRepositoryTest {
 
     @Test
     fun `find by project role and user id should retrieve activities`() {
-        val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.ACCEPTED,
-            )
-        )
+        val activities = listOf(createActivity())
         val projectRoleId = 1L
 
         whenever(activityDao.findByProjectRoleIdAndUserId(projectRoleId, userId)).thenReturn(activities)
 
         val result = internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find of latest projects by user id should retrieve activities`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(createActivity().copy(
+            start = startDate,
+            end = endDate
+        ))
+
+        whenever(activityDao.findOfLatestProjects(startDate, endDate, userId)).thenReturn(activities)
+
+        val result = internalActivityRepository.findOfLatestProjects(startDate, endDate, userId)
 
         assertEquals(activities, result)
     }

@@ -150,10 +150,11 @@ internal class ActivityServiceTest {
 
     @Test
     fun testGetActivitiesOfLatestProjects() {
-
-        doReturn(activities).whenever(activityRepository).findOfLatestProjects(timeInterval.start, timeInterval.end)
-
-        assertEquals(activities, activityService.getActivitiesOfLatestProjects(timeInterval))
+        val userId = 1L
+        whenever(activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)).thenReturn(
+            activities
+        )
+        assertEquals(activities, activityService.getActivitiesOfLatestProjects(timeInterval, userId))
     }
 
     @Test
