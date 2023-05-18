@@ -11,5 +11,6 @@ data class ActivityFilterDTO(
     val approvalState: ApprovalState? = null,
     val organizationId: Long? = null,
     val projectId: Long? = null,
-    val roleId: Long? = null
+    val roleId: Long? = null,
+    val userId: Long? = null,
 )

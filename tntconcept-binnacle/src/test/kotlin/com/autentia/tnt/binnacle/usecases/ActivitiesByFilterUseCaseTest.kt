@@ -124,19 +124,22 @@ internal class ActivitiesByFilterUseCaseTest {
     @Test
     fun `get activities when multiple parameters`() {
         val activityFilterDTO = ActivityFilterDTO(
-            startDate = startDate,
-            endDate = endDate,
-            approvalState = null,
-            organizationId = 1L,
-            projectId = 1L,
-            roleId = null
+            startDate,
+            endDate,
+            null,
+            1L,
+            1L,
+            null,
+            3L,
         )
         val compositedSpecification =
             PredicateBuilder.and(
                 PredicateBuilder.and(
-                    ActivityStartDateLessOrEqualSpecification(activityFilterDTO.endDate!!),
-                    ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.startDate!!)
-                ), ActivityProjectIdSpecification(activityFilterDTO.projectId!!)
+                    PredicateBuilder.and(
+                        ActivityStartDateLessOrEqualSpecification(activityFilterDTO.endDate!!),
+                        ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.startDate!!)
+                    ), ActivityProjectIdSpecification(activityFilterDTO.projectId!!)
+                ), ActivityUserIdSpecification(activityFilterDTO.userId!!)
             )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
