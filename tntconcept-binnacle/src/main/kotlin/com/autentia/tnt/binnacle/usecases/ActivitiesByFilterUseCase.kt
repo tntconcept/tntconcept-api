@@ -11,6 +11,7 @@ import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.orga
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.projectId
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.roleId
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.startDateLessThanOrEqualTo
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.userId
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.data.jpa.repository.criteria.Specification
@@ -48,6 +49,10 @@ class ActivitiesByFilterUseCase internal constructor(
             predicate = PredicateBuilder.and(predicate, projectId(activityFilter.projectId))
         } else if (activityFilter.organizationId !== null) {
             predicate = PredicateBuilder.and(predicate, organizationId(activityFilter.organizationId))
+        }
+
+        if (activityFilter.userId !== null) {
+            predicate = PredicateBuilder.and(predicate, userId(activityFilter.userId))
         }
         return predicate
     }
