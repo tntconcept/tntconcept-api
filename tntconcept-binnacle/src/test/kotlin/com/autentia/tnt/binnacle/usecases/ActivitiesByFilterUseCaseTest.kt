@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -19,7 +20,7 @@ import java.time.LocalDate
 
 internal class ActivitiesByFilterUseCaseTest {
     private val activityService = mock<ActivityService>()
-    private val activityResponseConverter = mock<ActivityResponseConverter>()
+    private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
     private val activitiesByFilterUseCase =
         ActivitiesByFilterUseCase(activityService, activityResponseConverter)
 
@@ -66,11 +67,11 @@ internal class ActivitiesByFilterUseCaseTest {
             )
 
         whenever(activityService.getActivities(compositedSpecification)).thenReturn(listOf(activity))
-        whenever(activityResponseConverter.toActivityResponseDTO(activity)).thenReturn(activitiesResponseDTO)
 
         val activities = activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        val expectedActivity = activitiesResponseDTO
+        val expectedActivity = activityResponseConverter.toActivityResponseDTO(activity)
+
         verify(activityService).getActivities(compositedSpecification)
         assertThat(activities).containsExactly(expectedActivity)
     }
