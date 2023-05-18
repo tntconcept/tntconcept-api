@@ -32,7 +32,7 @@ internal class ActivityValidator(
             projectRoleDb == null -> throw ProjectRoleNotFoundException(activityToCreate.projectRole.id)
             !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
-            isOverlappingAnotherActivityTime(activityToCreate) -> throw OverlapsAnotherTimeException()
+            isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
 
@@ -120,7 +120,7 @@ internal class ActivityValidator(
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityToUpdate.projectRole.id)
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
-            isOverlappingAnotherActivityTime(activityToUpdate) -> throw OverlapsAnotherTimeException()
+            isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToUpdate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
 
@@ -149,12 +149,13 @@ internal class ActivityValidator(
     }
 
     private fun isOverlappingAnotherActivityTime(
-        activity: Activity
+        activity: Activity,
+        userId: Long
     ): Boolean {
         if (activity.duration == 0) {
             return false
         }
-        val activities = activityRepository.findOverlapped(activity.getStart(), activity.getEnd())
+        val activities = activityRepository.findOverlapped(activity.getStart(), activity.getEnd(), userId)
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
     }
 

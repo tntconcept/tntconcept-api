@@ -138,7 +138,7 @@ internal class ActivityValidatorTest {
 
             whenever(
                 activityRepository.findOverlapped(
-                    newActivity.getStart(), newActivity.getEnd()
+                    newActivity.getStart(), newActivity.getEnd(), user.id
                 )
             ).thenReturn(
                 listOf(
@@ -446,7 +446,7 @@ internal class ActivityValidatorTest {
 
             given(
                 activityRepository.findOverlapped(
-                    newActivity.getStart(), newActivity.getEnd()
+                    newActivity.getStart(), newActivity.getEnd(), user.id
                 )
             ).willReturn(
                 listOf(
@@ -668,6 +668,7 @@ internal class ActivityValidatorTest {
                 activityRepository.findOverlapped(
                     LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
                     LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
+                    user.id
                 )
             ).willReturn(
                 listOf(

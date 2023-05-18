@@ -198,6 +198,32 @@ class InternalActivityRepositoryTest {
         assertEquals(activities, result)
     }
 
+    @Test
+    fun `find overlapped should retrieve activities` () {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        val activities = listOf(createActivity())
+
+        whenever(activityDao.findOverlapped(startDate, endDate, userId)).thenReturn(activities)
+
+        val result = internalActivityRepository.findOverlapped(startDate, endDate, userId)
+
+        assertEquals(activities, result)
+    }
+
+    @Test
+    fun `find by id and user id should retrieve activity`() {
+        val activityId = 1L
+        val activity = createActivity(activityId)
+
+        whenever(activityDao.findByIdAndUserId(activityId, userId)).thenReturn(activity)
+
+        val result = internalActivityRepository.findByIdAndUserId(activityId, userId)
+
+        assertEquals(activity, result)
+    }
 
     private companion object {
         private const val userId = 1L

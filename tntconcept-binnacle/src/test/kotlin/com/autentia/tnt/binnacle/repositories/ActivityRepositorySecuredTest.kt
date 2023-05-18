@@ -715,7 +715,7 @@ internal class ActivityRepositorySecuredTest {
         whenever(internalActivityRepository.findOverlapped(startDate, endDate, adminUserId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.findOverlapped(
-            startDate, endDate
+            startDate, endDate, adminUserId
         )
 
         assertEquals(activities, result)
@@ -731,7 +731,22 @@ internal class ActivityRepositorySecuredTest {
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findOverlapped(
-                startDate, endDate
+                startDate, endDate, userId
+            )
+        }
+    }
+
+    @Test
+    fun `find overlapped should throw IllegalArgumentException if user id differs from logged user and is not admin`() {
+        val startDate = today.atTime(LocalTime.MIN)
+        val endDate = today.plusDays(30L).atTime(
+            LocalTime.MAX
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.findOverlapped(
+                startDate, endDate, adminUserId
             )
         }
     }

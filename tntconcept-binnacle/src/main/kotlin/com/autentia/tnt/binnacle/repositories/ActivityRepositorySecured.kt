@@ -102,15 +102,18 @@ internal class ActivityRepositorySecured(
         userId: Long
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()){
+        if (authentication.isNotAdmin()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)
     }
 
-    override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
+    override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findOverlapped(startDate, endDate, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get overlapped activities" }
+        }
+        return internalActivityRepository.findOverlapped(startDate, endDate, userId)
     }
 
     override fun findByProjectRoleIds(
