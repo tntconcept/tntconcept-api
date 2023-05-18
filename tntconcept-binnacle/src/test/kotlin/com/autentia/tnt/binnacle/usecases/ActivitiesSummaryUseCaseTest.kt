@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.converters.ActivitySummaryConverter
 import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.DailyWorkingTime
 import com.autentia.tnt.binnacle.core.domain.DateInterval
-import com.autentia.tnt.binnacle.entities.dto.ActivitySummaryDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,7 +17,7 @@ import java.time.LocalDate
 class ActivitiesSummaryUseCaseTest {
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val activityService = mock<ActivityService>()
-    private val activitiesSummaryConverter = mock<ActivitySummaryConverter>()
+    private val activitiesSummaryConverter = ActivitySummaryConverter()
 
     private val activitiesSummaryUseCase = ActivitiesSummaryUseCase(
         activityCalendarService,
@@ -38,17 +37,11 @@ class ActivitiesSummaryUseCaseTest {
         val activitiesDomain: List<Activity> =
             activitiesEntity.map(com.autentia.tnt.binnacle.entities.Activity::toDomain)
         val dailyWorkingTime = listOf(DailyWorkingTime(start, BigDecimal(10)))
-        val activitiesSummaryDto = listOf(
-            ActivitySummaryDTO(
-                start,
-                BigDecimal(10)
-            )
-        )
+        val activitiesSummaryDto = activitiesSummaryConverter.toListActivitySummaryDTO(dailyWorkingTime)
         whenever(activityService.getActivitiesBetweenDates(dateInterval)).thenReturn(activitiesEntity)
         whenever(activityCalendarService.getActivityDurationSummaryInHours(activitiesDomain, dateInterval)).thenReturn(
             dailyWorkingTime
         )
-        whenever(activitiesSummaryConverter.toListActivitySummaryDTO(dailyWorkingTime)).thenReturn(activitiesSummaryDto)
 
         val result = activitiesSummaryUseCase.getActivitiesSummary(start, end)
 
