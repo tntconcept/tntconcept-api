@@ -15,9 +15,9 @@ internal class UserController(
     private val findByUserNameUseCase: FindByUserNameUseCase,
     private val usersRetrievalUseCase: UsersRetrievalUseCase
 ) {
-    @Operation(summary = "Retrieves the list of users")
+    @Operation(summary = "Retrieves the list of active users")
     @Get
-    internal fun get(): List<UserResponseDTO> = usersRetrievalUseCase.getAllUsers()
+    internal fun get(): List<UserResponseDTO> = usersRetrievalUseCase.getAllActiveUsers()
 
     @Operation(summary = "Retrieves the logged user")
     @Get("/me")

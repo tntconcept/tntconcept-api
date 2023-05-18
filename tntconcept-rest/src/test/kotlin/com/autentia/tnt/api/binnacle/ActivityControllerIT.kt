@@ -121,6 +121,7 @@ internal class ActivityControllerIT {
         val organizationId = 1L
         val projectId = 1L
         val roleId = 1L
+        val userId = 5L
         val activitiesFilter =
             ActivityFilterDTO(
                 startDate,
@@ -128,7 +129,8 @@ internal class ActivityControllerIT {
                 ApprovalState.PENDING,
                 organizationId,
                 projectId,
-                roleId
+                roleId,
+                userId,
             )
         val activities = listOf(ACTIVITY_RESPONSE_DTO)
         whenever(activitiesByFilterUseCase.getActivities(activitiesFilter)).thenReturn(activities)
@@ -141,7 +143,8 @@ internal class ActivityControllerIT {
                         "&endDate=${endDate.toJson()}" +
                         "&organizationId=${organizationId}" +
                         "&projectId=${projectId}" +
-                        "&roleId=${roleId}"
+                        "&roleId=${roleId}" +
+                        "&userId=${userId}"
             ),
         )
 

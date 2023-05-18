@@ -30,7 +30,9 @@ internal class UserRepositorySecured(
         return if(authentication.isAdmin()) {
             userDao.findByActiveTrue()
         }else{
-            emptyList()
+            val user = userDao.findById(authentication.id())
+            check(user.isPresent) { "Authenticated user not found" }
+            listOf(user.get())
         }
     }
 

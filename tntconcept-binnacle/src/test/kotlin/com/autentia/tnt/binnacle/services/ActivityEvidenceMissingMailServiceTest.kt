@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import io.micronaut.context.MessageSource
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
@@ -32,12 +33,13 @@ internal class ActivityEvidenceMissingMailServiceTest {
 
             val organizationName = "Organization"
             val projectName = "Test project"
-            val roles = setOf("Role one")
+            val role = "Role one"
+            val evidence = RequireEvidence.WEEKLY
             val email = "userEmail@email.com"
             val locale = Locale.ENGLISH
 
             // When
-            sut.sendEmail(organizationName, projectName, roles, email, locale)
+            sut.sendEmail(organizationName, projectName, role, evidence, email, locale)
 
             // Then
             verifyNoInteractions(mailService, messageBuilder)
@@ -51,17 +53,18 @@ internal class ActivityEvidenceMissingMailServiceTest {
 
             val organizationName = "Organization"
             val projectName = "Test project"
-            val roles = setOf("Role one")
+            val role = "Role one"
             val toUserEmail = "userEmail@email.com"
             val locale = Locale.ENGLISH
+            val evidence = RequireEvidence.WEEKLY
 
-            doReturn("Subject").`when`(messageBuilder).buildSubject(locale, organizationName, projectName)
-            doReturn("Body").`when`(messageBuilder).buildBody(locale, organizationName, projectName, roles)
+            doReturn(ActivityEvidenceMissingMessageContent("Subject", "Body")).`when`(messageBuilder)
+                .buildMessage(locale, organizationName, projectName, role, evidence)
             doReturn(Result.success("OK")).`when`(mailService)
                 .send(anyString(), anyList(), anyString(), anyString(), anyOrNull())
 
             // When
-            sut.sendEmail(organizationName, projectName, roles, toUserEmail, locale)
+            sut.sendEmail(organizationName, projectName, role, evidence, toUserEmail, locale)
 
             // Then
             val expectedFrom = "fromTest@email.com"
@@ -70,16 +73,11 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val expectedBody = "Body"
 
             verify(mailService).send(
-                eq(expectedFrom),
-                eq(expectedTo),
-                eq(expectedSubject),
-                eq(expectedBody),
-                anyOrNull()
+                eq(expectedFrom), eq(expectedTo), eq(expectedSubject), eq(expectedBody), anyOrNull()
             )
-            verify(messageBuilder).buildSubject(locale, organizationName, projectName)
-            verify(messageBuilder).buildBody(locale, organizationName, projectName, roles)
-        }
 
+            verify(messageBuilder).buildMessage(locale, organizationName, projectName, role, evidence)
+        }
     }
 
     @Nested
@@ -93,89 +91,41 @@ internal class ActivityEvidenceMissingMailServiceTest {
         fun resetMocks() = reset(messageSource)
 
         @Test
-        fun `should build localized email subject`() {
+        fun `should build localized email content`() {
             // Given
             val locale = Locale.forLanguageTag("es")
             val organizationName = "Organization"
             val projectName = "Project"
+            val evidence = RequireEvidence.WEEKLY
+            val roleName = "Role one"
 
-            doReturn(Optional.of("Falta evidencia $organizationName - $projectName")).`when`(messageSource)
-                .getMessage("mail.request.evidenceActivity.subject", locale, organizationName, projectName)
+            val subjectMsg = "Sujeto de la evidencia"
+            val bodyMsg = "Cuerpo de la evidencia"
+
+            doReturn(Optional.of(subjectMsg)).`when`(messageSource)
+                .getMessage("mail.request.evidenceActivity.subject", locale, organizationName, projectName, roleName)
+
+            doReturn(Optional.of(bodyMsg)).`when`(messageSource)
+                .getMessage("mail.request.evidenceActivity.template", locale, "weekly", projectName, roleName)
+
+            doReturn(Optional.of("weekly")).`when`(messageSource)
+                .getMessage("mail.request.evidenceActivity.frequency.weekly", locale)
 
             // When
-            val subject = sut.buildSubject(locale, organizationName, projectName)
+            val message = sut.buildMessage(locale, organizationName, projectName, roleName, evidence)
 
             // Then
-            assertThat(subject).isEqualTo("Falta evidencia $organizationName - $projectName")
+            assertThat(message.subject).isEqualTo(subjectMsg)
+            assertThat(message.body).isEqualTo(bodyMsg)
+
             verify(messageSource).getMessage(
-                "mail.request.evidenceActivity.subject",
-                locale,
-                organizationName,
-                projectName
+                "mail.request.evidenceActivity.subject", locale, organizationName, projectName, roleName
             )
-        }
-
-        @Test
-        fun `should build localized email body with one role`() {
-            // Given
-            val locale = Locale.forLanguageTag("es")
-            val organizationName = "Organization"
-            val projectName = "Project"
-            val roleNames = setOf("Role one")
-
-            val evidenceBody = """
-                Cada día es necesario adjuntar al menos una evidencia de tu participación en el proyecto.
-                Como por ejemplo una captura de pantalla o foto de tu histórico en el repositorio de código o de tus issues en la herramienta de seguimiento de proyecto.
-                Organization - Project - Role one
-                ¡Gracias!
-            """.trimIndent()
-
-            doReturn(Optional.of(evidenceBody)).`when`(messageSource)
-                .getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
-
-            // When
-            val body = sut.buildBody(locale, organizationName, projectName, roleNames)
-
-            // Then
-            assertThat(body).isEqualTo(evidenceBody)
             verify(messageSource).getMessage(
-                "mail.request.evidenceActivity.template",
-                locale,
-                "Organization - Project - Role one"
+                "mail.request.evidenceActivity.template", locale, "weekly", projectName, roleName
             )
+            verify(messageSource).getMessage("mail.request.evidenceActivity.frequency.weekly", locale)
         }
 
-        @Test
-        fun `should build localized email body with multiple roles`() {
-            // Given
-            val locale = Locale.forLanguageTag("es")
-            val organizationName = "Organization"
-            val projectName = "Project"
-            val roleNames = setOf("Role one", "Role two", "Role three")
-
-            val evidenceBody = """
-                Cada día es necesario adjuntar al menos una evidencia de tu participación en el proyecto.
-                Como por ejemplo una captura de pantalla o foto de tu histórico en el repositorio de código o de tus issues en la herramienta de seguimiento de proyecto.
-                Organization - Project - Role one
-                Organization - Project - Role two
-                Organization - Project - Role three
-                ¡Gracias!
-            """.trimIndent()
-
-            doReturn(Optional.of(evidenceBody)).`when`(messageSource)
-                .getMessage(eq("mail.request.evidenceActivity.template"), eq(locale), anyString())
-
-            // When
-            val body = sut.buildBody(locale, organizationName, projectName, roleNames)
-
-            // Then
-            val expectedRoleLines = """
-                Organization - Project - Role one
-                Organization - Project - Role two
-                Organization - Project - Role three
-            """.trimIndent()
-            assertThat(body).isEqualTo(evidenceBody)
-            verify(messageSource).getMessage("mail.request.evidenceActivity.template", locale, expectedRoleLines)
-        }
     }
 }
