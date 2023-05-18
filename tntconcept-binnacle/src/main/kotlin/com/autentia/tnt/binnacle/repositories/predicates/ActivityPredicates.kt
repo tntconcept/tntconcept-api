@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.repositories.predicates
 
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.*
 import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDate
@@ -14,8 +15,8 @@ internal object ActivityPredicates {
 
     internal fun roleId(roleId: Long) = ActivityRoleIdSpecification(roleId)
     internal fun startDateLessThanOrEqualTo(date: LocalDate) = ActivityStartDateLessOrEqualSpecification(date)
-    internal fun startDateBetweenDates(startDate: LocalDate, endDate: LocalDate) =
-        ActivityStartDateBetweenDatesSpecification(startDate, endDate)
+
+    internal fun startDateBetweenDates(dateInterval: DateInterval) = ActivityStartDateBetweenSpecification(dateInterval)
 
     internal fun endDateGreaterThanOrEqualTo(date: LocalDate) = ActivityEndDateGreaterOrEqualSpecification(date)
     internal fun projectId(projectId: Long) = ActivityProjectIdSpecification(projectId)
@@ -25,7 +26,9 @@ internal object ActivityPredicates {
     internal fun projectRoleRequiresEvidence(requireEvidence: RequireEvidence) =
         ActivityProjectRoleRequiresEvidenceSpecification(requireEvidence)
 
-    internal fun withoutEvidence() = ActivityMissingEvidenceSpecification()
+    internal fun missingEvidenceWeekly() = ActivityMissingEvidenceWeeklySpecification()
+
+    internal fun missingEvidenceOnce() = ActivityMissingEvidenceOnceSpecification()
     internal fun hasNotEvidence() = ActivityHasNotEvidenceSpecification()
 
     internal fun belongsToUsers(userIds: List<Long>) = ActivityBelongsToUsers(userIds)
@@ -86,24 +89,79 @@ class ActivityProjectRoleRequiresEvidenceSpecification(private val requireEviden
     }
 }
 
-class ActivityMissingEvidenceSpecification : Specification<Activity> {
+class ActivityMissingEvidenceOnceSpecification : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate? {
-        val activitiesWithoutOnce = getActivitiesWithoutOnce(criteriaBuilder, root)
-        val activitiesWithoutWeekly = criteriaBuilder.and(
-            criteriaBuilder.equal(
-                root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
-                RequireEvidence.WEEKLY
-            ),
-            getNotExistsSubQuery(root, query, criteriaBuilder)
-        )
-        return criteriaBuilder.or(activitiesWithoutOnce, activitiesWithoutWeekly)
+        return getActivitiesWithoutOnce(root, criteriaBuilder);
     }
 
-    private fun getNotExistsSubQuery(
+    private fun getActivitiesWithoutOnce(
+        root: Root<Activity>,
+        criteriaBuilder: CriteriaBuilder,
+    ): Predicate? = criteriaBuilder.and(
+        requiresEvidenceType(root, criteriaBuilder, RequireEvidence.ONCE),
+        criteriaBuilder.not(hasEvidenceCondition(root, criteriaBuilder))
+    )
+
+    private fun requiresEvidenceType(
+        root: Root<Activity>,
+        criteriaBuilder: CriteriaBuilder,
+        requireEvidence: RequireEvidence
+    ): Predicate? = criteriaBuilder.equal(
+        root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
+        requireEvidence
+    )
+
+    private fun hasEvidenceCondition(
+        root: Root<Activity>,
+        criteriaBuilder: CriteriaBuilder,
+    ): Predicate? {
+        return criteriaBuilder.or(
+            criteriaBuilder.isTrue(root.get("hasEvidences")),
+            criteriaBuilder.like(root.get("description"), "###Autocreated evidence###%")
+        )
+    }
+}
+
+class ActivityStartDateBetweenSpecification(private val dateInterval: DateInterval) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.between(
+            root.get("start"),
+            criteriaBuilder.literal(dateInterval.start),
+            criteriaBuilder.literal(dateInterval.end)
+        )
+    }
+
+}
+
+class ActivityMissingEvidenceWeeklySpecification : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return getActivitiesWithoutWeekly(criteriaBuilder, root, query)
+    }
+
+    private fun getActivitiesWithoutWeekly(
+        criteriaBuilder: CriteriaBuilder,
+        root: Root<Activity>,
+        query: CriteriaQuery<*>
+    ): Predicate? {
+        return criteriaBuilder.and(
+            requiresEvidenceType(root, criteriaBuilder, RequireEvidence.WEEKLY),
+            notExistsActivityWithEvidenceInWeekPeriod(root, query, criteriaBuilder)
+        )
+    }
+
+    private fun notExistsActivityWithEvidenceInWeekPeriod(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder
@@ -111,6 +169,30 @@ class ActivityMissingEvidenceSpecification : Specification<Activity> {
         val subQuery = query.subquery(Activity::class.java)
         val subQueryRoot = subQuery.from(Activity::class.java)
         subQuery.select(subQueryRoot)
+
+        subQuery.where(
+            criteriaBuilder.and(
+                criteriaBuilder.equal(root.get<Long>("userId"), subQueryRoot.get<User>("userId")),
+                criteriaBuilder.equal(
+                    root.get<ProjectRole>("projectRole").get<Long>("id"),
+                    subQueryRoot.get<ProjectRole>("projectRole").get<Long>("id")
+                ),
+                getHasEvidenceCondition(subQueryRoot, criteriaBuilder),
+                getActivitiesInDateRange(criteriaBuilder, subQueryRoot, root)
+            )
+        )
+        return criteriaBuilder.not(
+            criteriaBuilder.exists(
+                subQuery
+            )
+        )
+    }
+
+    private fun getActivitiesInDateRange(
+        criteriaBuilder: CriteriaBuilder,
+        subQueryRoot: Root<Activity>,
+        root: Root<Activity>
+    ): Predicate? {
         val startBetween: Expression<LocalDate> = criteriaBuilder.function(
             "SUBDATE",
             LocalDate::class.java,
@@ -123,40 +205,37 @@ class ActivityMissingEvidenceSpecification : Specification<Activity> {
             subQueryRoot.get<LocalDate>("start"),
             criteriaBuilder.literal(7)
         )
-        val activityDateBetweenCondition = criteriaBuilder.between(root.get("start"), startBetween, endBetween)
+        return criteriaBuilder.between(root.get("start"), startBetween, endBetween)
+    }
 
-        val where = subQuery.where(
-            criteriaBuilder.and(
-                criteriaBuilder.equal(root.get<Long>("userId"), subQueryRoot.get<User>("userId")),
-                criteriaBuilder.equal(
-                    root.get<ProjectRole>("projectRole").get<Long>("id"),
-                    subQueryRoot.get<ProjectRole>("projectRole").get<Long>("id")
-                ),
-                criteriaBuilder.or(
-                    criteriaBuilder.isTrue(subQueryRoot.get("hasEvidences")),
-                    criteriaBuilder.like(subQueryRoot.get("description"), "###Autocreated evidence###%")
-                ),
-                activityDateBetweenCondition
-            )
-        )
-        return criteriaBuilder.not(
-            criteriaBuilder.exists(
-                where
-            )
+    private fun requiresEvidenceType(
+        root: Root<Activity>,
+        criteriaBuilder: CriteriaBuilder,
+        requireEvidence: RequireEvidence
+    ): Predicate? = criteriaBuilder.equal(
+        root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
+        requireEvidence
+    )
+
+    private fun getHasEvidenceCondition(
+        root: Root<Activity>,
+        criteriaBuilder: CriteriaBuilder,
+    ): Predicate? {
+        return criteriaBuilder.or(
+            criteriaBuilder.isTrue(root.get("hasEvidences")),
+            criteriaBuilder.like(root.get("description"), "###Autocreated evidence###%")
         )
     }
 
-    private fun getActivitiesWithoutOnce(
-        criteriaBuilder: CriteriaBuilder,
-        root: Root<Activity>
-    ): Predicate? = criteriaBuilder.and(
-        criteriaBuilder.equal(
-            root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
-            RequireEvidence.ONCE
-        ),
-        criteriaBuilder.isFalse(root.get("hasEvidences")),
-        criteriaBuilder.notLike(root.get("description"), "###Autocreated evidence###%")
-    )
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return other is ActivityMissingEvidenceWeeklySpecification
+    }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
+
 
 }
 
@@ -340,35 +419,6 @@ class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate
 
     override fun hashCode(): Int {
         return startDate.hashCode()
-    }
-}
-
-class ActivityStartDateBetweenDatesSpecification(private val startDate: LocalDate, private val endDate: LocalDate) :
-    Specification<Activity> {
-    override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
-    ): Predicate? {
-        return criteriaBuilder.between(root.get("start"), startDate, endDate)
-    }
-
-    override fun toString(): String {
-        return "activity.start BETWEEN $startDate AND $endDate"
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ActivityStartDateBetweenDatesSpecification) return false
-
-        if (startDate != other.startDate) return false
-        return endDate == other.endDate
-    }
-
-    override fun hashCode(): Int {
-        var result = startDate.hashCode()
-        result = 31 * result + endDate.hashCode()
-        return result
     }
 }
 

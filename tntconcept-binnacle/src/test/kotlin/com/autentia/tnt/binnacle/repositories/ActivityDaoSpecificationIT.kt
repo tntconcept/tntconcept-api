@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.config.createOrganization
 import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.repositories.predicates.ActivityMissingEvidenceSpecification
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import io.micronaut.test.annotation.TransactionMode
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -260,7 +259,7 @@ class ActivityDaoSpecificationIT {
             )
         )
 
-        val predicate = ActivityPredicates.withoutEvidence()
+        val predicate = ActivityPredicates.missingEvidenceOnce()
         val result = activityDao.findAll(predicate)
 
         val expectedResults = listOf(activityWithoutEvidence)
@@ -306,7 +305,6 @@ class ActivityDaoSpecificationIT {
             hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
-
         val activityWithoutEvidence = Activity(
             start = today.atTime(8, 0, 0),
             end = today.atTime(17, 0, 0),
@@ -323,12 +321,11 @@ class ActivityDaoSpecificationIT {
                 activityWithEvidence,
                 activityEvidenceTooOld,
                 activityHasPreviousEvidence,
-                activityWithoutEvidence
+                activityWithoutEvidence,
             )
         )
 
-        val predicate = ActivityMissingEvidenceSpecification()
-
+        val predicate = ActivityPredicates.missingEvidenceWeekly()
         val results = activityDao.findAll(predicate)
 
         val expectedResults: List<Activity> = listOf(activityWithoutEvidence)
