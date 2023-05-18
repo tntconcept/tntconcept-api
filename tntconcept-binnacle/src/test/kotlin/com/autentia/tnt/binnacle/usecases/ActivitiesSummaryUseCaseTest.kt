@@ -22,7 +22,7 @@ class ActivitiesSummaryUseCaseTest {
     private val activitiesSummaryUseCase = ActivitiesSummaryUseCase(
         activityCalendarService,
         activityService,
-        activitiesSummaryConverter
+        activitiesSummaryConverter,
     )
 
     @Test
