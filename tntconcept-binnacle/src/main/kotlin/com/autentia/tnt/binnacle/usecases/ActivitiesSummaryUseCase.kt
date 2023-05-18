@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivitySummaryConverter
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.Activity
@@ -15,7 +14,6 @@ class ActivitiesSummaryUseCase internal constructor(
     private val activityCalendarService: ActivityCalendarService,
     private val activityService: ActivityService,
     private val activitiesSummaryConverter: ActivitySummaryConverter,
-    private val activityResponseConverter: ActivityResponseConverter,
 ) {
 
     fun getActivitiesSummary(startDate: LocalDate, endDate: LocalDate): List<ActivitySummaryDTO> {
