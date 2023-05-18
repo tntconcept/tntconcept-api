@@ -39,4 +39,4 @@ out/
 /build/
 
 ### Flyway ###
-R__*
+tntconcept-ddbb/src/main/resources/db/migration/R__*
