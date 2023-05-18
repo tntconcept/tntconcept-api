@@ -12,7 +12,6 @@ import org.mockito.kotlin.*
 import java.time.LocalDateTime
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@Disabled
 internal class ActivityEvidenceMissingReminderUseCaseTest {
 
     private val activityRepository: ActivityRepository = mock()
@@ -132,8 +131,8 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             date: LocalDateTime,
             durationInHours: Long,
             hasEvidence: Boolean = false
-        ) {
-            createActivity(role).copy(
+        ): Activity {
+            return createActivity(role).copy(
                 getIncrementalId(),
                 userId = user.id,
                 hasEvidences = hasEvidence,
