@@ -10,6 +10,7 @@ import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalTime
@@ -199,7 +200,7 @@ class InternalActivityRepositoryTest {
     }
 
     @Test
-    fun `find overlapped should retrieve activities` () {
+    fun `find overlapped should retrieve activities`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
@@ -223,6 +224,37 @@ class InternalActivityRepositoryTest {
         val result = internalActivityRepository.findByIdAndUserId(activityId, userId)
 
         assertEquals(activity, result)
+    }
+
+    @Test
+    fun `save should use activity dao`() {
+        val activity = createActivity()
+
+        whenever(activityDao.save(activity)).thenReturn(activity)
+
+        val result = internalActivityRepository.save(activity)
+
+        assertEquals(activity, result)
+    }
+
+    @Test
+    fun `update should use activity dao`() {
+        val activity = createActivity()
+
+        whenever(activityDao.update(activity)).thenReturn(activity)
+
+        val result = internalActivityRepository.update(activity)
+
+        assertEquals(activity, result)
+    }
+
+    @Test
+    fun `delete should use activity dao`() {
+        val activityId = 1L
+
+        internalActivityRepository.deleteById(activityId)
+
+        verify(activityDao).deleteById(activityId)
     }
 
     private companion object {

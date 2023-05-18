@@ -84,15 +84,15 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
     override fun save(activity: Activity): Activity {
-        throw NotImplementedError()
+        return activityDao.save(activity)
     }
 
     override fun update(activity: Activity): Activity {
-        throw NotImplementedError()
+        return activityDao.update(activity)
     }
 
     override fun deleteById(id: Long) {
-        throw NotImplementedError()
+        activityDao.deleteById(id)
     }
 
 }

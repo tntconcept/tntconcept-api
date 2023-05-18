@@ -413,7 +413,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `save activity should call dao to save activity`() {
+    fun `save activity should call internal to save activity`() {
         val activity = Activity(
             start = today.atTime(10, 0, 0),
             end = today.atTime(12, 0, 0),
@@ -498,7 +498,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `update activity should call dao`() {
+    fun `update activity should call internal`() {
         val activity = Activity(
             id = 1L,
             start = today.atTime(10, 0, 0),
@@ -548,7 +548,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `delete activity should call dao`() {
+    fun `delete activity should call internal`() {
         val activity = Activity(
             id = 1L,
             start = today.atTime(10, 0, 0),
