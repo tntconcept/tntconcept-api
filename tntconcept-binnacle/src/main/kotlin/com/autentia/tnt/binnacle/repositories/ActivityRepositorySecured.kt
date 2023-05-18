@@ -18,7 +18,6 @@ import java.time.LocalDateTime
 @Singleton
 @Primary
 internal class ActivityRepositorySecured(
-    private val activityDao: ActivityDao,
     private val internalActivityRepository: InternalActivityRepository,
     private val securityService: SecurityService,
 ) : ActivityRepository {
@@ -36,28 +35,30 @@ internal class ActivityRepositorySecured(
         }
     }
 
-    override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
+    override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.find(startDate, endDate, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(userId == authentication.id()) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByUserId(startDate, endDate, userId)
     }
 
-    override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
-        //TODO: Add security to this method!!!
-        return activityDao.find(startDate, endDate, userId)
-    }
 
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isAdmin()) {
-            internalActivityRepository.findByApprovalState(approvalState)
+            internalActivityRepository.find(approvalState)
         } else {
             internalActivityRepository.findByApprovalStateAndUserId(approvalState, authentication.id())
         }
     }
 
-    override fun find(projectRoleId: Long): List<Activity> {
+    override fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
     }
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
@@ -71,40 +72,61 @@ internal class ActivityRepositorySecured(
         return internalActivityRepository.find(startDate, endDate, userIdsFiltered)
     }
 
-    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
+    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findOfLatestProjects(start, end, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findOfLatestProjects(start, end, userId)
+
     }
 
-    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
+    override fun findByProjectId(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectId: Long,
+        userId: Long
+    ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findByProjectId(start, end, projectId, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectId(start, end, projectId, userId)
+
     }
 
+    @Deprecated("Use findIntervals function instead")
     override fun findWorkedMinutes(
         startDate: LocalDateTime,
         endDate: LocalDateTime,
+        userId: Long
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findWorkedMinutes(startDate, endDate, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)
     }
 
-    override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
+    override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findOverlapped(startDate, endDate, authentication.id())
-    }
-
-    override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
-        val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.find(start, end, projectRoleId, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get overlapped activities" }
+        }
+        return internalActivityRepository.findOverlapped(startDate, endDate, userId)
     }
 
     override fun findByProjectRoleIds(
-        start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectRoleIds: List<Long>,
+        userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return internalActivityRepository.findByProjectRoleIds(start, end, projectRoleIds, authentication.id())
-
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectRoleIds(start, end, projectRoleIds, userId)
     }
 
     override fun save(activity: Activity): Activity {

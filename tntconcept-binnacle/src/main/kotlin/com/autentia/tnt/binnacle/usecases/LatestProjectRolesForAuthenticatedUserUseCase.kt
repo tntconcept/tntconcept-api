@@ -27,7 +27,7 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     private val activityCalendarService: ActivityCalendarService,
     private val securityService: SecurityService,
     private val projectRoleConverter: ProjectRoleConverter
-){
+) {
 
     @Transactional
     @ReadOnly
@@ -39,7 +39,7 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         val currentYearTimeInterval = TimeInterval.of(dateRange.startDate, dateRange.endDate)
 
         val activities =
-            activityService.getActivitiesOfLatestProjects(currentYearTimeInterval)
+            activityService.getActivitiesOfLatestProjects(currentYearTimeInterval, userId)
         val lastMonthActivities = activityService.filterActivitiesByTimeInterval(oneMonthDateRange, activities)
 
         val latestUserProjectRoles = lastMonthActivities.map { it.projectRole }.distinct().map { projectRole ->

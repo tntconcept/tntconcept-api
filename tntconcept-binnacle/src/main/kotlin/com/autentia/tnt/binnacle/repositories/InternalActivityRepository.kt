@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.jpa.repository.criteria.Specification
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
+import java.util.*
 
 
 @Singleton
@@ -15,109 +16,83 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         activityDao.findAll(activitySpecification)
 
     override fun findById(id: Long): Activity? {
-        throw NotImplementedError()
-    }
-
-    override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
-        throw NotImplementedError()
+        val activity: Optional<Activity> = activityDao.findById(id)
+        return if (activity.isPresent) {
+            activity.get()
+        } else {
+            null
+        }
     }
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
-        throw NotImplementedError()
-    }
-
-    override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
-        throw NotImplementedError()
+        return activityDao.find(startDate, endDate, userIds)
     }
 
     override fun find(approvalState: ApprovalState): List<Activity> {
-        throw NotImplementedError()
+        return activityDao.findByApprovalState(approvalState)
     }
 
-    override fun find(projectRoleId: Long): List<Activity> {
-        throw NotImplementedError()
+    fun findByApprovalStateAndUserId(approvalState: ApprovalState, userId: Long): List<Activity> {
+        return activityDao.findByApprovalStateAndUserId(approvalState, userId)
     }
 
-    override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
-        throw NotImplementedError()
+    override fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity> {
+        return activityDao.findByProjectRoleIdAndUserId(projectRoleId, userId)
+    }
+
+    override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
+        return activityDao.find(startDate, endDate, userId)
     }
 
     override fun findByProjectRoleIds(
         start: LocalDateTime,
         end: LocalDateTime,
-        projectRoleIds: List<Long>
+        projectRoleIds: List<Long>,
+        userId: Long
     ): List<Activity> {
-        throw NotImplementedError()
+        return activityDao.findByProjectRoleIds(start, end, projectRoleIds, userId)
     }
 
-    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
-        throw NotImplementedError()
+    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity> {
+        return activityDao.findOfLatestProjects(start, end, userId)
     }
 
-    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
-        throw NotImplementedError()
+    override fun findByProjectId(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectId: Long,
+        userId: Long
+    ): List<Activity> {
+        return activityDao.findByProjectId(start, end, projectId, userId)
     }
 
-    override fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly> {
-        throw NotImplementedError()
+    @Deprecated("Use findIntervals function instead")
+    override fun findWorkedMinutes(
+        startDate: LocalDateTime,
+        endDate: LocalDateTime,
+        userId: Long
+    ): List<ActivityTimeOnly> {
+        return activityDao.findWorkedMinutes(startDate, endDate, userId)
     }
 
-    override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
-        throw NotImplementedError()
+    override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
+        return activityDao.findOverlapped(startDate, endDate, userId)
     }
 
     fun findByIdAndUserId(id: Long, userId: Long): Activity? {
-        TODO("Not yet implemented")
-    }
-
-    fun findByApprovalState(approvalState: ApprovalState): List<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    fun findByApprovalStateAndUserId(approvalState: ApprovalState, userId: Long): List<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    fun findByProjectRoleIdAndUserId(id: Long, userId: Long): List<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    fun findOfLatestProjects(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long, id: Long): List<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    fun findWorkedMinutes(startDate: LocalDateTime?, endDate: LocalDateTime?, userId: Long): List<ActivityTimeOnly> {
-        TODO("Not yet implemented")
-    }
-
-    fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, id: Long): List<Activity> {
-        TODO("Not yet implemented")
-
-    }
-
-    fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long, id: Long): List<Activity> {
-        TODO("Not yet implemented")
-    }
-
-    fun findByProjectRoleIds(start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>, id: Long): List<Activity> {
-        TODO("Not yet implemented")
-
+        return activityDao.findByIdAndUserId(id, userId)
     }
 
     override fun save(activity: Activity): Activity {
-        throw NotImplementedError()
+        return activityDao.save(activity)
     }
 
     override fun update(activity: Activity): Activity {
-        throw NotImplementedError()
+        return activityDao.update(activity)
     }
 
     override fun deleteById(id: Long) {
-        throw NotImplementedError()
+        activityDao.deleteById(id)
     }
 
 }

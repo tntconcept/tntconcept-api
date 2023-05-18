@@ -3,16 +3,11 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,15 +24,17 @@ import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.Date
+import java.util.*
 
 internal class ActivityServiceTest {
 
     private val activityRepository = mock<ActivityRepository>()
+    private val internalActivityRepository = mock<InternalActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityImageService = mock<ActivityImageService>()
     private val activityService = ActivityService(
         activityRepository,
+        internalActivityRepository,
         projectRoleRepository,
         activityImageService
     )
@@ -78,18 +75,20 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `get activities between start and end date`() {
+    fun `get activities between start and end date with userId`() {
+        val userId = 1L
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)
 
         whenever(
-            activityRepository.find(
+            activityRepository.findByUserId(
                 startDate.atTime(LocalTime.MIN),
-                endDate.atTime(LocalTime.MAX)
+                endDate.atTime(LocalTime.MAX),
+                userId
             )
         ).thenReturn(listOf(activityWithoutImageSaved))
 
-        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate))
+        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
 
         assertEquals(listOf(activityWithoutImageSaved), actual)
     }
@@ -101,7 +100,7 @@ internal class ActivityServiceTest {
         val userId = 1L
 
         whenever(
-            activityRepository.findWithoutSecurity(
+            internalActivityRepository.findByUserId(
                 startDate.atTime(LocalTime.MIN),
                 endDate.atTime(LocalTime.MAX),
                 userId
@@ -114,12 +113,13 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `get activities by project role id`() {
+    fun `get activities by project role id and user id`() {
         val expectedProjectRoleActivities = listOf(activityWithoutImageSaved, activityWithImageToSave)
+        val userId = 1L
 
-        whenever(activityRepository.find(1L)).thenReturn(expectedProjectRoleActivities)
+        whenever(activityRepository.findByProjectRoleIdAndUserId(1L, userId)).thenReturn(expectedProjectRoleActivities)
 
-        val result = activityService.getProjectRoleActivities(1L)
+        val result = activityService.getProjectRoleActivities(1L, userId)
 
         assertEquals(expectedProjectRoleActivities, result)
     }
@@ -142,18 +142,44 @@ internal class ActivityServiceTest {
 
     @Test
     fun `get activities by project should call repository`() {
-
-        doReturn(activities).whenever(activityRepository).findByProjectId(timeInterval.start, timeInterval.end, 1L)
-
-        assertEquals(activities, activityService.getActivitiesByProjectId(timeInterval, 1L))
+        val userId = 1L
+        whenever(activityRepository.findByProjectId(timeInterval.start, timeInterval.end, 1L, userId)).thenReturn(activities)
+        assertEquals(activities, activityService.getActivitiesByProjectId(timeInterval, 1L, userId))
     }
 
     @Test
     fun testGetActivitiesOfLatestProjects() {
+        val userId = 1L
+        whenever(activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)).thenReturn(
+            activities
+        )
+        assertEquals(activities, activityService.getActivitiesOfLatestProjects(timeInterval, userId))
+    }
 
-        doReturn(activities).whenever(activityRepository).findOfLatestProjects(timeInterval.start, timeInterval.end)
+    @Test
+    fun `get activities by project role ids with user id`() {
+        val userId = 1L
+        val startDate = LocalDate.of(2019, 1, 1)
+        val endDate = LocalDate.of(2019, 1, 31)
+        val projectRoles = listOf(1L)
+        val timeInterval = TimeInterval.of(
+            startDate.atTime(LocalTime.MIN),
+            endDate.atTime(LocalTime.MAX)
+        )
+        val expectedActivities = activities.map(Activity::toDomain)
 
-        assertEquals(activities, activityService.getActivitiesOfLatestProjects(timeInterval))
+        whenever(
+            activityRepository.findByProjectRoleIds(
+                startDate.atTime(LocalTime.MIN),
+                endDate.atTime(LocalTime.MAX),
+                projectRoles,
+                userId
+            )
+        ).thenReturn(activities)
+
+        val result = activityService.getActivitiesByProjectRoleIds(timeInterval, projectRoles, userId)
+
+        assertEquals(expectedActivities, result)
     }
 
     @Test
