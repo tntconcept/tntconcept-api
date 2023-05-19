@@ -21,9 +21,9 @@ class ActivityApprovalUseCase internal constructor(
 ) {
     fun approveActivity(id: Long, locale: Locale): ActivityResponseDTO {
         securityService.checkAdminRole()
-        val user = userService.getAuthenticatedUser()
         val activity = activityService.approveActivityById(id)
         if (activity.approvalState == ApprovalState.ACCEPTED) {
+            val user = userService.getById(activity.userId)
             approvedActivityMailService.sendApprovedActivityMail(activity, user, locale)
         }
 

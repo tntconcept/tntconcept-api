@@ -12,12 +12,13 @@ import java.util.Optional
 internal class UserRepositorySecured(
     private val userDao: UserDao,
     private val securityService: SecurityService
-): UserRepository {
+) : UserRepository {
 
     override fun findByAuthenticatedUser(): Optional<User> {
         val authentication = securityService.checkAuthentication()
         return userDao.findById(authentication.id())
     }
+
     override fun findByUsername(username: String): User? {
         return userDao.findByUsername(username)
     }
@@ -25,11 +26,21 @@ internal class UserRepositorySecured(
     override fun findByActiveTrue(): List<User> {
         return userDao.findByActiveTrue()
     }
-    override fun find(): List<User>{
+
+    override fun find(userId: Long): User? {
         val authentication = securityService.checkAuthentication()
-        return if(authentication.isAdmin()) {
+        return if (authentication.isAdmin()) {
+            userDao.findById(userId).orElse(null)
+        } else {
+            userDao.findById(authentication.id()).orElse(null)
+        }
+    }
+
+    override fun find(): List<User> {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.isAdmin()) {
             userDao.findByActiveTrue()
-        }else{
+        } else {
             val user = userDao.findById(authentication.id())
             check(user.isPresent) { "Authenticated user not found" }
             listOf(user.get())

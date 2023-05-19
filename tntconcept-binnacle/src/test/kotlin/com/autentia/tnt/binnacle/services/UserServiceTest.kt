@@ -15,7 +15,7 @@ import java.util.Optional
 
 internal class UserServiceTest {
 
-    private val userRepositorySecured =  mock<UserRepositorySecured>()
+    private val userRepositorySecured = mock<UserRepositorySecured>()
     private val securityService = mock<SecurityService>()
 
     private var userService = UserService(userRepositorySecured)
@@ -42,16 +42,36 @@ internal class UserServiceTest {
         val user = createUser()
         doReturn(user).whenever(userRepositorySecured).findByUsername(user.username)
 
-        userService.getUserByUserName(user.username)
+        userService.getByUserName(user.username)
 
         verify(userRepositorySecured, times(1)).findByUsername(user.username)
+    }
+
+    @Test
+    fun `get user by id`() {
+        val user = createUser()
+
+        whenever(userRepositorySecured.find(user.id)).thenReturn(user)
+
+        val result = userService.getById(user.id)
+
+        assertEquals(user, result)
+    }
+
+    @Test
+    fun `get user by id should throw IllegalStateException`() {
+        val user = createUser()
+
+        whenever(userRepositorySecured.find(user.id)).thenReturn(null)
+
+        assertThrows<IllegalStateException> { userService.getById(user.id) }
     }
 
     @Test
     fun `fail if there isn't authenticated user fetching the user by username`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        assertThrows<IllegalStateException> { userService.getUserByUserName(createUser().username) }
+        assertThrows<IllegalStateException> { userService.getByUserName(createUser().username) }
     }
 
 
