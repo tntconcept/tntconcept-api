@@ -49,7 +49,7 @@ INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requir
                          departmentId, insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime,
                          isApprovalRequired)
 VALUES (7, 6, 'Project 6 once', 0.00, 0, 'ONCE', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0,
-        'MINUTES', 1, 0);
+        'DAYS', 1, 0);
 
 -- Project id = 7
 INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, ownerId, departmentId, billable,
