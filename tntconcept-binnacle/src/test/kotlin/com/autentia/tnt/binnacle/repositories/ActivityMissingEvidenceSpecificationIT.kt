@@ -21,17 +21,17 @@ class ActivityMissingEvidenceSpecificationIT {
         // Everything for organization with ID = 3
 
         // Roles for project with id = 6
-        private val project_1_role_weekly = 6L
-        private val project_1_role_once = 7L
+        private const val project_1_role_weekly = 6L
+        private const val project_1_role_once = 7L
 
         // Roles for project with id = 7
-        private val project_2_role_weekly = 8L
-        private val project_2_role_once = 9L
-        private val project_2_role_none = 10L
+        private const val project_2_role_weekly = 8L
+        private const val project_2_role_once = 9L
+        private const val project_2_role_none = 10L
 
         // Users
-        private val test_user_1 = 11L
-        private val test_user_2 = 12L
+        private const val test_user_1 = 11L
+        private const val test_user_2 = 12L
         private val activeUsers = listOf(test_user_1, test_user_2)
 
         // Fixed data
