@@ -6,6 +6,8 @@ import java.util.Optional
 
 internal interface UserRepository {
 
+    fun find(userId: Long): User?
+
     fun findByAuthenticatedUser(): Optional<User>
 
     fun findByUsername(username: String): User?
