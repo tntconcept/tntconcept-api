@@ -404,7 +404,7 @@ class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate
         query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
-        return criteriaBuilder.lessThanOrEqualTo(root.get("start"), startDate.atTime(LocalTime.MAX))
+        return criteriaBuilder.lessThanOrEqualTo(root.get("start"), startDate.atTime(23, 59, 59))
     }
 
     override fun toString(): String {
