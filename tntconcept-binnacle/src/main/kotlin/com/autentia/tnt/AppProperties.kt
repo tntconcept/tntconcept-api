@@ -70,8 +70,7 @@ internal class AppProperties {
         @ConfigurationProperties("missing-evidences-notification")
         internal class MissingEvidencesNotificationProperties {
             var enabled: Boolean = false
-            var onceCronExpression: String? = null
-            var weeklyCronExpression: String? = null
+            var cronExpression: String? = null
         }
 
     }

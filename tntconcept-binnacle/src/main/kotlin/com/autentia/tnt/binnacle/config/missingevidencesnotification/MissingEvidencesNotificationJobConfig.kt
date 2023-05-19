@@ -15,8 +15,8 @@ internal class MissingEvidencesNotificationJobConfig(
     @Named(TaskExecutors.SCHEDULED) taskScheduler: TaskScheduler
 ) {
     init {
-        if (appProperties.binnacle.missingEvidencesNotification.onceCronExpression != null) {
-            taskScheduler.schedule(appProperties.binnacle.missingEvidencesNotification.onceCronExpression) {
+        if (appProperties.binnacle.missingEvidencesNotification.cronExpression != null) {
+            taskScheduler.schedule(appProperties.binnacle.missingEvidencesNotification.cronExpression) {
                 activityEvidenceMissingReminderUseCase.sendReminders()
             }
         }
