@@ -14,8 +14,8 @@ class ActivitiesBetweenDateHookUseCase internal constructor(
     private val activityDateConverter: ActivityDateConverter
 ) {
     fun getActivities(startDate: LocalDate, endDate: LocalDate, userName: String): List<ActivityDateDTO> {
-        val user = userService.getUserByUserName(userName)
-        val activitiesResponse = activityService.getUserActivitiesBetweenDates(startDate, endDate, user.id)
+        val user = userService.getByUserName(userName)
+        val activitiesResponse = activityService.getActivitiesBetweenDatesWithoutSecurity(startDate, endDate, user.id)
         val listActivityDate = activityDateConverter.toListActivityDate(activitiesResponse, startDate, endDate)
         return listActivityDate.map { activityDateConverter.toActivityDateDTO(it) }
     }

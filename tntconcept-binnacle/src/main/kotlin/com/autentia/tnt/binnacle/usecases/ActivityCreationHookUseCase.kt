@@ -20,7 +20,7 @@ open class ActivityCreationHookUseCase internal constructor(
 ) {
 
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyHookDTO): ActivityResponseDTO {
-        val user = userService.getUserByUserName(activityRequestBody.userName)
+        val user = userService.getByUserName(activityRequestBody.userName)
         val activityRequest = activityRequestBodyConverter
             .mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBody)
 

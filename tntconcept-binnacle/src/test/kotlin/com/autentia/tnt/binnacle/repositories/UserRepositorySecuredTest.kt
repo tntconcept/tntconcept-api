@@ -76,7 +76,6 @@ class UserRepositorySecuredTest {
         verify(userDao).findByActiveTrue()
     }
 
-
     @Test
     fun `find by authenticated user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
@@ -93,6 +92,36 @@ class UserRepositorySecuredTest {
         assertThrows<IllegalStateException> { userRepositorySecured.findByAuthenticatedUser() }
     }
 
+    @Test
+    fun `find by user id should return info if logged user has admin role`() {
+        val user = createUser()
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
+        whenever(userDao.findById(userId)).thenReturn(Optional.of(user))
+
+        val result = userRepositorySecured.find(userId)
+
+        assertEquals(user, result)
+    }
+
+    @Test
+    fun `find by user id should return info for authenticated user`() {
+        val user = createUser()
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+        whenever(userDao.findById(authenticationUser.id())).thenReturn(Optional.of(user))
+
+        val result = userRepositorySecured.find(adminUserId)
+
+        assertEquals(user, result)
+    }
+
+    @Test
+    fun `find by user id should throw IllegalStateException if there is not authenticated user`() {
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> { userRepositorySecured.find(userId) }
+    }
 
     private companion object {
         private const val userId = 1L

@@ -63,8 +63,8 @@ internal class ActivityApprovalUseCaseTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(userService.getAuthenticatedUser()).thenReturn(user)
         whenever(activityService.approveActivityById(activityId)).thenReturn(activity)
+        whenever(userService.getById(activity.userId)).thenReturn(user)
         whenever(converter.toActivityResponseDTO(domainActivity)).thenReturn(activityResponseDTO)
 
         val result = activityApprovalUseCase.approveActivity(activityId, Locale.ENGLISH)
