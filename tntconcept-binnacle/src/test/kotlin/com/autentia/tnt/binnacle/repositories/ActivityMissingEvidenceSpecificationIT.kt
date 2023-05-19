@@ -37,7 +37,20 @@ class ActivityMissingEvidenceSpecificationIT {
         // Fixed data
         private val today = LocalDate.now()
         private val yesterday = today.minusDays(1)
+
+        private val activitiesMissingEvidencePredicate: Specification<Activity> = PredicateBuilder.and(
+            PredicateBuilder.or(
+                ActivityPredicates.missingEvidenceOnce(), PredicateBuilder.and(
+                    ActivityPredicates.missingEvidenceWeekly(), ActivityPredicates.startDateBetweenDates(
+                        DateInterval.of(
+                            LocalDate.now().minusDays(7), LocalDate.now()
+                        )
+                    )
+                )
+            ), ActivityPredicates.belongsToUsers(activeUsers)
+        )
     }
+
 
     // Data test
     private lateinit var project1RoleWeekly: ProjectRole
@@ -218,7 +231,7 @@ class ActivityMissingEvidenceSpecificationIT {
     }
 
     @Test
-    fun `should find only activity with role once missing evidence`() {
+    fun `should find only activity with role once missing evidence with activities missing evidence predicate`() {
         val activityWithoutEvidence1 = Activity(
             start = today.atTime(8, 0, 0).minusDays(4),
             end = today.atTime(17, 0, 0).minusDays(4),
@@ -255,7 +268,7 @@ class ActivityMissingEvidenceSpecificationIT {
         val activityWithoutEvidence3 = Activity(
             start = today.atTime(8, 0, 0).minusDays(2),
             end = today.atTime(17, 0, 0).plusDays(1),
-            duration = 540,
+            duration = 4,
             description = "Activity 3",
             projectRole = project1RoleOnce,
             userId = test_user_1,
@@ -264,32 +277,269 @@ class ActivityMissingEvidenceSpecificationIT {
             approvalState = ApprovalState.PENDING
         )
 
+        val activityWithEvidence4 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(5),
+            end = today.atTime(17, 0, 0).minusDays(3),
+            duration = 2,
+            description = "Activity 3",
+            projectRole = project1RoleOnce,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.PENDING
+        )
+
         activityDao.saveAll(
             listOf(
                 activityWithoutEvidence1,
                 activityWithoutEvidence2,
                 activityWithoutEvidence3,
+                activityWithEvidence4,
                 activityWithEvidence1
             )
         )
 
-        val results = activityDao.findAll(getActivitiesMissingEvidencePredicate())
+        val results = activityDao.findAll(activitiesMissingEvidencePredicate)
 
         assertThat(results).containsExactly(activityWithoutEvidence3)
     }
 
-    private fun getActivitiesMissingEvidencePredicate(): Specification<Activity> {
-        val dateInterval = DateInterval.of(LocalDate.now().minusDays(7), LocalDate.now())
-        return PredicateBuilder.and(
-            PredicateBuilder.or(
-                ActivityPredicates.missingEvidenceOnce(),
-                PredicateBuilder.and(
-                    ActivityPredicates.missingEvidenceWeekly(),
-                    ActivityPredicates.startDateBetweenDates(dateInterval)
-                )
-            ),
-            ActivityPredicates.belongsToUsers(activeUsers)
+    @Test
+    fun `should not find activities missing evidence because evidence is registered in the previous 7 days`() {
+        val act1 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(10),
+            end = today.atTime(17, 0, 0).minusDays(10),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
         )
+        val act2 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(5),
+            end = today.atTime(17, 0, 0).minusDays(5),
+            duration = 540,
+            description = "Activity 2",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.PENDING
+        )
+        val act3 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(4),
+            end = today.atTime(17, 0, 0).minusDays(4),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val act4 = Activity(
+            start = today.atTime(8, 0, 0),
+            end = today.atTime(17, 0, 0),
+            duration = 540,
+            description = "Activity 2",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+
+        activityDao.saveAll(listOf(act1, act2, act3, act4))
+
+        val results = activityDao.findAll(activitiesMissingEvidencePredicate)
+
+        assertThat(results).isEmpty()
+    }
+
+
+    @Test
+    fun `should only return activities missing evidence from multiple users`() {
+        val act1 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(5),
+            end = today.atTime(17, 0, 0).minusDays(5),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val act2 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(4),
+            end = today.atTime(17, 0, 0).minusDays(4),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val act3 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(5),
+            end = today.atTime(17, 0, 0).minusDays(5),
+            duration = 540,
+            description = "Activity 22",
+            projectRole = project1RoleWeekly,
+            userId = test_user_2,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.PENDING
+        )
+        val act4 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(4),
+            end = today.atTime(17, 0, 0).minusDays(4),
+            duration = 540,
+            description = "###Autocreated evidence###\n (DO NOT DELETE)\n ETC. ETC.",
+            projectRole = project1RoleWeekly,
+            userId = test_user_2,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+
+        val act5 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(3),
+            end = today.atTime(17, 0, 0).minusDays(4),
+            duration = 1,
+            description = "Activity 2123242",
+            projectRole = project2RoleOnce,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.PENDING
+        )
+
+        activityDao.saveAll(listOf(act1, act2, act3, act4, act5))
+
+        val results = activityDao.findAll(activitiesMissingEvidencePredicate)
+        val expected = listOf(act1, act2)
+
+        assertThat(results).containsExactlyInAnyOrderElementsOf(expected)
+    }
+
+    @Test
+    fun `should not return weekly evidence activities more than a week ago`() {
+        val act1 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(15),
+            end = today.atTime(17, 0, 0).minusDays(15),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val act2 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(14),
+            end = today.atTime(17, 0, 0).minusDays(14),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val act3 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(13),
+            end = today.atTime(17, 0, 0).minusDays(13),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+
+        activityDao.saveAll(listOf(act1, act2, act3))
+
+        val results = activityDao.findAll(activitiesMissingEvidencePredicate)
+
+        assertThat(results).isEmpty()
+    }
+
+    @Test
+    fun `should return missing evidence activity the day before when the last evidence was more than 7 days ago`() {
+        val act1 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(9),
+            end = today.atTime(17, 0, 0).minusDays(9),
+            duration = 540,
+            description = "###Autocreated evidence###\n (DO NOT DELETE)\n ETC. ETC.",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val act2 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(1),
+            end = today.atTime(17, 0, 0).minusDays(1),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+
+        activityDao.saveAll(listOf(act1, act2))
+
+        val results = activityDao.findAll(activitiesMissingEvidencePredicate)
+
+        assertThat(results).containsExactly(act2)
+    }
+
+    @Test
+    fun `should return missing evidence activities once`() {
+        val act1 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(102),
+            end = today.atTime(17, 0, 0).minusDays(100),
+            duration = 3,
+            description = "Activity 1",
+            projectRole = project1RoleOnce,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val act2 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(5),
+            end = today.atTime(17, 0, 0).minusDays(4),
+            duration = 2,
+            description = "Activity 2",
+            projectRole = project1RoleOnce,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val act3 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(20),
+            end = today.atTime(17, 0, 0).minusDays(19),
+            duration = 2,
+            description = "Activity 2123123",
+            projectRole = project1RoleOnce,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.PENDING
+        )
+
+        activityDao.saveAll(listOf(act1, act2, act3))
+        val results = activityDao.findAll(activitiesMissingEvidencePredicate)
+        assertThat(results).containsExactly(act1, act2)
     }
 
 }
