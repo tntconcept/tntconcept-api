@@ -66,17 +66,11 @@ class ActivityEvidenceMissingReminderUseCase @Inject internal constructor(
     }
 
     private fun notifyMissingEvidencesToUser(user: User, rolesMissingEvidence: List<ProjectRole>) {
-        val rolesGroupedByProject: Map<Project, List<ProjectRole>> = rolesMissingEvidence.groupBy { it.project }
-        rolesGroupedByProject.forEach { notifyMissingProjectEvidenceToUser(user, it.key, it.value) }
-    }
-
-    private fun notifyMissingProjectEvidenceToUser(user: User, project: Project, projectRoleList: List<ProjectRole>) {
         val locale = Locale.forLanguageTag("es")
-
-        projectRoleList.forEach {
+        rolesMissingEvidence.forEach {
             activityEvidenceMissingMailService.sendEmail(
-                project.organization.name,
-                project.name,
+                it.project.organization.name,
+                it.project.name,
                 it.name,
                 it.requireEvidence,
                 user.email,
