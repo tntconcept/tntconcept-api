@@ -1,7 +1,10 @@
 package com.autentia.tnt.binnacle.repositories
 
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.assertj.core.api.Assertions.assertThat
@@ -29,6 +32,7 @@ class ActivityMissingEvidenceSpecificationIT {
         // Users
         private val test_user_1 = 11L
         private val test_user_2 = 12L
+        private val activeUsers = listOf(test_user_1, test_user_2)
 
         // Fixed data
         private val today = LocalDate.now()
@@ -196,7 +200,7 @@ class ActivityMissingEvidenceSpecificationIT {
             hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
-        
+
         activityDao.saveAll(
             listOf(
                 activityWithEvidence,
@@ -212,4 +216,80 @@ class ActivityMissingEvidenceSpecificationIT {
 
         assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults)
     }
+
+    @Test
+    fun `should find only activity with role once missing evidence`() {
+        val activityWithoutEvidence1 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(4),
+            end = today.atTime(17, 0, 0).minusDays(4),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityWithoutEvidence2 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(3),
+            end = today.atTime(17, 0, 0).minusDays(3),
+            duration = 540,
+            description = "Activity 1",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityWithEvidence1 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(2),
+            end = today.atTime(17, 0, 0).minusDays(2),
+            duration = 540,
+            description = "Activity 2",
+            projectRole = project1RoleWeekly,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.PENDING
+        )
+        val activityWithoutEvidence3 = Activity(
+            start = today.atTime(8, 0, 0).minusDays(2),
+            end = today.atTime(17, 0, 0).plusDays(1),
+            duration = 540,
+            description = "Activity 3",
+            projectRole = project1RoleOnce,
+            userId = test_user_1,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.PENDING
+        )
+
+        activityDao.saveAll(
+            listOf(
+                activityWithoutEvidence1,
+                activityWithoutEvidence2,
+                activityWithoutEvidence3,
+                activityWithEvidence1
+            )
+        )
+
+        val results = activityDao.findAll(getActivitiesMissingEvidencePredicate())
+
+        assertThat(results).containsExactly(activityWithoutEvidence3)
+    }
+
+    private fun getActivitiesMissingEvidencePredicate(): Specification<Activity> {
+        val dateInterval = DateInterval.of(LocalDate.now().minusDays(7), LocalDate.now())
+        return PredicateBuilder.and(
+            PredicateBuilder.or(
+                ActivityPredicates.missingEvidenceOnce(),
+                PredicateBuilder.and(
+                    ActivityPredicates.missingEvidenceWeekly(),
+                    ActivityPredicates.startDateBetweenDates(dateInterval)
+                )
+            ),
+            ActivityPredicates.belongsToUsers(activeUsers)
+        )
+    }
+
 }

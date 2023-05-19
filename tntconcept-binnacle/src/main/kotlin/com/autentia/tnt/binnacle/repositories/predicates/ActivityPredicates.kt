@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.*
 import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDate
+import java.time.LocalTime
 import javax.persistence.criteria.*
 
 internal object ActivityPredicates {
@@ -134,8 +135,8 @@ class ActivityStartDateBetweenSpecification(private val dateInterval: DateInterv
     ): Predicate? {
         return criteriaBuilder.between(
             root.get("start"),
-            criteriaBuilder.literal(dateInterval.start),
-            criteriaBuilder.literal(dateInterval.end)
+            criteriaBuilder.literal(dateInterval.start.atStartOfDay()),
+            criteriaBuilder.literal(dateInterval.end.atTime(LocalTime.MAX))
         )
     }
 
@@ -403,7 +404,7 @@ class ActivityStartDateLessOrEqualSpecification(private val startDate: LocalDate
         query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
-        return criteriaBuilder.lessThanOrEqualTo(root.get("start"), startDate.atTime(23, 59, 59))
+        return criteriaBuilder.lessThanOrEqualTo(root.get("start"), startDate.atTime(LocalTime.MAX))
     }
 
     override fun toString(): String {
