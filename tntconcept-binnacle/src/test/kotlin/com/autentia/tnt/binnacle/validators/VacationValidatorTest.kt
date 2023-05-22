@@ -409,7 +409,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Success)
     }
@@ -428,7 +428,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Success)
     }
@@ -447,7 +447,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Success)
     }
@@ -466,7 +466,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Success)
     }
@@ -485,7 +485,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result)
             .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD))
@@ -506,7 +506,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result)
             .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD))
@@ -526,7 +526,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result).isEqualTo(DeleteVacationValidation.Success)
     }
@@ -545,7 +545,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result)
             .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD))
@@ -557,7 +557,7 @@ internal class VacationValidatorTest {
     fun `should vacation not found`() {
         given(vacationRepository.findById(1L)).willReturn(null)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result)
             .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND))
@@ -577,7 +577,7 @@ internal class VacationValidatorTest {
         )
         given(vacationRepository.findById(1L)).willReturn(vacationDb)
 
-        val result = vacationValidator.canDeleteVacationPeriod(1L, user)
+        val result = vacationValidator.canDeleteVacationPeriod(1L)
 
         Assertions.assertThat(result)
             .isEqualTo(DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_RANGE_CLOSED))
