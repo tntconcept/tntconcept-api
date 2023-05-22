@@ -97,6 +97,7 @@ internal class ActivitiesValidator(
         activityRepository.findWorkedMinutes(
             LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
             LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59),
+            user.id
         )
 
     @Transactional
@@ -148,7 +149,7 @@ internal class ActivitiesValidator(
 
         val startDate = activityRequest.startDate.withHour(0).withMinute(0).withSecond(0)
         val endDate = activityRequest.startDate.withHour(23).withMinute(59).withSecond(59)
-        val activities = activityRepository.find(startDate, endDate)
+        val activities = activityRepository.findByUserId(startDate, endDate, user.id)
 
         return checkTimeOverlapping(activityRequest, activities)
     }

@@ -39,6 +39,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
     @Test
     fun `return the expected project role`() {
+        val userId = 1L
         val projectRoles = listOf(
             ProjectRole(
                 id = 1L,
@@ -84,9 +85,9 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
         whenever(projectRoleRepository.getAllByProjectId(PROJECT_ID)).thenReturn(projectRoles)
-        whenever(activityService.getProjectRoleActivities(1L)).thenReturn(activitiesProjectRole1)
-        whenever(activityService.getProjectRoleActivities(2L)).thenReturn(activitiesProjectRole2)
-        whenever(activityService.getProjectRoleActivities(3L)).thenReturn(emptyList())
+        whenever(activityService.getProjectRoleActivities(1L, userId)).thenReturn(activitiesProjectRole1)
+        whenever(activityService.getProjectRoleActivities(2L, userId)).thenReturn(activitiesProjectRole2)
+        whenever(activityService.getProjectRoleActivities(3L, userId)).thenReturn(emptyList())
 
         val expectedProjectRoles = listOf(
             buildProjectRoleUserDTO(1L, 120, 50),

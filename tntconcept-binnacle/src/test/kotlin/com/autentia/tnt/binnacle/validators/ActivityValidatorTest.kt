@@ -138,7 +138,7 @@ internal class ActivityValidatorTest {
 
             whenever(
                 activityRepository.findOverlapped(
-                    newActivity.getStart(), newActivity.getEnd()
+                    newActivity.getStart(), newActivity.getEnd(), user.id
                 )
             ).thenReturn(
                 listOf(
@@ -249,7 +249,8 @@ internal class ActivityValidatorTest {
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
                     timeInterval,
-                    listOf(activity.projectRole.id)
+                    listOf(activity.projectRole.id),
+                    user.id
                 )
             ).thenReturn(activitiesInTheYear)
 
@@ -298,13 +299,15 @@ internal class ActivityValidatorTest {
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
                     timeInterval2022,
-                    listOf(projectRole.id)
+                    listOf(projectRole.id),
+                    user.id
                 )
             ).thenReturn(activities2022)
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
                     timeInterval2023,
-                    listOf(projectRole.id)
+                    listOf(projectRole.id),
+                    user.id
                 )
             ).thenReturn(activities2023)
 
@@ -443,7 +446,7 @@ internal class ActivityValidatorTest {
 
             given(
                 activityRepository.findOverlapped(
-                    newActivity.getStart(), newActivity.getEnd()
+                    newActivity.getStart(), newActivity.getEnd(), user.id
                 )
             ).willReturn(
                 listOf(
@@ -551,7 +554,7 @@ internal class ActivityValidatorTest {
                 )
             )
             whenever(
-                activityService.getActivitiesByProjectRoleIds(yearTimeInterval, listOf(projectRoleLimited.id))
+                activityService.getActivitiesByProjectRoleIds(yearTimeInterval, listOf(projectRoleLimited.id), user.id)
             ).thenReturn(activitiesInTheYear)
             whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(projectRoleLimited)
 
@@ -612,7 +615,8 @@ internal class ActivityValidatorTest {
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
                     timeInterval2022,
-                    listOf(projectRole.id)
+                    listOf(projectRole.id),
+                    user.id
                 )
             ).thenReturn(
                 activities2022
@@ -620,7 +624,8 @@ internal class ActivityValidatorTest {
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
                     timeInterval2023,
-                    listOf(projectRole.id)
+                    listOf(projectRole.id),
+                    user.id
                 )
             ).thenReturn(
                 activities2023
@@ -663,6 +668,7 @@ internal class ActivityValidatorTest {
                 activityRepository.findOverlapped(
                     LocalDateTime.of(2022, Month.JULY, 7, 0, 0, 0),
                     LocalDateTime.of(2022, Month.JULY, 7, 23, 59, 59),
+                    user.id
                 )
             ).willReturn(
                 listOf(

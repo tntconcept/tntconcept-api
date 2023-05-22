@@ -9,38 +9,36 @@ import java.time.LocalDateTime
 internal interface ActivityRepository {
 
     fun findAll(activitySpecification: Specification<Activity>): List<Activity>
+
     fun findById(id: Long): Activity?
 
-    fun findByIdWithoutSecurity(id: Long): Activity?
-
-    fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
+    fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
     fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity>
 
-    fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
+    fun findByProjectRoleIds(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectRoleIds: List<Long>,
+        userId: Long
+    ): List<Activity>
 
-    fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity>
-    fun findByProjectRoleIds(start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>): List<Activity>
-    fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity>
-    fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity>
+    fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity>
+
+    fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long, userId: Long): List<Activity>
 
     fun find(approvalState: ApprovalState): List<Activity>
 
-    fun find(projectRoleId: Long): List<Activity>
+    fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity>
 
     @Deprecated("Use findIntervals function instead")
-    fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime): List<ActivityTimeOnly>
+    fun findWorkedMinutes(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<ActivityTimeOnly>
 
-    fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity>
+    fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
     fun save(activity: Activity): Activity
 
-    fun saveWithoutSecurity(activity: Activity): Activity
-
     fun update(activity: Activity): Activity
 
-    fun updateWithoutSecurity(activity: Activity): Activity
-
     fun deleteById(id: Long)
-
 }

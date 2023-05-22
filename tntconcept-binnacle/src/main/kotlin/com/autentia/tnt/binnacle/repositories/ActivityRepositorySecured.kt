@@ -9,56 +9,56 @@ import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import com.autentia.tnt.security.application.isAdmin
 import com.autentia.tnt.security.application.isNotAdmin
+import io.micronaut.context.annotation.Primary
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
 
 @Singleton
+@Primary
 internal class ActivityRepositorySecured(
-    private val activityDao: ActivityDao,
+    private val internalActivityRepository: InternalActivityRepository,
     private val securityService: SecurityService,
 ) : ActivityRepository {
+
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
-        activityDao.findAll(addUserFilterIfNecessary(activitySpecification))
+        internalActivityRepository.findAll(addUserFilterIfNecessary(activitySpecification))
 
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
 
         return if (authentication.isAdmin()) {
-            activityDao.findById(id).orElse(null)
+            internalActivityRepository.findById(id)
         } else {
-            activityDao.findByIdAndUserId(id, authentication.id())
+            internalActivityRepository.findByIdAndUserId(id, authentication.id())
         }
     }
 
-    override fun findByIdWithoutSecurity(id: Long): Activity? {
-        //TODO: Add security to this method!!!
-        return activityDao.findById(id).orElse(null)
-    }
-
-    override fun find(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
+    override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.find(startDate, endDate, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(userId == authentication.id()) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByUserId(startDate, endDate, userId)
     }
 
-    override fun findWithoutSecurity(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
-        //TODO: Add security to this method!!!
-        return activityDao.find(startDate, endDate, userId)
-    }
 
     override fun find(approvalState: ApprovalState): List<Activity> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.isAdmin()) {
-            activityDao.findByApprovalState(approvalState)
+            internalActivityRepository.find(approvalState)
         } else {
-            activityDao.findByApprovalStateAndUserId(approvalState, authentication.id())
+            internalActivityRepository.findByApprovalStateAndUserId(approvalState, authentication.id())
         }
     }
 
-    override fun find(projectRoleId: Long): List<Activity> {
+    override fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findByProjectRoleIdAndUserId(projectRoleId, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
     }
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
@@ -69,55 +69,71 @@ internal class ActivityRepositorySecured(
             userIds
         }
 
-        return activityDao.find(startDate, endDate, userIdsFiltered)
+        return internalActivityRepository.find(startDate, endDate, userIdsFiltered)
     }
 
-    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime): List<Activity> {
+    override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findOfLatestProjects(start, end, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findOfLatestProjects(start, end, userId)
+
     }
 
-    override fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long): List<Activity> {
+    override fun findByProjectId(
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectId: Long,
+        userId: Long
+    ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findByProjectId(start, end, projectId, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectId(start, end, projectId, userId)
+
     }
 
+    @Deprecated("Use findIntervals function instead")
     override fun findWorkedMinutes(
         startDate: LocalDateTime,
-        endDate: LocalDateTime
+        endDate: LocalDateTime,
+        userId: Long
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findWorkedMinutes(startDate, endDate, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)
     }
 
-    override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime): List<Activity> {
+    override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findOverlapped(startDate, endDate, authentication.id())
-    }
-
-    override fun find(start: LocalDateTime, end: LocalDateTime, projectRoleId: Long): List<Activity> {
-        val authentication = securityService.checkAuthentication()
-        return activityDao.find(start, end, projectRoleId, authentication.id())
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get overlapped activities" }
+        }
+        return internalActivityRepository.findOverlapped(startDate, endDate, userId)
     }
 
     override fun findByProjectRoleIds(
-        start: LocalDateTime, end: LocalDateTime, projectRoleIds: List<Long>
+        start: LocalDateTime,
+        end: LocalDateTime,
+        projectRoleIds: List<Long>,
+        userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        return activityDao.findByProjectRoleIds(start, end, projectRoleIds, authentication.id())
-
+        if (authentication.isNotAdmin()) {
+            require(authentication.id() == userId) { "User cannot get activities" }
+        }
+        return internalActivityRepository.findByProjectRoleIds(start, end, projectRoleIds, userId)
     }
 
     override fun save(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
         require(activity.userId == authentication.id()) { "User cannot save activity" }
 
-        return activityDao.save(activity)
-    }
-
-    override fun saveWithoutSecurity(activity: Activity): Activity {
-        //TODO: Temporal method, we have to implement security!!
-        return activityDao.save(activity)
+        return internalActivityRepository.save(activity)
     }
 
     override fun update(activity: Activity): Activity {
@@ -127,28 +143,21 @@ internal class ActivityRepositorySecured(
             require(activity.userId == authentication.id()) { "User cannot update activity" }
         }
 
-        val activityToUpdate = activityDao.findById(activity.id)
-        require(activityToUpdate.isPresent) { "Activity to update does not exist" }
+        val activityToUpdate = activity.id?.let { internalActivityRepository.findById(it) }
 
-        return activityDao.update(activity)
-    }
+        require(activityToUpdate != null) { "Activity to update does not exist" }
 
-    override fun updateWithoutSecurity(activity: Activity): Activity {
-        //TODO: Temporal method, we have to implement security!!
-        val activityToUpdate = activityDao.findById(activity.id)
-        require(activityToUpdate.isPresent) { "Activity to update does not exist" }
-
-        return activityDao.update(activity)
+        return internalActivityRepository.update(activity)
     }
 
     override fun deleteById(id: Long) {
         val authentication = securityService.checkAuthentication()
-        val activityToDelete = activityDao.findById(id)
+        val activityToDelete = internalActivityRepository.findById(id)
 
-        require(activityToDelete.isPresent) { "Activity with id $id does not exist" }
-        require(activityToDelete.get().userId == authentication.id()) { "User cannot delete activity" }
+        require(activityToDelete != null) { "Activity with id $id does not exist" }
+        require(activityToDelete.userId == authentication.id()) { "User cannot delete activity" }
 
-        activityDao.deleteById(id)
+        internalActivityRepository.deleteById(id)
     }
 
     private fun addUserFilterIfNecessary(activitySpecification: Specification<Activity>): Specification<Activity> {

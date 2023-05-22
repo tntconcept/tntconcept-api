@@ -9,13 +9,15 @@
     </appender>
 
     <logger name="com.autentia.tnt" level="DEBUG"/>
-<!--    <logger name="io.micronaut" level="DEBUG"/>-->
-<!--    <logger name="io.micronaut.context" level="TRACE"/>-->
-<!--    <logger name="io.micronaut.context.condition" level="TRACE"/>-->
-<!--    <logger name="io.micronaut.data.query" level="TRACE"/>-->
-<!--    <logger name="io.micronaut.http.client" level="TRACE"/>-->
+    <!--    <logger name="io.micronaut" level="DEBUG"/>-->
+    <!--    <logger name="io.micronaut.context" level="TRACE"/>-->
+    <!--    <logger name="io.micronaut.context.condition" level="TRACE"/>-->
+    <logger name="io.micronaut.data.query" level="TRACE"/>
+    <!--    <logger name="io.micronaut.http.client" level="TRACE"/>-->
     <logger name="org.testcontainers" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="DEBUG"/>
+    <logger name="org.hibernate.type" level="TRACE"/>
 
     <root level="info">
         <appender-ref ref="STDOUT"/>

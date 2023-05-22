@@ -10,6 +10,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.LocalTime
 import javax.transaction.Transactional
@@ -17,6 +18,7 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivityService(
     private val activityRepository: ActivityRepository,
+    @param:Named("Internal") private val internalActivityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityImageService: ActivityImageService
 ) {
@@ -29,10 +31,10 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesBetweenDates(dateInterval: DateInterval): List<Activity> {
+    fun getActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
         val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
-        return activityRepository.find(startDateMinHour, endDateMaxHour)
+        return activityRepository.findByUserId(startDateMinHour, endDateMaxHour, userId)
     }
 
     @Transactional
@@ -47,7 +49,7 @@ internal class ActivityService(
     fun getUserActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
         val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
-        return activityRepository.findWithoutSecurity(startDateMinHour, endDateMaxHour, userId)
+        return internalActivityRepository.findByUserId(startDateMinHour, endDateMaxHour, userId)
     }
 
     @Transactional
@@ -57,13 +59,13 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesByProjectId(timeInterval: TimeInterval, projectId: Long): List<Activity> =
-        activityRepository.findByProjectId(timeInterval.start, timeInterval.end, projectId)
+    fun getActivitiesByProjectId(timeInterval: TimeInterval, projectId: Long, userId: Long): List<Activity> =
+        activityRepository.findByProjectId(timeInterval.start, timeInterval.end, projectId, userId)
 
     @Transactional
     @ReadOnly
-    fun getActivitiesByProjectRoleIds(timeInterval: TimeInterval, projectRoleIds: List<Long>) =
-        activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds)
+    fun getActivitiesByProjectRoleIds(timeInterval: TimeInterval, projectRoleIds: List<Long>, userId: Long) =
+        activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds, userId)
             .map(Activity::toDomain)
 
     @Transactional
@@ -74,8 +76,8 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesOfLatestProjects(timeInterval: TimeInterval) =
-        activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end)
+    fun getActivitiesOfLatestProjects(timeInterval: TimeInterval, userId: Long) =
+        activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(
@@ -155,5 +157,6 @@ internal class ActivityService(
         activityRepository.deleteById(id)
     }
 
-    fun getProjectRoleActivities(projectRoleId: Long): List<Activity> = activityRepository.find(projectRoleId)
+    fun getProjectRoleActivities(projectRoleId: Long, userId: Long): List<Activity> =
+        activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
 }

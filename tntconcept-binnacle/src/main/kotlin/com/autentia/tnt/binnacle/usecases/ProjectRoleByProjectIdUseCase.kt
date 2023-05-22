@@ -51,7 +51,7 @@ class ProjectRoleByProjectIdUseCase internal constructor(
         val projectRolesUser = mutableListOf<ProjectRoleUser>()
 
         for (projectRole in projectRolesOfProject) {
-            val projectRoleActivities = activityService.getProjectRoleActivities(projectRole.id)
+            val projectRoleActivities = activityService.getProjectRoleActivities(projectRole.id, userId)
             val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                 projectRole,
                 projectRoleActivities.map(Activity::toDomain),

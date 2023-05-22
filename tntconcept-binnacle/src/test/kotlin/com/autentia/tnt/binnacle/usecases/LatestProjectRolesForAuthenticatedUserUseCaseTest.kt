@@ -38,26 +38,36 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activityCalendarFactory)
     private val latestProjectRolesForAuthenticatedUserUseCase = LatestProjectRolesForAuthenticatedUserUseCase(
-        projectRoleRepository, projectRoleResponseConverter, activityService, activityCalendarService, securityService, projectRoleConverter
+        projectRoleRepository,
+        projectRoleResponseConverter,
+        activityService,
+        activityCalendarService,
+        securityService,
+        projectRoleConverter
     )
 
     @Test
     fun `return the last imputed roles`() {
+        val userId = 1L
         val startDate = BEGINNING_OF_THE_YEAR.atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
         val timeInterval = TimeInterval.of(startDate, END_OF_THE_YEAR.atTime(23, 59, 59))
         val oneMonthTimeInterval = TimeInterval.of(TODAY.minusMonths(1).atTime(LocalTime.MIN), endDate)
 
         val activities = listOf(
-            createActivity().copy(projectRole = projectRole1).copy(start = TODAY.minusDays(15).atTime(7,30,0)).copy(end = TODAY.minusDays(15).atTime(9,0,0)),
+            createActivity().copy(projectRole = projectRole1).copy(start = TODAY.minusDays(15).atTime(7, 30, 0))
+                .copy(end = TODAY.minusDays(15).atTime(9, 0, 0)),
             createActivity().copy(projectRole = projectRole2),
-            createActivity().copy(projectRole = projectRole2).copy(start = TODAY.minusDays(2).atStartOfDay()).copy(end = TODAY.minusDays(2).atTime(9,0,0)),
+            createActivity().copy(projectRole = projectRole2).copy(start = TODAY.minusDays(2).atStartOfDay())
+                .copy(end = TODAY.minusDays(2).atTime(9, 0, 0)),
         )
         val filteredActivities = listOf(activities[0].toDomain(), activities[2].toDomain())
 
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
-        whenever(activityService.getActivitiesOfLatestProjects(timeInterval)).thenReturn(activities)
-        whenever(activityService.filterActivitiesByTimeInterval(oneMonthTimeInterval, activities)).thenReturn(filteredActivities)
+        whenever(activityService.getActivitiesOfLatestProjects(timeInterval, userId)).thenReturn(activities)
+        whenever(activityService.filterActivitiesByTimeInterval(oneMonthTimeInterval, activities)).thenReturn(
+            filteredActivities
+        )
 
         val expectedProjectRoles = listOf(
             buildProjectRoleUserDTO(1L, 30, 120),
@@ -107,18 +117,19 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
                 requireEvidence = RequireEvidence.WEEKLY
             )
 
-        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxAllowed: Int): ProjectRoleUserDTO = ProjectRoleUserDTO(
-            id = id,
-            name = "Role ID $id",
-            projectId = 1L,
-            organizationId = 1L,
-            maxAllowed = maxAllowed,
-            remaining = remaining,
-            timeUnit = TimeUnit.MINUTES,
-            requireEvidence = RequireEvidence.WEEKLY,
-            requireApproval = false,
-            userId = 1L
-        )
+        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxAllowed: Int): ProjectRoleUserDTO =
+            ProjectRoleUserDTO(
+                id = id,
+                name = "Role ID $id",
+                projectId = 1L,
+                organizationId = 1L,
+                maxAllowed = maxAllowed,
+                remaining = remaining,
+                timeUnit = TimeUnit.MINUTES,
+                requireEvidence = RequireEvidence.WEEKLY,
+                requireApproval = false,
+                userId = 1L
+            )
 
         private val PROJECT_ROLES_RECENT = listOf(
             buildProjectRoleRecent(1L, START_DATE),

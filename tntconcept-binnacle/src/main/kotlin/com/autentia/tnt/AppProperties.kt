@@ -37,6 +37,7 @@ internal class AppProperties {
 
         var notWorkableProjects: List<Int> = emptyList()
         var workSummary = WorkSummaryProperties()
+        var missingEvidencesNotification = MissingEvidencesNotificationProperties()
 
 
         @ConfigurationProperties("work-summary")
@@ -65,5 +66,12 @@ internal class AppProperties {
             }
 
         }
+
+        @ConfigurationProperties("missing-evidences-notification")
+        internal class MissingEvidencesNotificationProperties {
+            var enabled: Boolean = false
+            var cronExpression: String? = null
+        }
+
     }
 }
