@@ -12,7 +12,6 @@ import io.micronaut.http.HttpStatus.*
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
-import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -63,10 +62,9 @@ internal class UserControllerIT {
             Role(4, "role"),
             true
         )
-        val authenticatedUser = ClientAuthentication(
-            user.id.toString(), mapOf("roles" to listOf("user"))
-        )
-        val userInfoResponseDTO = UserInfoResponseDTO(user, authenticatedUser.roles.stream().toList())
+        val roles = listOf("user")
+
+        val userInfoResponseDTO = UserInfoResponseDTO(user.username, user.hiringDate, roles)
         whenever(findUserInfoUseCase.find()).thenReturn(userInfoResponseDTO)
 
         val request = HttpRequest.GET<Any>("/api/user/me")

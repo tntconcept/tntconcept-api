@@ -31,10 +31,12 @@ internal class FindUserInfoUseCaseTest {
     private companion object{
         private val USER = createUser()
 
+        private val roles = listOf("user")
+
         private val authenticatedUser = ClientAuthentication(
-            USER.id.toString(), mapOf("roles" to listOf("user"))
+            USER.id.toString(), mapOf("roles" to roles)
         )
 
-        private val USER_INFO_RESPONSE_DTO = UserInfoResponseDTO(USER, authenticatedUser.roles.stream().toList())
+        private val USER_INFO_RESPONSE_DTO = UserInfoResponseDTO(USER.username, USER.hiringDate, roles)
     }
 }
