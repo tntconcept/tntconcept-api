@@ -10,7 +10,7 @@
 
     <groupId>com.autentia.tnt</groupId>
     <artifactId>tntconcept-api</artifactId>
-    <version>1.9.0-SNAPSHOT</version>
+    <version>1.10.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -37,6 +37,9 @@
         <docker.image.to>ghcr.io/autentia/tntconcept-api</docker.image.to>
         <docker.tag>${project.version}</docker.tag>
         <maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
+
+        <!-- Do not deploy but default -->
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <dependencyManagement>
@@ -190,5 +193,12 @@
         <tag>main</tag>
         <url>https://github.com/autentia/tntconcept-api</url>
     </scm>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Maven repository</name>
+            <url>https://maven.pkg.github.com/autentia/tntconcept-api</url>
+        </repository>
+    </distributionManagement>
 
 </project>
