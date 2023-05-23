@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.repositories
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -48,10 +49,7 @@ internal class ProjectRoleDaoIT {
     }
 
     private fun checkProjectRole(
-        projectRole: ProjectRole,
-        expectedProjectRoleId: Long,
-        expectedProjectRoleName: String,
-        expectedProjectId: Long
+        projectRole: ProjectRole, expectedProjectRoleId: Long, expectedProjectRoleName: String, expectedProjectId: Long
     ) {
         assertEquals(projectRole.id, expectedProjectRoleId)
         assertEquals(projectRole.project.id, expectedProjectId)
@@ -65,6 +63,17 @@ internal class ProjectRoleDaoIT {
         val result = projectRoleDao.getAllByProjectId(projectId)
 
         assertTrue(result.isNotEmpty())
+    }
+
+    @Test
+    fun `should get project roles with is is working time to false`() {
+        // Expected identifiers defined in R__test.sql
+        val expectedIdentifiers = listOf(11L, 12L)
+
+        val result = projectRoleDao.findAllByIsWorkingTimeFalse()
+
+        assertThat(result).isNotEmpty()
+        assertThat(result.map { it.id }).containsExactlyInAnyOrderElementsOf(expectedIdentifiers)
     }
 
 }

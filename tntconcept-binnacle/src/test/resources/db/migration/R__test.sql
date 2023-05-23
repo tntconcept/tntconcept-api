@@ -74,3 +74,21 @@ INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requir
                          insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
 VALUES (10, 7, 'Project 7 none', 0.00, 0, 'NO', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0, 'MINUTES',
         1, 0);
+
+
+-- PROJECT-ROLE for ProjectRoleDaoIT
+-- Project id 8
+INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, ownerId, departmentId, billable,
+                     offerId, insertDate, updateDate)
+VALUES (8, 3, '2023-04-24', null, 1, 'Project with roles for testing', '', null, null, DEFAULT, null,
+        '2023-04-24 06:33:16', '2023-04-24 06:33:21');
+
+INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId, departmentId,
+                         insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
+VALUES (11, 8, 'Project no working time', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20',
+        0, 'MINUTES', 0, 0);
+
+INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId, departmentId,
+                         insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
+VALUES (12, 8, 'Project no working time 2', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20',
+        0, 'MINUTES', 0, 0);
