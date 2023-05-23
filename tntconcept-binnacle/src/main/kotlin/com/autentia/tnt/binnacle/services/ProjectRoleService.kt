@@ -23,4 +23,9 @@ internal class ProjectRoleService(private val projectRoleRepository: ProjectRole
     @ReadOnly
     fun getByProjectRoleId(projectRoleId: Long) =
         projectRoleRepository.findById(projectRoleId)?.toDomain() ?: throw ProjectRoleNotFoundException(projectRoleId)
+
+
+    @Transactional
+    @ReadOnly
+    fun getAllNotWorkable(): List<ProjectRole> = projectRoleRepository.getAllNotWorkable()
 }
