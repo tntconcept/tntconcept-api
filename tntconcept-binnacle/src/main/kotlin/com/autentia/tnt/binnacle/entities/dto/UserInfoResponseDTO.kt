@@ -1,16 +1,18 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.binnacle.entities.dto
 
 import com.autentia.tnt.binnacle.entities.User
 import java.time.LocalDate
 
-internal data class UserResponse(
+data class UserInfoResponseDTO(
     val username: String,
     val hiringDate: LocalDate,
+    val roles: List<String>
 ) {
 
-    constructor(user: User) : this(
+    constructor(user: User, roles: List<String>) : this(
         user.username,
         user.hiringDate,
+        roles
     )
 
 }
