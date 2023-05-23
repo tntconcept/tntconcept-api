@@ -28,7 +28,7 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         return activityDao.find(startDate, endDate, userIds)
     }
 
-    override fun find(approvalState: ApprovalState): List<Activity> {
+    fun find(approvalState: ApprovalState): List<Activity> {
         return activityDao.findByApprovalState(approvalState)
     }
 

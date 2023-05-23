@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.security.application.canAccessToOthersInfo
+import com.autentia.tnt.security.application.canAccessAllUsers
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
@@ -29,7 +29,7 @@ internal class UserRepositorySecured(
 
     override fun find(userId: Long): User? {
         val authentication = securityService.checkAuthentication()
-        return if (authentication.canAccessToOthersInfo()) {
+        return if (authentication.canAccessAllUsers()) {
             userDao.findById(userId).orElse(null)
         } else {
             userDao.findById(authentication.id()).orElse(null)
@@ -38,7 +38,7 @@ internal class UserRepositorySecured(
 
     override fun find(): List<User> {
         val authentication = securityService.checkAuthentication()
-        return if (authentication.canAccessToOthersInfo()) {
+        return if (authentication.canAccessAllUsers()) {
             userDao.findByActiveTrue()
         } else {
             val user = userDao.findById(authentication.id())

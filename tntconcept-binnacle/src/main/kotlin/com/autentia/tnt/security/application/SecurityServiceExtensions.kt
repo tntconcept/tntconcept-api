@@ -15,14 +15,17 @@ fun SecurityService.checkRole(role: String): Authentication {
     return authentication
 }
 
-fun SecurityService.checkAdminRole(): Authentication {
-    return checkRole(ADMIN_ROLE)
+fun SecurityService.checkActivityApprovalRole(): Authentication {
+    return checkRole(ACTIVITY_APPROVAL_ROLE)
 }
 
 fun Authentication.isAdmin(): Boolean = roles.contains(ADMIN_ROLE)
-fun Authentication.isNotAdmin(): Boolean = !isAdmin()
 private fun Authentication.isActivityApproval(): Boolean = roles.contains(ACTIVITY_APPROVAL_ROLE)
 
-fun Authentication.canAccessToOthersInfo() = isAdmin() || isActivityApproval()
+fun Authentication.canAccessAllUsers() = isAdmin() || isActivityApproval()
+fun Authentication.canNotAccessAllUsers() = !canAccessAllUsers()
+
+fun Authentication.canAccessAllActivities() = isAdmin() || isActivityApproval()
+fun Authentication.canNotAccessAllActivities() = !canAccessAllActivities()
 
 fun Authentication.id(): Long = name.toLong()

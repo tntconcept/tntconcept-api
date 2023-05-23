@@ -125,13 +125,6 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `get activities by approval state should call repository`() {
-        doReturn(activities).whenever(activityRepository).find(ApprovalState.ACCEPTED)
-
-        assertEquals(activities, activityService.getActivitiesApprovalState(ApprovalState.ACCEPTED))
-    }
-
-    @Test
     fun `get activities by time interval should call repository`() {
         val userIds = listOf(1L)
 

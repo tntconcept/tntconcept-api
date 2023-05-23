@@ -27,8 +27,6 @@ internal interface ActivityRepository {
 
     fun findByProjectId(start: LocalDateTime, end: LocalDateTime, projectId: Long, userId: Long): List<Activity>
 
-    fun find(approvalState: ApprovalState): List<Activity>
-
     fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity>
 
     @Deprecated("Use findIntervals function instead")
