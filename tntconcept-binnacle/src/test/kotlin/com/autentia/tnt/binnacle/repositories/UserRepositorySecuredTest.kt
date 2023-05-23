@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -24,7 +23,7 @@ class UserRepositorySecuredTest {
     fun `find all users when the rol is not admin should return only authenticated user`() {
         val user = createUser().copy(id = userId)
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
         whenever(userDao.findById(userId)).thenReturn(Optional.of(user))
 
         val users = userRepositorySecured.find()
@@ -36,7 +35,7 @@ class UserRepositorySecuredTest {
 
     @Test
     fun `find all users when the rol is not admin and authenticated user is not found should return IllegalStateException`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
         whenever(userDao.findById(userId)).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> { userRepositorySecured.find() }
@@ -51,7 +50,16 @@ class UserRepositorySecuredTest {
 
     @Test
     fun `find all users when the rol is admin`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
+        whenever(securityService.authentication).thenReturn(Optional.of(adminAuth))
+
+        userRepositorySecured.find()
+
+        verify(userDao).findByActiveTrue()
+    }
+
+    @Test
+    fun `find all users when the rol is activity approval`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
 
         userRepositorySecured.find()
 
@@ -78,15 +86,15 @@ class UserRepositorySecuredTest {
 
     @Test
     fun `find by authenticated user`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
 
         userRepositorySecured.findByAuthenticatedUser()
 
-        verify(userDao).findById(authenticationUser.id())
+        verify(userDao).findById(userAuth.id())
     }
 
     @Test
-    fun `find by authenticated without a logged user`() {
+    fun `find by authenticated without a logged user should throw IllegalStateException`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> { userRepositorySecured.findByAuthenticatedUser() }
@@ -96,7 +104,19 @@ class UserRepositorySecuredTest {
     fun `find by user id should return info if logged user has admin role`() {
         val user = createUser()
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
+        whenever(securityService.authentication).thenReturn(Optional.of(adminAuth))
+        whenever(userDao.findById(userId)).thenReturn(Optional.of(user))
+
+        val result = userRepositorySecured.find(userId)
+
+        assertEquals(user, result)
+    }
+
+    @Test
+    fun `find by user id should return info if logged user has activity-approval role`() {
+        val user = createUser()
+
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
         whenever(userDao.findById(userId)).thenReturn(Optional.of(user))
 
         val result = userRepositorySecured.find(userId)
@@ -108,8 +128,8 @@ class UserRepositorySecuredTest {
     fun `find by user id should return info for authenticated user`() {
         val user = createUser()
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
-        whenever(userDao.findById(authenticationUser.id())).thenReturn(Optional.of(user))
+        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
+        whenever(userDao.findById(userAuth.id())).thenReturn(Optional.of(user))
 
         val result = userRepositorySecured.find(adminUserId)
 
@@ -126,8 +146,11 @@ class UserRepositorySecuredTest {
     private companion object {
         private const val userId = 1L
         private const val adminUserId = 3L
-        private val authenticationAdmin =
-            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin")))
-        private val authenticationUser = ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
+
+        private val adminAuth =
+            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin", "activity-approval")))
+        private val activityApprovalAuth =
+            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin", "activity-approval")))
+        private val userAuth = ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 }
