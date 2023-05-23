@@ -8,7 +8,6 @@ import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
-import org.slf4j.LoggerFactory
 
 @Factory
 internal class WorkTimeFactory {
@@ -43,5 +42,5 @@ internal class WorkTimeFactory {
     ): TimeSummaryService = TimeSummaryService(
         targetWorkService, timeWorkableService, workedTimeService, workRecommendationService, timeSummaryConverter
     )
-    
+
 }
