@@ -16,5 +16,5 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven
+      - name: Build
         run: ./mvnw --batch-mode clean install
