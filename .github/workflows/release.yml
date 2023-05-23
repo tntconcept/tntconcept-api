@@ -58,10 +58,15 @@ jobs:
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
 
+      - name: Build and deploy
+        run: ./mvnw --batch-mode clean deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create Docker release
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-          ./mvnw --batch-mode clean install jib:build -Ddocker.tag=${{ env.NEXT_RELEASE }}
+          ./mvnw --batch-mode jib:build -Ddocker.tag=${{ env.NEXT_RELEASE }}
           docker logout ghcr.io
 
       - name: Create GitHub release
