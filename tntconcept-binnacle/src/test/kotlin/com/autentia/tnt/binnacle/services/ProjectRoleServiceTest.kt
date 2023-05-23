@@ -3,11 +3,10 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 
 internal class ProjectRoleServiceTest {
 
@@ -37,6 +36,25 @@ internal class ProjectRoleServiceTest {
         val actual = projectRoleService.getAllByProjectIds(projectIds)
 
         assertEquals(projectRoles, actual)
+    }
+
+    @Test
+    fun `getAllNotWorkable should call find method in role dao`() {
+        // Given
+        val listOfRoles = listOf(
+            createProjectRole().copy(id = 1L, isWorkingTime = false),
+            createProjectRole().copy(id = 2L, isWorkingTime = false),
+            createProjectRole().copy(id = 3L, isWorkingTime = false)
+        )
+        doReturn(listOfRoles).whenever(projectRoleRepository).getAllNotWorkable()
+
+        // When
+        val result = projectRoleService.getAllNotWorkable()
+
+        // Then
+        assertThat(result).isEqualTo(listOfRoles)
+        verify(projectRoleRepository).getAllNotWorkable()
+        verifyNoMoreInteractions(projectRoleRepository)
     }
 
 }

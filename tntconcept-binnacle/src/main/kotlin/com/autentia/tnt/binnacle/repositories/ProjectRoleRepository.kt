@@ -14,6 +14,8 @@ interface ProjectRoleRepository {
 
     fun getAllByIdIn(ids: List<Long>): List<ProjectRole>
 
+    fun getAllNotWorkable(): List<ProjectRole>
+
     @Deprecated("Use findDistinctRolesBetweenDate instead")
     fun findDistinctProjectRolesBetweenDate(
         startDate: LocalDateTime,
