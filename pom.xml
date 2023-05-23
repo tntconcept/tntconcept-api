@@ -39,7 +39,7 @@
         <maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
 
         <!-- Do not deploy but default -->
-        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.deploy.skip>false</maven.deploy.skip>
     </properties>
 
     <dependencyManagement>
