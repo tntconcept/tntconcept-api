@@ -16,7 +16,7 @@ class FindUserInfoUseCase internal constructor(
         val authentication = securityService.checkAuthentication()
         val roles = authentication.roles.stream().toList()
         val user =  userService.getById(authentication.id())
-        return UserInfoResponseDTO(user, roles)
+        return UserInfoResponseDTO(user.username, user.hiringDate, roles)
     }
 
 }
