@@ -28,7 +28,11 @@ internal class ProjectRoleRepositorySecured(
     override fun getAllByIdIn(ids: List<Long>): List<ProjectRole> {
         return projectRoleDao.getAllByIdIn(ids)
     }
-    
+
+    override fun getAllNotWorkable(): List<ProjectRole> {
+        return projectRoleDao.findAllByIsWorkingTimeFalse();
+    }
+
     @Deprecated("Use findDistinctRolesBetweenDate instead")
     override fun findDistinctProjectRolesBetweenDate(
         startDate: LocalDateTime,

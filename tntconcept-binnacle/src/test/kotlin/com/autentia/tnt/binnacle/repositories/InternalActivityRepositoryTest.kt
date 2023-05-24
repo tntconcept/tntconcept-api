@@ -107,18 +107,6 @@ class InternalActivityRepositoryTest {
     }
 
     @Test
-    fun `find by approval state should retrieve activities`() {
-        val activities = listOf(createActivity())
-        val approvalState = ApprovalState.ACCEPTED
-
-        whenever(activityDao.findByApprovalState(approvalState)).thenReturn(activities)
-
-        val result = internalActivityRepository.find(approvalState)
-
-        assertEquals(activities, result)
-    }
-
-    @Test
     fun `find by approval state and user id should retrieve activities`() {
         val activities = listOf(createActivity(approvalState = ApprovalState.ACCEPTED))
         val approvalState = ApprovalState.ACCEPTED

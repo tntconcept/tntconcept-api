@@ -24,7 +24,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
 
     @BeforeEach
     fun setMocks() {
-        doReturn(getListOfActiveUsers()).`when`(this.userService).findActive()
+        doReturn(getListOfActiveUsers()).`when`(this.userService).getActiveUsersWithoutSecurity()
     }
 
     @AfterEach

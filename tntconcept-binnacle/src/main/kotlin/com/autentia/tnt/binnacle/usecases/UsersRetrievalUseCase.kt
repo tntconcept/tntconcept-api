@@ -11,7 +11,7 @@ class UsersRetrievalUseCase internal constructor(
     private val userResponseConverter: UserResponseConverter
 ) {
     fun getAllActiveUsers(): List<UserResponseDTO> {
-        return userService.findAllActive()
+        return userService.getActiveUsers()
             .map { userResponseConverter.mapUserToUserResponseDTO(it) }
     }
 }

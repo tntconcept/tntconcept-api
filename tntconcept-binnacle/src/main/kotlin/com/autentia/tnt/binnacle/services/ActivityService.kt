@@ -70,12 +70,6 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesApprovalState(approvalState: ApprovalState): List<Activity> {
-        return activityRepository.find(approvalState)
-    }
-
-    @Transactional
-    @ReadOnly
     fun getActivitiesOfLatestProjects(timeInterval: TimeInterval, userId: Long) =
         activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)
 

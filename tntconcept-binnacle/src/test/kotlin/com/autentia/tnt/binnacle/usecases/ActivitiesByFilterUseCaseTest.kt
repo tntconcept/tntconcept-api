@@ -11,18 +11,28 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.repositories.predicates.*
 import com.autentia.tnt.binnacle.services.ActivityService
+import io.micronaut.security.authentication.ClientAuthentication
+import io.micronaut.security.utils.SecurityService
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.util.*
 
 internal class ActivitiesByFilterUseCaseTest {
     private val activityService = mock<ActivityService>()
+    private val securityService = mock<SecurityService>()
     private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
     private val activitiesByFilterUseCase =
-        ActivitiesByFilterUseCase(activityService, activityResponseConverter)
+        ActivitiesByFilterUseCase(activityService, securityService, activityResponseConverter)
+
+    @BeforeEach
+    fun setUp() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
+    }
 
     @Test
     fun `get activities by approval state`() {
@@ -30,7 +40,10 @@ internal class ActivitiesByFilterUseCaseTest {
             approvalState = ApprovalState.PENDING,
         )
         val compositedSpecification =
-            ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!)
+            PredicateBuilder.and(
+                ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
+                ActivityUserIdSpecification(userId)
+            )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -45,8 +58,11 @@ internal class ActivitiesByFilterUseCaseTest {
         )
         val compositedSpecification =
             PredicateBuilder.and(
-                ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
-                ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
+                PredicateBuilder.and(
+                    ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
+                    ActivityRoleIdSpecification(activityFilterDTO.roleId!!),
+                ),
+                ActivityUserIdSpecification(userId)
             )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
@@ -62,9 +78,13 @@ internal class ActivitiesByFilterUseCaseTest {
         )
         val compositedSpecification =
             PredicateBuilder.and(
-                ActivityStartDateLessOrEqualSpecification(activityFilterDTO.endDate!!),
-                ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.startDate!!)
+                PredicateBuilder.and(
+                    ActivityStartDateLessOrEqualSpecification(activityFilterDTO.endDate!!),
+                    ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.startDate!!)
+                ),
+                ActivityUserIdSpecification(userId)
             )
+
 
         whenever(activityService.getActivities(compositedSpecification)).thenReturn(listOf(activity))
 
@@ -82,9 +102,10 @@ internal class ActivitiesByFilterUseCaseTest {
             projectId = 1L,
             roleId = 1L
         )
-        val compositedSpecification =
-            ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
-
+        val compositedSpecification = PredicateBuilder.and(
+            ActivityRoleIdSpecification(activityFilterDTO.roleId!!),
+            ActivityUserIdSpecification(userId)
+        )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -96,8 +117,10 @@ internal class ActivitiesByFilterUseCaseTest {
         val activityFilterDTO = ActivityFilterDTO(
             organizationId = 1L,
         )
-        val compositedSpecification =
-            ActivityOrganizationIdSpecification(activityFilterDTO.organizationId!!)
+        val compositedSpecification = PredicateBuilder.and(
+            ActivityOrganizationIdSpecification(activityFilterDTO.organizationId!!),
+            ActivityUserIdSpecification(userId)
+        )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -114,8 +137,10 @@ internal class ActivitiesByFilterUseCaseTest {
             projectId = 1L,
             roleId = null
         )
-        val compositedSpecification =
-            ActivityProjectIdSpecification(activityFilterDTO.projectId!!)
+        val compositedSpecification = PredicateBuilder.and(
+            ActivityProjectIdSpecification(activityFilterDTO.projectId!!),
+            ActivityUserIdSpecification(userId)
+        )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -149,14 +174,12 @@ internal class ActivitiesByFilterUseCaseTest {
     }
 
     private companion object {
+        const val userId = 4L
         val startDate: LocalDate = LocalDate.of(2023, 4, 15)
         val endDate: LocalDate = LocalDate.of(2023, 4, 17)
-        val intervalResponseDTO = IntervalResponseDTO(
-            start = startDate.atStartOfDay(),
-            end = endDate.atStartOfDay(),
-            duration = 120,
-            timeUnit = TimeUnit.MINUTES
-        )
+
+        private val authentication =
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("activity-approval")))
 
         val projectRole = createProjectRole(1L)
         val activity =
@@ -174,18 +197,6 @@ internal class ActivitiesByFilterUseCaseTest {
                 false,
                 approvalState = ApprovalState.PENDING
             ).toDomain()
-
-        val activitiesResponseDTO =
-            ActivityResponseDTO(
-                billable = false,
-                description = "description",
-                hasEvidences = false,
-                id = 1L,
-                projectRoleId = 1,
-                interval = intervalResponseDTO,
-                userId = 1,
-                approvalState = ApprovalState.PENDING
-            )
 
     }
 }

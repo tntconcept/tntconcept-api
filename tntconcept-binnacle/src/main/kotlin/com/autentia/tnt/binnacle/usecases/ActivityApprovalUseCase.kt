@@ -6,7 +6,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.ApprovedActivityMailService
 import com.autentia.tnt.binnacle.services.UserService
-import com.autentia.tnt.security.application.checkAdminRole
+import com.autentia.tnt.security.application.checkActivityApprovalRole
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.util.Locale
@@ -20,7 +20,7 @@ class ActivityApprovalUseCase internal constructor(
     private val approvedActivityMailService: ApprovedActivityMailService
 ) {
     fun approveActivity(id: Long, locale: Locale): ActivityResponseDTO {
-        securityService.checkAdminRole()
+        securityService.checkActivityApprovalRole()
         val activity = activityService.approveActivityById(id)
         if (activity.approvalState == ApprovalState.ACCEPTED) {
             val user = userService.getById(activity.userId)
