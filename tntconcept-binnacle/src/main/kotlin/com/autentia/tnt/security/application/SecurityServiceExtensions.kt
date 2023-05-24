@@ -23,9 +23,7 @@ fun Authentication.isAdmin(): Boolean = roles.contains(ADMIN_ROLE)
 private fun Authentication.isActivityApproval(): Boolean = roles.contains(ACTIVITY_APPROVAL_ROLE)
 
 fun Authentication.canAccessAllUsers() = isAdmin() || isActivityApproval()
-fun Authentication.canNotAccessAllUsers() = !canAccessAllUsers()
 
 fun Authentication.canAccessAllActivities() = isAdmin() || isActivityApproval()
-fun Authentication.canNotAccessAllActivities() = !canAccessAllActivities()
 
 fun Authentication.id(): Long = name.toLong()

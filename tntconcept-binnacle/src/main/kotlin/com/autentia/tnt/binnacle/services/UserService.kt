@@ -20,10 +20,10 @@ class UserService internal constructor(
         userRepository.findByAuthenticatedUser()
             .orElseThrow { IllegalStateException("There isn't authenticated user") }.toDomain()
 
-    fun findActive(): List<User> =
-        userRepository.findByActiveTrue()
+    fun getActiveUsersWithoutSecurity(): List<User> =
+        userRepository.findWithoutSecurity()
 
-    fun findAllActive(): List<User> =
+    fun getActiveUsers(): List<User> =
         userRepository.find()
 
     fun getByUserName(userName: String): User =

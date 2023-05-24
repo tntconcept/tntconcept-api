@@ -23,10 +23,6 @@ internal class UserRepositorySecured(
         return userDao.findByUsername(username)
     }
 
-    override fun findByActiveTrue(): List<User> {
-        return userDao.findByActiveTrue()
-    }
-
     override fun find(userId: Long): User? {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllUsers()) {
@@ -34,6 +30,10 @@ internal class UserRepositorySecured(
         } else {
             userDao.findById(authentication.id()).orElse(null)
         }
+    }
+
+    override fun findWithoutSecurity(): List<User> {
+        return userDao.findByActiveTrue()
     }
 
     override fun find(): List<User> {

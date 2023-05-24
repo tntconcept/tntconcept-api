@@ -33,7 +33,7 @@ internal class ActivityRepositorySecured(
 
     override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.canNotAccessAllActivities()) {
+        if (!authentication.canAccessAllActivities()) {
             require(userId == authentication.id()) { "User cannot get activities" }
         }
         return internalActivityRepository.findByUserId(startDate, endDate, userId)
@@ -42,7 +42,7 @@ internal class ActivityRepositorySecured(
 
     override fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.canNotAccessAllActivities()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
@@ -50,7 +50,7 @@ internal class ActivityRepositorySecured(
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        val userIdsFiltered = if (authentication.canNotAccessAllActivities()) {
+        val userIdsFiltered = if (!authentication.canAccessAllActivities()) {
             userIds.filter { it == authentication.id() }
         } else {
             userIds
@@ -61,7 +61,7 @@ internal class ActivityRepositorySecured(
 
     override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.canNotAccessAllActivities()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findOfLatestProjects(start, end, userId)
@@ -75,7 +75,7 @@ internal class ActivityRepositorySecured(
         userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.canNotAccessAllActivities()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findByProjectId(start, end, projectId, userId)
@@ -89,7 +89,7 @@ internal class ActivityRepositorySecured(
         userId: Long
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.canNotAccessAllActivities()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)
@@ -97,7 +97,7 @@ internal class ActivityRepositorySecured(
 
     override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.canNotAccessAllActivities()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get overlapped activities" }
         }
         return internalActivityRepository.findOverlapped(startDate, endDate, userId)
@@ -110,7 +110,7 @@ internal class ActivityRepositorySecured(
         userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.canNotAccessAllActivities()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findByProjectRoleIds(start, end, projectRoleIds, userId)
@@ -126,7 +126,7 @@ internal class ActivityRepositorySecured(
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
 
-        if (authentication.canNotAccessAllActivities()) {
+        if (!authentication.canAccessAllActivities()) {
             require(activity.userId == authentication.id()) { "User cannot update activity" }
         }
 

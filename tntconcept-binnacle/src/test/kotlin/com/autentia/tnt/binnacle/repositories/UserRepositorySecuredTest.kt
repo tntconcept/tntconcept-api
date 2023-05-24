@@ -79,7 +79,7 @@ class UserRepositorySecuredTest {
     fun `find by active user`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        userRepositorySecured.findByActiveTrue()
+        userRepositorySecured.findWithoutSecurity()
 
         verify(userDao).findByActiveTrue()
     }
