@@ -16,7 +16,7 @@ internal class UsersRetrievalUseCaseTest {
 
     @Test
     fun `should return the list of users`() {
-        whenever(userService.findAllActive()).thenReturn(listOf(createUser()))
+        whenever(userService.getActiveUsers()).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getAllActiveUsers()
 

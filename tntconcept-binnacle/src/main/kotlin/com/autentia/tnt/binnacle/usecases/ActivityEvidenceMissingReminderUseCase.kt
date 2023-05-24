@@ -38,7 +38,7 @@ class ActivityEvidenceMissingReminderUseCase @Inject internal constructor(
     }
 
     private fun getProjectRolesMissingEvidenceByUser(): Map<User, List<ProjectRole>> {
-        val activeUsers: List<User> = userService.findActive()
+        val activeUsers: List<User> = userService.getActiveUsersWithoutSecurity()
 
         val activitiesMissingEvidence: List<Activity> = activityRepository.findAll(
             getActivitiesMissingEvidencePredicate(activeUsers.map { it.id }.toList())

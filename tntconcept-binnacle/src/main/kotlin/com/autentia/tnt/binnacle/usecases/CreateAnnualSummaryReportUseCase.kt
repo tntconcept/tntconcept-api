@@ -23,7 +23,7 @@ class CreateAnnualSummaryReportUseCase internal constructor(
     fun createAnnualSummaryFromYear(year: Int) {
         val date = LocalDate.ofYearDay(year, 1)
         val summaries = mutableMapOf<Long, UserAnnualWorkSummary>()
-        userService.findActive()
+        userService.getActiveUsersWithoutSecurity()
             .filter { isUserHiredInYear(it, year) }
             .forEach { user ->
                 val workingTime = userTimeSummaryUseCase.getTimeSummary(date, user)

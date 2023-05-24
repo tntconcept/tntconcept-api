@@ -2,13 +2,9 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
-import com.autentia.tnt.security.application.checkAuthentication
-import com.autentia.tnt.security.application.id
-import com.autentia.tnt.security.application.isAdmin
-import com.autentia.tnt.security.application.isNotAdmin
+import com.autentia.tnt.security.application.*
 import io.micronaut.context.annotation.Primary
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
@@ -28,7 +24,7 @@ internal class ActivityRepositorySecured(
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
 
-        return if (authentication.isAdmin()) {
+        return if (authentication.canAccessAllActivities()) {
             internalActivityRepository.findById(id)
         } else {
             internalActivityRepository.findByIdAndUserId(id, authentication.id())
@@ -37,25 +33,16 @@ internal class ActivityRepositorySecured(
 
     override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()) {
+        if (!authentication.canAccessAllActivities()) {
             require(userId == authentication.id()) { "User cannot get activities" }
         }
         return internalActivityRepository.findByUserId(startDate, endDate, userId)
     }
 
 
-    override fun find(approvalState: ApprovalState): List<Activity> {
-        val authentication = securityService.checkAuthentication()
-        return if (authentication.isAdmin()) {
-            internalActivityRepository.find(approvalState)
-        } else {
-            internalActivityRepository.findByApprovalStateAndUserId(approvalState, authentication.id())
-        }
-    }
-
     override fun findByProjectRoleIdAndUserId(projectRoleId: Long, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
@@ -63,7 +50,7 @@ internal class ActivityRepositorySecured(
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        val userIdsFiltered = if (!authentication.isAdmin()) {
+        val userIdsFiltered = if (!authentication.canAccessAllActivities()) {
             userIds.filter { it == authentication.id() }
         } else {
             userIds
@@ -74,7 +61,7 @@ internal class ActivityRepositorySecured(
 
     override fun findOfLatestProjects(start: LocalDateTime, end: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findOfLatestProjects(start, end, userId)
@@ -88,7 +75,7 @@ internal class ActivityRepositorySecured(
         userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findByProjectId(start, end, projectId, userId)
@@ -102,7 +89,7 @@ internal class ActivityRepositorySecured(
         userId: Long
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)
@@ -110,7 +97,7 @@ internal class ActivityRepositorySecured(
 
     override fun findOverlapped(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get overlapped activities" }
         }
         return internalActivityRepository.findOverlapped(startDate, endDate, userId)
@@ -123,7 +110,7 @@ internal class ActivityRepositorySecured(
         userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
-        if (authentication.isNotAdmin()) {
+        if (!authentication.canAccessAllActivities()) {
             require(authentication.id() == userId) { "User cannot get activities" }
         }
         return internalActivityRepository.findByProjectRoleIds(start, end, projectRoleIds, userId)
@@ -139,7 +126,7 @@ internal class ActivityRepositorySecured(
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
 
-        if (authentication.isNotAdmin()) {
+        if (!authentication.canAccessAllActivities()) {
             require(activity.userId == authentication.id()) { "User cannot update activity" }
         }
 
@@ -162,10 +149,10 @@ internal class ActivityRepositorySecured(
 
     private fun addUserFilterIfNecessary(activitySpecification: Specification<Activity>): Specification<Activity> {
         val authentication = securityService.checkAuthentication()
-        return if (authentication.isNotAdmin()) {
-            PredicateBuilder.and(activitySpecification, ActivityPredicates.userId(authentication.id()))
-        } else {
+        return if (authentication.canAccessAllActivities()) {
             activitySpecification
+        } else {
+            PredicateBuilder.and(activitySpecification, ActivityPredicates.userId(authentication.id()))
         }
     }
 }

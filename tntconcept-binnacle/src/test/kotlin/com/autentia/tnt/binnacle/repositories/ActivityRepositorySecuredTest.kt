@@ -48,7 +48,7 @@ internal class ActivityRepositorySecuredTest {
         )
         val activitySpecification = PredicateBuilder.and(ActivityPredicates.ALL, ActivityPredicates.userId(userId))
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.findAll(activitySpecification)).thenReturn(activities)
 
         val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
@@ -57,7 +57,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `find all without user id filter`() {
+    fun `find all without user id filter if there is activity-approval role privileges`() {
         val activities = listOf(
             Activity(
                 id = 2L,
@@ -74,7 +74,7 @@ internal class ActivityRepositorySecuredTest {
         )
         val activitySpecification = ActivityPredicates.ALL
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
         whenever(internalActivityRepository.findAll(activitySpecification)).thenReturn(activities)
 
         val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
@@ -105,7 +105,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `find activity by id for user with admin role permission`() {
+    fun `find activity by id for user with activity-approval role privilege`() {
         val activityId = 1L
         val activity = Activity(
             id = activityId,
@@ -120,7 +120,7 @@ internal class ActivityRepositorySecuredTest {
             approvalState = ApprovalState.NA,
         )
         whenever(internalActivityRepository.findById(activityId)).thenReturn(activity)
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
 
         val result = activityRepositorySecured.findById(activityId)
 
@@ -131,7 +131,7 @@ internal class ActivityRepositorySecuredTest {
     fun `find activity by id for user without admin role permission should return null`() {
         val activityId = 1L
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         val result = activityRepositorySecured.findById(activityId)
 
@@ -151,7 +151,7 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `test findOfLatestProjects should throw IllegalArgumentException if user differs from logged user and is not admin`() {
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findOfLatestProjects(LocalDateTime.now(), LocalDateTime.now(), adminUserId)
         }
@@ -165,7 +165,7 @@ internal class ActivityRepositorySecuredTest {
         )
         val userActivity = createActivity()
 
-        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).doReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.findOfLatestProjects(startDate, endDate, userActivity.userId)).doReturn(
             listOf(userActivity)
         )
@@ -185,7 +185,7 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `test findByProjectRoleIds should throw IllegalArgumentException if user id is not user logged and is not admin`() {
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findByProjectRoleIds(
                 LocalDateTime.now(),
@@ -204,7 +204,7 @@ internal class ActivityRepositorySecuredTest {
         )
         val userActivity = createActivity()
         val projectRoleIds = listOf(1L)
-        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).doReturn(Optional.of(emptyRolesAuth))
         whenever(
             internalActivityRepository.findByProjectRoleIds(
                 startDate,
@@ -234,7 +234,7 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `test findByProjectId should throw IllegalArgumentException if userId differs from logged user and is not admin`() {
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findByProjectId(LocalDateTime.now(), LocalDateTime.now(), 1L, adminUserId)
         }
@@ -248,7 +248,7 @@ internal class ActivityRepositorySecuredTest {
         )
         val userActivity = createActivity()
 
-        whenever(securityService.authentication).doReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).doReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.findByProjectId(startDate, endDate, 1L, userActivity.userId)).doReturn(
             listOf(userActivity)
         )
@@ -264,7 +264,7 @@ internal class ActivityRepositorySecuredTest {
         )
         val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)).thenReturn(workedTime)
 
         val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
@@ -295,7 +295,7 @@ internal class ActivityRepositorySecuredTest {
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
         )
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findWorkedMinutes(
@@ -305,7 +305,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `find activities between dates should retrieve other user activities if logged user is admin`() {
+    fun `find activities between dates should retrieve other user activities if logged user has activity-approval privilege`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
@@ -325,7 +325,7 @@ internal class ActivityRepositorySecuredTest {
             )
         )
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
         whenever(internalActivityRepository.findByUserId(startDate, endDate, userId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.findByUserId(
@@ -342,7 +342,7 @@ internal class ActivityRepositorySecuredTest {
             LocalTime.MAX
         )
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findByUserId(
@@ -372,7 +372,7 @@ internal class ActivityRepositorySecuredTest {
             )
         )
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.findByUserId(startDate, endDate, userId)).thenReturn(activities)
 
 
@@ -405,7 +405,7 @@ internal class ActivityRepositorySecuredTest {
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.save(activity)
@@ -437,7 +437,7 @@ internal class ActivityRepositorySecuredTest {
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.save(activity)).thenReturn(expectedActivity)
 
         val result = activityRepositorySecured.save(activity)
@@ -468,7 +468,7 @@ internal class ActivityRepositorySecuredTest {
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.update(activity)
@@ -489,7 +489,7 @@ internal class ActivityRepositorySecuredTest {
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(null)
 
         assertThrows<IllegalArgumentException> {
@@ -511,7 +511,7 @@ internal class ActivityRepositorySecuredTest {
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(activity)
         whenever(internalActivityRepository.update(activity)).thenReturn(activity)
 
@@ -531,7 +531,7 @@ internal class ActivityRepositorySecuredTest {
 
     @Test
     fun `delete activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.deleteById(1L)
@@ -540,7 +540,7 @@ internal class ActivityRepositorySecuredTest {
 
     @Test
     fun `delete activity should throw IllegalArgumentException if activity does not exist`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.deleteById(1L)
@@ -561,79 +561,12 @@ internal class ActivityRepositorySecuredTest {
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(activity)
 
         activityRepositorySecured.deleteById(1L)
 
         verify(internalActivityRepository).deleteById(1L)
-    }
-
-    @Test
-    fun `find by approval state should return activities of all users`() {
-        val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
-        )
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
-        whenever(internalActivityRepository.find(ApprovalState.NA)).thenReturn(activities)
-
-        val result: List<Activity> = activityRepositorySecured.find(
-            ApprovalState.NA
-        )
-
-        assertEquals(activities, result)
-    }
-
-    @Test
-    fun `find by approval state should return activities of the authenticated user`() {
-        val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
-        )
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
-        whenever(internalActivityRepository.findByApprovalStateAndUserId(ApprovalState.NA, userId)).thenReturn(
-            activities
-        )
-
-        val result: List<Activity> = activityRepositorySecured.find(
-            ApprovalState.NA
-        )
-
-        assertEquals(activities, result)
-    }
-
-    @Test
-    fun `find activities by approval state should throw IllegalStateException`() {
-        whenever(securityService.authentication).thenReturn(Optional.empty())
-
-        assertThrows<IllegalStateException> {
-            activityRepositorySecured.find(
-                ApprovalState.NA
-            )
-        }
     }
 
     @Test
@@ -653,7 +586,7 @@ internal class ActivityRepositorySecuredTest {
             )
         )
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
         whenever(internalActivityRepository.findByProjectRoleIdAndUserId(projectRole.id, adminUserId)).thenReturn(
             activities
         )
@@ -680,7 +613,7 @@ internal class ActivityRepositorySecuredTest {
 
     @Test
     fun `find activities by project role should throw IllegalArgumentException when user id differs from logged user id and is not admin`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findByProjectRoleIdAndUserId(
@@ -711,7 +644,7 @@ internal class ActivityRepositorySecuredTest {
             )
         )
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
         whenever(internalActivityRepository.findOverlapped(startDate, endDate, adminUserId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.findOverlapped(
@@ -742,7 +675,7 @@ internal class ActivityRepositorySecuredTest {
         val endDate = today.plusDays(30L).atTime(
             LocalTime.MAX
         )
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findOverlapped(
@@ -756,9 +689,9 @@ internal class ActivityRepositorySecuredTest {
         private const val adminUserId = 3L
         private val today = LocalDate.now()
         private val projectRole = createProjectRole()
-        private val authenticationWithAdminRole =
-            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin")))
-        private val authenticationWithoutAdminRole =
+        private val activityApprovalAuth =
+            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("activity-approval")))
+        private val emptyRolesAuth =
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
 
     }

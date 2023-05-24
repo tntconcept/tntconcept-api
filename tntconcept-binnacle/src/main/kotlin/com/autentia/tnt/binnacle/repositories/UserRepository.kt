@@ -12,9 +12,8 @@ internal interface UserRepository {
 
     fun findByUsername(username: String): User?
 
-    fun findByActiveTrue(): List<User>
+    fun findWithoutSecurity(): List<User>
 
     fun find(): List<User>
-
 
 }

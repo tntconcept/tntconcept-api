@@ -16,7 +16,7 @@ internal class UserRepositoryIT {
 
     @Test
     fun `should find active users`() {
-        val result = userRepository.findByActiveTrue()
+        val result = userRepository.findWithoutSecurity()
 
         assertTrue(result.isNotEmpty())
         result.forEach { assertTrue(it.active) }

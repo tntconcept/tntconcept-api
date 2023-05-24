@@ -62,7 +62,7 @@ internal class ActivityApprovalUseCaseTest {
             activity.approvalState
         )
 
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithAdminRole))
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithActivityApprovalRole))
         whenever(activityService.approveActivityById(activityId)).thenReturn(activity)
         whenever(userService.getById(activity.userId)).thenReturn(user)
         whenever(converter.toActivityResponseDTO(domainActivity)).thenReturn(activityResponseDTO)
@@ -80,8 +80,8 @@ internal class ActivityApprovalUseCaseTest {
     private companion object {
         private const val activityId = 1L
         private const val userId = 1L
-        private val authenticationWithAdminRole =
-            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("admin")))
+        private val authenticationWithActivityApprovalRole =
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("activity-approval")))
         private val authenticationWithoutAdminRole =
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }

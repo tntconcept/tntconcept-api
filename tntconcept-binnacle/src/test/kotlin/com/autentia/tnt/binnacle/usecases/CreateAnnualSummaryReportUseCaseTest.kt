@@ -49,7 +49,7 @@ internal class CreateAnnualSummaryReportUseCaseTest {
         appProperties.binnacle.workSummary.mail.sendAlertsOnly = sendAlertsOnly
         appProperties.binnacle.workSummary.report.showAlertsOnly = showAlertsOnly
 
-        doReturn(listOf(user, userWithDifferentId)).whenever(userService).findActive()
+        doReturn(listOf(user, userWithDifferentId)).whenever(userService).getActiveUsersWithoutSecurity()
 
         val timeSummaryForUser = mock<TimeSummary>()
         val summaryForUser = AnnualWorkSummary(YEAR, alerts = userAlerts)
