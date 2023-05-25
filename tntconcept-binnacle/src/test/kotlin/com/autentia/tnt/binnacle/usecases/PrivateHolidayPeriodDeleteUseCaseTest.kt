@@ -1,8 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.exception.BinnacleException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
 import com.autentia.tnt.binnacle.exception.VacationNotFoundException
 import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
@@ -15,6 +13,8 @@ import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReas
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_RANGE_CLOSED
 import com.autentia.tnt.binnacle.validators.VacationValidator
+import io.micronaut.security.authentication.ClientAuthentication
+import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -22,40 +22,37 @@ import org.junit.jupiter.api.TestInstance.*
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.doNothing
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.*
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class PrivateHolidayPeriodDeleteUseCaseTest {
 
     private val vacationService = mock<VacationService>()
     private val userService = mock<UserService>()
+    private val securityService = mock<SecurityService>()
     private val vacationValidator = mock<VacationValidator>()
 
-    private val privateHolidayPeriodDeleteUseCase = PrivateHolidayPeriodDeleteUseCase(userService, vacationValidator, vacationService)
+    private val privateHolidayPeriodDeleteUseCase =
+        PrivateHolidayPeriodDeleteUseCase(securityService, vacationValidator, vacationService)
 
     @Test
     fun `delete a vacation period`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-
-        doReturn(Success).whenever(vacationValidator).canDeleteVacationPeriod(vacationID, USER)
-
-        doNothing().whenever(vacationService).deleteVacationPeriod(vacationID, USER.id)
+        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
+        whenever(vacationValidator.canDeleteVacationPeriod(vacationID)).thenReturn(Success)
 
         privateHolidayPeriodDeleteUseCase.delete(vacationID)
 
-        verify(vacationService, times(1)).deleteVacationPeriod(vacationID, USER.id)
+        verify(vacationService, times(1)).deleteVacationPeriod(vacationID, userId)
     }
 
     @Test
     fun `FAIL when the vacation period to delete is not found in the database`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-
-        doReturn(Failure(VACATION_NOT_FOUND)).whenever(vacationValidator).canDeleteVacationPeriod(vacationID, USER)
+        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
+        whenever(vacationValidator.canDeleteVacationPeriod(vacationID)).thenReturn(Failure(VACATION_NOT_FOUND))
 
         assertThrows<VacationNotFoundException> {
             privateHolidayPeriodDeleteUseCase.delete(vacationID)
@@ -63,9 +60,22 @@ internal class PrivateHolidayPeriodDeleteUseCaseTest {
     }
 
     private fun deleteVacationFailProvider() = arrayOf(
-        arrayOf("Vacation range closed exception", VacationRangeClosedException(), Failure(VACATION_RANGE_CLOSED), vacationID, VacationRangeClosedException().message),
-        arrayOf("Vacation accepted for past period", VacationAcceptedPastPeriodStateException(), Failure(VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD), vacationID, VacationAcceptedPastPeriodStateException().message),
+        arrayOf(
+            "Vacation range closed exception",
+            VacationRangeClosedException(),
+            Failure(VACATION_RANGE_CLOSED),
+            vacationID,
+            VacationRangeClosedException().message
+        ),
+        arrayOf(
+            "Vacation accepted for past period",
+            VacationAcceptedPastPeriodStateException(),
+            Failure(VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD),
+            vacationID,
+            VacationAcceptedPastPeriodStateException().message
+        ),
     )
+
     @ParameterizedTest
     @MethodSource("deleteVacationFailProvider")
     fun `fail if try to delete a vacation and an exception is thrown`(
@@ -75,8 +85,8 @@ internal class PrivateHolidayPeriodDeleteUseCaseTest {
         vacationId: Long,
         expectedExceptionMessage: String
     ) {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-        doReturn(failureReason).whenever(vacationValidator).canDeleteVacationPeriod(vacationId, USER)
+        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
+        whenever(vacationValidator.canDeleteVacationPeriod(vacationId)).thenReturn(failureReason)
 
         val exception = assertThrows<BinnacleException> {
             privateHolidayPeriodDeleteUseCase.delete(vacationId)
@@ -85,9 +95,11 @@ internal class PrivateHolidayPeriodDeleteUseCaseTest {
         Assertions.assertEquals(expectedExceptionMessage, exception.message)
     }
 
-    private companion object{
-        private val USER = createUser()
+    private companion object {
+        private const val userId = 5L
         private const val vacationID = 10L
+        private val authentication =
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 
 }

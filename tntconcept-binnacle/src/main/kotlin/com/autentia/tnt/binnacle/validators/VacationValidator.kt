@@ -103,7 +103,7 @@ internal class VacationValidator(
 
     @Transactional
     @ReadOnly
-    fun canDeleteVacationPeriod(id: Long, user: User): DeleteVacationValidation {
+    fun canDeleteVacationPeriod(id: Long): DeleteVacationValidation {
         val vacationDb = vacationRepository.findById(id)
         return when {
             vacationDb === null -> DeleteVacationValidation.Failure(DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND)

@@ -5,10 +5,7 @@ import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.repositories.predicates.*
 import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.security.authentication.ClientAuthentication
@@ -20,7 +17,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
-import java.util.*
+import java.util.Optional
 
 internal class ActivitiesByFilterUseCaseTest {
     private val activityService = mock<ActivityService>()

@@ -5,7 +5,14 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
+import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
+import com.autentia.tnt.binnacle.exception.ActivityPeriodNotValidException
+import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
+import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
+import com.autentia.tnt.binnacle.exception.ProjectClosedException
+import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -140,8 +147,8 @@ internal class ActivityValidator(
         }
     }
 
-    fun userHasAccess(activityDb: Activity, user: User): Boolean {
-        return activityDb.userId == user.id
+    fun userHasAccess(activityDb: Activity, userId: Long): Boolean {
+        return activityDb.userId == userId
     }
 
     fun isProjectOpen(project: Project): Boolean {
