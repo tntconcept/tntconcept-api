@@ -147,10 +147,6 @@ internal class ActivityValidator(
         }
     }
 
-    fun userHasAccess(activityDb: Activity, userId: Long): Boolean {
-        return activityDb.userId == userId
-    }
-
     fun isProjectOpen(project: Project): Boolean {
         return project.open
     }
