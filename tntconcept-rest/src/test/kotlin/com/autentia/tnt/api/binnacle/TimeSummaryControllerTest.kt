@@ -53,7 +53,8 @@ internal class TimeSummaryControllerTest {
         private val recommendedMarch: BigDecimal = BigDecimal.valueOf(136L)
         private val balanceMarch = workedMarch - recommendedMarch
         private val rolesMarch = listOf<MonthlyRolesDTO>()
-        private val vacation = Duration.parse("0h")
+        private val chargedVacations = Duration.parse("0h")
+        private val consumedVacations = Duration.parse("0h")
 
         private val worked = workedJanuary + workedFebruary + workedMarch
         private val target: BigDecimal = BigDecimal.valueOf(1765)
@@ -76,16 +77,17 @@ internal class TimeSummaryControllerTest {
                 )
             ),
             listOf(
-                MonthlyBalanceDTO(150.toBigDecimal(), workedJanuary, recommendedJanuary, balanceJanuary, rolesJanuary, vacation.toBigDecimalHours()),
+                MonthlyBalanceDTO(150.toBigDecimal(), workedJanuary, recommendedJanuary, balanceJanuary, rolesJanuary, chargedVacations.toBigDecimalHours(), consumedVacations.toBigDecimalHours()),
                 MonthlyBalanceDTO(
                     120.toBigDecimal(),
                     workedFebruary,
                     recommendedFebruary,
                     balanceFebruary,
                     rolesFebruary,
-                    vacation.toBigDecimalHours()
+                    chargedVacations.toBigDecimalHours(),
+                    consumedVacations.toBigDecimalHours()
                 ),
-                MonthlyBalanceDTO(110.toBigDecimal(), workedMarch, recommendedMarch, balanceMarch, rolesMarch, vacation.toBigDecimalHours()),
+                MonthlyBalanceDTO(110.toBigDecimal(), workedMarch, recommendedMarch, balanceMarch, rolesMarch, chargedVacations.toBigDecimalHours(), consumedVacations.toBigDecimalHours()),
             )
         )
 

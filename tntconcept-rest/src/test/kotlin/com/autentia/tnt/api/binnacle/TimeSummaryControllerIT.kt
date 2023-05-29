@@ -57,7 +57,7 @@ internal class TimeSummaryControllerIT {
                 createPreviousAnnualBalance(0.00, 1765.00, -1765.00),
                 createAnnualBalance(0.00, 1765.00, 176.00, -1941.00)
             ),
-            listOf(createMonthlyBalance(184.0, 0.00, 154.93, -154.93, roles, 0.00))
+            listOf(createMonthlyBalance(184.0, 0.00, 154.93, -154.93, roles, 0.00, 0.00))
         )
         doReturn(expectedTimeSummary).whenever(userTimeSummaryUseCase).getTimeSummary(date)
 
@@ -103,7 +103,8 @@ internal class TimeSummaryControllerIT {
         recommended: Double,
         balance: Double,
         roles: List<MonthlyRolesDTO>,
-        vacation: Double
+        chargedVacations: Double,
+        consumedVacations: Double,
     ) =
         MonthlyBalanceDTO(
             workable.toBigDecimal(),
@@ -111,7 +112,8 @@ internal class TimeSummaryControllerIT {
             recommended.toBigDecimal(),
             balance.toBigDecimal(),
             roles,
-            vacation.toBigDecimal()
+            chargedVacations.toBigDecimal(),
+            consumedVacations.toBigDecimal()
         )
 
 }

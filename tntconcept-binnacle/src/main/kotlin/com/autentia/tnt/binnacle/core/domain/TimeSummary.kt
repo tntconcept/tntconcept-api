@@ -32,7 +32,8 @@ data class MonthlyBalance(
     val recommended: Duration,
     val balance: Duration,
     val roles: List<MonthlyRoles>,
-    val vacation: Duration
+    val chargedVacations: Duration,
+    val consumedVacations: Duration
 )
 
 data class MonthlyRoles(

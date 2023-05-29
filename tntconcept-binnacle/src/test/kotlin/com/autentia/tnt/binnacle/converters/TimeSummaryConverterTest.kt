@@ -65,8 +65,8 @@ internal class TimeSummaryConverterTest {
                 monthlyBalanceDTO.balance
             )
             assertEquals(
-                getBigDecimalHours(timeSummary.months[of((indexStartingInOne).mod(12))]!!.vacation),
-                monthlyBalanceDTO.vacation
+                getBigDecimalHours(timeSummary.months[of((indexStartingInOne).mod(12))]!!.chargedVacations),
+                monthlyBalanceDTO.requestedVacations
             )
         }
     }
@@ -86,7 +86,8 @@ internal class TimeSummaryConverterTest {
             ROLES,
             previousAnnualTargetWork,
             previousWorkedTimeByMonth,
-            vacationsList
+            requestedVacationsList,
+            consumedVacationList
         )
 
         val expectedBalance = getExpectedBalance(
@@ -107,6 +108,7 @@ internal class TimeSummaryConverterTest {
         val previousAnnualTargetWork = Duration.parse("1765h")
         val notRequestedVacations = Duration.parse("8h")
         val requestedVacations = Duration.parse("0h")
+        val zeroConsumedVacations = Duration.parse("0h")
         val balance = worked - (annualTargetWork + notRequestedVacations)
 
         val workable = Duration.parse("150h")
@@ -115,8 +117,10 @@ internal class TimeSummaryConverterTest {
         val recommended = Duration.parse("150h 30m")
         val balanceJanuary = workedJanuary - recommended
         val balanceFebruary = workedFebruary - recommended
-        val vacationHoursJanuary = Duration.parse("8h")
-        val vacationHoursFebruary = Duration.parse("8h")
+        val requestedVacationHoursJanuary = Duration.parse("8h")
+        val requestedVacationHoursFebruary = Duration.parse("8h")
+        val consumedVacationHoursJanuary = Duration.parse("8h")
+        val consumedVacationHoursFebruary = Duration.parse("8h")
 
         val DEV_ROLE = ProjectRoleId(10L)
         val QA_ROLE = ProjectRoleId(3L)
@@ -140,7 +144,8 @@ internal class TimeSummaryConverterTest {
                     recommended,
                     balanceJanuary,
                     rolesJanuary,
-                    vacationHoursJanuary
+                    requestedVacationHoursJanuary,
+                    consumedVacationHoursJanuary
                 ),
                 FEBRUARY to MonthlyBalance(
                     workable,
@@ -148,12 +153,13 @@ internal class TimeSummaryConverterTest {
                     recommended,
                     balanceFebruary,
                     rolesFebruary,
-                    vacationHoursFebruary
+                    requestedVacationHoursFebruary,
+                    consumedVacationHoursFebruary
                 ),
             )
         )
 
-        val vacationsList = listOf(
+        val requestedVacationsList = listOf(
             Vacation(
                 1L,
                 "",
@@ -174,6 +180,11 @@ internal class TimeSummaryConverterTest {
                 listOf(LocalDate.of(2022, 2, 3)),
                 LocalDate.of(2022, 1, 3)
             )
+        )
+
+        val consumedVacationList = listOf(
+            LocalDate.of(2022, 1, 3),
+            LocalDate.of(2022, 2, 3)
         )
 
         val workableMonthlyHoursList: List<Duration> = listOf(
@@ -220,7 +231,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ) - suggestWorkingTimeByMonth.getOrDefault(JANUARY, Duration.ZERO),
                         rolesJanuary,
-                    vacationHoursJanuary
+                    requestedVacationHoursJanuary,
+                    consumedVacationHoursJanuary
                 ),
                 FEBRUARY to MonthlyBalance(
                     workableMonthlyHoursList[FEBRUARY.value - 1],
@@ -231,7 +243,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ) - suggestWorkingTimeByMonth.getOrDefault(FEBRUARY, Duration.ZERO),
                         rolesFebruary,
-                    vacationHoursFebruary
+                    requestedVacationHoursFebruary,
+                    consumedVacationHoursFebruary
                 ),
                 MARCH to MonthlyBalance(
                     workableMonthlyHoursList[MARCH.value - 1],
@@ -242,7 +255,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 APRIL to MonthlyBalance(
                     workableMonthlyHoursList[APRIL.value - 1],
@@ -253,7 +267,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 MAY to MonthlyBalance(
                     workableMonthlyHoursList[MAY.value - 1],
@@ -264,7 +279,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 JUNE to MonthlyBalance(
                     workableMonthlyHoursList[JUNE.value - 1],
@@ -275,7 +291,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 JULY to MonthlyBalance(
                     workableMonthlyHoursList[JULY.value - 1],
@@ -286,7 +303,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 AUGUST to MonthlyBalance(
                     workableMonthlyHoursList[AUGUST.value - 1],
@@ -297,7 +315,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ) - suggestWorkingTimeByMonth.getOrDefault(AUGUST, Duration.ZERO),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 SEPTEMBER to MonthlyBalance(
                     workableMonthlyHoursList[SEPTEMBER.value - 1],
@@ -308,7 +327,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ) - suggestWorkingTimeByMonth.getOrDefault(SEPTEMBER, Duration.ZERO),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 OCTOBER to MonthlyBalance(
                     workableMonthlyHoursList[OCTOBER.value - 1],
@@ -319,7 +339,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ) - suggestWorkingTimeByMonth.getOrDefault(OCTOBER, Duration.ZERO),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 NOVEMBER to MonthlyBalance(
                     workableMonthlyHoursList[NOVEMBER.value - 1],
@@ -330,7 +351,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ) - suggestWorkingTimeByMonth.getOrDefault(NOVEMBER, Duration.ZERO),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
                 DECEMBER to MonthlyBalance(
                     workableMonthlyHoursList[DECEMBER.value - 1],
@@ -341,7 +363,8 @@ internal class TimeSummaryConverterTest {
                         Duration.ZERO
                     ) - suggestWorkingTimeByMonth.getOrDefault(DECEMBER, Duration.ZERO),
                     emptyRoles,
-                    requestedVacations
+                    requestedVacations,
+                    zeroConsumedVacations
                 ),
             )
         )
