@@ -18,13 +18,14 @@ internal class ActivityEvidenceMissingMailServiceTest {
     @DisplayName("Send emails test")
     inner class ServiceTest {
         private val mailService = mock<MailService>()
-        private val messageBuilder = mock<ActivityEvidenceMissingMessageBuilder>()
+        private val activityEvidenceMissingMailBuilder = mock<ActivityEvidenceMissingMailBuilder>()
         private val appProperties = AppProperties()
 
-        private val sut = ActivityEvidenceMissingMailService(mailService, messageBuilder, appProperties)
+        private val sut =
+            ActivityEvidenceMissingMailService(mailService, activityEvidenceMissingMailBuilder, appProperties)
 
         @AfterEach
-        fun resetMocks() = reset(mailService, messageBuilder)
+        fun resetMocks() = reset(mailService, activityEvidenceMissingMailBuilder)
 
         @Test
         fun `should not send email when enabled property is set to false`() {
@@ -43,7 +44,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
             sut.sendEmail(organizationName, projectName, role, evidence, email, locale)
 
             // Then
-            verifyNoInteractions(mailService, messageBuilder)
+            verifyNoInteractions(mailService, activityEvidenceMissingMailBuilder)
         }
 
         @Test
@@ -59,7 +60,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val locale = Locale.ENGLISH
             val evidence = RequireEvidence.WEEKLY
 
-            doReturn(Mail("Subject", "Body")).`when`(messageBuilder)
+            doReturn(Mail("Subject", "Body")).`when`(activityEvidenceMissingMailBuilder)
                 .buildMessage(locale, organizationName, projectName, role, evidence)
             doReturn(Result.success("OK")).`when`(mailService)
                 .send(anyString(), anyList(), anyString(), anyString(), anyOrNull())
@@ -77,16 +78,22 @@ internal class ActivityEvidenceMissingMailServiceTest {
                 eq(expectedFrom), eq(expectedTo), eq(expectedSubject), eq(expectedBody), anyOrNull()
             )
 
-            verify(messageBuilder).buildMessage(locale, organizationName, projectName, role, evidence)
+            verify(activityEvidenceMissingMailBuilder).buildMessage(
+                locale,
+                organizationName,
+                projectName,
+                role,
+                evidence
+            )
         }
     }
 
     @Nested
     @DisplayName("Build evidence activity email")
-    inner class MessageBuilderTest {
+    inner class MailBuilderTest {
         private val messageSource = mock<MessageSource>()
 
-        private val sut = ActivityEvidenceMissingMessageBuilder(messageSource)
+        private val sut = ActivityEvidenceMissingMailBuilder(messageSource)
 
         @AfterEach
         fun resetMocks() = reset(messageSource)

@@ -11,7 +11,7 @@ import java.util.*
 @Singleton
 internal class ActivityEvidenceMissingMailService(
     private val mailService: MailService,
-    private val messageBuilder: ActivityEvidenceMissingMessageBuilder,
+    private val activityEvidenceMissingMailBuilder: ActivityEvidenceMissingMailBuilder,
     private val appProperties: AppProperties
 ) {
     private companion object {
@@ -40,15 +40,21 @@ internal class ActivityEvidenceMissingMailService(
             return
         }
 
-        val message = messageBuilder.buildMessage(locale, organizationName, projectName, roleName, roleRequireEvidence)
+        val mail = activityEvidenceMissingMailBuilder.buildMessage(
+            locale,
+            organizationName,
+            projectName,
+            roleName,
+            roleRequireEvidence
+        )
 
-        mailService.send(appProperties.mail.from, listOf(toUserEmail), message.subject, message.body)
+        mailService.send(appProperties.mail.from, listOf(toUserEmail), mail.subject, mail.body)
             .onFailure { logger.error("Error sending activity evidence email", it) }
     }
 }
 
 @Singleton
-internal class ActivityEvidenceMissingMessageBuilder(private val messageSource: MessageSource) {
+internal class ActivityEvidenceMissingMailBuilder(private val messageSource: MessageSource) {
 
     private companion object {
         private const val subjectKey = "mail.request.evidenceActivity.subject"
