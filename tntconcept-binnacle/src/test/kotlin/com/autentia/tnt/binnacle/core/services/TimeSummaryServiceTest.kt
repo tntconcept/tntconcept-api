@@ -1,22 +1,8 @@
 package com.autentia.tnt.binnacle.core.services
 
-import com.autentia.tnt.binnacle.config.createDomainActivity
-import com.autentia.tnt.binnacle.config.createDomainProjectRole
-import com.autentia.tnt.binnacle.config.createUser
-import com.autentia.tnt.binnacle.config.getHolidaysFrom2022
-import com.autentia.tnt.binnacle.config.getVacationsInOneMonth2022
+import com.autentia.tnt.binnacle.config.*
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
-import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
-import com.autentia.tnt.binnacle.core.domain.AnnualBalance
-import com.autentia.tnt.binnacle.core.domain.AnnualWorkSummary
-import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
-import com.autentia.tnt.binnacle.core.domain.PreviousAnnualBalance
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.core.domain.Vacation
-import com.autentia.tnt.binnacle.core.domain.YearAnnualBalance
-import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -27,50 +13,45 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
 import kotlin.time.Duration
-import kotlin.time.DurationUnit.DAYS
-import kotlin.time.DurationUnit.HOURS
-import kotlin.time.DurationUnit.MINUTES
+import kotlin.time.DurationUnit.*
 import kotlin.time.toDuration
 
 internal class TimeSummaryServiceTest {
 
-    private val workableProjectRoleIdChecker = WorkableProjectRoleIdChecker(listOf(ProjectRoleId(2)))
     private val targetWorkService = TargetWorkService()
     private val timeWorkableService = TimeWorkableService()
     private val holidayService = mock<HolidayService>()
     private val calendarFactory = CalendarFactory(holidayService)
     private val activityCalendarService =
         ActivityCalendarService(calendarFactory, ActivitiesCalendarFactory(calendarFactory))
-    private val workedTimeService = WorkedTimeService(activityCalendarService, workableProjectRoleIdChecker)
+    private val workedTimeService = WorkedTimeService(activityCalendarService)
     private val workRecommendationService = WorkRecommendationCurrentMonthAccumulationService()
     private val timeSummaryConverter = TimeSummaryConverter()
     private val timeSummaryService = TimeSummaryService(
-        targetWorkService,
-        timeWorkableService,
-        workedTimeService,
-        workRecommendationService,
-        timeSummaryConverter
+        targetWorkService, timeWorkableService, workedTimeService, workRecommendationService, timeSummaryConverter
     )
 
     @Test
     fun `calculate Working Balance applying annual working hours from agreement`() {
 
-        val timeSummaryBalance =
-            timeSummaryService.getTimeSummaryBalance(
-                date,
-                USER,
-                ANNUAL_WORK_SUMMARY,
-                PUBLIC_HOLIDAYS,
-                vacationsRequestedThisYearToThisAndNextYear,
-                vacationsChargedThisYearToThisAndNextYear,
-                correspondingVacations,
-                activities,
-                previousActivities
-            )
+        val timeSummaryBalance = timeSummaryService.getTimeSummaryBalance(
+            date,
+            USER,
+            ANNUAL_WORK_SUMMARY,
+            PUBLIC_HOLIDAYS,
+            vacationsRequestedThisYearToThisAndNextYear,
+            vacationsChargedThisYearToThisAndNextYear,
+            correspondingVacations,
+            activities,
+            previousActivities
+        )
 
-        assertEquals(YearAnnualBalance(
-            PreviousAnnualBalance(WORKED, TARGET, PREVIOUS_BALANCE),
-            AnnualBalance(WORKED, TARGET, NOT_CONSUMED_VACATIONS, BALANCE)), timeSummaryBalance.year)
+        assertEquals(
+            YearAnnualBalance(
+                PreviousAnnualBalance(WORKED, TARGET, PREVIOUS_BALANCE),
+                AnnualBalance(WORKED, TARGET, NOT_CONSUMED_VACATIONS, BALANCE)
+            ), timeSummaryBalance.year
+        )
         assertEquals(12, timeSummaryBalance.months.size)
     }
 
@@ -90,31 +71,32 @@ internal class TimeSummaryServiceTest {
             )
         )
 
-        val consumedVacationsDays = vacationsChargedThisYear
-            .filter { it.isRequestedVacation() }
-            .flatMap { it.days }
+        val consumedVacationsDays = vacationsChargedThisYear.filter { it.isRequestedVacation() }.flatMap { it.days }
             .count { it.year == date.year }
 
 
-        val timeSummaryBalance =
-            timeSummaryService.getTimeSummaryBalance(
-                date,
-                user,
-                ANNUAL_WORK_SUMMARY,
-                PUBLIC_HOLIDAYS,
-                vacationsRequestedThisYear,
-                vacationsChargedThisYear,
-                correspondingVacations,
-                activities,
-                previousActivities
-            )
+        val timeSummaryBalance = timeSummaryService.getTimeSummaryBalance(
+            date,
+            user,
+            ANNUAL_WORK_SUMMARY,
+            PUBLIC_HOLIDAYS,
+            vacationsRequestedThisYear,
+            vacationsChargedThisYear,
+            correspondingVacations,
+            activities,
+            previousActivities
+        )
 
-        val notConsumedVacations = Duration.parse(((correspondingVacations - consumedVacationsDays) * 8).toString() + "h")
+        val notConsumedVacations =
+            Duration.parse(((correspondingVacations - consumedVacationsDays) * 8).toString() + "h")
         val balance = WORKED - (TARGET + notConsumedVacations)
 
-        assertEquals(YearAnnualBalance(
-            PreviousAnnualBalance(WORKED, TARGET, PREVIOUS_BALANCE),
-            AnnualBalance(WORKED, TARGET, notConsumedVacations, balance)), timeSummaryBalance.year)
+        assertEquals(
+            YearAnnualBalance(
+                PreviousAnnualBalance(WORKED, TARGET, PREVIOUS_BALANCE),
+                AnnualBalance(WORKED, TARGET, notConsumedVacations, balance)
+            ), timeSummaryBalance.year
+        )
         assertEquals(12, timeSummaryBalance.months.size)
     }
 
@@ -122,22 +104,24 @@ internal class TimeSummaryServiceTest {
     fun `return working balance for a user which the current year is his first year`() {
         val user = createUser(LocalDate.of(2020, Month.MARCH, 3))
 
-        val timeSummaryBalance =
-            timeSummaryService.getTimeSummaryBalance(
-                date,
-                user,
-                ANNUAL_WORK_SUMMARY,
-                PUBLIC_HOLIDAYS,
-                vacationsRequestedThisYearToThisAndNextYear,
-                vacationsChargedThisYearToThisAndNextYear,
-                correspondingVacations,
-                activities,
-                previousActivities
-            )
+        val timeSummaryBalance = timeSummaryService.getTimeSummaryBalance(
+            date,
+            user,
+            ANNUAL_WORK_SUMMARY,
+            PUBLIC_HOLIDAYS,
+            vacationsRequestedThisYearToThisAndNextYear,
+            vacationsChargedThisYearToThisAndNextYear,
+            correspondingVacations,
+            activities,
+            previousActivities
+        )
 
-        assertEquals(YearAnnualBalance(
-            PreviousAnnualBalance(WORKED, TARGET, PREVIOUS_BALANCE),
-            AnnualBalance(WORKED, TARGET, NOT_CONSUMED_VACATIONS, BALANCE)), timeSummaryBalance.year)
+        assertEquals(
+            YearAnnualBalance(
+                PreviousAnnualBalance(WORKED, TARGET, PREVIOUS_BALANCE),
+                AnnualBalance(WORKED, TARGET, NOT_CONSUMED_VACATIONS, BALANCE)
+            ), timeSummaryBalance.year
+        )
         assertEquals(12, timeSummaryBalance.months.size)
     }
 
@@ -145,27 +129,29 @@ internal class TimeSummaryServiceTest {
     fun `calculate working balance applying annual working hours from user`() {
         val user = createUser().copy(agreementYearDuration = 100000)
 
-        val timeSummaryBalance =
-            timeSummaryService.getTimeSummaryBalance(
-                date,
-                user,
-                ANNUAL_WORK_SUMMARY,
-                PUBLIC_HOLIDAYS,
-                vacationsRequestedThisYearToThisAndNextYear,
-                vacationsChargedThisYearToThisAndNextYear,
-                correspondingVacations,
-                activities,
-                previousActivities
-            )
+        val timeSummaryBalance = timeSummaryService.getTimeSummaryBalance(
+            date,
+            user,
+            ANNUAL_WORK_SUMMARY,
+            PUBLIC_HOLIDAYS,
+            vacationsRequestedThisYearToThisAndNextYear,
+            vacationsChargedThisYearToThisAndNextYear,
+            correspondingVacations,
+            activities,
+            previousActivities
+        )
 
         val worked = 16.toDuration(HOURS)
         val target = 69.toDuration(DAYS) + 10.toDuration(HOURS) + 40.toDuration(MINUTES)
         val balance = worked - (target + NOT_CONSUMED_VACATIONS)
         val previousBalance = worked - target
 
-        assertEquals(YearAnnualBalance(
-            PreviousAnnualBalance(worked, target, previousBalance),
-            AnnualBalance(worked, target, NOT_CONSUMED_VACATIONS, balance)), timeSummaryBalance.year)
+        assertEquals(
+            YearAnnualBalance(
+                PreviousAnnualBalance(worked, target, previousBalance),
+                AnnualBalance(worked, target, NOT_CONSUMED_VACATIONS, balance)
+            ), timeSummaryBalance.year
+        )
         assertEquals(12, timeSummaryBalance.months.size)
     }
 
@@ -245,7 +231,7 @@ internal class TimeSummaryServiceTest {
         assertEquals(MarchRoles, workingTime.months[Month.MARCH]!!.roles)
     }
 
-    private companion object{
+    private companion object {
         val USER = createUser()
 
         val PUBLIC_HOLIDAYS = getHolidaysFrom2022()
@@ -267,79 +253,66 @@ internal class TimeSummaryServiceTest {
                 startDate = LocalDate.of(2022, Month.JANUARY, 10),
                 endDate = LocalDate.of(2022, Month.JANUARY, 11),
                 days = listOf(
-                    LocalDate.of(2022, Month.JANUARY, 10),
-                    LocalDate.of(2022, Month.JANUARY, 11)
+                    LocalDate.of(2022, Month.JANUARY, 10), LocalDate.of(2022, Month.JANUARY, 11)
                 ),
                 chargeYear = LocalDate.ofYearDay(2022, 1),
                 observations = "charge year 2022 to 2022"
-            ),
-            Vacation(
+            ), Vacation(
                 state = VacationState.PENDING,
                 startDate = LocalDate.of(2023, Month.JANUARY, 10),
                 endDate = LocalDate.of(2023, Month.JANUARY, 11),
                 days = listOf(
-                    LocalDate.of(2023, Month.JANUARY, 10),
-                    LocalDate.of(2023, Month.JANUARY, 11)
+                    LocalDate.of(2023, Month.JANUARY, 10), LocalDate.of(2023, Month.JANUARY, 11)
                 ),
                 chargeYear = LocalDate.ofYearDay(2022, 1),
                 observations = "charge year 2022 to 2023"
             )
         )
 
-        val consumedVacationsDays = vacationsChargedThisYearToThisAndNextYear
-            .filter { it.isRequestedVacation() }
-            .flatMap { it.days }
-            .count { it.year == date.year }
+        val consumedVacationsDays =
+            vacationsChargedThisYearToThisAndNextYear.filter { it.isRequestedVacation() }.flatMap { it.days }
+                .count { it.year == date.year }
 
         const val correspondingVacations = 23
 
         val activities = listOf(
             createDomainActivity().copy(
-                timeInterval =
-                TimeInterval.of(
+                timeInterval = TimeInterval.of(
                     LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0),
                     LocalDateTime.of(2022, Month.JANUARY, 3, 9, 0).plusHours(8)
-                ),
-                projectRole = createDomainProjectRole().copy(id = 1L)
+                ), projectRole = createDomainProjectRole().copy(id = 1L)
             ),
             createDomainActivity().copy(
-                timeInterval =
-                TimeInterval.of(
+                timeInterval = TimeInterval.of(
                     LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0),
                     LocalDateTime.of(2022, Month.JANUARY, 4, 9, 0).plusHours(8)
-                ),
-                projectRole = createDomainProjectRole().copy(id = 2L)
+                ), projectRole = createDomainProjectRole().copy(id = 2L, isWorkingTime = false)
             ),
             createDomainActivity().copy(
-                timeInterval =
-                TimeInterval.of(
+                timeInterval = TimeInterval.of(
                     LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0),
                     LocalDateTime.of(2022, Month.JANUARY, 5, 9, 0).plusHours(8)
-                ),
-                projectRole = createDomainProjectRole().copy(id = 3L)
+                ), projectRole = createDomainProjectRole().copy(id = 3L)
             ),
         )
 
         val previousActivities = listOf(
             createDomainActivity().copy(
-                timeInterval =
-                TimeInterval.of(
+                timeInterval = TimeInterval.of(
                     LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0),
                     LocalDateTime.of(2021, Month.JANUARY, 3, 9, 0).plusHours(8)
                 ),
                 projectRole = createDomainProjectRole().copy(id = 1L),
             ),
             createDomainActivity().copy(
-                timeInterval =
-                TimeInterval.of(
+                timeInterval = TimeInterval.of(
                     LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0),
                     LocalDateTime.of(2021, Month.JANUARY, 4, 9, 0).plusHours(8)
                 ),
-                projectRole = createDomainProjectRole().copy(id = 2L),
+                projectRole = createDomainProjectRole().copy(id = 2L, isWorkingTime = false),
             ),
             createDomainActivity().copy(
-                timeInterval =
-                TimeInterval.of(
+                timeInterval = TimeInterval.of(
                     LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0),
                     LocalDateTime.of(2021, Month.JANUARY, 5, 9, 0).plusHours(8)
                 ),
@@ -349,7 +322,8 @@ internal class TimeSummaryServiceTest {
 
         val WORKED = 16.toDuration(HOURS)
         val TARGET = 73.toDuration(DAYS) + 13.toDuration(HOURS)
-        val NOT_CONSUMED_VACATIONS = Duration.parse(((correspondingVacations - consumedVacationsDays) * 8).toString() + "h")
+        val NOT_CONSUMED_VACATIONS =
+            Duration.parse(((correspondingVacations - consumedVacationsDays) * 8).toString() + "h")
         val BALANCE = WORKED - (TARGET + NOT_CONSUMED_VACATIONS)
         val PREVIOUS_BALANCE = WORKED - TARGET
 
