@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.core.domain.Mail
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import io.micronaut.context.MessageSource
 import org.assertj.core.api.Assertions.assertThat
@@ -58,7 +59,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val locale = Locale.ENGLISH
             val evidence = RequireEvidence.WEEKLY
 
-            doReturn(ActivityEvidenceMissingMessageContent("Subject", "Body")).`when`(messageBuilder)
+            doReturn(Mail("Subject", "Body")).`when`(messageBuilder)
                 .buildMessage(locale, organizationName, projectName, role, evidence)
             doReturn(Result.success("OK")).`when`(mailService)
                 .send(anyString(), anyList(), anyString(), anyString(), anyOrNull())

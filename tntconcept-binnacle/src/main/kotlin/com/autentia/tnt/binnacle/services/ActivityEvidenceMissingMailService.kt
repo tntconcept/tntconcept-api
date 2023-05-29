@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.core.domain.Mail
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import io.micronaut.context.MessageSource
 import jakarta.inject.Singleton
@@ -60,7 +61,7 @@ internal class ActivityEvidenceMissingMessageBuilder(private val messageSource: 
         projectName: String,
         projectRoleName: String,
         requireEvidence: RequireEvidence
-    ): ActivityEvidenceMissingMessageContent {
+    ): Mail {
         val subject =
             messageSource.getMessage(subjectKey, locale, organizationName, projectName, projectRoleName).orElse(null)
                 ?: error("Cannot find message $subjectKey")
@@ -70,7 +71,7 @@ internal class ActivityEvidenceMissingMessageBuilder(private val messageSource: 
         val body = messageSource.getMessage(bodyKey, locale, frequency, projectName, projectRoleName).orElse(null)
             ?: error("Cannot find message $bodyKey")
 
-        return ActivityEvidenceMissingMessageContent(subject, body)
+        return Mail(subject, body)
     }
 
     private fun getFrequencyTextByLocale(locale: Locale, requireEvidence: RequireEvidence): String {
@@ -85,5 +86,3 @@ internal class ActivityEvidenceMissingMessageBuilder(private val messageSource: 
         return messageSource.getMessage(key, locale).orElse(null) ?: error("Cannot find frequency message $key")
     }
 }
-
-internal data class ActivityEvidenceMissingMessageContent(val subject: String, val body: String)
