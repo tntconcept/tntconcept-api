@@ -47,9 +47,7 @@ internal class MailService(
         }
     }
 
-    private fun readFile(file : String): ByteArray {
+    private fun readFile(file: String): ByteArray {
         return File(file).readBytes()
     }
-
-
 }
