@@ -30,9 +30,13 @@ data class MonthlyBalanceDTO(
     val recommended: BigDecimal,
     val balance: BigDecimal,
     val roles: List<MonthlyRolesDTO>,
-    val vacation: BigDecimal
+    val vacations: VacationsDTO,
 )
 data class MonthlyRolesDTO(
     val id: Long,
     val hours: BigDecimal
+)
+data class VacationsDTO(
+    val charged: BigDecimal,
+    val enjoyed: BigDecimal
 )

@@ -2,13 +2,9 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
-import com.autentia.tnt.binnacle.entities.dto.AnnualBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.MonthlyBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
-import com.autentia.tnt.binnacle.entities.dto.PreviousAnnualBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
-import com.autentia.tnt.binnacle.entities.dto.YearAnnualBalanceDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import jakarta.inject.Singleton
+import java.time.LocalDate
 import java.time.Month
 import kotlin.time.Duration
 
@@ -36,7 +32,10 @@ class TimeSummaryConverter {
                     it.value.recommended.toBigDecimalHours(),
                     it.value.balance.toBigDecimalHours(),
                     it.value.roles.map {entry ->  MonthlyRolesDTO(entry.id, entry.hours.toBigDecimalHours()) },
-                    it.value.vacation.toBigDecimalHours()
+                    VacationsDTO(
+                        it.value.chargedVacations.toBigDecimalHours(),
+                        it.value.enjoyedVacations.toBigDecimalHours()
+                    )
                 )
         }
         val yearAnnualBalanceDTO = YearAnnualBalanceDTO(previousAnnualBalanceDTO, annualBalanceDTO)
@@ -53,7 +52,8 @@ class TimeSummaryConverter {
         roles: Map<Month, List<MonthlyRoles>>,
         previousAnnualTargetWork : Duration,
         previousWorkedTimeByMonth : Map<Month, Duration>,
-        consumedVacations: List<Vacation>
+        chargedVacations: List<Vacation>,
+        enjoyedVacations: List<LocalDate>,
     ): TimeSummary {
         val accumulatedWorkedTimeByMonth = workedTimeByMonth.values.fold(Duration.ZERO, Duration::plus)
         val previousAccumulatedWorkedTimeByMonth = previousWorkedTimeByMonth.values.fold(Duration.ZERO, Duration::plus)
@@ -75,14 +75,16 @@ class TimeSummaryConverter {
 
         val monthlyBalances = mutableMapOf<Month, MonthlyBalance>()
         Month.values().forEach {
-            val consumedVacationsByMonth = consumedVacations.flatMap { ite -> ite.days }.count { ite -> ite.month.value == it.value }
+            val chargedVacationsByMonth = chargedVacations.flatMap { ite -> ite.days }.count { ite -> ite.month.value == it.value }
+            val enjoyedVacationsByMonth = enjoyedVacations.count { ite -> ite.month.value == it.value }
             monthlyBalances[it] = MonthlyBalance(
                     workableMonthHours[it.value - 1],
                     workedTimeByMonth.getOrDefault(it, Duration.ZERO),
                     suggestWorkingTimeByMonth.getOrDefault(it, Duration.ZERO),
                     workedTimeByMonth.getOrDefault(it, Duration.ZERO) - suggestWorkingTimeByMonth.getOrDefault(it, Duration.ZERO),
                         roles.getOrDefault(it, emptyList()),
-                    Duration.parse((consumedVacationsByMonth*8).toString() + "h")
+                    Duration.parse((chargedVacationsByMonth*8).toString() + "h"),
+                    Duration.parse((enjoyedVacationsByMonth*8).toString() + "h")
                 )
         }
 

@@ -1,12 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
-import com.autentia.tnt.binnacle.entities.dto.AnnualBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.MonthlyBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
-import com.autentia.tnt.binnacle.entities.dto.PreviousAnnualBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
-import com.autentia.tnt.binnacle.entities.dto.YearAnnualBalanceDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.usecases.UserTimeSummaryUseCase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -53,7 +48,8 @@ internal class TimeSummaryControllerTest {
         private val recommendedMarch: BigDecimal = BigDecimal.valueOf(136L)
         private val balanceMarch = workedMarch - recommendedMarch
         private val rolesMarch = listOf<MonthlyRolesDTO>()
-        private val vacation = Duration.parse("0h")
+        private val chargedVacations = Duration.parse("0h")
+        private val enjoyedVacations = Duration.parse("0h")
 
         private val worked = workedJanuary + workedFebruary + workedMarch
         private val target: BigDecimal = BigDecimal.valueOf(1765)
@@ -76,16 +72,19 @@ internal class TimeSummaryControllerTest {
                 )
             ),
             listOf(
-                MonthlyBalanceDTO(150.toBigDecimal(), workedJanuary, recommendedJanuary, balanceJanuary, rolesJanuary, vacation.toBigDecimalHours()),
+                MonthlyBalanceDTO(150.toBigDecimal(), workedJanuary, recommendedJanuary, balanceJanuary, rolesJanuary, VacationsDTO(chargedVacations.toBigDecimalHours(), enjoyedVacations.toBigDecimalHours())),
                 MonthlyBalanceDTO(
                     120.toBigDecimal(),
                     workedFebruary,
                     recommendedFebruary,
                     balanceFebruary,
                     rolesFebruary,
-                    vacation.toBigDecimalHours()
+                    VacationsDTO(
+                        chargedVacations.toBigDecimalHours(),
+                        enjoyedVacations.toBigDecimalHours()
+                    )
                 ),
-                MonthlyBalanceDTO(110.toBigDecimal(), workedMarch, recommendedMarch, balanceMarch, rolesMarch, vacation.toBigDecimalHours()),
+                MonthlyBalanceDTO(110.toBigDecimal(), workedMarch, recommendedMarch, balanceMarch, rolesMarch, VacationsDTO(chargedVacations.toBigDecimalHours(), enjoyedVacations.toBigDecimalHours())),
             )
         )
 
