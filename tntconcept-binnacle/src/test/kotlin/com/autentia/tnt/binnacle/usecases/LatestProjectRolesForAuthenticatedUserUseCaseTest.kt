@@ -47,7 +47,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     )
 
     @Test
-    fun `return the last imputed roles`() {
+    fun `return the last imputed roles ordered by activity start date`() {
         val userId = 1L
         val startDate = BEGINNING_OF_THE_YEAR.atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
@@ -70,8 +70,8 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         )
 
         val expectedProjectRoles = listOf(
-            buildProjectRoleUserDTO(1L, 30, 120),
             buildProjectRoleUserDTO(2L, 0, 0),
+            buildProjectRoleUserDTO(1L, 30, 120),
         )
 
         assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get())
