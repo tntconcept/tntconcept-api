@@ -4,6 +4,7 @@ import com.autentia.tnt.AppProperties
 import io.micronaut.context.ApplicationContext
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -21,10 +22,10 @@ internal class AppPropertiesIT {
     }
 
     @Test
-    fun `recover a second level property files activity-images`() {
+    fun `recover a second level property files evidences-path`() {
         val appProperties = context.getBean(AppProperties::class.java)
 
-        assertEquals("/tmp/activity/images", appProperties.files.activityImages)
+        assertEquals("/tmp/activity/images", appProperties.files.evidencesPath)
     }
 
     @Test
@@ -40,5 +41,21 @@ internal class AppPropertiesIT {
 
         assertEquals(listOf("approver@example.com", "other@example.com"), appProperties.binnacle.workSummary.mail.to)
     }
+
+    @Test
+    fun `recover the valid mime types for activity evidences`() {
+        val appProperties = context.getBean(AppProperties::class.java)
+
+        assertThat(appProperties.files.validMimeTypes).containsExactlyInAnyOrderElementsOf(
+            listOf(
+                "application/pdf",
+                "image/png",
+                "image/jpg",
+                "image/jpeg",
+                "image/gif"
+            )
+        )
+    }
+
 
 }

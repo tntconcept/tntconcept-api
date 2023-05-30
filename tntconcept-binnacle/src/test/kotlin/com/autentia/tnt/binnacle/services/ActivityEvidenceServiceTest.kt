@@ -1,10 +1,8 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.utils.BinnacleApiIllegalArgumentException
-import org.hamcrest.CoreMatchers.equalTo
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.MatcherAssert.assertThat
+import com.autentia.tnt.binnacle.converters.ActivityEvidenceConverter
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -16,37 +14,47 @@ import java.time.ZoneId
 import java.util.*
 
 internal class ActivityEvidenceServiceTest {
-
-    private val activityEvidenceService =
-        ActivityEvidenceService(AppProperties().apply { files.activityImages = "/tmp" })
+    private val appProperties = AppProperties().apply {
+        files.evidencesPath = "/tmp"
+        files.validMimeTypes = listOf(
+            "application/pdf",
+            "image/png",
+            "image/jpg",
+            "image/jpeg",
+            "image/gif"
+        )
+    }
+    private val activityEvidenceConverter = ActivityEvidenceConverter(appProperties)
     private val date = Date.from(LocalDate.parse("2022-04-08").atStartOfDay(ZoneId.systemDefault()).toInstant())
+    private val activityEvidenceService = ActivityEvidenceService(activityEvidenceConverter, appProperties)
     private val imageFilename = "/tmp/2022/4/2.jpg"
 
     @Nested
     inner class StoreImage {
         @Test
         fun `should create a new file with the decoded value of the image`() {
-            val image = "SGVsbG8gV29ybGQh"
+            val evidenceBase64 = "data:image/jpg,SGVsbG8gV29ybGQh"
 
-            activityEvidenceService.storeActivityEvidence(2L, image, date)
+            activityEvidenceService.storeActivityEvidence(2L, evidenceBase64, date)
 
-            val file = File(imageFilename)
-            val content = file.readText()
-            assertThat(content, `is`(equalTo("Hello World!")))
+            val expectedEvidenceFilename = "/tmp/2022/4/2.jpg"
+            val file = File(expectedEvidenceFilename)
+            val content = File(expectedEvidenceFilename).readText()
+            assertThat(content).isEqualTo("Hello World!")
 
             file.delete()
         }
 
         @Test
         fun `should throw BinnacleApiIllegalArgumentException when image file is null`() {
-            assertThrows<BinnacleApiIllegalArgumentException> {
+            assertThrows<IllegalArgumentException> {
                 activityEvidenceService.storeActivityEvidence(1L, null, Date())
             }
         }
 
         @Test
         fun `should throw BinnacleApiIllegalArgumentException when image file is an empty string`() {
-            assertThrows<BinnacleApiIllegalArgumentException> {
+            assertThrows<IllegalArgumentException> {
                 activityEvidenceService.storeActivityEvidence(1L, "", Date())
             }
         }
@@ -80,7 +88,7 @@ internal class ActivityEvidenceServiceTest {
 
             val result = activityEvidenceService.getActivityEvidenceAsBase64String(2L, date)
 
-            assertThat(result, `is`(equalTo("SGVsbG8gV29ybGQh")))
+            assertThat(result).isEqualTo("SGVsbG8gV29ybGQh")
 
             file.delete()
         }
