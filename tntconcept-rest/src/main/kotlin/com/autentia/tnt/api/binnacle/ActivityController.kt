@@ -1,7 +1,8 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.api.binnacle.request.activity.ActivityRequest
+import com.autentia.tnt.api.binnacle.request.activity.ActivityRequestConverter
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
@@ -26,6 +27,7 @@ internal class ActivityController(
     private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase,
     private val activitiesSummaryUseCase: ActivitiesSummaryUseCase,
     private val activityApprovalUseCase: ActivityApprovalUseCase,
+    private val activityRequestConverter: ActivityRequestConverter
 ) {
 
     @Get("{?activityFilterDTO*}")
@@ -46,15 +48,14 @@ internal class ActivityController(
 
     @Post
     @Operation(summary = "Creates a new activity.")
-    internal fun post(@Body @Valid activityRequest: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO =
-        activityCreationUseCase.createActivity(activityRequest, locale)
+    internal fun post(@Body @Valid activityRequest: ActivityRequest, locale: Locale): ActivityResponseDTO =
+        activityCreationUseCase.createActivity(activityRequestConverter.convertTo(activityRequest), locale)
 
     @Put
     @Operation(summary = "Updates an existing activity.")
-    internal fun put(@Valid @Body activityRequest: ActivityRequestBodyDTO, locale: Locale): ActivityResponseDTO {
-        return activityUpdateUseCase.updateActivity(activityRequest, locale)
+    internal fun put(@Valid @Body activityRequest: ActivityRequest, locale: Locale): ActivityResponseDTO {
+        return activityUpdateUseCase.updateActivity(activityRequestConverter.convertTo(activityRequest), locale)
     }
-
 
     @Delete("/{id}")
     @Operation(summary = "Deletes an activity by its id.")
