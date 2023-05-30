@@ -1,11 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.entities.dto.AnnualBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.MonthlyBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.MonthlyRolesDTO
-import com.autentia.tnt.binnacle.entities.dto.PreviousAnnualBalanceDTO
-import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
-import com.autentia.tnt.binnacle.entities.dto.YearAnnualBalanceDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.usecases.UserTimeSummaryUseCase
 import io.micronaut.http.HttpRequest.GET
 import io.micronaut.http.HttpStatus
@@ -104,7 +99,7 @@ internal class TimeSummaryControllerIT {
         balance: Double,
         roles: List<MonthlyRolesDTO>,
         chargedVacations: Double,
-        consumedVacations: Double,
+        enjoyedVacations: Double,
     ) =
         MonthlyBalanceDTO(
             workable.toBigDecimal(),
@@ -112,8 +107,10 @@ internal class TimeSummaryControllerIT {
             recommended.toBigDecimal(),
             balance.toBigDecimal(),
             roles,
-            chargedVacations.toBigDecimal(),
-            consumedVacations.toBigDecimal()
+            VacationsDTO(
+                chargedVacations.toBigDecimal(),
+                enjoyedVacations.toBigDecimal()
+            )
         )
 
 }

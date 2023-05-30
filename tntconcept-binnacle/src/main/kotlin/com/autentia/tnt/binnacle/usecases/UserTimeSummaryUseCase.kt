@@ -42,7 +42,7 @@ class UserTimeSummaryUseCase internal constructor(
         val vacationsRequestedThisYear = vacationService.getVacationsBetweenDates(startYearDate, endYearDate, user)
             .filter { it.isRequestedVacation() }
 
-        val vacationDaysRequestedThisYear =
+        val vacationDaysEnjoyedThisYear =
             vacationsRequestedThisYear.flatMap { it.days }.filter { it.year == startYearDate.year }
 
         val vacationsChargedThisYear = vacationService.getVacationsByChargeYear(startYearDate.year, user)
@@ -63,7 +63,7 @@ class UserTimeSummaryUseCase internal constructor(
             user,
             annualWorkSummary,
             holidaysDates,
-            vacationDaysRequestedThisYear,
+            vacationDaysEnjoyedThisYear,
             vacationsChargedThisYear,
             correspondingVacations,
             activities,

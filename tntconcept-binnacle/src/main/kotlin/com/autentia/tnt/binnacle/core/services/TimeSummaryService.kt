@@ -25,7 +25,7 @@ internal class TimeSummaryService(
         user: User,
         annualWorkSummary: AnnualWorkSummary,
         publicHolidays: List<LocalDate>,
-        vacationsConsumedThisYear: List<LocalDate>,
+        vacationsEnjoyedThisYear: List<LocalDate>,
         vacationsChargedThisYear: List<Vacation>,
         correspondingVacations: Int,
         activities: List<Activity>,
@@ -61,7 +61,7 @@ internal class TimeSummaryService(
         val previousWorkedTimeByMonth = getWorked(previousYearInterval, previousActivities)
 
         val monthlyWorkingTime = timeWorkableService.getMonthlyWorkingTime(
-            year, user.hiringDate, publicHolidays, vacationsConsumedThisYear
+            year, user.hiringDate, publicHolidays, vacationsEnjoyedThisYear
         )
 
         val suggestWorkingTimeByMonth = getRecommendedWork(
@@ -103,7 +103,7 @@ internal class TimeSummaryService(
             previousAnnualTargetWork,
             previousWorkedTimeByMonth,
             vacationsChargedThisYear,
-            vacationsConsumedThisYear
+            vacationsEnjoyedThisYear
         )
     }
 

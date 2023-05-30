@@ -275,8 +275,10 @@ internal class UserTimeSummaryUseCaseTest {
                     recommendedJanuary.toBigDecimalHours(),
                     balanceJanuary.toBigDecimalHours(),
                     listOf(MonthlyRolesDTO(DEV_ROLE.id, BigDecimal("11.00"))),
-                    Duration.parse("32h").toBigDecimalHours(),
-                    Duration.parse("40h").toBigDecimalHours()
+                    VacationsDTO(
+                        Duration.parse("32h").toBigDecimalHours(),
+                        Duration.parse("40h").toBigDecimalHours()
+                    )
                 ),
                 MonthlyBalanceDTO(
                     workable.toBigDecimalHours(),
@@ -287,8 +289,10 @@ internal class UserTimeSummaryUseCaseTest {
                         MonthlyRolesDTO(QA_ROLE.id, BigDecimal("10.00")),
                         MonthlyRolesDTO(DEV_OPS_ROLE.id, BigDecimal("4.00"))
                     ),
-                    Duration.parse("8h").toBigDecimalHours(),
-                    Duration.parse("8h").toBigDecimalHours()
+                    VacationsDTO(
+                        Duration.parse("8h").toBigDecimalHours(),
+                        Duration.parse("8h").toBigDecimalHours()
+                    )
                 ),
             )
         )
