@@ -22,7 +22,7 @@ internal class ActivitiesService(
     private val activityRepository: ActivityRepository,
     @param:Named("Internal") private val internalActivityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
-    private val activityImageService: ActivityImageService,
+    private val activityEvidenceService: ActivityEvidenceService,
     private val activityRequestBodyConverter: ActivitiesRequestBodyConverter,
     private val activityResponseConverter: ActivitiesResponseConverter
 ) {
@@ -68,7 +68,7 @@ internal class ActivitiesService(
         )
 
         if (activityRequest.hasImage) {
-            activityImageService.storeActivityImage(
+            activityEvidenceService.storeActivityEvidence(
                 savedActivity.id!!,
                 activityRequest.imageFile,
                 savedActivity.insertDate!!
@@ -89,7 +89,7 @@ internal class ActivitiesService(
 
         // Update stored image
         if (activityRequest.hasImage) {
-            activityImageService.storeActivityImage(
+            activityEvidenceService.storeActivityEvidence(
                 activityRequest.id!!,
                 activityRequest.imageFile,
                 oldActivity.insertDate!!
@@ -98,7 +98,7 @@ internal class ActivitiesService(
 
         // Delete stored image
         if (!activityRequest.hasImage && oldActivity.hasEvidences) {
-            activityImageService.deleteActivityImage(activityRequest.id!!, oldActivity.insertDate!!)
+            activityEvidenceService.deleteActivityEvidence(activityRequest.id!!, oldActivity.insertDate!!)
         }
 
         return activityRepository.update(
@@ -115,7 +115,7 @@ internal class ActivitiesService(
     fun deleteActivityById(id: Long) {
         val activityToDelete = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasEvidences) {
-            activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
+            activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
         }
         activityRepository.deleteById(id)
     }

@@ -31,12 +31,12 @@ internal class ActivityServiceTest {
     private val activityRepository = mock<ActivityRepository>()
     private val internalActivityRepository = mock<InternalActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val activityImageService = mock<ActivityImageService>()
+    private val activityEvidenceService = mock<ActivityEvidenceService>()
     private val activityService = ActivityService(
         activityRepository,
         internalActivityRepository,
         projectRoleRepository,
-        activityImageService
+        activityEvidenceService
     )
 
     init {
@@ -182,7 +182,7 @@ internal class ActivityServiceTest {
         val result = activityService.createActivity(activityWithoutImage, null)
 
         assertEquals(activityWithoutImageSaved.toDomain(), result)
-        verifyNoInteractions(activityImageService)
+        verifyNoInteractions(activityEvidenceService)
     }
 
     @Test
@@ -192,7 +192,7 @@ internal class ActivityServiceTest {
         val result = activityService.createActivity(activityWithImage, image)
 
         assertEquals(activityWithImageSaved.toDomain(), result)
-        verify(activityImageService).storeActivityImage(
+        verify(activityEvidenceService).storeActivityEvidence(
             activityWithImageSaved.id!!,
             image,
             activityWithImageSaved.insertDate!!
@@ -242,7 +242,7 @@ internal class ActivityServiceTest {
         val result = activityService.updateActivity(activity, null)
 
         assertEquals(activity, result)
-        verifyNoInteractions(activityImageService)
+        verifyNoInteractions(activityEvidenceService)
     }
 
     @Test
@@ -282,8 +282,8 @@ internal class ActivityServiceTest {
         whenever(activityRepository.findById(activityId)).thenReturn(oldActivity)
 
         // Store the new image in the same old activity path
-        willDoNothing().given(activityImageService)
-            .storeActivityImage(activityToUpdate.id!!, image, oldActivityInsertDate)
+        willDoNothing().given(activityEvidenceService)
+            .storeActivityEvidence(activityToUpdate.id!!, image, oldActivityInsertDate)
 
         val activityToReturn = Activity.of(activityToUpdate, projectRole)
 
@@ -292,7 +292,7 @@ internal class ActivityServiceTest {
         val result = activityService.updateActivity(activityToUpdate, image)
 
         assertThat(result).isEqualTo(activityToUpdate)
-        verify(activityImageService).storeActivityImage(
+        verify(activityEvidenceService).storeActivityEvidence(
             activityToUpdate.id!!,
             image,
             oldActivityInsertDate
@@ -337,7 +337,7 @@ internal class ActivityServiceTest {
         given(activityRepository.findById(activityId)).willReturn(oldActivity)
 
         // Delete the old activity image
-        given(activityImageService.deleteActivityImage(activityId, oldActivityInsertDate)).willReturn(true)
+        given(activityEvidenceService.deleteActivityEvidence(activityId, oldActivityInsertDate)).willReturn(true)
 
         val savedActivity = Activity.of(activity, projectRole)
 
@@ -346,7 +346,7 @@ internal class ActivityServiceTest {
         val result = activityService.updateActivity(activity, "")
 
         assertThat(result).isEqualTo(activity)
-        verify(activityImageService).deleteActivityImage(activityId, oldActivityInsertDate)
+        verify(activityEvidenceService).deleteActivityEvidence(activityId, oldActivityInsertDate)
     }
 
     @Test
@@ -378,7 +378,7 @@ internal class ActivityServiceTest {
         activityService.deleteActivityById(activityWithoutImageSaved.id as Long)
 
         verify(activityRepository).deleteById(activityWithoutImageSaved.id!!)
-        verifyNoInteractions(activityImageService)
+        verifyNoInteractions(activityEvidenceService)
     }
 
     @Test
@@ -390,7 +390,7 @@ internal class ActivityServiceTest {
         activityService.deleteActivityById(activityWithImageSaved.id!!)
 
         verify(activityRepository).deleteById(activityWithImageSaved.id!!)
-        verify(activityImageService).deleteActivityImage(
+        verify(activityEvidenceService).deleteActivityEvidence(
             activityWithImageSaved.id!!,
             activityWithImageSaved.insertDate!!
         )

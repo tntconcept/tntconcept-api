@@ -7,15 +7,14 @@ import com.autentia.tnt.binnacle.utils.BinnacleApiIllegalArgumentException
 import jakarta.inject.Singleton
 import org.apache.commons.io.FileUtils
 import java.io.File
-import java.util.Base64
-import java.util.Date
+import java.util.*
 
 @Singleton
-internal class ActivityImageService(
+internal class ActivityEvidenceService(
     private val appProperties: AppProperties,
 ) {
 
-    fun storeActivityImage(activityId: Long, imageFile: String?, insertDate: Date) {
+    fun storeActivityEvidence(activityId: Long, imageFile: String?, insertDate: Date) {
         if (imageFile == null || imageFile == "") {
             throw BinnacleApiIllegalArgumentException("With hasEvidences = true, imageFile could not be null")
         }
@@ -26,10 +25,10 @@ internal class ActivityImageService(
         FileUtils.writeByteArrayToFile(File(fileName), fileContent)
     }
 
-    fun deleteActivityImage(id: Long, insertDate: Date): Boolean =
+    fun deleteActivityEvidence(id: Long, insertDate: Date): Boolean =
         File(filePath(insertDate, id)).delete()
 
-    fun getActivityImageAsBase64(id: Long, insertDate: Date): String {
+    fun getActivityEvidenceAsBase64String(id: Long, insertDate: Date): String {
         val year = insertDate.takeYear()
         val month = insertDate.takeMonth()
         val fileContent = FileUtils.readFileToByteArray(File(filePath(year, month, id)))

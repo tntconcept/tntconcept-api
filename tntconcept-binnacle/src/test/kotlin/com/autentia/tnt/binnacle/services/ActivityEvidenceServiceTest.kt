@@ -13,11 +13,12 @@ import org.junit.jupiter.api.assertThrows
 import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.Date
+import java.util.*
 
-internal class ActivityImageServiceTest {
+internal class ActivityEvidenceServiceTest {
 
-    private val activityImageService = ActivityImageService(AppProperties().apply { files.activityImages = "/tmp" })
+    private val activityEvidenceService =
+        ActivityEvidenceService(AppProperties().apply { files.activityImages = "/tmp" })
     private val date = Date.from(LocalDate.parse("2022-04-08").atStartOfDay(ZoneId.systemDefault()).toInstant())
     private val imageFilename = "/tmp/2022/4/2.jpg"
 
@@ -27,7 +28,7 @@ internal class ActivityImageServiceTest {
         fun `should create a new file with the decoded value of the image`() {
             val image = "SGVsbG8gV29ybGQh"
 
-            activityImageService.storeActivityImage(2L, image, date)
+            activityEvidenceService.storeActivityEvidence(2L, image, date)
 
             val file = File(imageFilename)
             val content = file.readText()
@@ -39,14 +40,14 @@ internal class ActivityImageServiceTest {
         @Test
         fun `should throw BinnacleApiIllegalArgumentException when image file is null`() {
             assertThrows<BinnacleApiIllegalArgumentException> {
-                activityImageService.storeActivityImage(1L, null, Date())
+                activityEvidenceService.storeActivityEvidence(1L, null, Date())
             }
         }
 
         @Test
         fun `should throw BinnacleApiIllegalArgumentException when image file is an empty string`() {
             assertThrows<BinnacleApiIllegalArgumentException> {
-                activityImageService.storeActivityImage(1L, "", Date())
+                activityEvidenceService.storeActivityEvidence(1L, "", Date())
             }
         }
     }
@@ -57,14 +58,14 @@ internal class ActivityImageServiceTest {
         fun `should return true when the file with the image has been deleted`() {
             File(imageFilename).createNewFile()
 
-            val result = activityImageService.deleteActivityImage(2L, date)
+            val result = activityEvidenceService.deleteActivityEvidence(2L, date)
 
             assertTrue(result)
         }
 
         @Test
         fun `should return false when the file couldn't be deleted`() {
-            val result = activityImageService.deleteActivityImage(2L, date)
+            val result = activityEvidenceService.deleteActivityEvidence(2L, date)
 
             assertFalse(result)
         }
@@ -77,7 +78,7 @@ internal class ActivityImageServiceTest {
             val file = File(imageFilename)
             file.writeText("Hello World!")
 
-            val result = activityImageService.getActivityImageAsBase64(2L, date)
+            val result = activityEvidenceService.getActivityEvidenceAsBase64String(2L, date)
 
             assertThat(result, `is`(equalTo("SGVsbG8gV29ybGQh")))
 

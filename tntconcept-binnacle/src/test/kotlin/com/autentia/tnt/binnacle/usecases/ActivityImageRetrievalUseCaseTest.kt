@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.NoImageInActivityException
-import com.autentia.tnt.binnacle.services.ActivityImageService
+import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.ActivityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -17,18 +17,20 @@ import java.util.*
 internal class ActivityImageRetrievalUseCaseTest {
 
     private val activityService = mock<ActivityService>()
-    private val activityImageService = mock<ActivityImageService>()
+    private val activityEvidenceService = mock<ActivityEvidenceService>()
 
     private val activityImageRetrievalUseCase =
         ActivityImageRetrievalUseCase(
             activityService,
-            activityImageService
+            activityEvidenceService
         )
 
     @Test
     fun `return image in base 64 from service`() {
         whenever(activityService.getActivityById(todayActivity.id!!)).thenReturn(todayActivity)
-        whenever(activityImageService.getActivityImageAsBase64(todayActivity.id!!, TODAY_DATE)).thenReturn(IMAGE)
+        whenever(activityEvidenceService.getActivityEvidenceAsBase64String(todayActivity.id!!, TODAY_DATE)).thenReturn(
+            IMAGE
+        )
 
         assertEquals(IMAGE, activityImageRetrievalUseCase.getActivityImage(1L))
     }
