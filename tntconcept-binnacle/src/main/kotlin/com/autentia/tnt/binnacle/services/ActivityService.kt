@@ -76,20 +76,16 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(
-        activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity,
-        imageFile: String?
+        activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?
     ): com.autentia.tnt.binnacle.core.domain.Activity {
-        val projectRole = projectRoleRepository
-            .findById(activityToCreate.projectRole.id)
+        val projectRole = projectRoleRepository.findById(activityToCreate.projectRole.id)
             ?: error { "Cannot find projectRole with id = ${activityToCreate.projectRole.id}" }
 
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
 
         if (activityToCreate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(
-                savedActivity.id!!,
-                EvidenceDTO.from(imageFile!!),
-                savedActivity.insertDate!!
+                savedActivity.id!!, evidence!!, savedActivity.insertDate!!
             )
         }
 
@@ -97,27 +93,23 @@ internal class ActivityService(
     }
 
     fun filterActivitiesByTimeInterval(
-        filterTimeInterval: TimeInterval,
-        activities: List<Activity>
+        filterTimeInterval: TimeInterval, activities: List<Activity>
     ) = activities.map(Activity::toDomain).filter { it.isInTheTimeInterval(filterTimeInterval) }.toList()
 
     @Transactional(rollbackOn = [Exception::class])
     fun updateActivity(
-        activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity, imageFile: String?
+        activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?
     ): com.autentia.tnt.binnacle.core.domain.Activity {
-        val projectRole = projectRoleRepository
-            .findById(activityToUpdate.projectRole.id)
+        val projectRole = projectRoleRepository.findById(activityToUpdate.projectRole.id)
             ?: error { "Cannot find projectRole with id = ${activityToUpdate.projectRole.id}" }
 
-        val oldActivity = activityRepository
-            .findById(activityToUpdate.id!!) ?: throw ActivityNotFoundException(activityToUpdate.id)
+        val oldActivity =
+            activityRepository.findById(activityToUpdate.id!!) ?: throw ActivityNotFoundException(activityToUpdate.id)
 
         // Update stored image
         if (activityToUpdate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(
-                activityToUpdate.id,
-                EvidenceDTO.from(imageFile!!),
-                oldActivity.insertDate!!
+                activityToUpdate.id, evidence!!, oldActivity.insertDate!!
             )
         }
 
@@ -143,9 +135,7 @@ internal class ActivityService(
 
     @Transactional
     fun deleteActivityById(id: Long) {
-        val activityToDelete =
-            activityRepository
-                .findById(id) ?: throw ActivityNotFoundException(id)
+        val activityToDelete = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasEvidences) {
             activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
         }

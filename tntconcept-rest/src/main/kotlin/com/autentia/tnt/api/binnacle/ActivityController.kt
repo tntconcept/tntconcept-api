@@ -38,13 +38,11 @@ internal class ActivityController(
 
     @Get("/{id}")
     @Operation(summary = "Gets an activity by its id.")
-    internal fun get(id: Long): ActivityResponseDTO? =
-        activityRetrievalUseCase.getActivityById(id)
+    internal fun get(id: Long): ActivityResponseDTO? = activityRetrievalUseCase.getActivityById(id)
 
     @Get("/{id}/image")
     @Operation(summary = "Retrieves an activity image by the activity id.")
-    internal fun getImage(id: Long): String =
-        activityImageRetrievalUseCase.getActivityImage(id)
+    internal fun getImage(id: Long): String = activityImageRetrievalUseCase.getActivityImage(id)
 
     @Post
     @Operation(summary = "Creates a new activity.")
@@ -53,14 +51,13 @@ internal class ActivityController(
 
     @Put
     @Operation(summary = "Updates an existing activity.")
-    internal fun put(@Valid @Body activityRequest: ActivityRequest, locale: Locale): ActivityResponseDTO {
-        return activityUpdateUseCase.updateActivity(activityRequestConverter.convertTo(activityRequest), locale)
-    }
+    internal fun put(@Valid @Body activityRequest: ActivityRequest, locale: Locale): ActivityResponseDTO =
+        activityUpdateUseCase.updateActivity(activityRequestConverter.convertTo(activityRequest), locale)
+
 
     @Delete("/{id}")
     @Operation(summary = "Deletes an activity by its id.")
-    internal fun delete(id: Long) =
-        activityDeletionUseCase.deleteActivityById(id)
+    internal fun delete(id: Long) = activityDeletionUseCase.deleteActivityById(id)
 
 
     @Get("/summary")

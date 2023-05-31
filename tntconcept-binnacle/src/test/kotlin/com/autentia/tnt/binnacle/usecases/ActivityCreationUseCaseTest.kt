@@ -5,34 +5,19 @@ import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityUseCaseRequest
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
-import com.autentia.tnt.binnacle.services.ProjectRoleService
-import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDateTime
-import java.util.Locale
+import java.util.*
 
 internal class ActivityCreationUseCaseTest {
 
@@ -145,7 +130,7 @@ internal class ActivityCreationUseCaseTest {
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.MINUTES)
 
 
-        private val ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
+        private val ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO = ActivityUseCaseRequest(
             null,
             TIME_NOW,
             TIME_NOW.plusMinutes(75L),
@@ -156,7 +141,7 @@ internal class ActivityCreationUseCaseTest {
             null,
         )
 
-        private val ACTIVITY_APPROVAL_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
+        private val ACTIVITY_APPROVAL_REQUEST_BODY_DTO = ActivityUseCaseRequest(
             null,
             TIME_NOW,
             TIME_NOW.plusMinutes(75L),
