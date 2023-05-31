@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.core.services
 import com.autentia.tnt.binnacle.config.*
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
 import com.autentia.tnt.binnacle.core.domain.*
+import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -39,7 +40,7 @@ internal class TimeSummaryServiceTest {
             USER,
             ANNUAL_WORK_SUMMARY,
             PUBLIC_HOLIDAYS,
-            vacationsRequestedThisYearToThisAndNextYear,
+            vacationsEnjoyedThisYearToThisAndNextYear,
             vacationsChargedThisYearToThisAndNextYear,
             correspondingVacations,
             activities,
@@ -58,14 +59,14 @@ internal class TimeSummaryServiceTest {
     @Test
     fun `calculate workable hours for a month with all workable hours for that month requested as vacations`() {
         val user = createUser(LocalDate.of(2020, Month.MARCH, 3))
-        val vacationsRequestedThisYear = getVacationsInOneMonth2022()
+        val vacationsEnjoyedThisYear = getVacationsInOneMonth2022()
 
         val vacationsChargedThisYear = listOf(
             Vacation(
                 state = VacationState.PENDING,
                 startDate = LocalDate.of(2022, Month.JANUARY, 1),
                 endDate = LocalDate.of(2022, Month.JANUARY, 31),
-                days = vacationsRequestedThisYear,
+                days = vacationsEnjoyedThisYear,
                 chargeYear = LocalDate.ofYearDay(2022, 1),
                 observations = "charge year 2022 to 2022"
             )
@@ -80,7 +81,7 @@ internal class TimeSummaryServiceTest {
             user,
             ANNUAL_WORK_SUMMARY,
             PUBLIC_HOLIDAYS,
-            vacationsRequestedThisYear,
+            vacationsEnjoyedThisYear,
             vacationsChargedThisYear,
             correspondingVacations,
             activities,
@@ -109,7 +110,7 @@ internal class TimeSummaryServiceTest {
             user,
             ANNUAL_WORK_SUMMARY,
             PUBLIC_HOLIDAYS,
-            vacationsRequestedThisYearToThisAndNextYear,
+            vacationsEnjoyedThisYearToThisAndNextYear,
             vacationsChargedThisYearToThisAndNextYear,
             correspondingVacations,
             activities,
@@ -134,7 +135,7 @@ internal class TimeSummaryServiceTest {
             user,
             ANNUAL_WORK_SUMMARY,
             PUBLIC_HOLIDAYS,
-            vacationsRequestedThisYearToThisAndNextYear,
+            vacationsEnjoyedThisYearToThisAndNextYear,
             vacationsChargedThisYearToThisAndNextYear,
             correspondingVacations,
             activities,
@@ -214,7 +215,7 @@ internal class TimeSummaryServiceTest {
             USER,
             ANNUAL_WORK_SUMMARY,
             PUBLIC_HOLIDAYS,
-            vacationsRequestedThisYearToThisAndNextYear,
+            vacationsEnjoyedThisYearToThisAndNextYear,
             vacationsChargedThisYearToThisAndNextYear,
             correspondingVacations,
             activities,
@@ -231,16 +232,46 @@ internal class TimeSummaryServiceTest {
         assertEquals(MarchRoles, workingTime.months[Month.MARCH]!!.roles)
     }
 
+    @Test
+    fun `return enjoyed and charged vacations when there are no vacations for current year left`() {
+        val dailyWorkingHours = 8
+        val totalEnjoyedHours = (vacationsEnjoyedThisYear.size*dailyWorkingHours).toBigDecimal().intValueExact()
+        val totalChargedHours = (correspondingVacations*dailyWorkingHours).toBigDecimal().intValueExact()
+
+        val workingTime = timeSummaryService.getTimeSummaryBalance(
+            LocalDate.of(LocalDate.now().year, Month.MARCH, 31),
+            USER,
+            ANNUAL_WORK_SUMMARY_2023,
+            PUBLIC_HOLIDAYS,
+            vacationsEnjoyedThisYear,
+            vacationsFullyChargedToThisYear,
+            correspondingVacations,
+            listOf(),
+            listOf()
+        )
+
+        assertEquals(
+            totalEnjoyedHours,
+            (workingTime.months[Month.JANUARY]!!.enjoyedVacations + workingTime.months[Month.FEBRUARY]!!.enjoyedVacations).toBigDecimalHours().intValueExact()
+        )
+        assertEquals(
+            totalChargedHours,
+            (workingTime.months[Month.JANUARY]!!.chargedVacations + workingTime.months[Month.FEBRUARY]!!.chargedVacations).toBigDecimalHours().intValueExact()
+        )
+    }
+
+
     private companion object {
         val USER = createUser()
 
         val PUBLIC_HOLIDAYS = getHolidaysFrom2022()
 
         val ANNUAL_WORK_SUMMARY = AnnualWorkSummary(2021)
+        val ANNUAL_WORK_SUMMARY_2023 = AnnualWorkSummary(2023)
 
         val date = LocalDate.of(2022, Month.MARCH, 15)
 
-        val vacationsRequestedThisYearToThisAndNextYear = listOf(
+        val vacationsEnjoyedThisYearToThisAndNextYear = listOf(
             LocalDate.of(2022, Month.JANUARY, 10),
             LocalDate.of(2022, Month.JANUARY, 11),
             LocalDate.of(2023, Month.JANUARY, 11),
@@ -266,6 +297,46 @@ internal class TimeSummaryServiceTest {
                 ),
                 chargeYear = LocalDate.ofYearDay(2022, 1),
                 observations = "charge year 2022 to 2023"
+            )
+        )
+
+        val vacationsEnjoyedThisYear = listOf(
+            LocalDate.of(2023, Month.JANUARY, 10), LocalDate.of(2023, Month.JANUARY, 11),
+            LocalDate.of(2023, Month.JANUARY, 12), LocalDate.of(2023, Month.JANUARY, 13),
+            LocalDate.of(2023, Month.JANUARY, 16), LocalDate.of(2023, Month.JANUARY, 17),
+            LocalDate.of(2023, Month.JANUARY, 18), LocalDate.of(2023, Month.JANUARY, 19),
+            LocalDate.of(2023, Month.JANUARY, 20), LocalDate.of(2023, Month.JANUARY, 23),
+            LocalDate.of(2023, Month.JANUARY, 24), LocalDate.of(2023, Month.JANUARY, 25),
+            LocalDate.of(2023, Month.JANUARY, 26), LocalDate.of(2023, Month.JANUARY, 27),
+            LocalDate.of(2023, Month.JANUARY, 30), LocalDate.of(2023, Month.JANUARY, 31),
+            LocalDate.of(2023, Month.FEBRUARY, 1), LocalDate.of(2023, Month.FEBRUARY, 2),
+            LocalDate.of(2023, Month.FEBRUARY, 3), LocalDate.of(2023, Month.FEBRUARY, 6),
+            LocalDate.of(2023, Month.FEBRUARY, 7), LocalDate.of(2023, Month.FEBRUARY, 8),
+            LocalDate.of(2023, Month.FEBRUARY, 9), LocalDate.of(2023, Month.FEBRUARY, 10),
+            LocalDate.of(2023, Month.FEBRUARY, 13), LocalDate.of(2023, Month.FEBRUARY, 14)
+        )
+
+        val vacationsFullyChargedToThisYear = listOf(
+            Vacation(
+                state = VacationState.PENDING,
+                startDate = LocalDate.of(2023, Month.JANUARY, 10),
+                endDate = LocalDate.of(2023, Month.FEBRUARY, 10),
+                days = listOf(
+                    LocalDate.of(2023, Month.JANUARY, 10), LocalDate.of(2023, Month.JANUARY, 11),
+                    LocalDate.of(2023, Month.JANUARY, 12), LocalDate.of(2023, Month.JANUARY, 13),
+                    LocalDate.of(2023, Month.JANUARY, 16), LocalDate.of(2023, Month.JANUARY, 17),
+                    LocalDate.of(2023, Month.JANUARY, 18), LocalDate.of(2023, Month.JANUARY, 19),
+                    LocalDate.of(2023, Month.JANUARY, 20), LocalDate.of(2023, Month.JANUARY, 23),
+                    LocalDate.of(2023, Month.JANUARY, 24), LocalDate.of(2023, Month.JANUARY, 25),
+                    LocalDate.of(2023, Month.JANUARY, 26), LocalDate.of(2023, Month.JANUARY, 27),
+                    LocalDate.of(2023, Month.JANUARY, 30), LocalDate.of(2023, Month.JANUARY, 31),
+                    LocalDate.of(2023, Month.FEBRUARY, 1), LocalDate.of(2023, Month.FEBRUARY, 2),
+                    LocalDate.of(2023, Month.FEBRUARY, 3), LocalDate.of(2023, Month.FEBRUARY, 6),
+                    LocalDate.of(2023, Month.FEBRUARY, 7), LocalDate.of(2023, Month.FEBRUARY, 8),
+                    LocalDate.of(2023, Month.FEBRUARY, 9)
+                ),
+                chargeYear = LocalDate.ofYearDay(2023, 1),
+                observations = "charge year 2023 for all the corresponding vacations"
             )
         )
 

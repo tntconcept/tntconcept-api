@@ -65,11 +65,11 @@ internal fun getHolidaysFrom2022(): List<LocalDate> = listOf<LocalDate>(
 )
 
 internal fun getVacationsInOneMonth2022(): List<LocalDate> {
-    val vacationsRequested = mutableListOf<LocalDate>()
+    val vacationsEnjoyed = mutableListOf<LocalDate>()
     for (i in 1..31) {
-          vacationsRequested.add(LocalDate.of(2022, Month.JANUARY, i))
+          vacationsEnjoyed.add(LocalDate.of(2022, Month.JANUARY, i))
     }
-    return vacationsRequested
+    return vacationsEnjoyed
 }
 
 
