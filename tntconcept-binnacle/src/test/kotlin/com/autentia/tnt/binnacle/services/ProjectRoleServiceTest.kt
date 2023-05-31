@@ -78,4 +78,19 @@ internal class ProjectRoleServiceTest {
         assertEquals(expectedResult, result)
     }
 
+    @Test
+    fun `getAllByProjectId should call repository`() {
+        val projectRoles = listOf(
+            createProjectRole(),
+            createProjectRole().copy(id = 5L).copy(isWorkingTime = false),
+        )
+        val expectedResult = projectRoles.map(ProjectRole::toDomain)
+
+        whenever(projectRoleRepository.getAllByProjectId(1L)).thenReturn(projectRoles)
+
+        val result = projectRoleService.getAllByProjectId(1L)
+
+        assertEquals(expectedResult, result)
+    }
+
 }
