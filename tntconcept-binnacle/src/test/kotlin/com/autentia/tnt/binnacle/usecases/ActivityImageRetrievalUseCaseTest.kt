@@ -47,7 +47,6 @@ internal class ActivityImageRetrievalUseCaseTest {
     }
 
     private companion object {
-        private const val userId = 10L
         private val TODAY = LocalDateTime.now()
         private val TODAY_DATE = Date()
         private const val IMAGE = "Image in base 64"

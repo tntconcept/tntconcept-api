@@ -21,7 +21,7 @@ internal class AppProperties {
         var evidencesPath: String = ""
 
         @NotEmpty
-        var validMimeTypes: List<String> = emptyList()
+        var supportedMimeTypes: Map<String, String> = emptyMap()
     }
 
     @ConfigurationProperties("mail")

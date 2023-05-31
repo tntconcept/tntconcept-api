@@ -46,13 +46,13 @@ internal class AppPropertiesIT {
     fun `recover the valid mime types for activity evidences`() {
         val appProperties = context.getBean(AppProperties::class.java)
 
-        assertThat(appProperties.files.validMimeTypes).containsExactlyInAnyOrderElementsOf(
-            listOf(
-                "application/pdf",
-                "image/png",
-                "image/jpg",
-                "image/jpeg",
-                "image/gif"
+        assertThat(appProperties.files.supportedMimeTypes).containsAllEntriesOf(
+            mapOf(
+                Pair("application/pdf", "pdf"),
+                Pair("image/jpg", "jpg"),
+                Pair("image/jpeg", "jpeg"),
+                Pair("image/png", "png"),
+                Pair("image/gif", "gif")
             )
         )
     }

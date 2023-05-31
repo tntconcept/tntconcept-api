@@ -8,36 +8,77 @@ import com.autentia.tnt.binnacle.exception.InvalidEvidenceMimeTypeException
 import jakarta.inject.Singleton
 import org.apache.commons.io.FileUtils
 import java.io.File
+import java.io.FileNotFoundException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 
 @Singleton
 internal class ActivityEvidenceService(
-    private val appProperties: AppProperties,
+    appProperties: AppProperties,
 ) {
+    private val evidencesPath: String
+    private val supportedMimeExtensions: Map<String, String>
 
-    fun storeActivityEvidence(activityId: Long, evidence: EvidenceDTO, insertDate: Date) {
-        val fileName = filePath(insertDate, activityId)
-        FileUtils.writeByteArrayToFile(File(fileName), Base64.getDecoder().decode(evidence.base64data))
+    init {
+        evidencesPath = appProperties.files.evidencesPath
+        supportedMimeExtensions = appProperties.files.supportedMimeTypes
     }
-
-    fun deleteActivityEvidence(id: Long, insertDate: Date): Boolean =
-        Files.deleteIfExists(Path.of(filePath(insertDate, id)))
 
     fun getActivityEvidenceAsBase64String(id: Long, insertDate: Date): String {
-        val year = insertDate.takeYear()
-        val month = insertDate.takeMonth()
-        val fileContent = FileUtils.readFileToByteArray(File(filePath(year, month, id)))
-        return Base64.getEncoder().encodeToString(fileContent)
+        val supportedExtensions = getSupportedExtensions()
+        for (supportedExtension: String in supportedExtensions) {
+            val filePathWithExtension = getFilePath(insertDate, id, supportedExtension)
+            if (Files.exists(filePathWithExtension)) {
+                val fileContents = FileUtils.readFileToByteArray(File(filePathWithExtension.toUri()))
+                return Base64.getEncoder().encodeToString(fileContents)
+            }
+
+        }
+        throw FileNotFoundException()
     }
 
-    private fun filePath(date: Date, id: Long) = filePath(date.takeYear(), date.takeMonth(), id)
+    fun storeActivityEvidence(activityId: Long, evidenceDTO: EvidenceDTO, insertDate: Date) {
+        require(isMimeTypeSupported(evidenceDTO.mediaType)) { "Mime type ${evidenceDTO.mediaType} is not supported" }
+        require(evidenceDTO.base64data.isNotEmpty()) { "With hasEvidences = true, evidence content should not be null" }
 
-    private fun filePath(year: Int, month: Int, id: Long) =
-        "${appProperties.files.evidencesPath}/$year/$month/$id.jpg"
-
-    private fun checkValidMimeType(mimeType: String) {
-        appProperties.files.validMimeTypes.contains(mimeType) || throw InvalidEvidenceMimeTypeException(mimeType)
+        val evidenceFile = getEvidenceFile(evidenceDTO, insertDate, activityId)
+        val decodedFileContent = Base64.getDecoder().decode(evidenceDTO.base64data)
+        FileUtils.writeByteArrayToFile(evidenceFile, decodedFileContent)
     }
+
+    fun deleteActivityEvidence(id: Long, insertDate: Date): Boolean {
+        val supportedExtensions = getSupportedExtensions()
+        for (supportedExtension in supportedExtensions) {
+            val filePath = getFilePath(insertDate, id, supportedExtension)
+            if (Files.deleteIfExists(filePath)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun getEvidenceFile(
+        evidenceDTO: EvidenceDTO,
+        insertDate: Date,
+        activityId: Long
+    ): File {
+        val fileExtension = getExtensionForMimeType(evidenceDTO.mediaType)
+        val fileName = getFilePath(insertDate, activityId, fileExtension)
+        return File(fileName.toUri())
+    }
+
+    private fun getSupportedExtensions() = supportedMimeExtensions.values.distinct().toList()
+
+    private fun getFilePath(date: Date, id: Long, fileExtension: String) =
+        getFilePath(date.takeYear(), date.takeMonth(), id, fileExtension)
+
+    private fun getFilePath(year: Int, month: Int, id: Long, fileExtension: String) =
+        Path.of("${evidencesPath}/$year/$month/$id.$fileExtension")
+
+    private fun isMimeTypeSupported(mimeType: String): Boolean = supportedMimeExtensions.containsKey(mimeType)
+
+    private fun getExtensionForMimeType(mimeType: String): String =
+        supportedMimeExtensions[mimeType] ?: throw InvalidEvidenceMimeTypeException(mimeType)
+
 }
