@@ -20,7 +20,7 @@ data class EvidenceDTO private constructor(val mediaType: String, val base64data
 
         private fun getMimeType(evidenceBase64: String): String {
             val regexGroupValues = regex.find(evidenceBase64)?.groupValues
-            return regexGroupValues?.get(1) ?: ""
+            return regexGroupValues?.get(1) ?: throw IllegalStateException()
         }
 
         private fun getContent(evidenceBase64: String): String {
