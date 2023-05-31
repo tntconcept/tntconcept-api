@@ -5,7 +5,7 @@ import com.autentia.tnt.binnacle.exception.InvalidEvidenceFormatException
 
 data class EvidenceDTO private constructor(val mediaType: String, val base64data: String) {
     companion object {
-        private val regex = Regex("data:(\\w+/[-+.\\w]+);base64,(\\w+)")
+        private val regex = Regex("^data:([^,]+);base64,(.+\$)")
 
         fun from(value: String): EvidenceDTO {
             if (!isInMediaTypeFormat(value)) {
