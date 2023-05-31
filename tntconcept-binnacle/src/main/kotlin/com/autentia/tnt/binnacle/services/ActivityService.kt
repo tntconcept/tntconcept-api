@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -87,7 +88,7 @@ internal class ActivityService(
         if (activityToCreate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(
                 savedActivity.id!!,
-                imageFile,
+                EvidenceDTO.from(imageFile!!),
                 savedActivity.insertDate!!
             )
         }
@@ -115,7 +116,7 @@ internal class ActivityService(
         if (activityToUpdate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(
                 activityToUpdate.id,
-                imageFile,
+                EvidenceDTO.from(imageFile!!),
                 oldActivity.insertDate!!
             )
         }

@@ -1,9 +1,10 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.converters.ActivityEvidenceConverter
 import com.autentia.tnt.binnacle.core.utils.takeMonth
 import com.autentia.tnt.binnacle.core.utils.takeYear
+import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
+import com.autentia.tnt.binnacle.exception.InvalidEvidenceMimeTypeException
 import jakarta.inject.Singleton
 import org.apache.commons.io.FileUtils
 import java.io.File
@@ -13,16 +14,12 @@ import java.util.*
 
 @Singleton
 internal class ActivityEvidenceService(
-    private val activityEvidenceConverter: ActivityEvidenceConverter,
     private val appProperties: AppProperties,
 ) {
 
-    fun storeActivityEvidence(activityId: Long, evidenceBase64: String?, insertDate: Date) {
-        require(!evidenceBase64.isNullOrEmpty()) { "With hasEvidences = true, imageFile could not be null" }
-
-        val evidence = activityEvidenceConverter.convertB64StringToActivityEvidence(evidenceBase64)
+    fun storeActivityEvidence(activityId: Long, evidence: EvidenceDTO, insertDate: Date) {
         val fileName = filePath(insertDate, activityId)
-        FileUtils.writeByteArrayToFile(File(fileName), evidence.content)
+        FileUtils.writeByteArrayToFile(File(fileName), Base64.getDecoder().decode(evidence.base64data))
     }
 
     fun deleteActivityEvidence(id: Long, insertDate: Date): Boolean =
@@ -39,4 +36,8 @@ internal class ActivityEvidenceService(
 
     private fun filePath(year: Int, month: Int, id: Long) =
         "${appProperties.files.evidencesPath}/$year/$month/$id.jpg"
+
+    private fun checkValidMimeType(mimeType: String) {
+        appProperties.files.validMimeTypes.contains(mimeType) || throw InvalidEvidenceMimeTypeException(mimeType)
+    }
 }

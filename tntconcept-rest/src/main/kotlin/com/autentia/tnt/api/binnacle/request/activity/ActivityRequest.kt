@@ -30,7 +30,10 @@ data class ActivityRequest(
     val hasEvidences: Boolean,
 
     @get:Schema(description = "The evidence file associated with the activity")
-    @Pattern(regexp = "^data:[^,]+,.+$", message = "String format should be data:<mediatype>,<data>")
-    @Nullable
+    @field:Pattern(
+        regexp = "^data:[^,]+;base64,.+$",
+        message = "String format should be data:<mediatype>;base64,<data>"
+    )
+    @field:Nullable
     val evidence: String? = null
 )

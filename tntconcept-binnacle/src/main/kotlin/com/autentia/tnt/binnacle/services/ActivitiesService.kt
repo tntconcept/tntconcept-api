@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivitiesRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivitiesResponse
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -45,7 +46,11 @@ internal class ActivitiesService(
 
     @Transactional
     @ReadOnly
-    fun getUserActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivitiesResponse> {
+    fun getUserActivitiesBetweenDates(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        userId: Long
+    ): List<ActivitiesResponse> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
         return internalActivityRepository
@@ -70,7 +75,7 @@ internal class ActivitiesService(
         if (activityRequest.hasImage) {
             activityEvidenceService.storeActivityEvidence(
                 savedActivity.id!!,
-                activityRequest.imageFile,
+                EvidenceDTO.from(activityRequest.imageFile!!),
                 savedActivity.insertDate!!
             )
         }
@@ -91,7 +96,7 @@ internal class ActivitiesService(
         if (activityRequest.hasImage) {
             activityEvidenceService.storeActivityEvidence(
                 activityRequest.id!!,
-                activityRequest.imageFile,
+                EvidenceDTO.from(activityRequest.imageFile!!),
                 oldActivity.insertDate!!
             )
         }

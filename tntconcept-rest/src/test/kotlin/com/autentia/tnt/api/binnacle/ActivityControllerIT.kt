@@ -18,6 +18,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -34,7 +35,7 @@ import java.util.*
 internal class ActivityControllerIT {
 
     @Inject
-    @field:Client("/")
+    @field:Client(value = "/", errorType = String::class)
     private lateinit var httpClient: HttpClient
 
     private lateinit var client: BlockingHttpClient
@@ -67,7 +68,7 @@ internal class ActivityControllerIT {
     fun setup() {
         client = httpClient.toBlocking()
     }
-    
+
     @Test
     fun `get all activities between the start and end date`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
@@ -193,18 +194,37 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `post a new activity`() {
+    fun `post a new activity without evidence`() {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
 
-        try {
-            val response = client.exchangeObject<ActivityResponseDTO>(
-                POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-            )
+        val response = client.exchangeObject<ActivityResponseDTO>(
+            POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+        )
 
-            assertEquals(OK, response.status)
-            assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
-        } catch (ex: Exception) {
-            fail(ex)
+        assertEquals(OK, response.status)
+        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+    }
+
+    @Test
+    fun `post a new activity with evidence`() {
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
+
+        val response = client.exchangeObject<ActivityResponseDTO>(
+            POST("/api/activity", ACTIVITY_WITH_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+    }
+
+    @Test
+    fun `post a new activity with wrong evidence format will result in bad request`() {
+        try {
+            client.exchangeObject<Any>(
+                POST("/api/activity", ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+            )
+        } catch (ex: HttpClientResponseException) {
+            assertThat(ex.response.status).isEqualTo(BAD_REQUEST)
         }
     }
 
@@ -402,6 +422,34 @@ internal class ActivityControllerIT {
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
                 "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
                 "hasEvidences": ${ACTIVITY_REQUEST_BODY_DTO.hasEvidences}                
+            }
+        """.trimIndent()
+
+        private val ACTIVITY_WITH_EVIDENCE_POST_JSON = """
+            {
+                "interval": {
+                    "start": "${ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
+                    "end": "${ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
+                },                
+                "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
+                "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
+                "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
+                "hasEvidences": true,
+                "evidence": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+            }
+        """.trimIndent()
+
+        private val ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON = """
+            {
+                "interval": {
+                    "start": "${ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
+                    "end": "${ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
+                },                
+                "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
+                "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
+                "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
+                "hasEvidences": true,
+                "evidence": "VBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
             }
         """.trimIndent()
 
