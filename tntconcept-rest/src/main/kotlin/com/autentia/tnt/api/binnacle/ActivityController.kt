@@ -40,9 +40,19 @@ internal class ActivityController(
     @Operation(summary = "Gets an activity by its id.")
     internal fun get(id: Long): ActivityResponseDTO? = activityRetrievalUseCase.getActivityById(id)
 
+    @Deprecated("Use getEvidenceByActivityId")
     @Get("/{id}/image")
-    @Operation(summary = "Retrieves an activity image by the activity id.")
+    @Operation(
+        summary = "Retrieves an activity image by the activity id. This method is deprecated, please use /evidence instead",
+        deprecated = true,
+    )
     internal fun getImage(id: Long): String = activityEvidenceRetrievalUseCase.getActivityEvidence(id)
+
+    @Get("/{id}/evidence")
+    @Operation(summary = "Retrieves an activity evidence by the activity id.")
+    internal fun getEvidenceByActivityId(id: Long): String =
+        activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(id).getDataUrl()
+
 
     @Post
     @Operation(summary = "Creates a new activity.")
@@ -108,5 +118,4 @@ internal class ActivityController(
     internal fun onActivityAlreadyApproved(request: HttpRequest<*>, e: InvalidActivityApprovalStateException) =
         HttpResponse.status<HttpStatus>(HttpStatus.CONFLICT)
             .body(ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", e.message))
-
 }

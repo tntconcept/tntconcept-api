@@ -38,6 +38,11 @@ internal class ActivityEvidenceService(
         throw FileNotFoundException()
     }
 
+    fun getActivityEvidence(id: Long, insertDate: Date): EvidenceDTO {
+        return EvidenceDTO.from("pip")
+    }
+
+
     fun storeActivityEvidence(activityId: Long, evidenceDTO: EvidenceDTO, insertDate: Date) {
         require(isMimeTypeSupported(evidenceDTO.mediaType)) { "Mime type ${evidenceDTO.mediaType} is not supported" }
         require(evidenceDTO.base64data.isNotEmpty()) { "With hasEvidences = true, evidence content should not be null" }

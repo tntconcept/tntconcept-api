@@ -30,4 +30,7 @@ data class EvidenceDTO private constructor(val mediaType: String, val base64data
 
         private fun isInMediaTypeFormat(value: String): Boolean = regex.matches(value)
     }
+
+    fun getDataUrl(): String = "data:${mediaType};base64,${base64data}"
+
 }
