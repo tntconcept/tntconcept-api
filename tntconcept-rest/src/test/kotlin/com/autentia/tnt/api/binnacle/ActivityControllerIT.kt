@@ -52,8 +52,8 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityDeletionUseCase::class)
     internal val activityDeletionUseCase = mock<ActivityDeletionUseCase>()
 
-    @get:MockBean(ActivityImageRetrievalUseCase::class)
-    internal val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
+    @get:MockBean(ActivityEvidenceRetrievalUseCase::class)
+    internal val activityEvidenceRetrievalUseCase = mock<ActivityEvidenceRetrievalUseCase>()
 
     @get:MockBean(ActivitiesSummaryUseCase::class)
     internal val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
@@ -183,7 +183,7 @@ internal class ActivityControllerIT {
     @Test
     fun `get an image's activity by id`() {
         val userId = ACTIVITY_RESPONSE_DTO.userId
-        doReturn(ACTIVITY_IMAGE).whenever(activityImageRetrievalUseCase).getActivityImage(userId)
+        doReturn(ACTIVITY_IMAGE).whenever(activityEvidenceRetrievalUseCase).getActivityEvidence(userId)
 
         val response = client.exchangeObject<String>(
             GET("/api/activity/$userId/image")

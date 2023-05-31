@@ -24,7 +24,7 @@ internal class ActivityController(
     private val activityCreationUseCase: ActivityCreationUseCase,
     private val activityUpdateUseCase: ActivityUpdateUseCase,
     private val activityDeletionUseCase: ActivityDeletionUseCase,
-    private val activityImageRetrievalUseCase: ActivityImageRetrievalUseCase,
+    private val activityEvidenceRetrievalUseCase: ActivityEvidenceRetrievalUseCase,
     private val activitiesSummaryUseCase: ActivitiesSummaryUseCase,
     private val activityApprovalUseCase: ActivityApprovalUseCase,
     private val activityRequestConverter: ActivityRequestConverter
@@ -42,7 +42,7 @@ internal class ActivityController(
 
     @Get("/{id}/image")
     @Operation(summary = "Retrieves an activity image by the activity id.")
-    internal fun getImage(id: Long): String = activityImageRetrievalUseCase.getActivityImage(id)
+    internal fun getImage(id: Long): String = activityEvidenceRetrievalUseCase.getActivityEvidence(id)
 
     @Post
     @Operation(summary = "Creates a new activity.")
@@ -101,7 +101,7 @@ internal class ActivityController(
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_BEFORE_HIRING_DATE", e.message))
 
     @Error
-    internal fun onNoImageInActivityException(request: HttpRequest<*>, e: NoImageInActivityException) =
+    internal fun onNoEvidenceInActivityException(request: HttpRequest<*>, e: NoEvidenceInActivityException) =
         HttpResponse.badRequest(ErrorResponse("No image", e.message))
 
     @Error

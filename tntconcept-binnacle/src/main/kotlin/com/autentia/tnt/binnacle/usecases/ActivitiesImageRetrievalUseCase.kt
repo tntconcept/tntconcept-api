@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.exception.NoImageInActivityException
+import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.services.ActivitiesService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
@@ -24,7 +24,7 @@ class ActivitiesImageRetrievalUseCase internal constructor(
             if (activity.hasEvidences) {
                 return activityEvidenceService.getActivityEvidenceAsBase64String(id, activity.insertDate!!)
             } else {
-                throw NoImageInActivityException(id)
+                throw NoEvidenceInActivityException(id)
             }
         } else {
             throw UserPermissionException()
