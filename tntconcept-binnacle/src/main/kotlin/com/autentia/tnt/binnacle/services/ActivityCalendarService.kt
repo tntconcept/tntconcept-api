@@ -105,53 +105,11 @@ internal class ActivityCalendarService(
         return projectRole.getRemainingInUnits(calendar, filterActivities(activities, projectRole, userId))
     }
 
-    fun getRemainingGroupedByProjectRoleAndUser(
-        activities: List<Activity>, dateInterval: DateInterval
-    ): List<ProjectRoleUser> =
-        getRemainingGroupedByProjectRoleAndUser(activities, dateInterval, null)
-
-    fun getRemainingGroupedByProjectRoleAndUser(
-        activities: List<Activity>, dateInterval: DateInterval, filterTimeInterval: TimeInterval?
-    ): List<ProjectRoleUser> {
-        val calendar = createCalendar(dateInterval)
-
-        val filteredActivities = filterActivitiesByTimeInterval(filterTimeInterval, activities)
-
-        return filteredActivities.groupBy { activity -> activity.projectRole }
-            .mapValues { projectRoleActivities -> projectRoleActivities.value.groupBy { activity -> activity.userId } }
-            .map { userActivitiesGroupedByProjectRole ->
-                userActivitiesGroupedByProjectRole.value.map { userActivities ->
-                    val projectRole = userActivitiesGroupedByProjectRole.key
-                    ProjectRoleUser(
-                        projectRole.id,
-                        projectRole.name,
-                        projectRole.project.organization.id,
-                        projectRole.project.id,
-                        projectRole.getMaxAllowedInUnits(),
-                        projectRole.getRemainingInUnits(calendar, filterActivities(activities, projectRole, userActivities.key)),
-                        projectRole.timeUnit,
-                        projectRole.requireEvidence,
-                        projectRole.isApprovalRequired,
-                        userActivities.key
-                    )
-                }
-            }.flatten()
-    }
-
     private fun filterActivities(
         activities: List<Activity>,
         projectRole: ProjectRole,
         userId: Long
     ) = activities.filter { it.projectRole == projectRole && it.userId == userId }
-
-    private fun filterActivitiesByTimeInterval(
-        filterTimeInterval: TimeInterval?,
-        activities: List<Activity>
-    ) = if (filterTimeInterval != null) {
-        activities.filter { it.isInTheTimeInterval(filterTimeInterval) }.toList()
-    } else {
-        activities
-    }
 
     @Transactional
     @ReadOnly
