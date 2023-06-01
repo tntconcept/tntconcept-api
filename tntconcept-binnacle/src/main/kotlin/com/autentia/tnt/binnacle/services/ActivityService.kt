@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
+import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.data.jpa.repository.criteria.Specification
@@ -84,10 +85,12 @@ internal class ActivityService(
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
 
         if (activityToCreate.hasEvidences) {
+            checkAttachedEvidence(activityToCreate, evidence)
             activityEvidenceService.storeActivityEvidence(
                 savedActivity.id!!, evidence!!, savedActivity.insertDate!!
             )
         }
+
 
         return savedActivity.toDomain()
     }
@@ -108,6 +111,7 @@ internal class ActivityService(
 
         // Update stored image
         if (activityToUpdate.hasEvidences) {
+            checkAttachedEvidence(activityToUpdate, evidence)
             activityEvidenceService.storeActivityEvidence(
                 activityToUpdate.id, evidence!!, oldActivity.insertDate!!
             )
@@ -144,4 +148,14 @@ internal class ActivityService(
 
     fun getProjectRoleActivities(projectRoleId: Long, userId: Long): List<Activity> =
         activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
+
+    private fun checkAttachedEvidence(
+        activity: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?
+    ) {
+        if (activity.hasEvidences && evidence == null) {
+            throw NoEvidenceInActivityException(
+                activity.id ?: 0, "Activity sets hasEvidence to true but no evidence was found"
+            )
+        }
+    }
 }

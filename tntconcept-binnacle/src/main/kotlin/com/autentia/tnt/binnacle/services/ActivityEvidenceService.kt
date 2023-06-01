@@ -54,7 +54,6 @@ internal class ActivityEvidenceService(
 
     fun storeActivityEvidence(activityId: Long, evidenceDTO: EvidenceDTO, insertDate: Date) {
         require(isMimeTypeSupported(evidenceDTO.mediaType)) { "Mime type ${evidenceDTO.mediaType} is not supported" }
-        require(evidenceDTO.base64data.isNotEmpty()) { "With hasEvidences = true, evidence content should not be null" }
 
         val evidenceFile = getEvidenceFile(evidenceDTO, insertDate, activityId)
         val decodedFileContent = Base64.getDecoder().decode(evidenceDTO.base64data)

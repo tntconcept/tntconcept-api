@@ -23,6 +23,10 @@ class EvidenceDTOTest {
         arrayOf("data:application/pdf:SGVsbG8gV29ybGQh"),
         arrayOf("data,application/pdf,SGVsbG8gV29ybGQh"),
         arrayOf("data:data:;baseSGVsbG8gV29ybGQh"),
+        arrayOf("data:application/png;base64,   "),
+        arrayOf("data:image/png;base64,"),
+        arrayOf("data:  image/png;base64,"),
+        arrayOf("data: image / png;base64,")
     )
 
     @ParameterizedTest
