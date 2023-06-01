@@ -175,7 +175,7 @@ internal class ActivityController(
 
     @Error
     internal fun onNoEvidenceInActivityException(request: HttpRequest<*>, e: NoEvidenceInActivityException) =
-            HttpResponse.badRequest(ErrorResponse("No image", e.message))
+            HttpResponse.badRequest(ErrorResponse("No evidence", e.message))
 
     @Error
     internal fun onActivityAlreadyApproved(request: HttpRequest<*>, e: InvalidActivityApprovalStateException) =
