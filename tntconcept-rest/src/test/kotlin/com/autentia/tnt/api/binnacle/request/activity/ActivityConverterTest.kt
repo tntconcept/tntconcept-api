@@ -1,15 +1,17 @@
 package com.autentia.tnt.api.binnacle.request.activity
 
-import com.autentia.tnt.api.binnacle.request.TimeInterval
+import com.autentia.tnt.api.binnacle.activity.ActivityConverter
+import com.autentia.tnt.api.binnacle.activity.ActivityRequest
+import com.autentia.tnt.api.binnacle.activity.TimeInterval
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDateTime
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ActivityRequestConverterTest {
+class ActivityConverterTest {
 
-    private val sut = ActivityRequestConverter()
+    private val sut = ActivityConverter()
 
     @Test
     fun convertTo_shouldConvertActivityRequestToActivityUseCaseRequest_WithEvidence() {
@@ -26,7 +28,7 @@ class ActivityRequestConverterTest {
             hasEvidences = true,
             evidence = "data:image/jpg;base64,SGVsbG8gV29ybGQh"
         )
-        
+
         // Act
         val result = sut.convertTo(activityRequest)
 

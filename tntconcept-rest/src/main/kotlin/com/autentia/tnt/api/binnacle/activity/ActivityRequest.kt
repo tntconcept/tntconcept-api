@@ -1,6 +1,5 @@
-package com.autentia.tnt.api.binnacle.request.activity
+package com.autentia.tnt.api.binnacle.activity
 
-import com.autentia.tnt.api.binnacle.request.TimeInterval
 import io.micronaut.core.annotation.Introspected
 import io.swagger.v3.oas.annotations.media.Schema
 import javax.annotation.Nullable
@@ -10,7 +9,10 @@ import javax.validation.constraints.Size
 @Introspected
 @Schema(description = "A request data for creating or updating an activity")
 data class ActivityRequest(
-    @get:Schema(description = "The activity identifier", example = "1") val id: Long? = null,
+    @get:Schema(
+        description = "The activity identifier. It is required for updating and not for creating",
+        example = "1"
+    ) val id: Long? = null,
 
     @get:Schema(description = "The interval for the activity", required = true) val interval: TimeInterval,
 

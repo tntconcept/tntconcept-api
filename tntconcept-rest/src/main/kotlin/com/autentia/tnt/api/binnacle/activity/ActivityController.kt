@@ -1,7 +1,9 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.activity
 
-import com.autentia.tnt.api.binnacle.request.activity.ActivityRequest
-import com.autentia.tnt.api.binnacle.request.activity.ActivityRequestConverter
+import com.autentia.tnt.api.OpenApiTag.Companion.ACTIVITY
+import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.api.binnacle.ErrorResponseMaxHoursLimit
+import com.autentia.tnt.api.binnacle.ErrorValues
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
@@ -9,15 +11,22 @@ import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
+import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.tags.Tag
 import java.time.LocalDate
 import java.util.*
 import javax.validation.Valid
 
 @Controller("/api/activity")
 @Validated
+@Tag(name = ACTIVITY)
 internal class ActivityController(
     private val activityByFilterUserCase: ActivitiesByFilterUseCase,
     private val activityRetrievalUseCase: ActivityRetrievalByIdUseCase,
@@ -27,7 +36,7 @@ internal class ActivityController(
     private val activityEvidenceRetrievalUseCase: ActivityEvidenceRetrievalUseCase,
     private val activitiesSummaryUseCase: ActivitiesSummaryUseCase,
     private val activityApprovalUseCase: ActivityApprovalUseCase,
-    private val activityRequestConverter: ActivityRequestConverter
+    private val activityConverter: ActivityConverter
 ) {
 
     @Get("{?activityFilterDTO*}")
@@ -53,16 +62,47 @@ internal class ActivityController(
     internal fun getEvidenceByActivityId(id: Long): String =
         activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(id).getDataUrl()
 
-
     @Post
-    @Operation(summary = "Creates a new activity.")
-    internal fun post(@Body @Valid activityRequest: ActivityRequest, locale: Locale): ActivityResponseDTO =
-        activityCreationUseCase.createActivity(activityRequestConverter.convertTo(activityRequest), locale)
+    @Operation(
+        summary = "Creates a new activity", requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true, content = [Content(
+                mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = ActivityRequest::class)
+            )]
+        ), responses = [ApiResponse(
+            responseCode = "200", description = "Activity created successfully", content = [Content(
+                mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = ActivityResponseDTO::class)
+            )]
+        ), ApiResponse(
+            responseCode = "400", description = "Bad request", content = [Content(
+                mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class)
+            )]
+        )]
+    )
+    internal fun post(
+        @Body @Valid activityRequest: ActivityRequest, @Parameter(hidden = true) locale: Locale
+    ): ActivityResponseDTO =
+        activityCreationUseCase.createActivity(activityConverter.convertTo(activityRequest), locale)
 
     @Put
-    @Operation(summary = "Updates an existing activity.")
-    internal fun put(@Valid @Body activityRequest: ActivityRequest, locale: Locale): ActivityResponseDTO =
-        activityUpdateUseCase.updateActivity(activityRequestConverter.convertTo(activityRequest), locale)
+    @Operation(
+        summary = "Updates an existing activity", requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true, content = [Content(
+                mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = ActivityRequest::class)
+            )]
+        ), responses = [ApiResponse(
+            responseCode = "200", description = "Activity created successfully", content = [Content(
+                mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = ActivityResponseDTO::class)
+            )]
+        ), ApiResponse(
+            responseCode = "400", description = "Bad request", content = [Content(
+                mediaType = MediaType.APPLICATION_JSON, schema = Schema(implementation = ErrorResponse::class)
+            )]
+        )]
+    )
+    internal fun put(
+        @Valid @Body activityRequest: ActivityRequest, @Parameter(hidden = true) locale: Locale
+    ): ActivityResponseDTO =
+        activityUpdateUseCase.updateActivity(activityConverter.convertTo(activityRequest), locale)
 
 
     @Delete("/{id}")
@@ -77,8 +117,9 @@ internal class ActivityController(
 
     @Post("/{id}/approve")
     @Operation(summary = "Approve an existing activity by id.")
-    internal fun approve(@Body id: Long, locale: Locale): ActivityResponseDTO =
-        activityApprovalUseCase.approveActivity(id, locale)
+    internal fun approve(
+        @Body id: Long, locale: Locale
+    ): ActivityResponseDTO = activityApprovalUseCase.approveActivity(id, locale)
 
     @Error
     internal fun onTimeIntervalException(request: HttpRequest<*>, e: TimeIntervalException) =

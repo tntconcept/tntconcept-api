@@ -1,7 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.api.binnacle.request.TimeInterval
-import com.autentia.tnt.api.binnacle.request.activity.ActivityRequest
+import com.autentia.tnt.api.binnacle.activity.ActivityRequest
+import com.autentia.tnt.api.binnacle.activity.TimeInterval
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*

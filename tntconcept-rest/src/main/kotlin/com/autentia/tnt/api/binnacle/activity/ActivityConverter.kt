@@ -1,4 +1,4 @@
-package com.autentia.tnt.api.binnacle.request.activity
+package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.binnacle.entities.dto.ActivityUseCaseRequest
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
@@ -6,7 +6,7 @@ import com.autentia.tnt.binnacle.entities.dto.TimeIntervalRequestDTO
 import jakarta.inject.Singleton
 
 @Singleton
-class ActivityRequestConverter {
+class ActivityConverter {
 
     fun convertTo(activityRequest: ActivityRequest): ActivityUseCaseRequest = ActivityUseCaseRequest(
         id = activityRequest.id,
