@@ -84,10 +84,12 @@ internal class ActivityService(
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
 
         if (activityToCreate.hasEvidences) {
+            checkAttachedEvidence(evidence)
             activityEvidenceService.storeActivityEvidence(
                 savedActivity.id!!, evidence!!, savedActivity.insertDate!!
             )
         }
+
 
         return savedActivity.toDomain()
     }
@@ -108,6 +110,7 @@ internal class ActivityService(
 
         // Update stored image
         if (activityToUpdate.hasEvidences) {
+            checkAttachedEvidence(evidence)
             activityEvidenceService.storeActivityEvidence(
                 activityToUpdate.id, evidence!!, oldActivity.insertDate!!
             )
@@ -144,4 +147,9 @@ internal class ActivityService(
 
     fun getProjectRoleActivities(projectRoleId: Long, userId: Long): List<Activity> =
         activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
+
+    private fun checkAttachedEvidence(evidence: EvidenceDTO?) =
+        require(evidence != null){"With hasEvidences = true, evidence content should not be null"
+    }
+
 }

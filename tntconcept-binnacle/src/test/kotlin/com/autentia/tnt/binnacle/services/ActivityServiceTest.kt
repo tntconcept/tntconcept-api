@@ -169,6 +169,17 @@ internal class ActivityServiceTest {
     }
 
     @Test
+    fun `fail when create activity without evidence attached but hasEvidence is true`() {
+        whenever(activityRepository.save(activityWithoutEvidenceAttachedToSave)).thenReturn(activityWithoutEvidenceAttachedSaved)
+
+        assertThrows<IllegalArgumentException> {
+            sut.createActivity(activityWithoutEvidenceAttached, null)
+        }
+
+        verifyNoInteractions(activityEvidenceService)
+    }
+
+    @Test
     fun `create activity and store evidence`() {
         whenever(activityRepository.save(activityWithEvidenceToSave)).thenReturn(activityWithEvidenceSaved)
 
@@ -373,6 +384,13 @@ internal class ActivityServiceTest {
             ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA
         )
 
+        private val activityWithoutEvidenceAttached = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            null, TimeInterval.of(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
+            ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA
+        )
+
         private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null, TimeInterval.of(
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
@@ -384,11 +402,15 @@ internal class ActivityServiceTest {
 
         private val activityWithEvidenceToSave = Activity.of(activityWithEvidence, projectRole)
         private val activityWithoutEvidenceToSave = Activity.of(activityWithoutEvidence, projectRole)
+        private val activityWithoutEvidenceAttachedToSave = Activity.of(activityWithoutEvidenceAttached, projectRole)
 
         private val activityWithEvidenceSaved =
             activityWithEvidenceToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
         private val activityWithoutEvidenceSaved =
+            activityWithoutEvidenceToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
+
+        private val activityWithoutEvidenceAttachedSaved =
             activityWithoutEvidenceToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
         private val activities = listOf(activityWithoutEvidenceSaved)
