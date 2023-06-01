@@ -22,6 +22,18 @@ class ProjectRoleResponseConverter {
         requireApproval = projectRole.isApprovalRequired
     )
 
+    fun toProjectRoleDTO(projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole): ProjectRoleDTO = ProjectRoleDTO(
+        id = projectRole.id,
+        name = projectRole.name,
+        organizationId = projectRole.project.organization.id,
+        projectId = projectRole.project.id,
+        maxAllowed = projectRole.maxAllowed,
+        isWorkingTime = projectRole.isWorkingTime,
+        timeUnit = projectRole.timeUnit,
+        requireEvidence = projectRole.requireEvidence,
+        requireApproval = projectRole.isApprovalRequired
+    )
+
     fun toProjectRoleUserDTO(projectRole: ProjectRoleUser): ProjectRoleUserDTO = ProjectRoleUserDTO(
         id = projectRole.id,
         name = projectRole.name,
