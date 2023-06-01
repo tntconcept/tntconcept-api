@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
+import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -170,9 +171,11 @@ internal class ActivityServiceTest {
 
     @Test
     fun `fail when create activity without evidence attached but hasEvidence is true`() {
-        whenever(activityRepository.save(activityWithoutEvidenceAttachedToSave)).thenReturn(activityWithoutEvidenceAttachedSaved)
+        whenever(activityRepository.save(activityWithoutEvidenceAttachedToSave)).thenReturn(
+            activityWithoutEvidenceAttachedSaved
+        )
 
-        assertThrows<IllegalArgumentException> {
+        assertThrows<NoEvidenceInActivityException> {
             sut.createActivity(activityWithoutEvidenceAttached, null)
         }
 
