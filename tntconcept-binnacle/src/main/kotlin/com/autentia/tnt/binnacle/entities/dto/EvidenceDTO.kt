@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.entities.dto
 import com.autentia.tnt.binnacle.exception.InvalidEvidenceFormatException
 
 
-data class EvidenceDTO private constructor(val mediaType: String, val base64data: String) {
+data class EvidenceDTO internal constructor(val mediaType: String, val base64data: String) {
     companion object {
         private val regex = Regex("^data:([^,]+);base64,(.+\$)")
 

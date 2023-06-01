@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.InvalidEvidenceMimeTypeException
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -52,9 +53,10 @@ internal class ActivityEvidenceServiceTest {
             val expectedEvidenceFilename = "/tmp/2022/4/2.$expectedExtension"
             val file = File(expectedEvidenceFilename)
             val content = File(expectedEvidenceFilename).readText()
-            assertThat(content).isEqualTo("Hello World!")
 
             file.delete()
+            assertThat(content).isEqualTo("Hello World!")
+            assertThat(file.exists()).isFalse()
         }
 
         private fun getExtensionForMimeType(mimeType: String): String {
@@ -82,7 +84,7 @@ internal class ActivityEvidenceServiceTest {
             val result = activityEvidenceService.deleteActivityEvidence(2L, date)
 
             assertTrue(result)
-            assertFalse(file.exists())
+            assertThat(file.exists()).isFalse()
         }
 
         @Test
@@ -111,9 +113,30 @@ internal class ActivityEvidenceServiceTest {
 
             val result = activityEvidenceService.getActivityEvidenceAsBase64String(2L, date)
 
-            assertThat(result).isEqualTo("SGVsbG8gV29ybGQh")
 
             file.delete()
+            assertThat(result).isEqualTo("SGVsbG8gV29ybGQh")
+            assertThat(file.exists()).isFalse()
+        }
+
+        @ParameterizedTest
+        @ValueSource(
+            strings = [
+                "application/pdf",
+                "image/png",
+                "image/jpeg",
+                "image/gif"
+            ]
+        )
+        fun `should return the stored image of the activity as evidence dto`(mimeType: String) {
+            val fileExtension = appProperties.files.supportedMimeTypes[mimeType] ?: fail("Invalid mime type")
+            val file = File("/tmp/2022/4/2.$fileExtension")
+            file.writeText("Hello World!")
+
+            val result = activityEvidenceService.getActivityEvidence(2L, date)
+
+            file.delete()
+            assertThat(result).isEqualTo(EvidenceDTO(mimeType, "SGVsbG8gV29ybGQh"))
         }
     }
 }

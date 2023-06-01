@@ -25,6 +25,20 @@ internal class ActivityEvidenceService(
         supportedMimeExtensions = appProperties.files.supportedMimeTypes
     }
 
+    fun getActivityEvidence(id: Long, insertDate: Date): EvidenceDTO {
+        val supportedExtensions = getSupportedExtensions()
+        for (supportedExtension: String in supportedExtensions) {
+            val filePathWithExtension = getFilePath(insertDate, id, supportedExtension)
+            if (Files.exists(filePathWithExtension)) {
+                val fileContents = FileUtils.readFileToByteArray(File(filePathWithExtension.toUri()))
+                val base64contents = Base64.getEncoder().encodeToString(fileContents)
+                return EvidenceDTO(Files.probeContentType(filePathWithExtension), base64contents)
+            }
+        }
+        throw FileNotFoundException()
+    }
+
+    @Deprecated("Use getActivityEvidence instead")
     fun getActivityEvidenceAsBase64String(id: Long, insertDate: Date): String {
         val supportedExtensions = getSupportedExtensions()
         for (supportedExtension: String in supportedExtensions) {
@@ -33,13 +47,8 @@ internal class ActivityEvidenceService(
                 val fileContents = FileUtils.readFileToByteArray(File(filePathWithExtension.toUri()))
                 return Base64.getEncoder().encodeToString(fileContents)
             }
-
         }
         throw FileNotFoundException()
-    }
-
-    fun getActivityEvidence(id: Long, insertDate: Date): EvidenceDTO {
-        return EvidenceDTO.from("pip")
     }
 
 
@@ -73,6 +82,7 @@ internal class ActivityEvidenceService(
         return File(fileName.toUri())
     }
 
+
     private fun getSupportedExtensions() = supportedMimeExtensions.values.distinct().toList()
 
     private fun getFilePath(date: Date, id: Long, fileExtension: String) =
@@ -85,5 +95,9 @@ internal class ActivityEvidenceService(
 
     private fun getExtensionForMimeType(mimeType: String): String =
         supportedMimeExtensions[mimeType] ?: throw InvalidEvidenceMimeTypeException(mimeType)
+
+    private fun getMimeTypeForExtension(fileExtension: String): String =
+        supportedMimeExtensions.keys.find { supportedMimeExtensions[it] === fileExtension }
+            ?: throw InvalidEvidenceMimeTypeException(fileExtension)
 
 }

@@ -12,6 +12,7 @@ class ActivityEvidenceRetrievalUseCase internal constructor(
     private val activityService: ActivityService,
     private val activityEvidenceService: ActivityEvidenceService,
 ) {
+    @Deprecated("Use getActivityEvidenceByActivityId")
     fun getActivityEvidence(id: Long): String {
         val activity = activityService.getActivityById(id)
 
