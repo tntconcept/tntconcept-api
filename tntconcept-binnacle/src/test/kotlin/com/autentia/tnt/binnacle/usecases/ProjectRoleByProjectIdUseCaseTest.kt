@@ -11,10 +11,10 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HolidayService
+import com.autentia.tnt.binnacle.services.ProjectRoleService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -27,7 +27,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
     private val activityService = mock<ActivityService>()
     private val holidayService = mock<HolidayService>()
-    private val projectRoleRepository = mock<ProjectRoleRepository>()
+    private val projectRoleService = mock<ProjectRoleService>()
     private val calendarFactory = CalendarFactory(holidayService)
     private val securityService = mock<SecurityService>()
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
@@ -35,7 +35,14 @@ internal class ProjectRoleByProjectIdUseCaseTest {
     private val projectRoleResponseConverter = ProjectRoleResponseConverter()
     private val projectRoleConverter = ProjectRoleConverter()
     private val projectRoleByProjectIdUseCase =
-        ProjectRoleByProjectIdUseCase(activityService, activityCalendarService, securityService, projectRoleRepository, projectRoleResponseConverter, projectRoleConverter)
+        ProjectRoleByProjectIdUseCase(
+            activityService,
+            activityCalendarService,
+            securityService,
+            projectRoleService,
+            projectRoleResponseConverter,
+            projectRoleConverter
+        )
 
     @Test
     fun `return the expected project role`() {
@@ -84,7 +91,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
-        whenever(projectRoleRepository.getAllByProjectId(PROJECT_ID)).thenReturn(projectRoles)
+        whenever(projectRoleService.getAllByProjectId(PROJECT_ID)).thenReturn(projectRoles.map(ProjectRole::toDomain))
         whenever(activityService.getProjectRoleActivities(1L, userId)).thenReturn(activitiesProjectRole1)
         whenever(activityService.getProjectRoleActivities(2L, userId)).thenReturn(activitiesProjectRole2)
         whenever(activityService.getProjectRoleActivities(3L, userId)).thenReturn(emptyList())
