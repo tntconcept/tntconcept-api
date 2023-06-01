@@ -89,15 +89,11 @@ internal class ActivityEvidenceService(
         getFilePath(date.takeYear(), date.takeMonth(), id, fileExtension)
 
     private fun getFilePath(year: Int, month: Int, id: Long, fileExtension: String) =
-        Path.of("${evidencesPath}/$year/$month/$id.$fileExtension")
+        Path.of(evidencesPath, "$year", "$month", "$id.$fileExtension")
 
     private fun isMimeTypeSupported(mimeType: String): Boolean = supportedMimeExtensions.containsKey(mimeType)
 
     private fun getExtensionForMimeType(mimeType: String): String =
         supportedMimeExtensions[mimeType] ?: throw InvalidEvidenceMimeTypeException(mimeType)
-
-    private fun getMimeTypeForExtension(fileExtension: String): String =
-        supportedMimeExtensions.keys.find { supportedMimeExtensions[it] === fileExtension }
-            ?: throw InvalidEvidenceMimeTypeException(fileExtension)
 
 }
