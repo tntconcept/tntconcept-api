@@ -22,7 +22,7 @@ internal class ProjectController(
 
     @Operation(summary = "Retrieves a list of project roles from a project ID")
     @Get("/{projectId}/role")
-    fun getProjectRolesByProjectId(projectId: Long, @QueryValue year: Int): List<ProjectRoleUserDTO> {
+    fun getProjectRolesByProjectId(projectId: Long, @QueryValue year: Int?): List<ProjectRoleUserDTO> {
         return projectRoleByProjectIdUseCase.get(projectId, year)
     }
 }
