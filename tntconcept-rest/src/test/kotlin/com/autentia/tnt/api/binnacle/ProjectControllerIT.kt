@@ -77,6 +77,7 @@ internal class ProjectControllerIT {
     fun `return all project roles by project id`() {
 
         val projectId = 3L
+        val year = 2023
 
         val projectRoleUser = ProjectRoleUserDTO(
             1L,
@@ -91,9 +92,9 @@ internal class ProjectControllerIT {
             4L
         )
 
-        doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId)
+        doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId, year)
 
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project/$projectId/role"))
+        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project/$projectId/role?year=$year"))
 
         assertEquals(OK, response.status)
         assertEquals(listOf(projectRoleUser), response.body.get())

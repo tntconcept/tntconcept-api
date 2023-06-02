@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByProjectIdUseCase
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.QueryValue
 import io.swagger.v3.oas.annotations.Operation
 
 @Controller("/api/project")
@@ -21,7 +22,7 @@ internal class ProjectController(
 
     @Operation(summary = "Retrieves a list of project roles from a project ID")
     @Get("/{projectId}/role")
-    fun getProjectRolesByProjectId(projectId: Long): List<ProjectRoleUserDTO> {
-        return projectRoleByProjectIdUseCase.get(projectId)
+    fun getProjectRolesByProjectId(projectId: Long, @QueryValue year: Int): List<ProjectRoleUserDTO> {
+        return projectRoleByProjectIdUseCase.get(projectId, year)
     }
 }
