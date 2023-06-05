@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 import java.util.*
 
 internal class SearchByRoleIdUseCaseTest {
@@ -158,7 +159,8 @@ internal class SearchByRoleIdUseCaseTest {
         private val UNKONW_ROLE_ID = -1L
 
         private val AUTENTIA = Organization(1, "Autentia")
-        private val INTERNAL_TRAINING = Project(1, "Internal training", true, true, AUTENTIA)
+        private val INTERNAL_TRAINING =
+            Project(1, "Internal training", true, true, LocalDate.now(), null, null, AUTENTIA)
         private val INTERNAL_STUDENT =
             ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 1440, TimeUnit.MINUTES, true, false)
         private val INTERNAL_TEACHER =
@@ -174,7 +176,8 @@ internal class SearchByRoleIdUseCaseTest {
             )
 
         private val OTHER_COMPANY = Organization(2, "Other S.A.")
-        private val EXTERNAL_TRAINING = Project(2, "External training", true, true, OTHER_COMPANY)
+        private val EXTERNAL_TRAINING =
+            Project(2, "External training", true, true, LocalDate.now(), null, null, OTHER_COMPANY)
         private val EXTERNAL_STUDENT =
             ProjectRole(
                 3,
