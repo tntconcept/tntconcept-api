@@ -97,12 +97,17 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         )
     }
 
-    private fun oneMonthTimeIntervalFromPastYear(year: Int): TimeInterval {
-        return TimeInterval.of(
-            LocalDate.of(year, 12, 1).atTime(LocalTime.MIN),
-            LocalDate.of(year, 12, 31).atTime(LocalTime.MAX)
-        )
-    }
+    private fun oneMonthTimeIntervalFromPastYear(year: Int) = TimeInterval.of(
+        LocalDate.of(year, 12, 1).atTime(LocalTime.MIN),
+        LocalDate.of(year, 12, 31).atTime(LocalTime.MAX)
+    )
 
-    private fun getTimeInterval(year: Int?) = TimeInterval.ofYear(year ?: LocalDate.now().year)
+    private fun getTimeInterval(year: Int?): TimeInterval {
+        val now = LocalDate.now()
+
+        return when {
+            year == null || year >= now.year -> TimeInterval.ofYear(now.year)
+            else -> TimeInterval.ofYear(year)
+        }
+    }
 }

@@ -118,6 +118,40 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     }
 
     @Test
+    fun `return the last imputed roles ordered by activity start date with future year parameter`() {
+        val userId = 1L
+        val year = 2025
+        val timeInterval =
+            TimeInterval.ofYear(BEGINNING_OF_THE_YEAR.year)
+
+        val activities = listOf(
+            createActivity().copy(
+                projectRole = projectRole1,
+                start = TODAY.minusDays(15).atTime(7, 30, 0),
+                end = TODAY.minusDays(15).atTime(9, 0, 0)
+            ),
+            createActivity().copy(projectRole = projectRole2),
+            createActivity().copy(
+                projectRole = projectRole2,
+                start = TODAY.minusDays(2).atStartOfDay(),
+                end = TODAY.minusDays(2).atTime(9, 0, 0)
+            )
+        )
+
+        whenever(activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)).thenReturn(
+            activities
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
+
+        val expectedProjectRoles = listOf(
+            buildProjectRoleUserDTO(2L, 0, 0),
+            buildProjectRoleUserDTO(1L, 30, 120),
+        )
+
+        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(year))
+    }
+
+    @Test
     fun `get project roles recent should return project roles`() {
         val startDate = TODAY.minusMonths(1).atTime(LocalTime.MIN)
         val endDate = TODAY.atTime(23, 59, 59)
