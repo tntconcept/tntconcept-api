@@ -831,11 +831,11 @@ internal class ActivityValidatorTest {
         private val lastDayOfYear = LocalDateTime.of(LocalDate.now().year, Month.DECEMBER, 31, 23, 59)
 
         private val vacationProject =
-            Project(1, "Vacaciones", true, true, Organization(1, "Organization", emptyList()), emptyList())
+            Project(1, "Vacaciones", true, true, LocalDate.now(), null, null, Organization(1, "Organization", emptyList()), emptyList())
         private val projectRole =
             ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false, TimeUnit.MINUTES)
         private val closedProject =
-            Project(CLOSED_ID, "TNT", false, false, Organization(1, "Autentia", emptyList()), emptyList())
+            Project(CLOSED_ID, "TNT", false, false, LocalDate.now(), null, null, Organization(1, "Autentia", emptyList()), emptyList())
         private val closedProjectRole =
             ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false, TimeUnit.MINUTES)
         private val projectRoleLimited =
@@ -1052,7 +1052,7 @@ internal class ActivityValidatorTest {
             id: Long = projectRoleLimited.id,
             name: String = "Role with limit",
             requireEvidence: RequireEvidence = RequireEvidence.NO,
-            project: Project = Project(1, "Project", true, false, organization, listOf()),
+            project: Project = Project(1, "Project", true, false, LocalDate.now(), null, null, organization, listOf()),
             maxAllowed: Int
         ) = ProjectRole(
             id,

@@ -10,6 +10,7 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 
 internal class ImputableOrganizationsUseCaseTest {
 
@@ -36,7 +37,7 @@ internal class ImputableOrganizationsUseCaseTest {
         }
 
         private fun buildProject(id: Long, open: Boolean, roles: List<ProjectRole>): Project {
-            return Project(id, "Project ID $id", open, false, mock(Organization::class.java), roles)
+            return Project(id, "Project ID $id", open, false, LocalDate.now(), null, null, mock(Organization::class.java), roles)
         }
 
         private val OPEN_PROJECT = buildProject(1, true, listOf(buildProjectRole(id = 1)))

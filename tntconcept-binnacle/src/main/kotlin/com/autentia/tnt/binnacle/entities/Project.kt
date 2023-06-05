@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.entities
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
+import java.time.LocalDate
 import javax.persistence.*
 
 @Entity
@@ -13,6 +14,9 @@ data class Project(
     val name: String,
     val open: Boolean,
     val billable: Boolean,
+    val startDate: LocalDate,
+    val blockDate: LocalDate? = null,
+    val blockedByUser: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizationId")

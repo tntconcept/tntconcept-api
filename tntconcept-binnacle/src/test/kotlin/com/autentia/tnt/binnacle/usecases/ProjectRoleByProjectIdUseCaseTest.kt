@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 import java.util.*
 
 internal class ProjectRoleByProjectIdUseCaseTest {
@@ -123,7 +124,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
         private const val PROJECT_ID = 1L
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
-        private val PROJECT = Project(1L, "Dummy project", true, false, ORGANIZATION, listOf())
+        private val PROJECT = Project(1L, "Dummy project", true, false, LocalDate.now(), null, null, ORGANIZATION, listOf())
 
         private val authentication =
             ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("admin")))

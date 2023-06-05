@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -58,6 +59,9 @@ internal class ActivityImageRetrievalUseCaseTest {
             "Dummy Project",
             true,
             false,
+            LocalDate.now(),
+            null,
+            null,
             ORGANIZATION,
             listOf(),
         )

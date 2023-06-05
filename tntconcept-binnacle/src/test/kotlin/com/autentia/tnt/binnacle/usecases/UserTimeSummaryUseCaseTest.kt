@@ -150,6 +150,9 @@ internal class UserTimeSummaryUseCaseTest {
             "Dummy Project",
             open = true,
             billable = false,
+            LocalDate.now(),
+            null,
+            null,
             ORGANIZATION,
             listOf()
         )

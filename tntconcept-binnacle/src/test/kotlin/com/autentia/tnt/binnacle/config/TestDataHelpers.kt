@@ -105,6 +105,9 @@ internal fun createProject(id: Long = 1L) = Project(
     name = "Dummy Project",
     open = true,
     billable = false,
+    LocalDate.now(),
+    null,
+    null,
     projectRoles = listOf(),
     organization = createOrganization()
 )

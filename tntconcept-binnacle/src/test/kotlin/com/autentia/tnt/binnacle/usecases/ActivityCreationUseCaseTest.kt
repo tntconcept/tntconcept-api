@@ -31,6 +31,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Locale
 
@@ -135,6 +136,9 @@ internal class ActivityCreationUseCaseTest {
             "Dummy Project",
             open = true,
             billable = false,
+            LocalDate.now(),
+            null,
+            null,
             ORGANIZATION,
             listOf()
         )

@@ -400,7 +400,7 @@ internal class ActivityServiceTest {
         private val USER = createUser()
 
         private val organization = Organization(1L, "Autentia", emptyList())
-        private val project = Project(1L, "Back-end developers", true, false, organization, emptyList())
+        private val project = Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
         private val projectRole =
             ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
 
