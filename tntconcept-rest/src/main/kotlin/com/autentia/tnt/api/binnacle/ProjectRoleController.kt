@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByUserIdsUseCase
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.QueryValue
 import io.swagger.v3.oas.annotations.Operation
 
 @Controller("/api/project-role")
@@ -23,8 +24,8 @@ internal class ProjectRoleController(
 
     @Operation(summary = "Retrieves recent used roles")
     @Get("/latest")
-    fun getLatestRoles(): List<ProjectRoleUserDTO> =
-        latestProjectRolesForAuthenticatedUserUseCase.get()
+    fun getLatestRoles(@QueryValue year: Int?): List<ProjectRoleUserDTO> =
+        latestProjectRolesForAuthenticatedUserUseCase.get(year)
 
     @Operation(summary = "Retrieves a project roles list by given user IDs")
     @Get
