@@ -144,8 +144,13 @@ internal class ActivityValidator(
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long) {
         val activityDb = activityRepository.findById(id)
+        val projectId = activityDb?.projectRole?.project?.id ?:0
+        val project = projectService.findById(projectId)
+        val today = LocalDate.now()
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
+            project.isEmpty -> throw ProjectNotFoundException(projectId)
+            isProjectBlocked(project.get(), today) -> throw ProjectBlockedException()
             !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
         }
     }

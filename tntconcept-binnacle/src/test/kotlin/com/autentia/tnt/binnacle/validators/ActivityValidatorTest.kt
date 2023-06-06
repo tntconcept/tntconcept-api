@@ -870,6 +870,7 @@ internal class ActivityValidatorTest {
             )
 
             whenever(activityRepository.findById(id)).thenReturn(activity)
+            whenever(projectService.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject.toDomain()))
 
             activityValidator.checkActivityIsValidForDeletion(id)
         }
@@ -879,6 +880,7 @@ internal class ActivityValidatorTest {
             val id = 1L
 
             given(activityRepository.findById(id)).willReturn(null)
+            whenever(projectService.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject.toDomain()))
 
             val exception = assertThrows<ActivityNotFoundException> {
                 activityValidator.checkActivityIsValidForDeletion(id)
@@ -902,6 +904,7 @@ internal class ActivityValidatorTest {
             )
 
             whenever(activityRepository.findById(id)).thenReturn(activity)
+            whenever(projectService.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject.toDomain()))
 
             activityValidator.checkActivityIsValidForDeletion(id)
         }
@@ -921,8 +924,31 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
             whenever(activityRepository.findById(id)).thenReturn(activity)
+            whenever(projectService.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject.toDomain()))
 
             assertThrows<ActivityPeriodClosedException> {
+                activityValidator.checkActivityIsValidForDeletion(id)
+            }
+        }
+
+        @Test
+        fun `throw ProjectBlockedException when project is blocked`() {
+            val id = 1L
+            val activity = Activity(
+                id,
+                someYearsAgoLocalDateTime(2),
+                someYearsAgoLocalDateTime(2).plusMinutes(HOUR.toLong()),
+                HOUR,
+                "description",
+                projectRoleWithBlockedProject,
+                user.id,
+                false,
+                approvalState = ApprovalState.NA
+            )
+            whenever(activityRepository.findById(id)).thenReturn(activity)
+            whenever(projectService.findById(blockedProject.id)).thenReturn(Optional.of(blockedProject.toDomain()))
+
+            assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForDeletion(id)
             }
         }
