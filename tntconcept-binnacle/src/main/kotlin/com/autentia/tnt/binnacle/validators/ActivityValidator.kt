@@ -4,21 +4,15 @@ import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodNotValidException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
+import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.ProjectService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
+import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.transaction.Transactional
 
@@ -27,7 +21,8 @@ internal class ActivityValidator(
     private val activityService: ActivityService,
     private val activityRepository: ActivityRepository,
     private val activityCalendarService: ActivityCalendarService,
-    private val projectRoleRepository: ProjectRoleRepository
+    private val projectRoleRepository: ProjectRoleRepository,
+    private val projectService: ProjectService,
 ) {
     @Transactional
     @ReadOnly
@@ -67,7 +62,7 @@ internal class ActivityValidator(
         currentActivity: Activity,
         activityToUpdate: Activity,
         year: Int,
-        userId: Long
+        userId: Long,
     ) {
         if (activityToUpdate.projectRole.maxAllowed > 0) {
 
@@ -117,14 +112,20 @@ internal class ActivityValidator(
     fun checkActivityIsValidForUpdate(
         activityToUpdate: Activity,
         currentActivity: Activity,
-        user: com.autentia.tnt.binnacle.core.domain.User
+        user: com.autentia.tnt.binnacle.core.domain.User,
     ) {
         require(activityToUpdate.id != null) { "Cannot update an activity without id." }
         val activityDb = activityRepository.findById(activityToUpdate.id)
         val projectRoleDb = projectRoleRepository.findById(activityToUpdate.projectRole.id)
+        val projectToUpdate = projectService.getProjectById(activityToUpdate.projectRole.project.id)
+        val currentProject = projectService.getProjectById(currentActivity.projectRole.project.id)
+        val today = LocalDate.now()
+        val activityToUpdateDate = activityToUpdate.getStart().toLocalDate()
         when {
             activityDb === null -> throw ActivityNotFoundException(activityToUpdate.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityToUpdate.projectRole.id)
+            isProjectBlocked(projectToUpdate, activityToUpdateDate) -> throw ProjectBlockedException()
+            isProjectBlocked(currentProject, today) -> throw ProjectBlockedException()
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
@@ -151,9 +152,17 @@ internal class ActivityValidator(
         return project.open
     }
 
+    fun isProjectBlocked(project: com.autentia.tnt.binnacle.core.domain.Project, date: LocalDate): Boolean {
+        return if (project.blockDate != null) {
+            date.isBefore(project.blockDate)
+        } else {
+            false
+        }
+    }
+
     private fun isOverlappingAnotherActivityTime(
         activity: Activity,
-        userId: Long
+        userId: Long,
     ): Boolean {
         if (activity.duration == 0) {
             return false

@@ -29,8 +29,15 @@ internal class ActivityCreationUseCaseTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleService = ProjectRoleService(projectRoleRepository)
     private val activityRepository = mock<ActivityRepository>()
+    private val projectService = mock<ProjectService>()
     private val activityValidator =
-        ActivityValidator(activityService, activityRepository, activityCalendarService, projectRoleRepository)
+        ActivityValidator(
+            activityService,
+            activityRepository,
+            activityCalendarService,
+            projectRoleRepository,
+            projectService
+        )
     private val userService = mock<UserService>()
 
     private val activityCreationUseCase = ActivityCreationUseCase(
@@ -174,7 +181,7 @@ internal class ActivityCreationUseCaseTest {
             billable: Boolean = false,
             hasEvidences: Boolean = false,
             projectRole: ProjectRole = PROJECT_ROLE_NO_APPROVAL,
-            approvalState: ApprovalState = ApprovalState.NA
+            approvalState: ApprovalState = ApprovalState.NA,
         ): Activity =
             Activity(
                 id = id,
@@ -199,7 +206,7 @@ internal class ActivityCreationUseCaseTest {
             billable: Boolean = false,
             hasEvidences: Boolean = false,
             projectRoleId: Long = 10L,
-            approvalState: ApprovalState = ApprovalState.NA
+            approvalState: ApprovalState = ApprovalState.NA,
         ): ActivityResponseDTO =
             ActivityResponseDTO(
                 billable,
