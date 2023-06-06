@@ -20,7 +20,7 @@ internal class SearchControllerTest {
     private val searchController = SearchController(searchUseCase)
 
     @Test
-    fun `return empty lists for unknown role ids`() {
+    fun `return empty lists for unknown role ids for year by default`() {
 
         val searchedRoles = listOf(UNKNOWN_ROLE_ID)
         val roleDescriptions = SearchResponseDTO(
@@ -28,9 +28,9 @@ internal class SearchControllerTest {
             emptyList(),
             emptyList()
         )
-        doReturn(roleDescriptions).whenever(searchUseCase).getDescriptions(searchedRoles)
+        doReturn(roleDescriptions).whenever(searchUseCase).getDescriptions(searchedRoles, null)
 
-        val result = searchController.searchBy(searchedRoles)
+        val result = searchController.searchBy(searchedRoles, null)
 
         assertEquals(0, result.organizations.size)
         assertEquals(0, result.projects.size)
@@ -38,7 +38,7 @@ internal class SearchControllerTest {
     }
 
     @Test
-    fun `return role, project and organization for one unique roleid`() {
+    fun `return role, project and organization for one unique roleid for year by default`() {
 
         // Give a role ID
         val searchedRoles = listOf(TRAINING.id)
@@ -47,10 +47,10 @@ internal class SearchControllerTest {
             listOf(TRAINING),
             listOf(STUDENT)
         )
-        doReturn(roleDescriptions).whenever(searchUseCase).getDescriptions(searchedRoles)
+        doReturn(roleDescriptions).whenever(searchUseCase).getDescriptions(searchedRoles, null)
 
         // When search for its structure
-        val result = searchController.searchBy(searchedRoles)
+        val result = searchController.searchBy(searchedRoles, null)
 
         // Get the ROLE, AUTENTIA FORMACION and AUTENTIA
         assertEquals(listOf(AUTENTIA), result.organizations)
@@ -58,8 +58,31 @@ internal class SearchControllerTest {
         assertEquals(listOf(STUDENT), result.projectRoles)
     }
 
+    @Test
+    fun `return role, project and organization for one unique roleid for specific year `() {
+
+        // Give a role ID
+        val searchedRoles = listOf(TRAINING.id)
+        val roleDescriptions = SearchResponseDTO(
+                listOf(AUTENTIA),
+                listOf(TRAINING),
+                listOf(STUDENT)
+        )
+        doReturn(roleDescriptions).whenever(searchUseCase).getDescriptions(searchedRoles, YEAR)
+
+        // When search for its structure
+        val result = searchController.searchBy(searchedRoles, YEAR)
+
+        // Get the ROLE, AUTENTIA FORMACION and AUTENTIA
+        assertEquals(listOf(AUTENTIA), result.organizations)
+        assertEquals(listOf(TRAINING), result.projects)
+        assertEquals(listOf(STUDENT), result.projectRoles)
+    }
+
+
     private companion object {
         private const val UNKNOWN_ROLE_ID = -1L
+        private const val YEAR = 2023
 
         private val AUTENTIA = OrganizationResponseDTO(1, "Autentia")
         private val TRAINING = ProjectResponseDTO(1, "Formación Autentia", true, false, AUTENTIA.id)

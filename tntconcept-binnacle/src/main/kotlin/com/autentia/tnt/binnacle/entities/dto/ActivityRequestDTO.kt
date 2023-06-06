@@ -2,18 +2,16 @@ package com.autentia.tnt.binnacle.entities.dto
 
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
-import javax.validation.constraints.Size
 
 @Introspected
-data class ActivityRequestBodyDTO(
+data class ActivityRequestDTO(
     val id: Long? = null,
     val interval: TimeIntervalRequestDTO,
-    @field:Size(max = 2048, message = "Description must not exceed 2048 characters")
     val description: String,
     val billable: Boolean,
     val projectRoleId: Long,
     val hasEvidences: Boolean,
-    val imageFile: String? = null
+    val evidence: EvidenceDTO? = null
 ) {
     constructor(
         id: Long? = null,
@@ -23,6 +21,6 @@ data class ActivityRequestBodyDTO(
         billable: Boolean,
         projectRoleId: Long,
         hasEvidences: Boolean,
-        imageFile: String? = null
-    ) : this(id, TimeIntervalRequestDTO(start, end), description, billable, projectRoleId, hasEvidences, imageFile)
+        evidence: EvidenceDTO? = null
+    ) : this(id, TimeIntervalRequestDTO(start, end), description, billable, projectRoleId, hasEvidences, evidence)
 }
