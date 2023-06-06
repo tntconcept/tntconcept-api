@@ -33,7 +33,7 @@ internal class ProjectServiceTest {
 
         val result = projectService.findById(1)
 
-        assert(result.isEmpty)s
+        assert(result.isEmpty)
     }
 
     private companion object {
