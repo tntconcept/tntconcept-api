@@ -3,8 +3,8 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.exception.NoImageInActivityException
-import com.autentia.tnt.binnacle.services.ActivityImageService
+import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
+import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.ActivityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -15,38 +15,39 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-internal class ActivityImageRetrievalUseCaseTest {
+internal class ActivityEvidenceRetrievalUseCaseTest {
 
     private val activityService = mock<ActivityService>()
-    private val activityImageService = mock<ActivityImageService>()
+    private val activityEvidenceService = mock<ActivityEvidenceService>()
 
-    private val activityImageRetrievalUseCase =
-        ActivityImageRetrievalUseCase(
+    private val activityEvidenceRetrievalUseCase =
+        ActivityEvidenceRetrievalUseCase(
             activityService,
-            activityImageService
+            activityEvidenceService
         )
 
     @Test
     fun `return image in base 64 from service`() {
         whenever(activityService.getActivityById(todayActivity.id!!)).thenReturn(todayActivity)
-        whenever(activityImageService.getActivityImageAsBase64(todayActivity.id!!, TODAY_DATE)).thenReturn(IMAGE)
+        whenever(activityEvidenceService.getActivityEvidenceAsBase64String(todayActivity.id!!, TODAY_DATE)).thenReturn(
+            IMAGE
+        )
 
-        assertEquals(IMAGE, activityImageRetrievalUseCase.getActivityImage(1L))
+        assertEquals(IMAGE, activityEvidenceRetrievalUseCase.getActivityEvidence(1L))
     }
 
     @Test
     fun `throw NoImageInActivityException with correct id when activity doesn't have an image`() {
         whenever(activityService.getActivityById(ID)).thenReturn(activityWithoutImage)
 
-        val exception = assertThrows<NoImageInActivityException> {
-            activityImageRetrievalUseCase.getActivityImage(ID)
+        val exception = assertThrows<NoEvidenceInActivityException> {
+            activityEvidenceRetrievalUseCase.getActivityEvidence(ID)
         }
 
         assertEquals(exception.id, ID)
     }
 
     private companion object {
-        private const val userId = 10L
         private val TODAY = LocalDateTime.now()
         private val TODAY_DATE = Date()
         private const val IMAGE = "Image in base 64"

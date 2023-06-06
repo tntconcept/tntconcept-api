@@ -1,9 +1,9 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.exception.NoImageInActivityException
+import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.exception.UserPermissionException
 import com.autentia.tnt.binnacle.services.ActivitiesService
-import com.autentia.tnt.binnacle.services.ActivityImageService
+import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivitiesValidator
 import jakarta.inject.Singleton
@@ -12,7 +12,7 @@ import jakarta.inject.Singleton
 @Singleton
 class ActivitiesImageRetrievalUseCase internal constructor(
     private val activityService: ActivitiesService,
-    private val activityImageService: ActivityImageService,
+    private val activityEvidenceService: ActivityEvidenceService,
     private val userService: UserService,
     private val activityValidator: ActivitiesValidator
 ) {
@@ -22,9 +22,9 @@ class ActivitiesImageRetrievalUseCase internal constructor(
 
         if (activityValidator.userHasAccess(activity, user)) {
             if (activity.hasEvidences) {
-                return activityImageService.getActivityImageAsBase64(id, activity.insertDate!!)
+                return activityEvidenceService.getActivityEvidenceAsBase64String(id, activity.insertDate!!)
             } else {
-                throw NoImageInActivityException(id)
+                throw NoEvidenceInActivityException(id)
             }
         } else {
             throw UserPermissionException()

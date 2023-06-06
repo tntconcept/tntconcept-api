@@ -4,73 +4,63 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
+import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.verify
 import org.mockito.BDDMockito.verifyNoInteractions
 import org.mockito.BDDMockito.willDoNothing
-import org.mockito.kotlin.any
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
 
+@TestInstance(Lifecycle.PER_CLASS)
 internal class ActivityServiceTest {
-
     private val activityRepository = mock<ActivityRepository>()
     private val internalActivityRepository = mock<InternalActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val activityImageService = mock<ActivityImageService>()
-    private val activityService = ActivityService(
-        activityRepository,
-        internalActivityRepository,
-        projectRoleRepository,
-        activityImageService
+    private val activityEvidenceService = mock<ActivityEvidenceService>()
+
+    private val sut = ActivityService(
+        activityRepository, internalActivityRepository, projectRoleRepository, activityEvidenceService
     )
 
-    init {
+    @AfterEach
+    fun resetMocks() {
+        reset(activityRepository, internalActivityRepository, projectRoleRepository, activityEvidenceService)
+    }
+
+    @BeforeEach
+    fun setMocks() {
         whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
     }
 
-    private val activityWithImageToSave = Activity.of(activityWithImage, projectRole)
-    private val activityWithoutImageToSave = Activity.of(activityWithoutImage, projectRole)
-
-    private val activityWithImageSaved =
-        activityWithImageToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
-
-    private val activityWithoutImageSaved =
-        activityWithoutImageToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
-
-    private val activities = listOf(activityWithoutImageSaved)
-
-    private val timeInterval = TimeInterval.of(LocalDateTime.now(), LocalDateTime.now().plusMinutes(30))
-
     @Test
     fun `get activity by id`() {
-        whenever(activityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(
-            activityWithoutImageSaved
+        whenever(activityRepository.findById(activityWithoutEvidenceSaved.id!!)).thenReturn(
+            activityWithoutEvidenceSaved
         )
 
-        val actual = activityService.getActivityById(activityWithoutImageSaved.id!!)
+        val actual = sut.getActivityById(activityWithoutEvidenceSaved.id!!)
 
-        assertEquals(activityWithoutImageSaved.toDomain(), actual)
+        assertEquals(activityWithoutEvidenceSaved.toDomain(), actual)
     }
 
     @Test
     fun `fail when the activity was not found by id`() {
         assertThrows<ActivityNotFoundException> {
-            activityService.getActivityById(notFoundActivityId)
+            sut.getActivityById(notFoundActivityId)
         }
     }
 
@@ -82,15 +72,13 @@ internal class ActivityServiceTest {
 
         whenever(
             activityRepository.findByUserId(
-                startDate.atTime(LocalTime.MIN),
-                endDate.atTime(LocalTime.MAX),
-                userId
+                startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX), userId
             )
-        ).thenReturn(listOf(activityWithoutImageSaved))
+        ).thenReturn(listOf(activityWithoutEvidenceSaved))
 
-        val actual = activityService.getActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
+        val actual = sut.getActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
 
-        assertEquals(listOf(activityWithoutImageSaved), actual)
+        assertEquals(listOf(activityWithoutEvidenceSaved), actual)
     }
 
     @Test
@@ -101,25 +89,23 @@ internal class ActivityServiceTest {
 
         whenever(
             internalActivityRepository.findByUserId(
-                startDate.atTime(LocalTime.MIN),
-                endDate.atTime(LocalTime.MAX),
-                userId
+                startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX), userId
             )
-        ).thenReturn(listOf(activityWithoutImageSaved))
+        ).thenReturn(listOf(activityWithoutEvidenceSaved))
 
-        val actual = activityService.getUserActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
+        val actual = sut.getUserActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
 
-        assertEquals(listOf(activityWithoutImageSaved), actual)
+        assertEquals(listOf(activityWithoutEvidenceSaved), actual)
     }
 
     @Test
     fun `get activities by project role id and user id`() {
-        val expectedProjectRoleActivities = listOf(activityWithoutImageSaved, activityWithImageToSave)
+        val expectedProjectRoleActivities = listOf(activityWithoutEvidenceSaved, activityWithEvidenceToSave)
         val userId = 1L
 
         whenever(activityRepository.findByProjectRoleIdAndUserId(1L, userId)).thenReturn(expectedProjectRoleActivities)
 
-        val result = activityService.getProjectRoleActivities(1L, userId)
+        val result = sut.getProjectRoleActivities(1L, userId)
 
         assertEquals(expectedProjectRoleActivities, result)
     }
@@ -130,14 +116,16 @@ internal class ActivityServiceTest {
 
         doReturn(activities).whenever(activityRepository).find(timeInterval.start, timeInterval.end, userIds)
 
-        assertEquals(activities, activityService.getActivities(timeInterval, userIds))
+        assertEquals(activities, sut.getActivities(timeInterval, userIds))
     }
 
     @Test
     fun `get activities by project should call repository`() {
         val userId = 1L
-        whenever(activityRepository.findByProjectId(timeInterval.start, timeInterval.end, 1L, userId)).thenReturn(activities)
-        assertEquals(activities, activityService.getActivitiesByProjectId(timeInterval, 1L, userId))
+        whenever(activityRepository.findByProjectId(timeInterval.start, timeInterval.end, 1L, userId)).thenReturn(
+            activities
+        )
+        assertEquals(activities, sut.getActivitiesByProjectId(timeInterval, 1L, userId))
     }
 
     @Test
@@ -146,7 +134,7 @@ internal class ActivityServiceTest {
         whenever(activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)).thenReturn(
             activities
         )
-        assertEquals(activities, activityService.getActivitiesOfLatestProjects(timeInterval, userId))
+        assertEquals(activities, sut.getActivitiesOfLatestProjects(timeInterval, userId))
     }
 
     @Test
@@ -156,46 +144,53 @@ internal class ActivityServiceTest {
         val endDate = LocalDate.of(2019, 1, 31)
         val projectRoles = listOf(1L)
         val timeInterval = TimeInterval.of(
-            startDate.atTime(LocalTime.MIN),
-            endDate.atTime(LocalTime.MAX)
+            startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX)
         )
         val expectedActivities = activities.map(Activity::toDomain)
 
         whenever(
             activityRepository.findByProjectRoleIds(
-                startDate.atTime(LocalTime.MIN),
-                endDate.atTime(LocalTime.MAX),
-                projectRoles,
-                userId
+                startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX), projectRoles, userId
             )
         ).thenReturn(activities)
 
-        val result = activityService.getActivitiesByProjectRoleIds(timeInterval, projectRoles, userId)
+        val result = sut.getActivitiesByProjectRoleIds(timeInterval, projectRoles, userId)
 
         assertEquals(expectedActivities, result)
     }
 
     @Test
-    fun `create activity`() {
-        whenever(activityRepository.save(activityWithoutImageToSave)).thenReturn(activityWithoutImageSaved)
+    fun `create activity without evidence`() {
+        whenever(activityRepository.save(activityWithoutEvidenceToSave)).thenReturn(activityWithoutEvidenceSaved)
 
-        val result = activityService.createActivity(activityWithoutImage, null)
+        val result = sut.createActivity(activityWithoutEvidence, null)
 
-        assertEquals(activityWithoutImageSaved.toDomain(), result)
-        verifyNoInteractions(activityImageService)
+        assertEquals(activityWithoutEvidenceSaved.toDomain(), result)
+        verifyNoInteractions(activityEvidenceService)
     }
 
     @Test
-    fun `create activity and store image file`() {
-        whenever(activityRepository.save(activityWithImageToSave)).thenReturn(activityWithImageSaved)
+    fun `fail when create activity without evidence attached but hasEvidence is true`() {
+        whenever(activityRepository.save(activityWithoutEvidenceAttachedToSave)).thenReturn(
+            activityWithoutEvidenceAttachedSaved
+        )
 
-        val result = activityService.createActivity(activityWithImage, image)
+        assertThrows<NoEvidenceInActivityException> {
+            sut.createActivity(activityWithoutEvidenceAttached, null)
+        }
 
-        assertEquals(activityWithImageSaved.toDomain(), result)
-        verify(activityImageService).storeActivityImage(
-            activityWithImageSaved.id!!,
-            image,
-            activityWithImageSaved.insertDate!!
+        verifyNoInteractions(activityEvidenceService)
+    }
+
+    @Test
+    fun `create activity and store evidence`() {
+        whenever(activityRepository.save(activityWithEvidenceToSave)).thenReturn(activityWithEvidenceSaved)
+
+        val result = sut.createActivity(activityWithEvidence, evidence)
+
+        assertEquals(activityWithEvidenceSaved.toDomain(), result)
+        verify(activityEvidenceService).storeActivityEvidence(
+            activityWithEvidenceSaved.id!!, evidence, activityWithEvidenceSaved.insertDate!!
         )
     }
 
@@ -204,12 +199,11 @@ internal class ActivityServiceTest {
         whenever(projectRoleRepository.findById(99)).thenReturn(null)
 
         val activityWithoutImageAndNonExistentRole =
-            activityWithoutImage.copy(projectRole = projectRole.toDomain().copy(id = 88))
+            activityWithoutEvidence.copy(projectRole = projectRole.toDomain().copy(id = 88))
 
         assertThrows<IllegalStateException> {
-            activityService.createActivity(
-                activityWithoutImageAndNonExistentRole,
-                null
+            sut.createActivity(
+                activityWithoutImageAndNonExistentRole, null
             )
         }
     }
@@ -217,10 +211,9 @@ internal class ActivityServiceTest {
     @Test
     fun `update activity`() {
         val activity = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            activityWithoutImageSaved.id,
+            activityWithoutEvidenceSaved.id,
             TimeInterval.of(
-                TODAY_NOON,
-                TODAY_NOON.plusMinutes(120)
+                TODAY_NOON, TODAY_NOON.plusMinutes(120)
             ),
             120,
             "Description...",
@@ -233,36 +226,26 @@ internal class ActivityServiceTest {
             ApprovalState.NA,
         )
 
-        whenever(activityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(activityWithoutImageSaved)
+        whenever(activityRepository.findById(activityWithoutEvidenceSaved.id!!)).thenReturn(activityWithoutEvidenceSaved)
 
         val savedActivity = Activity.of(activity, projectRole)
 
         whenever(activityRepository.update(Activity.of(activity, projectRole))).thenReturn(savedActivity)
 
-        val result = activityService.updateActivity(activity, null)
+        val result = sut.updateActivity(activity, null)
 
         assertEquals(activity, result)
-        verifyNoInteractions(activityImageService)
+        verifyNoInteractions(activityEvidenceService)
     }
 
     @Test
     fun `update activity and update the stored image`() {
         val activityId = 90L
         val activityToUpdate = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            activityId,
-            TimeInterval.of(
+            activityId, TimeInterval.of(
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-            ),
-            120,
-            "Description...",
-            projectRole.toDomain(),
-            1L,
-            true,
-            null,
-            null,
-            true,
-            ApprovalState.NA
+            ), 120, "Description...", projectRole.toDomain(), 1L, true, null, null, true, ApprovalState.NA
         )
         val oldActivityInsertDate = Date()
         val oldActivity = Activity(
@@ -282,20 +265,18 @@ internal class ActivityServiceTest {
         whenever(activityRepository.findById(activityId)).thenReturn(oldActivity)
 
         // Store the new image in the same old activity path
-        willDoNothing().given(activityImageService)
-            .storeActivityImage(activityToUpdate.id!!, image, oldActivityInsertDate)
+        willDoNothing().given(activityEvidenceService)
+            .storeActivityEvidence(activityToUpdate.id!!, evidence, oldActivityInsertDate)
 
         val activityToReturn = Activity.of(activityToUpdate, projectRole)
 
         given(activityRepository.update(activityToReturn)).willReturn(activityToReturn)
 
-        val result = activityService.updateActivity(activityToUpdate, image)
+        val result = sut.updateActivity(activityToUpdate, evidence)
 
         assertThat(result).isEqualTo(activityToUpdate)
-        verify(activityImageService).storeActivityImage(
-            activityToUpdate.id!!,
-            image,
-            oldActivityInsertDate
+        verify(activityEvidenceService).storeActivityEvidence(
+            activityToUpdate.id!!, evidence, oldActivityInsertDate
         )
     }
 
@@ -303,20 +284,10 @@ internal class ActivityServiceTest {
     fun `update activity and delete the stored image`() {
         val activityId = 90L
         val activity = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            activityId,
-            TimeInterval.of(
+            activityId, TimeInterval.of(
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-            ),
-            120,
-            "Description...",
-            projectRole.toDomain(),
-            1L,
-            false,
-            null,
-            null,
-            false,
-            ApprovalState.NA
+            ), 120, "Description...", projectRole.toDomain(), 1L, false, null, null, false, ApprovalState.NA
         )
 
         val oldActivityInsertDate = Date()
@@ -337,62 +308,63 @@ internal class ActivityServiceTest {
         given(activityRepository.findById(activityId)).willReturn(oldActivity)
 
         // Delete the old activity image
-        given(activityImageService.deleteActivityImage(activityId, oldActivityInsertDate)).willReturn(true)
+        given(activityEvidenceService.deleteActivityEvidence(activityId, oldActivityInsertDate)).willReturn(true)
 
         val savedActivity = Activity.of(activity, projectRole)
 
         given(activityRepository.update(Activity.of(activity, projectRole))).willReturn(savedActivity)
 
-        val result = activityService.updateActivity(activity, "")
+        val result = sut.updateActivity(activity, null)
 
         assertThat(result).isEqualTo(activity)
-        verify(activityImageService).deleteActivityImage(activityId, oldActivityInsertDate)
+        verify(activityEvidenceService).deleteActivityEvidence(activityId, oldActivityInsertDate)
     }
 
     @Test
     fun `approve activity by id`() {
-        given(activityRepository.findById(activityWithoutImageSaved.id as Long)).willReturn(activityWithoutImageSaved)
+        given(activityRepository.findById(activityWithoutEvidenceSaved.id as Long)).willReturn(
+            activityWithoutEvidenceSaved
+        )
         given(
             activityRepository.update(
-                activityWithoutImageSaved
+                activityWithoutEvidenceSaved
             )
-        ).willReturn(activityWithoutImageSaved)
+        ).willReturn(activityWithoutEvidenceSaved)
 
-        val approvedActivity = activityService.approveActivityById(activityWithoutImageSaved.id as Long)
+        val approvedActivity = sut.approveActivityById(activityWithoutEvidenceSaved.id as Long)
         assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
     }
 
     @Test
     fun `approve activity with not allowed state`() {
-        doReturn(activityWithoutImageToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
+        doReturn(activityWithoutEvidenceToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
             .findById(any())
         assertThrows<InvalidActivityApprovalStateException> {
-            activityService.approveActivityById(any())
+            sut.approveActivityById(any())
         }
     }
 
     @Test
     fun `delete activity by id`() {
-        whenever(activityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(activityWithoutImageSaved)
+        whenever(activityRepository.findById(activityWithoutEvidenceSaved.id!!)).thenReturn(activityWithoutEvidenceSaved)
 
-        activityService.deleteActivityById(activityWithoutImageSaved.id as Long)
+        sut.deleteActivityById(activityWithoutEvidenceSaved.id as Long)
 
-        verify(activityRepository).deleteById(activityWithoutImageSaved.id!!)
-        verifyNoInteractions(activityImageService)
+        verify(activityRepository).deleteById(activityWithoutEvidenceSaved.id!!)
+        verifyNoInteractions(activityEvidenceService)
     }
 
     @Test
     fun `delete activity by id and its image`() {
-        whenever(activityRepository.findById(activityWithoutImageSaved.id!!)).thenReturn(activityWithImageSaved)
+        whenever(activityRepository.findById(activityWithoutEvidenceSaved.id!!)).thenReturn(activityWithEvidenceSaved)
 
-        whenever(activityRepository.findById(activityWithImageSaved.id!!)).thenReturn(activityWithImageSaved)
+        whenever(activityRepository.findById(activityWithEvidenceSaved.id!!)).thenReturn(activityWithEvidenceSaved)
 
-        activityService.deleteActivityById(activityWithImageSaved.id!!)
+        sut.deleteActivityById(activityWithEvidenceSaved.id!!)
 
-        verify(activityRepository).deleteById(activityWithImageSaved.id!!)
-        verify(activityImageService).deleteActivityImage(
-            activityWithImageSaved.id!!,
-            activityWithImageSaved.insertDate!!
+        verify(activityRepository).deleteById(activityWithEvidenceSaved.id!!)
+        verify(activityEvidenceService).deleteActivityEvidence(
+            activityWithEvidenceSaved.id!!, activityWithEvidenceSaved.insertDate!!
         )
     }
 
@@ -408,41 +380,45 @@ internal class ActivityServiceTest {
 
         private const val notFoundActivityId = 1L
 
-        private val activityWithoutImage = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            null,
-            TimeInterval.of(
+        private val activityWithoutEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            null, TimeInterval.of(
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-            ),
-            60,
-            "Dummy description",
-            projectRole.toDomain(),
-            1L,
-            false,
-            1L,
-            null,
-            false,
-            ApprovalState.NA
+            ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA
         )
 
-        private val activityWithImage = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            null,
-            TimeInterval.of(
+        private val activityWithoutEvidenceAttached = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            null, TimeInterval.of(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
+            ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA
+        )
+
+        private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            null, TimeInterval.of(
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
                 LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-            ),
-            120,
-            "Description...",
-            projectRole.toDomain(),
-            1L,
-            false,
-            1L,
-            null,
-            true,
-            ApprovalState.NA
+            ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA
         )
 
-        private val image = "Base64 format..."
+        private val evidence = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")
+
+        private val activityWithEvidenceToSave = Activity.of(activityWithEvidence, projectRole)
+        private val activityWithoutEvidenceToSave = Activity.of(activityWithoutEvidence, projectRole)
+        private val activityWithoutEvidenceAttachedToSave = Activity.of(activityWithoutEvidenceAttached, projectRole)
+
+        private val activityWithEvidenceSaved =
+            activityWithEvidenceToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
+
+        private val activityWithoutEvidenceSaved =
+            activityWithoutEvidenceToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
+
+        private val activityWithoutEvidenceAttachedSaved =
+            activityWithoutEvidenceToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
+
+        private val activities = listOf(activityWithoutEvidenceSaved)
+
+        private val timeInterval = TimeInterval.of(LocalDateTime.now(), LocalDateTime.now().plusMinutes(30))
     }
 
 }
