@@ -117,15 +117,17 @@ internal class ActivityValidator(
         require(activityToUpdate.id != null) { "Cannot update an activity without id." }
         val activityDb = activityRepository.findById(activityToUpdate.id)
         val projectRoleDb = projectRoleRepository.findById(activityToUpdate.projectRole.id)
-        val projectToUpdate = projectService.getProjectById(activityToUpdate.projectRole.project.id)
-        val currentProject = projectService.getProjectById(currentActivity.projectRole.project.id)
+        val projectToUpdate = projectService.findById(activityToUpdate.projectRole.project.id)
+        val currentProject = projectService.findById(currentActivity.projectRole.project.id)
         val today = LocalDate.now()
         val activityToUpdateDate = activityToUpdate.getStart().toLocalDate()
         when {
             activityDb === null -> throw ActivityNotFoundException(activityToUpdate.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityToUpdate.projectRole.id)
-            isProjectBlocked(projectToUpdate, activityToUpdateDate) -> throw ProjectBlockedException()
-            isProjectBlocked(currentProject, today) -> throw ProjectBlockedException()
+            projectToUpdate.isEmpty -> throw ProjectNotFoundException(activityToUpdate.projectRole.project.id)
+            isProjectBlocked(projectToUpdate.get(), activityToUpdateDate) -> throw ProjectBlockedException()
+            currentProject.isEmpty -> throw ProjectNotFoundException(currentActivity.projectRole.project.id)
+            isProjectBlocked(currentProject.get(), today) -> throw ProjectBlockedException()
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
@@ -153,11 +155,10 @@ internal class ActivityValidator(
     }
 
     fun isProjectBlocked(project: com.autentia.tnt.binnacle.core.domain.Project, date: LocalDate): Boolean {
-        return if (project.blockDate != null) {
-            date.isBefore(project.blockDate)
-        } else {
-            false
+        if (project.blockDate == null) {
+            return false
         }
+        return date.isBefore(project.blockDate) || date.isEqual(project.blockDate)
     }
 
     private fun isOverlappingAnotherActivityTime(

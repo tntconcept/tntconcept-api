@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
+import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
@@ -22,13 +23,8 @@ internal class ProjectService(
 
     @Transactional
     @ReadOnly
-    fun getProjectById(id: Long): Project {
-        val activity = projectRepository.findById(id)
-        return if (activity.isPresent) {
-            activity.get().toDomain()
-        }else{
-            throw ProjectNotFoundException(id)
-        }
+    fun findById(id: Long): Optional<Project> {
+        return projectRepository.findById(id).map { it.toDomain() }
     }
 
 }

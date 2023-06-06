@@ -339,7 +339,7 @@ internal class ActivityValidatorTest {
         fun `do nothing when activity is valid`() {
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
             whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
 
             activityValidator.checkActivityIsValidForUpdate(validActivityToUpdate, validActivityToUpdate, user)
         }
@@ -348,7 +348,7 @@ internal class ActivityValidatorTest {
         fun `throw ActivityNotFoundException with activity id when the activity to be replaced does not exist`() {
             whenever(activityRepository.findById(1L)).thenReturn(null)
             whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
 
             val exception = assertThrows<ActivityNotFoundException> {
                 activityValidator.checkActivityIsValidForUpdate(
@@ -365,7 +365,7 @@ internal class ActivityValidatorTest {
 
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
             whenever(projectRoleRepository.findById(any())).thenReturn(projectRole)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
 
             assertThrows<ActivityPeriodNotValidException> {
                 activityValidator.checkActivityIsValidForUpdate(
@@ -397,14 +397,80 @@ internal class ActivityValidatorTest {
             )
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
             whenever(projectRoleRepository.findById(any())).thenReturn(projectRole)
-            whenever(projectService.getProjectById(projectRoleWithNonBlockedProject.id)).thenReturn(nonBlockedProject.toDomain())
-            whenever(projectService.getProjectById(projectRoleWithBlockedProject.id)).thenReturn(blockedProject.toDomain())
+            whenever(projectService.findById(nonBlockedProject.id)).thenReturn(
+                Optional.of(
+                    nonBlockedProject.toDomain()
+                )
+            )
+            whenever(projectService.findById(blockedProject.id)).thenReturn(Optional.of(blockedProject.toDomain()))
 
             assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
             }
         }
 
+        @Test
+        fun `do nothing when blocked date doesnt block current change`() {
+            val newActivity = createDomainActivity(
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(60L),
+                60,
+                projectRoleWithPastBlockedProject.toDomain()
+            )
+            val currentActivity = Activity(
+                1L,
+                LocalDateTime.of(2020, Month.JANUARY, 3, 2, 1),
+                LocalDateTime.of(2020, Month.JANUARY, 3, 2, 24),
+                23,
+                "Old description",
+                projectRoleWithPastBlockedProject,
+                user.id,
+                false,
+                approvalState = ApprovalState.NA
+            )
+            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(any())).thenReturn(projectRole)
+            whenever(projectService.findById(blockedPastProject.id)).thenReturn(
+                Optional.of(
+                    blockedPastProject.toDomain()
+                )
+            )
+
+            activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
+        }
+
+        @Test
+        fun `throw ProjectBlockedException when attempting to change activity to a blocked project`() {
+            val newActivity = createDomainActivity(
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(60L),
+                60,
+                projectRoleWithBlockedProject.toDomain()
+            )
+            val currentActivity = Activity(
+                1L,
+                LocalDateTime.of(2020, Month.JANUARY, 3, 2, 1),
+                LocalDateTime.of(2020, Month.JANUARY, 3, 2, 24),
+                23,
+                "Old description",
+                projectRoleWithNonBlockedProject,
+                user.id,
+                false,
+                approvalState = ApprovalState.NA
+            )
+            whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
+            whenever(projectRoleRepository.findById(any())).thenReturn(projectRole)
+            whenever(projectService.findById(nonBlockedProject.id)).thenReturn(
+                Optional.of(
+                    nonBlockedProject.toDomain()
+                )
+            )
+            whenever(projectService.findById(blockedProject.id)).thenReturn(Optional.of(blockedProject.toDomain()))
+
+            assertThrows<ProjectBlockedException> {
+                activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
+            }
+        }
 
         @Test
         fun `throw ProjectRoleNotFoundException with role id when project role is not in the database`() {
@@ -427,7 +493,7 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
             whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(null)
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
 
@@ -445,7 +511,7 @@ internal class ActivityValidatorTest {
                 60,
                 closedProjectRole.toDomain()
             )
-            whenever(projectService.getProjectById(closedProject.id)).thenReturn(closedProject.toDomain())
+            whenever(projectService.findById(closedProject.id)).thenReturn(Optional.of(closedProject.toDomain()))
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
             whenever(projectRoleRepository.findById(closedProjectRole.id)).thenReturn(closedProjectRole)
 
@@ -458,7 +524,7 @@ internal class ActivityValidatorTest {
         fun `do nothing when updated activity started last year`() {
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
             whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
 
             activityValidator.checkActivityIsValidForUpdate(activityLastYear, activityLastYear, user)
         }
@@ -467,7 +533,7 @@ internal class ActivityValidatorTest {
         fun `throw ActivityPeriodClosedException when updated activity started more than one year ago`() {
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
             whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
 
             assertThrows<ActivityPeriodClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(
@@ -509,7 +575,7 @@ internal class ActivityValidatorTest {
                 )
             )
             whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
 
             assertThrows<OverlapsAnotherTimeException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
@@ -602,7 +668,7 @@ internal class ActivityValidatorTest {
                 activityService.getActivitiesByProjectRoleIds(yearTimeInterval, listOf(projectRoleLimited.id), user.id)
             ).thenReturn(activitiesInTheYear)
             whenever(projectRoleRepository.findById(projectRoleLimited.id)).thenReturn(projectRoleLimited)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
 
             val exception = assertThrows<MaxHoursPerRoleException> {
                 activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
@@ -656,7 +722,7 @@ internal class ActivityValidatorTest {
                 )
             )
 
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
             whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
             whenever(activityRepository.findById(activity.id!!)).thenReturn(activity)
             whenever(
@@ -735,7 +801,7 @@ internal class ActivityValidatorTest {
                 )
             )
             whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
 
             activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
         }
@@ -775,7 +841,7 @@ internal class ActivityValidatorTest {
             )
 
             whenever(activityRepository.findById(1L)).thenReturn(currentActivity)
-            whenever(projectService.getProjectById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectService.findById(1L)).thenReturn(Optional.of(nonBlockedProject.toDomain()))
             whenever(projectRoleRepository.findById(any())).thenReturn(projectRole)
 
             assertThrows<ActivityBeforeHiringDateException> {
@@ -932,6 +998,14 @@ internal class ActivityValidatorTest {
             "blocked",
             RequireEvidence.NO,
             blockedProject,
+            0, true, false, TimeUnit.MINUTES
+        )
+
+        private val projectRoleWithPastBlockedProject = ProjectRole(
+            1,
+            "blocked",
+            RequireEvidence.NO,
+            blockedPastProject,
             0, true, false, TimeUnit.MINUTES
         )
 
