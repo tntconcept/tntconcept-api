@@ -52,6 +52,7 @@ internal class ActivityCreationUseCaseTest {
         val activity = createActivity(userId = user.id).toDomain()
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectService.findById(activity.projectRole.project.id)).thenReturn(activity.projectRole.project)
         whenever(projectRoleRepository.findById(any())).thenReturn(
             ProjectRole.of(
                 activity.projectRole,
@@ -70,6 +71,7 @@ internal class ActivityCreationUseCaseTest {
         val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_APPROVAL).toDomain()
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectService.findById(activity.projectRole.project.id)).thenReturn(activity.projectRole.project)
         whenever(projectRoleRepository.findById(any())).thenReturn(
             ProjectRole.of(
                 activity.projectRole,
@@ -92,8 +94,8 @@ internal class ActivityCreationUseCaseTest {
     fun `created activity without approval required`() {
         val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_NO_APPROVAL).toDomain()
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
-
         whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectService.findById(activity.projectRole.project.id)).thenReturn(activity.projectRole.project)
         whenever(projectRoleRepository.findById(any())).thenReturn(
             ProjectRole.of(
                 activity.projectRole,

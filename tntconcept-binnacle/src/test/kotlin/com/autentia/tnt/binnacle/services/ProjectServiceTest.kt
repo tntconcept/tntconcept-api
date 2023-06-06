@@ -3,10 +3,11 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
-import com.autentia.tnt.binnacle.validators.ActivityValidatorTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -24,16 +25,16 @@ internal class ProjectServiceTest {
 
         val result = projectService.findById(1)
 
-        assertEquals(expected, result.get())
+        assertEquals(expected, result)
     }
 
     @Test
-    fun `get by Id should return empty optional when Id doesnt exists`() {
+    fun `throw ProjectNotFoundException when Id doesnt exists`() {
         whenever(projectRepository.findById(1)).thenReturn(Optional.empty())
 
-        val result = projectService.findById(1)
-
-        assert(result.isEmpty)
+        assertThrows<ProjectNotFoundException> {
+            projectService.findById(1)
+        }
     }
 
     private companion object {
