@@ -92,3 +92,10 @@ INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requir
                          insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
 VALUES (12, 8, 'Project no working time 2', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20',
         0, 'MINUTES', 0, 0);
+
+
+-- Closed Project for testing purposes
+INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, ownerId, departmentId, billable,
+                     offerId, insertDate, updateDate)
+VALUES (9, 3, '2023-04-24', null, 0, 'Closed project for testing', '', null, null, DEFAULT, null,
+        '2023-04-24 06:33:16', '2023-04-24 06:33:21');

@@ -14,7 +14,7 @@ class ProjectResponseConverter {
         project.billable,
         project.organization.id,
         project.blockDate,
-        project.blockedByUser
+        project.blockedByUser,
     )
 
     fun toProjectResponseDTO(project: com.autentia.tnt.binnacle.core.domain.Project): ProjectResponseDTO =
@@ -25,6 +25,6 @@ class ProjectResponseConverter {
             project.billable,
             project.organization.id,
             project.blockDate,
-            project.blockedByUser
+            project.blockedByUser,
         )
 }
