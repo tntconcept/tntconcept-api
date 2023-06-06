@@ -5,13 +5,9 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -26,7 +22,8 @@ import java.util.*
 
 internal class ProjectRoleByProjectIdUseCaseTest {
 
-    private val activityService = mock<ActivityService>()
+    private val activityRepository: ActivityRepository = mock()
+    private val activityService = ActivityService(activityRepository, mock(), mock(), mock())
     private val holidayService = mock<HolidayService>()
     private val projectRoleService = mock<ProjectRoleService>()
     private val calendarFactory = CalendarFactory(holidayService)
@@ -86,7 +83,11 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
         val activitiesProjectRole1 = listOf(
             activity,
-            activity.copy(start = activity.end, end = activity.end.plusMinutes(10), duration = 10),
+            activity.copy(
+                start = activity.end,
+                end = activity.end.plusMinutes(10),
+                duration = 10
+            ),
             activity.copy(
                 start = activity.end.minusYears(1L),
                 end = activity.end.plusMinutes(10).minusYears(1L),
@@ -96,21 +97,12 @@ internal class ProjectRoleByProjectIdUseCaseTest {
         val activitiesProjectRole2 = listOf(
             otherActivity
         )
-        val timeInterval = TimeInterval.ofYear(year)
 
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
         whenever(projectRoleService.getAllByProjectId(PROJECT_ID)).thenReturn(projectRoles.map(ProjectRole::toDomain))
-        whenever(activityService.getProjectRoleActivities(1L, userId)).thenReturn(activitiesProjectRole1)
-        whenever(activityService.getProjectRoleActivities(2L, userId)).thenReturn(activitiesProjectRole2)
-        whenever(activityService.getProjectRoleActivities(3L, userId)).thenReturn(emptyList())
-        whenever(
-            activityService.filterActivitiesByTimeInterval(
-                timeInterval,
-                activitiesProjectRole1
-            )
-        ).thenReturn(listOf(activitiesProjectRole1[0].toDomain(), activitiesProjectRole1[1].toDomain()))
-        whenever(activityService.filterActivitiesByTimeInterval(timeInterval, activitiesProjectRole2)).thenReturn(
-            activitiesProjectRole2.map { it.toDomain() })
+        whenever(activityRepository.findByProjectRoleIdAndUserId(1L, userId)).thenReturn(activitiesProjectRole1)
+        whenever(activityRepository.findByProjectRoleIdAndUserId(2L, userId)).thenReturn(activitiesProjectRole2)
+        whenever(activityRepository.findByProjectRoleIdAndUserId(3L, userId)).thenReturn(emptyList())
 
 
         val expectedProjectRoles = listOf(
@@ -118,7 +110,6 @@ internal class ProjectRoleByProjectIdUseCaseTest {
             buildProjectRoleUserDTO(2L, 90, 30),
             buildProjectRoleUserDTO(3L, 0, 0),
         )
-
         assertEquals(expectedProjectRoles, projectRoleByProjectIdUseCase.get(PROJECT_ID, year))
     }
 
