@@ -64,7 +64,7 @@ internal class UserControllerIT {
         )
         val roles = listOf("user")
 
-        val userInfoResponseDTO = UserInfoResponseDTO(user.username, user.hiringDate, roles)
+        val userInfoResponseDTO = UserInfoResponseDTO(user.id, user.username, user.hiringDate, roles)
         whenever(findUserInfoUseCase.find()).thenReturn(userInfoResponseDTO)
 
         val request = HttpRequest.GET<Any>("/api/user/me")

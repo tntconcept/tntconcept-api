@@ -37,6 +37,6 @@ internal class FindUserInfoUseCaseTest {
             USER.id.toString(), mapOf("roles" to roles)
         )
 
-        private val USER_INFO_RESPONSE_DTO = UserInfoResponseDTO(USER.username, USER.hiringDate, roles)
+        private val USER_INFO_RESPONSE_DTO = UserInfoResponseDTO(USER.id, USER.username, USER.hiringDate, roles)
     }
 }
