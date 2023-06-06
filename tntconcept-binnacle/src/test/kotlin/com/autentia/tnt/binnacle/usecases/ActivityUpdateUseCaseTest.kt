@@ -8,7 +8,7 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
@@ -170,7 +170,7 @@ internal class ActivityUpdateUseCaseTest {
             PROJECT_ROLE.isApprovalRequired,
             USER.id
         )
-        private val NEW_ACTIVITY_DTO = ActivityRequestBodyDTO(
+        private val NEW_ACTIVITY_DTO = ActivityRequestDTO(
             1L,
             TODAY,
             TODAY.plusMinutes(75L),

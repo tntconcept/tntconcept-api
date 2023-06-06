@@ -3,6 +3,7 @@ package com.autentia.tnt
 import io.micronaut.context.annotation.ConfigurationProperties
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotEmpty
 
 @ConfigurationProperties("app")
 internal class AppProperties {
@@ -17,7 +18,10 @@ internal class AppProperties {
     @ConfigurationProperties("files")
     internal class FilesProperties {
         @NotBlank
-        var activityImages: String = ""
+        var evidencesPath: String = ""
+
+        @NotEmpty
+        var supportedMimeTypes: Map<String, String> = emptyMap()
     }
 
     @ConfigurationProperties("mail")

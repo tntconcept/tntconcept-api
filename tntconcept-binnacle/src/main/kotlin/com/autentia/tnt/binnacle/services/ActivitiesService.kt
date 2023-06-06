@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivitiesRequestBody
 import com.autentia.tnt.binnacle.core.domain.ActivitiesResponse
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -22,7 +23,7 @@ internal class ActivitiesService(
     private val activityRepository: ActivityRepository,
     @param:Named("Internal") private val internalActivityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
-    private val activityImageService: ActivityImageService,
+    private val activityEvidenceService: ActivityEvidenceService,
     private val activityRequestBodyConverter: ActivitiesRequestBodyConverter,
     private val activityResponseConverter: ActivitiesResponseConverter
 ) {
@@ -45,7 +46,11 @@ internal class ActivitiesService(
 
     @Transactional
     @ReadOnly
-    fun getUserActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<ActivitiesResponse> {
+    fun getUserActivitiesBetweenDates(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        userId: Long
+    ): List<ActivitiesResponse> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
         return internalActivityRepository
@@ -68,9 +73,9 @@ internal class ActivitiesService(
         )
 
         if (activityRequest.hasImage) {
-            activityImageService.storeActivityImage(
+            activityEvidenceService.storeActivityEvidence(
                 savedActivity.id!!,
-                activityRequest.imageFile,
+                EvidenceDTO.from(activityRequest.imageFile!!),
                 savedActivity.insertDate!!
             )
         }
@@ -89,16 +94,16 @@ internal class ActivitiesService(
 
         // Update stored image
         if (activityRequest.hasImage) {
-            activityImageService.storeActivityImage(
+            activityEvidenceService.storeActivityEvidence(
                 activityRequest.id!!,
-                activityRequest.imageFile,
+                EvidenceDTO.from(activityRequest.imageFile!!),
                 oldActivity.insertDate!!
             )
         }
 
         // Delete stored image
         if (!activityRequest.hasImage && oldActivity.hasEvidences) {
-            activityImageService.deleteActivityImage(activityRequest.id!!, oldActivity.insertDate!!)
+            activityEvidenceService.deleteActivityEvidence(activityRequest.id!!, oldActivity.insertDate!!)
         }
 
         return activityRepository.update(
@@ -115,7 +120,7 @@ internal class ActivitiesService(
     fun deleteActivityById(id: Long) {
         val activityToDelete = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
         if (activityToDelete.hasEvidences) {
-            activityImageService.deleteActivityImage(id, activityToDelete.insertDate!!)
+            activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
         }
         activityRepository.deleteById(id)
     }
