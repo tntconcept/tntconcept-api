@@ -35,10 +35,10 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
         val oneMonthDateRange = oneMonthTimeIntervalFromCurrentYear()
-        val timeIntervalForRemainingCalc = getTimeIntervalForRemainingCalc(year)
+        val timeIntervalForRemainingCalculation = getTimeIntervalForRemainingCalculation(year)
 
         val requestedYearActivities =
-            activityService.getActivitiesOfLatestProjects(timeIntervalForRemainingCalc, userId)
+            activityService.getActivitiesOfLatestProjects(timeIntervalForRemainingCalculation, userId)
         val lastMonthActivities =
             activityService.getActivitiesOfLatestProjects(oneMonthDateRange, userId).map(Activity::toDomain)
 
@@ -48,7 +48,7 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
                     val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                         projectRole,
                         requestedYearActivities.map(Activity::toDomain),
-                        timeIntervalForRemainingCalc.getDateInterval(),
+                        timeIntervalForRemainingCalculation.getDateInterval(),
                         userId
                     )
                     projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
@@ -91,7 +91,7 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         )
     }
 
-    private fun getTimeIntervalForRemainingCalc(year: Int?): TimeInterval =
+    private fun getTimeIntervalForRemainingCalculation(year: Int?): TimeInterval =
         TimeInterval.ofYear(year ?: LocalDate.now().year)
 
 }
