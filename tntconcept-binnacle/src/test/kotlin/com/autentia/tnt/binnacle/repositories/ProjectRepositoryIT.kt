@@ -2,8 +2,7 @@ package com.autentia.tnt.binnacle.repositories
 
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -22,6 +21,20 @@ internal class ProjectRepositoryIT {
 
         assertTrue(result.isNotEmpty())
         assertEquals("Vacaciones", result[0].name)
+    }
+
+    @Test
+    fun `should find by id`() {
+        val result = projectRepository.findById(1)
+
+        assert(result.isPresent)
+    }
+
+    @Test
+    fun `should find returns empty optional when id doesnt exists`() {
+        val result = projectRepository.findById(Long.MAX_VALUE)
+
+        assert(result.isEmpty)
     }
 
 }
