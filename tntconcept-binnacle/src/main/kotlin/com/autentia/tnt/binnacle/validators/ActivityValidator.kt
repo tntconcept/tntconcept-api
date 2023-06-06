@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -12,7 +11,6 @@ import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.ProjectService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.time.LocalDate
 import java.time.LocalDateTime
 import javax.transaction.Transactional
 
@@ -30,10 +28,12 @@ internal class ActivityValidator(
         require(activityToCreate.id == null) { "Cannot create a new activity with id ${activityToCreate.id}." }
 
         val projectRoleDb = projectRoleRepository.findById(activityToCreate.projectRole.id)
+        val projectDb = projectService.findById(activityToCreate.projectRole.project.id)
         when {
             projectRoleDb == null -> throw ProjectRoleNotFoundException(activityToCreate.projectRole.id)
-            !isProjectOpen(projectRoleDb.project) -> throw ProjectClosedException()
+            !isProjectOpen(projectDb) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
+            isProjectBlocked(projectDb, activityToCreate) -> throw ActivityForBlockedProjectException()
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
@@ -119,15 +119,11 @@ internal class ActivityValidator(
         val projectRoleDb = projectRoleRepository.findById(activityToUpdate.projectRole.id)
         val projectToUpdate = projectService.findById(activityToUpdate.projectRole.project.id)
         val currentProject = projectService.findById(currentActivity.projectRole.project.id)
-        val today = LocalDate.now()
-        val activityToUpdateDate = activityToUpdate.getStart().toLocalDate()
         when {
             activityDb === null -> throw ActivityNotFoundException(activityToUpdate.id)
             projectRoleDb === null -> throw ProjectRoleNotFoundException(activityToUpdate.projectRole.id)
-            projectToUpdate.isEmpty -> throw ProjectNotFoundException(activityToUpdate.projectRole.project.id)
-            isProjectBlocked(projectToUpdate.get(), activityToUpdateDate) -> throw ProjectBlockedException()
-            currentProject.isEmpty -> throw ProjectNotFoundException(currentActivity.projectRole.project.id)
-            isProjectBlocked(currentProject.get(), today) -> throw ProjectBlockedException()
+            isProjectBlocked(projectToUpdate, activityToUpdate) -> throw ProjectBlockedException()
+            isProjectBlocked(currentProject, currentActivity) -> throw ProjectBlockedException()
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
@@ -146,24 +142,22 @@ internal class ActivityValidator(
         val activityDb = activityRepository.findById(id)
         val projectId = activityDb?.projectRole?.project?.id ?:0
         val project = projectService.findById(projectId)
-        val today = LocalDate.now()
         when {
             activityDb === null -> throw ActivityNotFoundException(id)
-            project.isEmpty -> throw ProjectNotFoundException(projectId)
-            isProjectBlocked(project.get(), today) -> throw ProjectBlockedException()
+            isProjectBlocked(project, activityDb.toDomain()) -> throw ProjectBlockedException()
             !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
         }
     }
 
-    fun isProjectOpen(project: Project): Boolean {
+    private fun isProjectOpen(project: com.autentia.tnt.binnacle.core.domain.Project): Boolean {
         return project.open
     }
 
-    fun isProjectBlocked(project: com.autentia.tnt.binnacle.core.domain.Project, date: LocalDate): Boolean {
-        if (project.blockDate == null) {
+    private fun isProjectBlocked(project: com.autentia.tnt.binnacle.core.domain.Project, activity: Activity): Boolean {
+        if(project.blockDate == null){
             return false
         }
-        return date.isBefore(project.blockDate) || date.isEqual(project.blockDate)
+        return project.blockDate.isAfter(activity.getStart().toLocalDate()) || project.blockDate.isEqual(activity.getStart().toLocalDate())
     }
 
     private fun isOverlappingAnotherActivityTime(
