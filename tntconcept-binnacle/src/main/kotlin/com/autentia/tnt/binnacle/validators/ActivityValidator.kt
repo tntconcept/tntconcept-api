@@ -140,7 +140,7 @@ internal class ActivityValidator(
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long) {
         val activityDb = activityRepository.findById(id)
-        val projectId = activityDb?.projectRole?.project?.id ?:0
+        val projectId = activityDb?.projectRole?.project?.id ?: 0
         val project = projectService.findById(projectId)
         when {
             activityDb === null -> throw ActivityNotFoundException(id)

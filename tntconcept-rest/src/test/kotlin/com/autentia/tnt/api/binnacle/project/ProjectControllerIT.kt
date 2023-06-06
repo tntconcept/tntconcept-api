@@ -1,13 +1,20 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.project
 
+import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.api.binnacle.exchangeList
+import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.api.binnacle.getBody
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
+import com.autentia.tnt.binnacle.usecases.BlockProjectByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByProjectIdUseCase
+import com.autentia.tnt.binnacle.usecases.UnblockProjectByIdUseCase
 import io.micronaut.http.HttpRequest.GET
+import io.micronaut.http.HttpRequest.POST
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.HttpStatus.NOT_FOUND
 import io.micronaut.http.HttpStatus.OK
@@ -18,6 +25,7 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -26,10 +34,8 @@ import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
+import java.time.LocalDate
 
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -47,6 +53,11 @@ internal class ProjectControllerIT {
     @get:MockBean(ProjectRoleByProjectIdUseCase::class)
     internal val projectRoleByProjectIdUseCase = mock<ProjectRoleByProjectIdUseCase>()
 
+    @get:MockBean(BlockProjectByIdUseCase::class)
+    internal val blockProjectByIdUseCase = mock<BlockProjectByIdUseCase>()
+
+    @get:MockBean(BlockProjectByIdUseCase::class)
+    internal val unblockProjectByIdUseCase = mock<UnblockProjectByIdUseCase>()
 
     @BeforeAll
     fun setUp() {
@@ -97,6 +108,34 @@ internal class ProjectControllerIT {
 
         assertEquals(OK, response.status)
         assertEquals(listOf(projectRoleUser), response.body.get())
+    }
+
+    @Test
+    fun `block project by id`() {
+        val projectId = 1L
+        val blockProjectRequest = BlockProjectRequest(blockDate = LocalDate.of(2023, 5, 5))
+
+        val response = client.exchangeObject<Any>(POST("/api/project/$projectId/block", blockProjectRequest))
+
+        verify(blockProjectByIdUseCase).blockProject(projectId, blockProjectRequest.blockDate)
+        assertThat(response.status).isEqualTo(OK)
+    }
+
+    @Test
+    fun `unblock project by id`() {
+        val projectId = 1L
+        val projectDTO = ProjectResponseDTO(
+            id = projectId,
+            name = "Test project",
+            open = true,
+            billable = true,
+            organizationId = 1
+        )
+        whenever(unblockProjectByIdUseCase.unblockProject(projectId)).thenReturn(projectDTO)
+        val response = client.exchangeObject<Any>(POST("/api/project/$projectId/unblock", ""))
+
+        assertThat(response.status).isEqualTo(OK)
+        assertThat(response.body).isEqualTo(projectDTO)
     }
 
     @ParameterizedTest
