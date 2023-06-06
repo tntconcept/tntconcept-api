@@ -26,15 +26,15 @@ class ProjectRoleByProjectIdUseCase internal constructor(
     private val projectRoleConverter: ProjectRoleConverter
 ) {
 
-    fun get(projectId: Long): List<ProjectRoleUserDTO> {
+    fun get(projectId: Long, year: Int?): List<ProjectRoleUserDTO> {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
 
-        val currentYearTimeInterval = TimeInterval.ofYear(LocalDate.now().year)
+        val timeInterval = getTimeInterval(year)
         val projectRolesOfProject = projectRoleService.getAllByProjectId(projectId)
         val projectRolesUser = buildProjectRoleWithUserRemaining(
             projectRolesOfProject,
-            currentYearTimeInterval,
+            timeInterval,
             userId,
         )
 
@@ -42,19 +42,23 @@ class ProjectRoleByProjectIdUseCase internal constructor(
             .map(projectRoleResponseConverter::toProjectRoleUserDTO)
     }
 
+    private fun getTimeInterval(year: Int?) = TimeInterval.ofYear(year ?: LocalDate.now().year)
+
     private fun buildProjectRoleWithUserRemaining(
         projectRolesOfProject: List<com.autentia.tnt.binnacle.core.domain.ProjectRole>,
-        currentYearTimeInterval: TimeInterval,
+        timeInterval: TimeInterval,
         userId: Long
     ): MutableList<ProjectRoleUser> {
         val projectRolesUser = mutableListOf<ProjectRoleUser>()
 
         for (projectRole in projectRolesOfProject) {
             val projectRoleActivities = activityService.getProjectRoleActivities(projectRole.id, userId)
+            val timeIntervalProjectRoleActivities =
+                activityService.filterActivitiesByTimeInterval(timeInterval, projectRoleActivities)
             val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                 projectRole,
-                projectRoleActivities.map(Activity::toDomain),
-                currentYearTimeInterval.getDateInterval(),
+                timeIntervalProjectRoleActivities,
+                timeInterval.getDateInterval(),
                 userId
             )
             val projectRoleUser = projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)

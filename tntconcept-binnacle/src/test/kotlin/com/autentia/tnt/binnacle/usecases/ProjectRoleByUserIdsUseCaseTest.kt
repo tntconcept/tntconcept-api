@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
@@ -31,7 +32,7 @@ internal class ProjectRoleByUserIdsUseCaseTest {
     private val projectRoleByUserIdsUseCase = ProjectRoleByUserIdsUseCase(activityService, activityCalendarService, projectRoleResponseConverter, projectRoleConverter)
 
     @Test
-    fun `should return project roles for userIds`() {
+    fun `should return project roles for userIds for current year`() {
         val userIds = listOf(USER_ID1, USER_ID2)
         val timeInterval = TimeInterval.ofYear(TODAY.year)
 
@@ -49,7 +50,7 @@ internal class ProjectRoleByUserIdsUseCaseTest {
             buildProjectRoleUserDTO(2L, 0, 0, USER_ID1),
         )
 
-        val result = projectRoleByUserIdsUseCase.get(userIds)
+        val result = projectRoleByUserIdsUseCase.get(userIds, null)
 
         assertTrue(result.isNotEmpty())
         expectedProjectRoles.forEach{expectedProjectRole ->
@@ -57,7 +58,25 @@ internal class ProjectRoleByUserIdsUseCaseTest {
         }
     }
 
+    @Test
+    fun `should return empty project roles for userIds for a specific year`() {
+
+        val userIds = listOf(USER_ID1, USER_ID2)
+        val timeInterval = TimeInterval.ofYear(YEAR)
+
+        val activities = listOf<Activity>()
+
+        whenever(activityService.getActivities(timeInterval, userIds)).thenReturn(activities)
+
+        val result = projectRoleByUserIdsUseCase.get(userIds, YEAR)
+
+        assertTrue(result.isEmpty())
+
+    }
+
     private companion object {
+
+        private const val YEAR = 2023
         private const val USER_ID1 = 1L
         private const val USER_ID2 = 2L
         private val TODAY = LocalDate.now()

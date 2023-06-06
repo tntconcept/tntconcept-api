@@ -34,5 +34,5 @@ open class ActivityTimeInterval protected constructor(open val timeInterval: Tim
             numberOfDays * 8 * 60
         }
 
-    fun isInTheTimeInterval(timeInterval: TimeInterval) = timeInterval.isInTheTimeInterval(timeInterval)
+    fun isInTheTimeInterval(requestedTimeInterval: TimeInterval) = timeInterval.isInTheTimeInterval(requestedTimeInterval)
 }

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 import java.util.*
 
 internal class SearchByRoleIdUseCaseTest {
@@ -49,14 +50,14 @@ internal class SearchByRoleIdUseCaseTest {
     )
 
     @Test
-    fun `return empty list when roleid is not found`() {
+    fun `return empty list when roleid is not found for current year`() {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
 
         doReturn(emptyList<ProjectRole>())
             .whenever(projectRoleService).getAllByIds(listOf(UNKONW_ROLE_ID))
 
-        val roles = searchByRoleIdUseCase.getDescriptions(listOf(UNKONW_ROLE_ID))
+        val roles = searchByRoleIdUseCase.getDescriptions(listOf(UNKONW_ROLE_ID), null)
 
         assertEquals(0, roles.organizations.size)
         assertEquals(0, roles.projects.size)
@@ -64,7 +65,7 @@ internal class SearchByRoleIdUseCaseTest {
     }
 
     @Test
-    fun `return an unique element for Organization, Project and Role when search only for one projectRole`() {
+    fun `return an unique element for Organization, Project and Role when search only for one projectRole and current year`() {
         val rolesForSearch = listOf(INTERNAL_STUDENT.id)
         val activity = createDomainActivity().copy(projectRole = INTERNAL_STUDENT)
 
@@ -72,12 +73,12 @@ internal class SearchByRoleIdUseCaseTest {
         whenever(projectRoleService.getAllByIds(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
         whenever(
             activityService.getActivitiesByProjectRoleIds(
-                TimeInterval.ofYear(2023),
+                TimeInterval.ofYear( LocalDate.now().year),
                 rolesForSearch,
                 authenticatedUser.id()
             )
         ).thenReturn(listOf(activity))
-        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch)
+        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch, null)
 
         assertEquals(1, roles.organizations.size)
         assertEquals(1, roles.projects.size)
@@ -89,6 +90,37 @@ internal class SearchByRoleIdUseCaseTest {
             projectRoleResponseConverter.toProjectRoleUserDTO(
                 projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT, 1380, 1L)
             ), roles.projectRoles[0]
+        )
+    }
+
+
+    @Test
+    fun `return an unique element for Organization, Project and Role when search only for one projectRole filtering by year`() {
+
+        val rolesForSearch = listOf(INTERNAL_STUDENT.id)
+        val activity = createDomainActivity().copy(projectRole = INTERNAL_STUDENT)
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+        whenever(projectRoleService.getAllByIds(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
+        whenever(
+                activityService.getActivitiesByProjectRoleIds(
+                        TimeInterval.ofYear(2023),
+                        rolesForSearch,
+                        authenticatedUser.id()
+                )
+        ).thenReturn(listOf(activity))
+        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch, 2023)
+
+        assertEquals(1, roles.organizations.size)
+        assertEquals(1, roles.projects.size)
+        assertEquals(1, roles.projectRoles.size)
+
+        assertEquals(organizationResponseConverter.toOrganizationResponseDTO(AUTENTIA), roles.organizations[0])
+        assertEquals(projectResponseConverter.toProjectResponseDTO(INTERNAL_TRAINING), roles.projects[0])
+        assertEquals(
+                projectRoleResponseConverter.toProjectRoleUserDTO(
+                        projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT, 1380, 1L)
+                ), roles.projectRoles[0]
         )
     }
 
@@ -114,12 +146,12 @@ internal class SearchByRoleIdUseCaseTest {
         whenever(projectRoleService.getAllByIds(rolesForSearch)).thenReturn(rolesToReturn)
         whenever(
             activityService.getActivitiesByProjectRoleIds(
-                TimeInterval.ofYear(2023),
+                TimeInterval.ofYear(LocalDate.now().year),
                 rolesForSearch,
                 authenticatedUser.id()
             )
         ).thenReturn(listOf(internalStudentActivity, internalTeacherActivity))
-        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch)
+        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch, null)
 
         assertEquals(2, roles.organizations.size)
         assertEquals(2, roles.projects.size)
