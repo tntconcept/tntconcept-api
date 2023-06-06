@@ -14,14 +14,16 @@ internal class ProjectService(
 ) {
     @Transactional
     @ReadOnly
-    fun findById(projectId: Long): Project {
-        val project = projectRepository.findById(projectId).orElseThrow { ProjectNotFoundException(projectId) }
-        return project.toDomain()
+    fun findById(id: Long): Project {
+        return projectRepository
+            .findById(id).map { it.toDomain() }.orElseThrow { throw ProjectNotFoundException(id) }
     }
 
-
-    fun blockProject(projectId: Long, blockUntil: LocalDate): Project {
-        TODO("Not implemented")
+    fun blockProject(projectId: Long, blockDate: LocalDate, userId: Long): Project {
+        val project = projectRepository.findById(projectId).orElseThrow { ProjectNotFoundException(projectId) }
+        project.blockedByUser = userId
+        project.blockDate = blockDate
+        return projectRepository.update(project).toDomain()
     }
 
     fun unblockProject(projectId: Long): Project {

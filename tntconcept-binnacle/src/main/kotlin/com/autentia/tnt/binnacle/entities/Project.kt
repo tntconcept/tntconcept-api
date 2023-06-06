@@ -15,8 +15,8 @@ data class Project(
     val open: Boolean,
     val billable: Boolean,
     val startDate: LocalDate,
-    val blockDate: LocalDate? = null,
-    val blockedByUser: Long? = null,
+    var blockDate: LocalDate? = null,
+    var blockedByUser: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizationId")
@@ -27,5 +27,14 @@ data class Project(
     @JsonIgnore
     val projectRoles: List<ProjectRole>
 ) {
-    fun toDomain() = com.autentia.tnt.binnacle.core.domain.Project(id, name, open, billable, startDate, blockDate, blockedByUser, organization.toDomain())
+    fun toDomain() = com.autentia.tnt.binnacle.core.domain.Project(
+        id,
+        name,
+        open,
+        billable,
+        startDate,
+        blockDate,
+        blockedByUser,
+        organization.toDomain()
+    )
 }
