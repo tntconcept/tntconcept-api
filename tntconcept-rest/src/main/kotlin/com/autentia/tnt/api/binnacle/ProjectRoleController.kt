@@ -29,6 +29,6 @@ internal class ProjectRoleController(
 
     @Operation(summary = "Retrieves a project roles list by given user IDs")
     @Get
-    fun getProjectRoleByUserIds(userIds: List<Long>): List<ProjectRoleUserDTO> =
-        projectRoleByUserIdsUseCase.get(userIds)
+    fun getProjectRoleByUserIds(userIds: List<Long>, @QueryValue year: Int?): List<ProjectRoleUserDTO> =
+        projectRoleByUserIdsUseCase.get(userIds, year)
 }
