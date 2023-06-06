@@ -5,10 +5,12 @@ import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.validators.ActivityValidatorTest
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.util.*
 
 internal class ProjectServiceTest {
     private val projectRepository = mock<ProjectRepository>()
@@ -17,18 +19,27 @@ internal class ProjectServiceTest {
 
     @Test
     fun `get by Id should return Project`() {
+        val expected = project.toDomain()
+        whenever(projectRepository.findById(1)).thenReturn(Optional.of(project))
 
+        val result = projectService.findById(1)
+
+        assertEquals(expected, result.get())
     }
 
     @Test
-    fun `get by Id should throw ProjectNotFoundException`() {
+    fun `get by Id should return empty optional when Id doesnt exists`() {
+        whenever(projectRepository.findById(1)).thenReturn(Optional.empty())
 
+        val result = projectService.findById(1)
+
+        assert(result.isEmpty)s
     }
 
     private companion object {
         private val user = createDomainUser()
         private val project = Project(
-            2,
+            1,
             "BlockedProject",
             true,
             true,
