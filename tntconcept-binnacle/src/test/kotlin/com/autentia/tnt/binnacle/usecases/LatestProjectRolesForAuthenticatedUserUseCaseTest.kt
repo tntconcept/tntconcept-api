@@ -53,8 +53,8 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     @Test
     fun `return the last imputed roles ordered by activity start date without year parameter`() {
         val userId = 1L
-        val timeInterval =
-            TimeInterval.ofYear(BEGINNING_OF_THE_YEAR.year)
+        val allYearTimeInterval = TimeInterval.ofYear(BEGINNING_OF_THE_YEAR.year)
+        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
 
         val activities = listOf(
             createActivity().copy(
@@ -70,9 +70,17 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             )
         )
 
-        whenever(activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)).thenReturn(
+        whenever(
+            activityRepository.findOfLatestProjects(
+                allYearTimeInterval.start,
+                allYearTimeInterval.end,
+                userId
+            )
+        ).thenReturn(
             activities
         )
+        whenever(activityRepository.findOfLatestProjects(oneMonthTimeInterval.start, oneMonthTimeInterval.end, userId))
+            .thenReturn(activities)
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
 
         val expectedProjectRoles = listOf(
@@ -87,31 +95,54 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     fun `return the last imputed roles ordered by activity start date with past year parameter`() {
         val userId = 1L
         val year = 2021
-        val timeInterval = TimeInterval.ofYear(year)
-        val lastDayOfYear = LocalDate.of(year, 12, 31)
+        val allYearTimeInterval = TimeInterval.ofYear(year)
+        val allYearTimeDate = allYearTimeInterval.end
+        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
 
-        val activities = listOf(
+        val lastMonthActivities = listOf(
             createActivity().copy(
                 projectRole = projectRole1,
-                start = lastDayOfYear.minusDays(15).atTime(7, 30, 0),
-                end = lastDayOfYear.minusDays(15).atTime(9, 0, 0)
+                start = TODAY.minusDays(15).atTime(7, 30, 0),
+                end = TODAY.minusDays(15).atTime(9, 0, 0)
             ),
             createActivity().copy(projectRole = projectRole2),
             createActivity().copy(
                 projectRole = projectRole2,
-                start = lastDayOfYear.minusDays(2).atStartOfDay(),
-                end = lastDayOfYear.minusDays(2).atTime(9, 0, 0)
+                start = TODAY.minusDays(2).atStartOfDay(),
+                end = TODAY.minusDays(2).atTime(9, 0, 0)
             )
         )
 
-        whenever(activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)).thenReturn(
-            activities
+        val pastYearActivities = listOf(
+            createActivity().copy(
+                projectRole = projectRole1,
+                start = allYearTimeDate.minusDays(15).minusMinutes(30),
+                end = allYearTimeDate.minusDays(15)
+            ),
+            createActivity().copy(projectRole = projectRole2),
+            createActivity().copy(
+                projectRole = projectRole2,
+                start = allYearTimeDate.minusDays(2).minusHours(9),
+                end = allYearTimeDate.minusDays(2)
+            )
         )
+
+        whenever(
+            activityRepository.findOfLatestProjects(
+                allYearTimeInterval.start,
+                allYearTimeInterval.end,
+                userId
+            )
+        ).thenReturn(
+            pastYearActivities
+        )
+        whenever(activityRepository.findOfLatestProjects(oneMonthTimeInterval.start, oneMonthTimeInterval.end, userId))
+            .thenReturn(lastMonthActivities)
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
 
         val expectedProjectRoles = listOf(
             buildProjectRoleUserDTO(2L, 0, 0),
-            buildProjectRoleUserDTO(1L, 30, 120),
+            buildProjectRoleUserDTO(1L, 90, 120),
         )
 
         assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(year))
@@ -121,8 +152,8 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     fun `return the last imputed roles ordered by activity start date with future year parameter`() {
         val userId = 1L
         val year = 2025
-        val timeInterval =
-            TimeInterval.ofYear(BEGINNING_OF_THE_YEAR.year)
+        val allYearTimeInterval = TimeInterval.ofYear(year)
+        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
 
         val activities = listOf(
             createActivity().copy(
@@ -138,9 +169,17 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             )
         )
 
-        whenever(activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)).thenReturn(
+        whenever(
+            activityRepository.findOfLatestProjects(
+                allYearTimeInterval.start,
+                allYearTimeInterval.end,
+                userId
+            )
+        ).thenReturn(
             activities
         )
+        whenever(activityRepository.findOfLatestProjects(oneMonthTimeInterval.start, oneMonthTimeInterval.end, userId))
+            .thenReturn(activities)
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
 
         val expectedProjectRoles = listOf(
@@ -211,5 +250,14 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             buildProjectRoleRecent(5L, START_DATE.minusDays(3), false),
             buildProjectRoleRecent(1L, END_DATE),
         )
+
+        private fun oneMonthTimeIntervalFromCurrentYear(): TimeInterval {
+            val now = LocalDate.now()
+
+            return TimeInterval.of(
+                now.minusMonths(1).atTime(LocalTime.MIN),
+                now.atTime(23, 59, 59)
+            )
+        }
     }
 }

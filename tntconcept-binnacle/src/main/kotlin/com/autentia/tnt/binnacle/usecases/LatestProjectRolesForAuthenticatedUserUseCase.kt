@@ -34,19 +34,21 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     fun get(year: Int?): List<ProjectRoleUserDTO> {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
-        val oneMonthDateRange = oneMonthTimeIntervalFromDate(year)
-        val timeInterval = getTimeInterval(year)
+        val oneMonthDateRange = oneMonthTimeIntervalFromCurrentYear()
+        val timeIntervalForRemainingCalc = getTimeIntervalForRemainingCalc(year)
 
-        val activities = activityService.getActivitiesOfLatestProjects(timeInterval, userId)
-        val lastMonthActivities = activityService.filterActivitiesByTimeInterval(oneMonthDateRange, activities)
+        val requestedYearActivities =
+            activityService.getActivitiesOfLatestProjects(timeIntervalForRemainingCalc, userId)
+        val lastMonthActivities =
+            activityService.getActivitiesOfLatestProjects(oneMonthDateRange, userId).map(Activity::toDomain)
 
         val latestUserProjectRoles =
             lastMonthActivities.sortedByDescending { it.timeInterval.start }.map { it.projectRole }.distinct()
                 .map { projectRole ->
                     val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                         projectRole,
-                        activities.map(Activity::toDomain),
-                        timeInterval.getDateInterval(),
+                        requestedYearActivities.map(Activity::toDomain),
+                        timeIntervalForRemainingCalc.getDateInterval(),
                         userId
                     )
                     projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
@@ -80,34 +82,16 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         return StartEndLocalDateTime(startDate, endDate)
     }
 
-    private fun oneMonthTimeIntervalFromDate(year: Int?): TimeInterval {
-        val now = LocalDate.now()
-
-        return when {
-            year == null || year >= now.year -> oneMonthTimeIntervalFromCurrentYear()
-            else -> oneMonthTimeIntervalFromPastYear(year)
-        }
-    }
-
     private fun oneMonthTimeIntervalFromCurrentYear(): TimeInterval {
         val now = LocalDate.now()
+
         return TimeInterval.of(
             now.minusMonths(1).atTime(LocalTime.MIN),
             now.atTime(23, 59, 59)
         )
     }
 
-    private fun oneMonthTimeIntervalFromPastYear(year: Int) = TimeInterval.of(
-        LocalDate.of(year, 12, 1).atTime(LocalTime.MIN),
-        LocalDate.of(year, 12, 31).atTime(LocalTime.MAX)
-    )
+    private fun getTimeIntervalForRemainingCalc(year: Int?): TimeInterval =
+        TimeInterval.ofYear(year ?: LocalDate.now().year)
 
-    private fun getTimeInterval(year: Int?): TimeInterval {
-        val now = LocalDate.now()
-
-        return when {
-            year == null || year >= now.year -> TimeInterval.ofYear(now.year)
-            else -> TimeInterval.ofYear(year)
-        }
-    }
 }
