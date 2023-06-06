@@ -14,9 +14,11 @@ class FindUserInfoUseCase internal constructor(
 ){
     fun find(): UserInfoResponseDTO {
         val authentication = securityService.checkAuthentication()
+        val userId = authentication.id()
         val roles = authentication.roles.stream().toList()
-        val user =  userService.getById(authentication.id())
-        return UserInfoResponseDTO(user.username, user.hiringDate, roles)
+        val user =  userService.getById(userId)
+
+        return UserInfoResponseDTO(userId, user.username, user.hiringDate, roles)
     }
 
 }

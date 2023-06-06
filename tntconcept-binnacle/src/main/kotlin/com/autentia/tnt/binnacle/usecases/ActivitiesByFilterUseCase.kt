@@ -57,10 +57,8 @@ class ActivitiesByFilterUseCase internal constructor(
             predicate = PredicateBuilder.and(predicate, organizationId(activityFilter.organizationId))
         }
 
-        predicate = if (activityFilter.userId !== null) {
-            PredicateBuilder.and(predicate, userId(activityFilter.userId))
-        } else {
-            PredicateBuilder.and(predicate, userId(userId))
+        if (activityFilter.userId !== null) {
+            predicate = PredicateBuilder.and(predicate, userId(activityFilter.userId))
         }
         return predicate
     }
