@@ -4,7 +4,7 @@ import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
 
 @Introspected
-data class ActivityUseCaseRequest(
+data class ActivityRequestDTO(
     val id: Long? = null,
     val interval: TimeIntervalRequestDTO,
     val description: String,

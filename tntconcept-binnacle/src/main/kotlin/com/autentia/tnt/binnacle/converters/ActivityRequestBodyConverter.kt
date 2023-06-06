@@ -6,7 +6,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityUseCaseRequest
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
 import java.util.*
@@ -14,7 +14,7 @@ import java.util.*
 @Singleton
 class ActivityRequestBodyConverter() {
     fun toActivity(
-        activityRequestBody: ActivityUseCaseRequest,
+        activityRequestBody: ActivityRequestDTO,
         duration: Int,
         insertDate: LocalDateTime?,
         projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole,

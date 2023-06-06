@@ -3,8 +3,8 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityUseCaseRequest
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import jakarta.inject.Singleton
@@ -21,7 +21,7 @@ class ActivityUpdateUseCase internal constructor(
     private val activityResponseConverter: ActivityResponseConverter,
     private val activityEvidenceMailService: ActivityEvidenceMailService
 ) {
-    fun updateActivity(activityRequest: ActivityUseCaseRequest, locale: Locale): ActivityResponseDTO {
+    fun updateActivity(activityRequest: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
 
         val user = userService.getAuthenticatedDomainUser()
         val projectRole = projectRoleService.getByProjectRoleId(activityRequest.projectRoleId)

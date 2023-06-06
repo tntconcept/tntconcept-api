@@ -6,8 +6,8 @@ import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityUseCaseRequest
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -130,7 +130,7 @@ internal class ActivityCreationUseCaseTest {
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.MINUTES)
 
 
-        private val ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO = ActivityUseCaseRequest(
+        private val ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO = ActivityRequestDTO(
             null,
             TIME_NOW,
             TIME_NOW.plusMinutes(75L),
@@ -141,7 +141,7 @@ internal class ActivityCreationUseCaseTest {
             null,
         )
 
-        private val ACTIVITY_APPROVAL_REQUEST_BODY_DTO = ActivityUseCaseRequest(
+        private val ACTIVITY_APPROVAL_REQUEST_BODY_DTO = ActivityRequestDTO(
             null,
             TIME_NOW,
             TIME_NOW.plusMinutes(75L),
