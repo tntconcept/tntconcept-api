@@ -1,20 +1,13 @@
 package com.autentia.tnt.api.binnacle.project
 
-import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.api.binnacle.exchangeList
-import com.autentia.tnt.api.binnacle.exchangeObject
-import com.autentia.tnt.api.binnacle.getBody
+import com.autentia.tnt.api.binnacle.*
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
-import com.autentia.tnt.binnacle.usecases.BlockProjectByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectByFilterUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectRoleByProjectIdUseCase
-import com.autentia.tnt.binnacle.usecases.UnblockProjectByIdUseCase
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest.GET
 import io.micronaut.http.HttpRequest.POST
 import io.micronaut.http.HttpStatus
@@ -60,7 +53,7 @@ internal class ProjectControllerIT {
 
     @get:MockBean(UnblockProjectByIdUseCase::class)
     internal val unblockProjectByIdUseCase = mock<UnblockProjectByIdUseCase>()
-    
+
     @get:MockBean(ProjectByFilterUseCase::class)
     internal val projectByFilterUseCase = mock<ProjectByFilterUseCase>()
 
@@ -147,28 +140,27 @@ internal class ProjectControllerIT {
     fun `block project by id`() {
         val projectId = 1L
         val blockProjectRequest = BlockProjectRequest(blockDate = LocalDate.of(2023, 5, 5))
+        val projectResponseDTO = createProjectResponseDTO()
+        whenever(blockProjectByIdUseCase.blockProject(projectId, blockProjectRequest.blockDate)).thenReturn(
+            projectResponseDTO
+        )
 
-        val response = client.exchangeObject<Any>(POST("/api/project/$projectId/block", blockProjectRequest))
+        val response =
+            client.exchangeObject<ProjectResponseDTO>(POST("/api/project/$projectId/block", blockProjectRequest))
 
-        verify(blockProjectByIdUseCase).blockProject(projectId, blockProjectRequest.blockDate)
         assertThat(response.status).isEqualTo(OK)
+        assertThat(response.getBody<ProjectResponseDTO>().get()).isEqualTo(projectResponseDTO)
     }
 
     @Test
     fun `unblock project by id`() {
         val projectId = 1L
-        val projectDTO = ProjectResponseDTO(
-            id = projectId,
-            name = "Test project",
-            open = true,
-            billable = true,
-            organizationId = 1
-        )
-        whenever(unblockProjectByIdUseCase.unblockProject(projectId)).thenReturn(projectDTO)
-        val response = client.exchangeObject<Any>(POST("/api/project/$projectId/unblock", ""))
+        val projectResponseDTO = createProjectResponseDTO()
+        whenever(unblockProjectByIdUseCase.unblockProject(projectId)).thenReturn(projectResponseDTO)
+        val response = client.exchangeObject<ProjectResponseDTO>(POST("/api/project/$projectId/unblock", ""))
 
         assertThat(response.status).isEqualTo(OK)
-        assertThat(response.body).isEqualTo(projectDTO)
+        assertThat(response.getBody<ProjectResponseDTO>().get()).isEqualTo(projectResponseDTO)
     }
 
     @ParameterizedTest
