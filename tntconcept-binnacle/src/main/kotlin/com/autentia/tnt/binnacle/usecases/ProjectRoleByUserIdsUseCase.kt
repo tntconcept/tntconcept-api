@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
@@ -22,14 +21,17 @@ class ProjectRoleByUserIdsUseCase internal constructor(
     private val projectRoleConverter: ProjectRoleConverter
 ) {
 
+
+    private fun getTimeInterval(year: Int?) = TimeInterval.ofYear(year ?: LocalDate.now().year)
+
     @Transactional
     @ReadOnly
-    fun get(userIds: List<Long>): List<ProjectRoleUserDTO> {
+    fun get(userIds: List<Long>, year: Int?): List<ProjectRoleUserDTO> {
 
-        val currentYearTimeInterval = TimeInterval.ofYear(LocalDate.now().year)
+        val timeInterval = getTimeInterval(year)
 
         val activities =
-            activityService.getActivities(currentYearTimeInterval, userIds)
+            activityService.getActivities(timeInterval, userIds)
 
         val projectRoles = mutableListOf<ProjectRoleUser>()
         userIds.forEach { userId ->
@@ -39,7 +41,7 @@ class ProjectRoleByUserIdsUseCase internal constructor(
                         val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                             projectRole,
                             activities.map(Activity::toDomain),
-                            currentYearTimeInterval.getDateInterval(),
+                                timeInterval.getDateInterval(),
                             userId
                         )
                         projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)

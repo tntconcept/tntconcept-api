@@ -102,7 +102,7 @@ internal class ProjectRoleControllerIT {
     }
 
     @Test
-    fun `get the recent project roles`() {
+    fun `get the recent project roles without year parameter`() {
 
         val projectRoleUserDTO = ProjectRoleUserDTO(
             1L,
@@ -117,7 +117,7 @@ internal class ProjectRoleControllerIT {
             1L
         )
 
-        doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get()
+        doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(null)
 
         val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role/latest"))
 
@@ -127,13 +127,38 @@ internal class ProjectRoleControllerIT {
     }
 
     @Test
-    fun `get the project roles of a list of user Ids`() {
+    fun `get the recent project roles with year parameter`() {
+        val year = 2022
+        val projectRoleUserDTO = ProjectRoleUserDTO(
+            1L,
+            "desarrollador",
+            1L,
+            1L,
+            10,
+            0,
+            TimeUnit.MINUTES,
+            RequireEvidence.WEEKLY,
+            true,
+            1L
+        )
+
+        doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(year)
+
+        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role/latest?year=${year}"))
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(projectRoleUserDTO), response.body.get())
+
+    }
+
+    @Test
+    fun `get the project roles of a list of user Ids for current year`() {
 
         val userIds = listOf<Long>(1,2)
 
         val projectRoleResponse = listOf<ProjectRoleUserDTO>()
 
-        doReturn(projectRoleResponse).whenever(projectRoleByUserIdsUseCase).get(userIds)
+        doReturn(projectRoleResponse).whenever(projectRoleByUserIdsUseCase).get(userIds, null)
 
         val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role?userIds=1,2"))
 
@@ -141,6 +166,23 @@ internal class ProjectRoleControllerIT {
         assertEquals(projectRoleResponse, response.body.get())
     }
 
+
+    @Test
+    fun `get the project roles of a list of user Ids for a specific year`() {
+
+        val year = 2022
+
+        val userIds = listOf<Long>(1,2)
+
+        val projectRoleResponse = listOf<ProjectRoleUserDTO>()
+
+        doReturn(projectRoleResponse).whenever(projectRoleByUserIdsUseCase).get(userIds, 2023)
+
+        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role?userIds=${userIds[0]},${userIds[0]}&year=${year}"))
+
+        assertEquals(OK, response.status)
+        assertEquals(projectRoleResponse, response.body.get())
+    }
     private fun getFailProvider() = arrayOf(
         arrayOf(ProjectRoleNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
     )

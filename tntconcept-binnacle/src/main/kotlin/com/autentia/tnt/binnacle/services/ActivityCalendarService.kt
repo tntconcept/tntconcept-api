@@ -8,8 +8,6 @@ import com.autentia.tnt.binnacle.core.domain.DailyWorkingTime
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.ProjectRole
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.math.BigDecimal

@@ -5,12 +5,9 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HolidayService
@@ -26,7 +23,8 @@ import java.util.*
 
 internal class ProjectRoleByProjectIdUseCaseTest {
 
-    private val activityService = mock<ActivityService>()
+    private val activityRepository: ActivityRepository = mock()
+    private val activityService = ActivityService(activityRepository, mock(), mock(), mock())
     private val holidayService = mock<HolidayService>()
     private val projectRoleService = mock<ProjectRoleService>()
     private val calendarFactory = CalendarFactory(holidayService)
@@ -82,10 +80,20 @@ internal class ProjectRoleByProjectIdUseCaseTest {
         )
         val activity = createActivity(projectRoles[0])
         val otherActivity = createActivity(projectRoles[1])
+        val year = activity.getTimeInterval().getYearOfStart()
 
         val activitiesProjectRole1 = listOf(
             activity,
-            activity.copy(start = activity.end, end = activity.end.plusMinutes(10), duration = 10)
+            activity.copy(
+                start = activity.end,
+                end = activity.end.plusMinutes(10),
+                duration = 10
+            ),
+            activity.copy(
+                start = activity.end.minusYears(1L),
+                end = activity.end.plusMinutes(10).minusYears(1L),
+                duration = 10
+            )
         )
         val activitiesProjectRole2 = listOf(
             otherActivity
@@ -93,35 +101,37 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
         whenever(projectRoleService.getAllByProjectId(PROJECT_ID)).thenReturn(projectRoles.map(ProjectRole::toDomain))
-        whenever(activityService.getProjectRoleActivities(1L, userId)).thenReturn(activitiesProjectRole1)
-        whenever(activityService.getProjectRoleActivities(2L, userId)).thenReturn(activitiesProjectRole2)
-        whenever(activityService.getProjectRoleActivities(3L, userId)).thenReturn(emptyList())
+        whenever(activityRepository.findByProjectRoleIdAndUserId(1L, userId)).thenReturn(activitiesProjectRole1)
+        whenever(activityRepository.findByProjectRoleIdAndUserId(2L, userId)).thenReturn(activitiesProjectRole2)
+        whenever(activityRepository.findByProjectRoleIdAndUserId(3L, userId)).thenReturn(emptyList())
+
 
         val expectedProjectRoles = listOf(
             buildProjectRoleUserDTO(1L, 120, 50),
             buildProjectRoleUserDTO(2L, 90, 30),
             buildProjectRoleUserDTO(3L, 0, 0),
         )
-
-        assertEquals(expectedProjectRoles, projectRoleByProjectIdUseCase.get(PROJECT_ID))
+        assertEquals(expectedProjectRoles, projectRoleByProjectIdUseCase.get(PROJECT_ID, year))
     }
 
-    private fun buildProjectRoleUserDTO(id: Long, maxAllowed: Int = 0, remaining: Int = 0): ProjectRoleUserDTO = ProjectRoleUserDTO(
-        id = id,
-        name = "Role ID $id",
-        projectId = 1L,
-        organizationId = 1L,
-        maxAllowed = maxAllowed,
-        remaining = remaining,
-        timeUnit = TimeUnit.MINUTES,
-        requireEvidence = RequireEvidence.WEEKLY,
-        requireApproval = false,
-        userId = USER_ID
-    )
+    private fun buildProjectRoleUserDTO(id: Long, maxAllowed: Int = 0, remaining: Int = 0): ProjectRoleUserDTO =
+        ProjectRoleUserDTO(
+            id = id,
+            name = "Role ID $id",
+            projectId = 1L,
+            organizationId = 1L,
+            maxAllowed = maxAllowed,
+            remaining = remaining,
+            timeUnit = TimeUnit.MINUTES,
+            requireEvidence = RequireEvidence.WEEKLY,
+            requireApproval = false,
+            userId = USER_ID
+        )
 
     private companion object {
         private const val USER_ID = 1L
         private const val PROJECT_ID = 1L
+        private const val YEAR = 2023
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
         private val PROJECT = Project(1L, "Dummy project", true, false, LocalDate.now(), null, null, ORGANIZATION, listOf())
