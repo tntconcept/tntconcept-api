@@ -36,11 +36,7 @@ internal class ActivitiesByFilterUseCaseTest {
         val activityFilterDTO = ActivityFilterDTO(
             approvalState = ApprovalState.PENDING,
         )
-        val compositedSpecification =
-            PredicateBuilder.and(
-                ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
-                ActivityUserIdSpecification(userId)
-            )
+        val compositedSpecification = ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!)
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -53,14 +49,10 @@ internal class ActivitiesByFilterUseCaseTest {
             approvalState = ApprovalState.PENDING,
             roleId = 1L
         )
-        val compositedSpecification =
-            PredicateBuilder.and(
-                PredicateBuilder.and(
-                    ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
-                    ActivityRoleIdSpecification(activityFilterDTO.roleId!!),
-                ),
-                ActivityUserIdSpecification(userId)
-            )
+        val compositedSpecification = PredicateBuilder.and(
+            ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
+            ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
+        )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -73,15 +65,10 @@ internal class ActivitiesByFilterUseCaseTest {
             startDate = startDate,
             endDate = endDate,
         )
-        val compositedSpecification =
-            PredicateBuilder.and(
-                PredicateBuilder.and(
-                    ActivityStartDateLessOrEqualSpecification(activityFilterDTO.endDate!!),
-                    ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.startDate!!)
-                ),
-                ActivityUserIdSpecification(userId)
-            )
-
+        val compositedSpecification = PredicateBuilder.and(
+            ActivityStartDateLessOrEqualSpecification(activityFilterDTO.endDate!!),
+            ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.startDate!!)
+        )
 
         whenever(activityService.getActivities(compositedSpecification)).thenReturn(listOf(activity))
 
@@ -99,10 +86,7 @@ internal class ActivitiesByFilterUseCaseTest {
             projectId = 1L,
             roleId = 1L
         )
-        val compositedSpecification = PredicateBuilder.and(
-            ActivityRoleIdSpecification(activityFilterDTO.roleId!!),
-            ActivityUserIdSpecification(userId)
-        )
+        val compositedSpecification = ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -114,10 +98,7 @@ internal class ActivitiesByFilterUseCaseTest {
         val activityFilterDTO = ActivityFilterDTO(
             organizationId = 1L,
         )
-        val compositedSpecification = PredicateBuilder.and(
-            ActivityOrganizationIdSpecification(activityFilterDTO.organizationId!!),
-            ActivityUserIdSpecification(userId)
-        )
+        val compositedSpecification = ActivityOrganizationIdSpecification(activityFilterDTO.organizationId!!)
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -134,10 +115,7 @@ internal class ActivitiesByFilterUseCaseTest {
             projectId = 1L,
             roleId = null
         )
-        val compositedSpecification = PredicateBuilder.and(
-            ActivityProjectIdSpecification(activityFilterDTO.projectId!!),
-            ActivityUserIdSpecification(userId)
-        )
+        val compositedSpecification = ActivityProjectIdSpecification(activityFilterDTO.projectId!!)
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
