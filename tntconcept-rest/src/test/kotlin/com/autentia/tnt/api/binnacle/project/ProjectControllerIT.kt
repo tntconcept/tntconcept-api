@@ -6,10 +6,12 @@ import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.api.binnacle.getBody
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.usecases.BlockProjectByIdUseCase
+import com.autentia.tnt.binnacle.usecases.ProjectByFilterUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByProjectIdUseCase
 import com.autentia.tnt.binnacle.usecases.UnblockProjectByIdUseCase
@@ -56,8 +58,12 @@ internal class ProjectControllerIT {
     @get:MockBean(BlockProjectByIdUseCase::class)
     internal val blockProjectByIdUseCase = mock<BlockProjectByIdUseCase>()
 
-    @get:MockBean(BlockProjectByIdUseCase::class)
+    @get:MockBean(UnblockProjectByIdUseCase::class)
     internal val unblockProjectByIdUseCase = mock<UnblockProjectByIdUseCase>()
+    
+    @get:MockBean(ProjectByFilterUseCase::class)
+    internal val projectByFilterUseCase = mock<ProjectByFilterUseCase>()
+
 
     @BeforeAll
     fun setUp() {
@@ -72,7 +78,7 @@ internal class ProjectControllerIT {
             "Vacaciones",
             true,
             true,
-            1L
+            1L,
         )
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)
@@ -184,6 +190,24 @@ internal class ProjectControllerIT {
         assertEquals(expectedResponseStatus, ex.status)
         assertEquals(expectedErrorCode, ex.response.getBody<ErrorResponse>().get().code)
 
+    }
+
+    @Test
+    fun `return all filtered projects`() {
+        val projectRequestBody = ProjectResponseDTO(
+            1L,
+            "Vacaciones",
+            true,
+            true,
+            1L,
+        )
+        val projectFilter = ProjectFilterDTO(1, false)
+        whenever(projectByFilterUseCase.getProjects(projectFilter)).thenReturn(listOf(projectRequestBody))
+
+        val response = client.exchangeList<ProjectResponseDTO>(GET("/api/project?organizationId=1&open=false"))
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(projectRequestBody), response.body())
     }
 
     private fun getFailProvider() = arrayOf(

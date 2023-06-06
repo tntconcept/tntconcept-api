@@ -1,12 +1,10 @@
 package com.autentia.tnt.api.binnacle.project
 
 import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.usecases.BlockProjectByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectByIdUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectRoleByProjectIdUseCase
-import com.autentia.tnt.binnacle.usecases.UnblockProjectByIdUseCase
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.MediaType.APPLICATION_JSON
 import io.micronaut.http.annotation.*
 import io.swagger.v3.oas.annotations.Operation
@@ -20,8 +18,14 @@ internal class ProjectController(
     private val projectByIdUseCase: ProjectByIdUseCase,
     private val projectRoleByProjectIdUseCase: ProjectRoleByProjectIdUseCase,
     private val blockProjectByIdUseCase: BlockProjectByIdUseCase,
-    private val unblockProjectByIdUseCase: UnblockProjectByIdUseCase
+    private val unblockProjectByIdUseCase: UnblockProjectByIdUseCase,
+    private val projectByFilterUseCase: ProjectByFilterUseCase
 ) {
+    @Operation(summary = "Gets projects with specified filters")
+    @Get("{?projectFilterDTO*}")
+    fun get(projectFilterDTO: ProjectFilterDTO): List<ProjectResponseDTO> =
+        projectByFilterUseCase.getProjects(projectFilterDTO)
+
     @Operation(summary = "Retrieves a project´s information from its ID")
     @Get("/{id}")
     fun getProjectById(id: Long): ProjectResponseDTO {

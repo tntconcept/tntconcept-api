@@ -5,6 +5,9 @@ import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import org.assertj.core.api.Assertions.assertThat
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.repositories.predicates.ProjectOpenSpecification
+import com.autentia.tnt.binnacle.repositories.predicates.ProjectOrganizationIdSpecification
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -17,6 +20,16 @@ internal class ProjectServiceTest {
     private val projectRepository = mock<ProjectRepository>()
 
     private val projectService = ProjectService(projectRepository)
+
+    @Test
+    fun `get filtered projects should return projects`() {
+        val predicate = PredicateBuilder.and(ProjectOrganizationIdSpecification(1), ProjectOpenSpecification(true))
+        whenever(projectRepository.findAll(predicate)).thenReturn(listOf(projectEntity))
+
+        val projects = projectService.getProjects(predicate)
+
+        assertEquals(listOf(project), projects)
+    }
 
     @Test
     fun `get by Id should return Project`() {
@@ -72,7 +85,6 @@ internal class ProjectServiceTest {
             Organization(1, "Organization", emptyList()),
             emptyList()
         )
-
         private val projectEntity = com.autentia.tnt.binnacle.entities.Project(
             1,
             "BlockedProject",
