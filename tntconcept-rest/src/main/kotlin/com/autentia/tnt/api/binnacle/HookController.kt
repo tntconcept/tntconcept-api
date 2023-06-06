@@ -2,17 +2,8 @@ package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.entities.dto.*
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.NoImageInActivityException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-import com.autentia.tnt.binnacle.usecases.ActivitiesBetweenDateHookUseCase
-import com.autentia.tnt.binnacle.usecases.ActivityCreationHookUseCase
-import com.autentia.tnt.binnacle.usecases.ImputableOrganizationsUseCase
-import com.autentia.tnt.binnacle.usecases.ImputableProjectsByOrganizationIdUseCase
-import com.autentia.tnt.binnacle.usecases.ProjectRolesByProjectIdUseCase
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
@@ -89,6 +80,6 @@ internal class HookController(
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_BEFORE_HIRING_DATE", e.message))
 
     @Error
-    internal fun onNoImageInActivityException(request: HttpRequest<*>, e: NoImageInActivityException) =
+    internal fun onNoEvidenceInActivityException(request: HttpRequest<*>, e: NoEvidenceInActivityException) =
         HttpResponse.badRequest(ErrorResponse("No image", e.message))
 }
