@@ -131,6 +131,9 @@ internal class ActivityService(
         if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA) {
             throw InvalidActivityApprovalStateException()
         }
+        if (!activityToApprove.hasEvidences){
+            throw NoEvidenceInActivityException(id)
+        }
         activityToApprove.approvalState = ApprovalState.ACCEPTED
         return activityRepository.update(
             activityToApprove

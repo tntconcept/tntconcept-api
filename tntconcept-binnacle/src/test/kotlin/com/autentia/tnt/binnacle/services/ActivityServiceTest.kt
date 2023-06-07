@@ -322,24 +322,34 @@ internal class ActivityServiceTest {
 
     @Test
     fun `approve activity by id`() {
-        given(activityRepository.findById(activityWithoutEvidenceSaved.id as Long)).willReturn(
-            activityWithoutEvidenceSaved
+        given(activityRepository.findById(activityWithEvidenceSaved.id as Long)).willReturn(
+            activityWithEvidenceSaved
         )
         given(
             activityRepository.update(
-                activityWithoutEvidenceSaved
+                activityWithEvidenceSaved
             )
-        ).willReturn(activityWithoutEvidenceSaved)
+        ).willReturn(activityWithEvidenceSaved)
 
-        val approvedActivity = sut.approveActivityById(activityWithoutEvidenceSaved.id as Long)
+        val approvedActivity = sut.approveActivityById(activityWithEvidenceSaved.id as Long)
         assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
     }
 
     @Test
-    fun `approve activity with not allowed state`() {
-        doReturn(activityWithoutEvidenceToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
-            .findById(any())
+    fun `approve activity with not allowed state should throw exception`() {
+        val activityId = 1L
+
+        doReturn(activityWithEvidenceToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
+            .findById(activityId)
         assertThrows<InvalidActivityApprovalStateException> {
+            sut.approveActivityById(activityId)
+        }
+    }
+
+    @Test
+    fun `approve activity without evidence should throw exception`() {
+        whenever(activityRepository.findById(any())).thenReturn(activityWithoutEvidenceToSave.copy(approvalState = ApprovalState.PENDING))
+        assertThrows<NoEvidenceInActivityException> {
             sut.approveActivityById(any())
         }
     }
