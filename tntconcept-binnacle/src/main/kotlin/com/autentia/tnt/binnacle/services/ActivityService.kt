@@ -14,6 +14,7 @@ import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.transaction.Transactional
 
@@ -145,6 +146,9 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
+
+    @Transactional
+    fun findOverlappedActivities(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long) = activityRepository.findOverlapped(startDate, endDate, userId).map(Activity::toDomain)
 
     fun getProjectRoleActivities(projectRoleId: Long, userId: Long): List<Activity> =
         activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)

@@ -1,13 +1,14 @@
 package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.Activity
+import com.autentia.tnt.binnacle.core.domain.Project
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
-import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.ProjectService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -17,23 +18,21 @@ import javax.transaction.Transactional
 @Singleton
 internal class ActivityValidator(
     private val activityService: ActivityService,
-    private val activityRepository: ActivityRepository,
     private val activityCalendarService: ActivityCalendarService,
-    private val projectRoleRepository: ProjectRoleRepository,
+    private val projectRoleService: ProjectRoleService,
     private val projectService: ProjectService,
 ) {
     @Transactional
     @ReadOnly
-    fun checkActivityIsValidForCreation(activityToCreate: Activity, user: com.autentia.tnt.binnacle.core.domain.User) {
+    fun checkActivityIsValidForCreation(activityToCreate: Activity, user: User) {
         require(activityToCreate.id == null) { "Cannot create a new activity with id ${activityToCreate.id}." }
 
-        val projectRoleDb = projectRoleRepository.findById(activityToCreate.projectRole.id)
-        val projectDb = projectService.findById(activityToCreate.projectRole.project.id)
+        checkProjectRoleExists(activityToCreate.projectRole.id)
+        val project = projectService.findById(activityToCreate.projectRole.project.id)
         when {
-            projectRoleDb == null -> throw ProjectRoleNotFoundException(activityToCreate.projectRole.id)
-            !isProjectOpen(projectDb) -> throw ProjectClosedException()
+            !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
-            isProjectBlocked(projectDb, activityToCreate) -> throw ActivityForBlockedProjectException()
+            isProjectBlocked(project, activityToCreate) -> throw ActivityForBlockedProjectException()
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
@@ -112,16 +111,13 @@ internal class ActivityValidator(
     fun checkActivityIsValidForUpdate(
         activityToUpdate: Activity,
         currentActivity: Activity,
-        user: com.autentia.tnt.binnacle.core.domain.User,
+        user: User,
     ) {
         require(activityToUpdate.id != null) { "Cannot update an activity without id." }
-        val activityDb = activityRepository.findById(activityToUpdate.id)
-        val projectRoleDb = projectRoleRepository.findById(activityToUpdate.projectRole.id)
+        checkProjectRoleExists(activityToUpdate.projectRole.id)
         val projectToUpdate = projectService.findById(activityToUpdate.projectRole.project.id)
         val currentProject = projectService.findById(currentActivity.projectRole.project.id)
         when {
-            activityDb === null -> throw ActivityNotFoundException(activityToUpdate.id)
-            projectRoleDb === null -> throw ProjectRoleNotFoundException(activityToUpdate.projectRole.id)
             isProjectBlocked(projectToUpdate, activityToUpdate) -> throw ProjectBlockedException()
             isProjectBlocked(currentProject, currentActivity) -> throw ProjectBlockedException()
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
@@ -139,25 +135,25 @@ internal class ActivityValidator(
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long) {
-        val activityDb = activityRepository.findById(id)
-        val projectId = activityDb?.projectRole?.project?.id ?: 0
-        val project = projectService.findById(projectId)
+        val activity = activityService.getActivityById(id)
+        val project = projectService.findById(activity.projectRole.project.id)
         when {
-            activityDb === null -> throw ActivityNotFoundException(id)
-            isProjectBlocked(project, activityDb.toDomain()) -> throw ProjectBlockedException()
-            !isOpenPeriod(activityDb.start) -> throw ActivityPeriodClosedException()
+            isProjectBlocked(project, activity) -> throw ProjectBlockedException()
+            !isOpenPeriod(activity.getStart()) -> throw ActivityPeriodClosedException()
         }
     }
 
-    private fun isProjectOpen(project: com.autentia.tnt.binnacle.core.domain.Project): Boolean {
+    private fun isProjectOpen(project: Project): Boolean {
         return project.open
     }
 
-    private fun isProjectBlocked(project: com.autentia.tnt.binnacle.core.domain.Project, activity: Activity): Boolean {
-        if(project.blockDate == null){
+    private fun isProjectBlocked(project: Project, activity: Activity): Boolean {
+        if (project.blockDate == null) {
             return false
         }
-        return project.blockDate.isAfter(activity.getStart().toLocalDate()) || project.blockDate.isEqual(activity.getStart().toLocalDate())
+        return project.blockDate.isAfter(
+            activity.getStart().toLocalDate()
+        ) || project.blockDate.isEqual(activity.getStart().toLocalDate())
     }
 
     private fun isOverlappingAnotherActivityTime(
@@ -167,8 +163,12 @@ internal class ActivityValidator(
         if (activity.duration == 0) {
             return false
         }
-        val activities = activityRepository.findOverlapped(activity.getStart(), activity.getEnd(), userId)
+        val activities = activityService.findOverlappedActivities(activity.getStart(), activity.getEnd(), userId)
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
+    }
+
+    private fun checkProjectRoleExists(id: Long) {
+        projectRoleService.getByProjectRoleId(id)
     }
 
     private companion object {
