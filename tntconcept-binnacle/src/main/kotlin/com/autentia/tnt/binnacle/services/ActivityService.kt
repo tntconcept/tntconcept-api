@@ -128,19 +128,20 @@ internal class ActivityService(
     @Transactional(rollbackOn = [Exception::class])
     fun approveActivityById(id: Long): Activity {
         val activityToApprove = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
-        checkIfActivityCanBeApproved(activityToApprove, id)
+        checkIfActivityCanBeApproved(activityToApprove)
+
         activityToApprove.approvalState = ApprovalState.ACCEPTED
         return activityRepository.update(
             activityToApprove
         )
     }
 
-    private fun checkIfActivityCanBeApproved(activityToApprove: Activity, id: Long) {
+    private fun checkIfActivityCanBeApproved(activityToApprove: Activity) {
         if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA) {
             throw InvalidActivityApprovalStateException()
         }
         if (!activityToApprove.hasEvidences) {
-            throw NoEvidenceInActivityException(id)
+            throw NoEvidenceInActivityException(activityToApprove.id!!)
         }
     }
 

@@ -348,7 +348,7 @@ internal class ActivityServiceTest {
 
     @Test
     fun `approve activity without evidence should throw exception`() {
-        whenever(activityRepository.findById(any())).thenReturn(activityWithoutEvidenceToSave.copy(approvalState = ApprovalState.PENDING))
+        whenever(activityRepository.findById(any())).thenReturn(activityWithoutEvidenceToSave.copy(id = 1L).copy(approvalState = ApprovalState.PENDING))
         assertThrows<NoEvidenceInActivityException> {
             sut.approveActivityById(any())
         }
