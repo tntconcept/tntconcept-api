@@ -3,10 +3,10 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.core.domain.Project
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
-import io.micronaut.data.jpa.repository.criteria.Specification
 import javax.transaction.Transactional
 
 @Singleton
@@ -34,6 +34,9 @@ internal class ProjectService(
     }
 
     fun unblockProject(projectId: Long): Project {
-        TODO("Not implemented")
+        val project = projectRepository.findById(projectId).orElseThrow { ProjectNotFoundException(projectId) }
+        project.blockedByUser = null
+        project.blockDate = null
+        return projectRepository.update(project).toDomain()
     }
 }

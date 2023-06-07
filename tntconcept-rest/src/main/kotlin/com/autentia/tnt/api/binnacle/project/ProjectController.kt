@@ -69,7 +69,31 @@ internal class ProjectController(
     fun blockProjectById(projectId: Long, @Body blockProjectRequest: BlockProjectRequest): ProjectResponseDTO =
         blockProjectByIdUseCase.blockProject(projectId, blockProjectRequest.blockDate)
 
-    @Operation(summary = "Unblocks a project from a project ID")
+    @Operation(
+        summary = "Unblocks a project",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                content = [
+                    Content(
+                        mediaType = APPLICATION_JSON,
+                        schema = Schema(implementation = ProjectResponseDTO::class)
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                content = [
+                    Content(
+                        mediaType = APPLICATION_JSON,
+                        schema = Schema(
+                            implementation = ErrorResponse::class
+                        )
+                    )
+                ]
+            )
+        ]
+    )
     @Post("/{projectId}/unblock")
     fun unblockProjectById(projectId: Long): ProjectResponseDTO = unblockProjectByIdUseCase.unblockProject(projectId)
 }
