@@ -336,10 +336,21 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `approve activity with not allowed state should throw exception`() {
+    fun `approve activity with accepted approval state should throw exception`() {
         val activityId = 1L
 
         doReturn(activityWithEvidenceToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
+            .findById(activityId)
+        assertThrows<InvalidActivityApprovalStateException> {
+            sut.approveActivityById(activityId)
+        }
+    }
+
+    @Test
+    fun `approve activity with not applied approval state should throw exception`() {
+        val activityId = 1L
+
+        doReturn(activityWithEvidenceToSave.copy(approvalState = ApprovalState.NA)).whenever(activityRepository)
             .findById(activityId)
         assertThrows<InvalidActivityApprovalStateException> {
             sut.approveActivityById(activityId)
