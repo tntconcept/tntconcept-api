@@ -13,6 +13,7 @@ class ProjectResponseConverter {
         project.open,
         project.billable,
         project.organization.id,
+        project.startDate,
         project.blockDate,
         project.blockedByUser,
     )
@@ -24,6 +25,7 @@ class ProjectResponseConverter {
             project.open,
             project.billable,
             project.organization.id,
+            project.startDate,
             project.blockDate,
             project.blockedByUser,
         )

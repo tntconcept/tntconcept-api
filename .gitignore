@@ -40,3 +40,7 @@ out/
 
 ### Flyway ###
 tntconcept-ddbb/src/main/resources/db/migration/R__*
+
+### Docker ###
+docker-compose.local.yml
+.mysql

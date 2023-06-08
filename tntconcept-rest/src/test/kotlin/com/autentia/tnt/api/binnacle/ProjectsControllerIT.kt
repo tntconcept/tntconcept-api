@@ -30,6 +30,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -61,7 +62,8 @@ internal class ProjectsControllerIT {
             "Vacaciones",
             true,
             true,
-            1L
+            1L,
+            LocalDate.now(),
         )
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)

@@ -46,7 +46,7 @@ internal class OrganizationControllerTest {
 
         val result = organizationController.getOrganizationsProjects(organization.id)
 
-        val expectedProjectDTO = ProjectResponseDTO(1, "Dummy Project", true, true, 1L)
+        val expectedProjectDTO = ProjectResponseDTO(1, "Dummy Project", true, true, 1L, startDate = LocalDate.now())
         assertEquals(listOf(expectedProjectDTO), result)
     }
 

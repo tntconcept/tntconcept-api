@@ -72,6 +72,7 @@ internal class ProjectControllerIT {
             true,
             true,
             1L,
+            startDate = LocalDate.now(),
         )
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)
@@ -139,7 +140,7 @@ internal class ProjectControllerIT {
     @Test
     fun `block project by id`() {
         val projectId = 1L
-        val blockProjectRequest = BlockProjectRequest(blockDate = LocalDate.of(2023, 5, 5))
+        val blockProjectRequest = BlockProjectRequestDTO(blockDate = LocalDate.of(2023, 5, 5))
         val projectResponseDTO = createProjectResponseDTO()
         whenever(blockProjectByIdUseCase.blockProject(projectId, blockProjectRequest.blockDate)).thenReturn(
             projectResponseDTO
@@ -192,6 +193,7 @@ internal class ProjectControllerIT {
             true,
             true,
             1L,
+            startDate = LocalDate.now().minusMonths(2L),
         )
         val projectFilter = ProjectFilterDTO(1, false)
         whenever(projectByFilterUseCase.getProjects(projectFilter)).thenReturn(listOf(projectRequestBody))

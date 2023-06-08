@@ -8,6 +8,7 @@ data class ProjectResponseDTO(
     val open: Boolean,
     val billable: Boolean,
     val organizationId: Long,
+    val startDate: LocalDate,
     val blockDate: LocalDate? = null,
     val blockedByUser: Long? = null,
 )
