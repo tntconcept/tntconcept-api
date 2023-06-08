@@ -21,7 +21,6 @@ ALTER TABLE Activity
     RENAME COLUMN hasImage TO hasEvidences;
 
 /* ProjectRole Table */
-
 ALTER TABLE ProjectRole
     MODIFY requireEvidence varchar(10);
 
@@ -40,13 +39,10 @@ ALTER TABLE ProjectRole
     MODIFY timeUnit varchar(10) NOT NULL;
 
 ALTER TABLE ProjectRole
-    ADD isWorkingTime boolean NOT NULL DEFAULT 1;
-
-ALTER TABLE ProjectRole
-    MODIFY isWorkingTime boolean NOT NULL;
-
-ALTER TABLE ProjectRole
     ADD isApprovalRequired boolean NOT NULL DEFAULT 0;
 
 ALTER TABLE ProjectRole
     MODIFY isApprovalRequired boolean NOT NULL;
+
+/* Add activity-approval security role */
+INSERT INTO archimedes_security_role (name) VALUES ('activity-approval');
