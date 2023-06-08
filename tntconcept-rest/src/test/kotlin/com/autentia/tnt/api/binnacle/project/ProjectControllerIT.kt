@@ -140,7 +140,7 @@ internal class ProjectControllerIT {
     @Test
     fun `block project by id`() {
         val projectId = 1L
-        val blockProjectRequest = BlockProjectRequest(blockDate = LocalDate.of(2023, 5, 5))
+        val blockProjectRequest = BlockProjectRequestDTO(blockDate = LocalDate.of(2023, 5, 5))
         val projectResponseDTO = createProjectResponseDTO()
         whenever(blockProjectByIdUseCase.blockProject(projectId, blockProjectRequest.blockDate)).thenReturn(
             projectResponseDTO
