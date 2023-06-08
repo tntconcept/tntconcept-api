@@ -30,7 +30,6 @@ internal class ActivityValidatorTest {
         ActivityValidator(
             activityService,
             activityCalendarService,
-            projectRoleService,
             projectService
         )
     private val calendarFactory: CalendarFactory = CalendarFactory(holidayService)
@@ -58,13 +57,6 @@ internal class ActivityValidatorTest {
         }
 
         private fun exceptionProvider() = arrayOf(
-            arrayOf(
-                "ProjectRoleNotFoundException",
-                newActivityInClosedProject,
-                closedProjectRole,
-                user,
-                ProjectClosedException()
-            ),
             arrayOf(
                 "ProjectNotFoundException",
                 newActivityInClosedProject,
@@ -120,20 +112,6 @@ internal class ActivityValidatorTest {
             }
 
             assertEquals(expectedException.message, exception.message)
-        }
-
-        @Test
-        fun `throw ProjectRoleNotFoundException with role id when project role is not in the database`() {
-            whenever(projectRoleService.getByProjectRoleId(projectRole.id)).thenThrow(
-                ProjectRoleNotFoundException(
-                    projectRole.id
-                )
-            )
-
-            val exception = assertThrows<ProjectRoleNotFoundException> {
-                activityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
-            }
-            assertEquals(projectRole.id, exception.id)
         }
 
         @Test
@@ -482,41 +460,6 @@ internal class ActivityValidatorTest {
             assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
             }
-        }
-
-        @Test
-        fun `throw ProjectRoleNotFoundException with role id when project role is not in the database`() {
-            val newActivity = createDomainActivity(
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(60L),
-                60,
-                projectRole.toDomain()
-            )
-
-            val currentActivity = Activity(
-                1L,
-                LocalDateTime.of(2020, Month.JANUARY, 3, 2, 1),
-                LocalDateTime.of(2020, Month.JANUARY, 3, 2, 24),
-                23,
-                "Old description",
-                projectRole,
-                user.id,
-                false,
-                approvalState = ApprovalState.NA
-            )
-
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
-            whenever(projectRoleService.getByProjectRoleId(projectRole.id)).thenThrow(
-                ProjectRoleNotFoundException(
-                    projectRole.id
-                )
-            )
-            whenever(activityService.getActivityById(1L)).thenReturn(Companion.currentActivity.toDomain())
-
-            val exception = assertThrows<ProjectRoleNotFoundException> {
-                activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
-            }
-            assertEquals(projectRole.id, exception.id)
         }
 
         @Test

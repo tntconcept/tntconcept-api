@@ -8,7 +8,6 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.ProjectRoleService
 import com.autentia.tnt.binnacle.services.ProjectService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -19,16 +18,21 @@ import javax.transaction.Transactional
 internal class ActivityValidator(
     private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
-    private val projectRoleService: ProjectRoleService,
     private val projectService: ProjectService,
 ) {
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForCreation(activityToCreate: Activity, user: User) {
         require(activityToCreate.id == null) { "Cannot create a new activity with id ${activityToCreate.id}." }
-
-        checkProjectRoleExists(activityToCreate.projectRole.id)
         val project = projectService.findById(activityToCreate.projectRole.project.id)
+        val emptyActivity = Activity.emptyActivity(activityToCreate.projectRole, user)
+        val activityToCreateStartYear = activityToCreate.getYearOfStart()
+        val activityToCreateEndYear = activityToCreate.timeInterval.end.year
+        val totalRegisteredDurationForThisRoleStartYear =
+            getTotalRegisteredDurationByProjectRole(emptyActivity, activityToCreateStartYear, user.id)
+        val totalRegisteredDurationForThisRoleEndYear =
+            getTotalRegisteredDurationByProjectRole(emptyActivity, activityToCreateEndYear, user.id)
+
         when {
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
@@ -38,68 +42,98 @@ internal class ActivityValidator(
                 throw ActivityBeforeHiringDateException()
 
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
-        }
-        checkIfIsExceedingMaxHoursForRole(
-            Activity.emptyActivity(activityToCreate.projectRole, user),
-            activityToCreate,
-            user.id
-        )
-    }
 
-    private fun checkIfIsExceedingMaxHoursForRole(currentActivity: Activity, activityToUpdate: Activity, userId: Long) {
-        checkIfIsExceedingMaxHoursForRole(
-            currentActivity, activityToUpdate, activityToUpdate.getYearOfStart(), userId
-        )
-        if (activityToUpdate.getYearOfStart() != activityToUpdate.getYearOfEnd()) {
-            checkIfIsExceedingMaxHoursForRole(
-                currentActivity, activityToUpdate, activityToUpdate.timeInterval.end.year, userId
+            isExceedingMaxHoursForRole(
+                emptyActivity,
+                activityToCreate,
+                activityToCreateStartYear,
+                totalRegisteredDurationForThisRoleStartYear
+            ) -> throw MaxHoursPerRoleException(
+                activityToCreate.projectRole.maxAllowed / DECIMAL_HOUR,
+                getRemaining(
+                    activityToCreate,
+                    totalRegisteredDurationForThisRoleStartYear
+                ),
+                activityToCreateStartYear
+            )
+
+            (activityToCreateStartYear != activityToCreateEndYear) && isExceedingMaxHoursForRole(
+                emptyActivity,
+                activityToCreate,
+                activityToCreateEndYear,
+                totalRegisteredDurationForThisRoleEndYear
+            ) -> throw MaxHoursPerRoleException(
+                activityToCreate.projectRole.maxAllowed / DECIMAL_HOUR,
+                getRemaining(
+                    activityToCreate,
+                    totalRegisteredDurationForThisRoleEndYear
+                ),
+                activityToCreateEndYear
             )
         }
     }
 
-    private fun checkIfIsExceedingMaxHoursForRole(
-        currentActivity: Activity,
+    private fun getTotalRegisteredDurationByProjectRole(
         activityToUpdate: Activity,
         year: Int,
         userId: Long,
-    ) {
-        if (activityToUpdate.projectRole.maxAllowed > 0) {
+    ): Int {
+        val yearTimeInterval = TimeInterval.ofYear(year)
 
-            val yearTimeInterval = TimeInterval.ofYear(year)
+        val yearCalendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
 
-            val yearCalendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
+        val activities =
+            activityService.getActivitiesByProjectRoleIds(
+                yearTimeInterval,
+                listOf(activityToUpdate.projectRole.id),
+                userId
+            )
+        return activities.sumOf { it.getDurationByCountingWorkableDays(yearCalendar) }
+    }
 
-            val currentActivityDuration = currentActivity.getDurationByCountingWorkableDays(yearCalendar)
-            val activityToUpdateDuration = activityToUpdate.getDurationByCountingWorkableDays(yearCalendar)
-            val activities =
-                activityService.getActivitiesByProjectRoleIds(
-                    yearTimeInterval,
-                    listOf(activityToUpdate.projectRole.id),
-                    userId
-                )
-            val totalRegisteredDurationForThisRole =
-                activities.sumOf { it.getDurationByCountingWorkableDays(yearCalendar) }
+    private fun getTotalRegisteredDurationForThisRoleAfterSave(
+        currentActivity: Activity,
+        activityToUpdate: Activity,
+        year: Int,
+        totalRegisteredDurationForThisRole: Int,
+    ): Int {
+        val yearTimeInterval = TimeInterval.ofYear(year)
+        val yearCalendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
+        val currentActivityDuration = currentActivity.getDurationByCountingWorkableDays(yearCalendar)
+        val activityToUpdateDuration = activityToUpdate.getDurationByCountingWorkableDays(yearCalendar)
 
-            var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
+        var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 
-            if (currentActivity.projectRole.id == activityToUpdate.projectRole.id) {
-                totalRegisteredDurationForThisRoleAfterDiscount =
-                    totalRegisteredDurationForThisRole - currentActivityDuration
-            }
-
-            val totalRegisteredDurationAfterSaveRequested =
-                totalRegisteredDurationForThisRoleAfterDiscount + activityToUpdateDuration
-
-            if (totalRegisteredDurationAfterSaveRequested > activityToUpdate.projectRole.maxAllowed) {
-                val remainingTime =
-                    (activityToUpdate.projectRole.maxAllowed - totalRegisteredDurationForThisRole.toDouble()) / DECIMAL_HOUR
-                throw MaxHoursPerRoleException(
-                    activityToUpdate.projectRole.maxAllowed / DECIMAL_HOUR,
-                    remainingTime,
-                    year
-                )
-            }
+        if (currentActivity.projectRole.id == activityToUpdate.projectRole.id) {
+            totalRegisteredDurationForThisRoleAfterDiscount =
+                totalRegisteredDurationForThisRole - currentActivityDuration
         }
+        return totalRegisteredDurationForThisRoleAfterDiscount + activityToUpdateDuration
+    }
+
+    private fun getRemaining(
+        activityToUpdate: Activity,
+        totalRegisteredDurationForThisRole: Int,
+    ): Double {
+        return (activityToUpdate.projectRole.maxAllowed - totalRegisteredDurationForThisRole.toDouble()) / DECIMAL_HOUR
+    }
+
+    private fun isExceedingMaxHoursForRole(
+        currentActivity: Activity,
+        activityToUpdate: Activity,
+        year: Int,
+        totalRegisteredDurationForThisRole: Int,
+    ): Boolean {
+        if (activityToUpdate.projectRole.maxAllowed > 0) {
+            val totalRegisteredDurationForThisRoleAfterSave = getTotalRegisteredDurationForThisRoleAfterSave(
+                currentActivity,
+                activityToUpdate,
+                year,
+                totalRegisteredDurationForThisRole
+            )
+            return totalRegisteredDurationForThisRoleAfterSave > activityToUpdate.projectRole.maxAllowed
+        }
+        return false
     }
 
     private fun isOpenPeriod(startDate: LocalDateTime): Boolean {
@@ -114,9 +148,14 @@ internal class ActivityValidator(
         user: User,
     ) {
         require(activityToUpdate.id != null) { "Cannot update an activity without id." }
-        checkProjectRoleExists(activityToUpdate.projectRole.id)
         val projectToUpdate = projectService.findById(activityToUpdate.projectRole.project.id)
         val currentProject = projectService.findById(currentActivity.projectRole.project.id)
+        val activityToUpdateStartYear = activityToUpdate.getYearOfStart()
+        val activityToUpdateEndYear = activityToUpdate.timeInterval.end.year
+        val totalRegisteredDurationForThisRoleStartYear =
+            getTotalRegisteredDurationByProjectRole(activityToUpdate, activityToUpdateStartYear, user.id)
+        val totalRegisteredDurationForThisRoleEndYear =
+            getTotalRegisteredDurationByProjectRole(activityToUpdate, activityToUpdateEndYear, user.id)
         when {
             isProjectBlocked(projectToUpdate, activityToUpdate) -> throw ProjectBlockedException()
             isProjectBlocked(currentProject, currentActivity) -> throw ProjectBlockedException()
@@ -127,8 +166,35 @@ internal class ActivityValidator(
                 throw ActivityBeforeHiringDateException()
 
             activityToUpdate.isMoreThanOneDay() && activityToUpdate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
+
+            isExceedingMaxHoursForRole(
+                currentActivity,
+                activityToUpdate,
+                activityToUpdateStartYear,
+                totalRegisteredDurationForThisRoleStartYear
+            ) -> throw MaxHoursPerRoleException(
+                activityToUpdate.projectRole.maxAllowed / DECIMAL_HOUR,
+                getRemaining(
+                    activityToUpdate,
+                    totalRegisteredDurationForThisRoleStartYear
+                ),
+                activityToUpdateStartYear
+            )
+
+            (activityToUpdateStartYear != activityToUpdateEndYear) && isExceedingMaxHoursForRole(
+                currentActivity,
+                activityToUpdate,
+                activityToUpdateEndYear,
+                totalRegisteredDurationForThisRoleEndYear
+            ) -> throw MaxHoursPerRoleException(
+                activityToUpdate.projectRole.maxAllowed / DECIMAL_HOUR,
+                getRemaining(
+                    activityToUpdate,
+                    totalRegisteredDurationForThisRoleEndYear
+                ),
+                activityToUpdateEndYear
+            )
         }
-        checkIfIsExceedingMaxHoursForRole(currentActivity, activityToUpdate, user.id)
     }
 
 
@@ -165,10 +231,6 @@ internal class ActivityValidator(
         }
         val activities = activityService.findOverlappedActivities(activity.getStart(), activity.getEnd(), userId)
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
-    }
-
-    private fun checkProjectRoleExists(id: Long) {
-        projectRoleService.getByProjectRoleId(id)
     }
 
     private companion object {
