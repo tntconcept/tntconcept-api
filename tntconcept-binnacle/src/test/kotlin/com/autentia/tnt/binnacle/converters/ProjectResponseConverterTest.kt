@@ -44,13 +44,14 @@ internal class ProjectResponseConverterTest {
     fun `given Project list should return ProjectResponseDTO list with converted values`() {
         val organization = createOrganization()
         //Given
+        val startDate = LocalDate.now()
         val projectList = listOf(
             Project(
                 id = 1,
                 name = "First Project",
                 open = false,
                 billable = false,
-                LocalDate.now(),
+                startDate,
                 null,
                 null,
                 projectRoles = listOf(),
@@ -61,7 +62,7 @@ internal class ProjectResponseConverterTest {
                 name = "Second Project",
                 open = false,
                 billable = true,
-                LocalDate.now(),
+                startDate,
                 null,
                 null,
                 projectRoles = listOf(),
@@ -79,14 +80,16 @@ internal class ProjectResponseConverterTest {
                 name = "First Project",
                 open = false,
                 billable = false,
-                1L
+                1L,
+                startDate,
             ),
             ProjectResponseDTO(
                 id = 2,
                 name = "Second Project",
                 open = false,
                 billable = true,
-                1L
+                1L,
+                startDate,
             ),
         )
 

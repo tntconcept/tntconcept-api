@@ -72,6 +72,7 @@ internal class ProjectControllerIT {
             true,
             true,
             1L,
+            startDate = LocalDate.now(),
         )
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)
@@ -192,6 +193,7 @@ internal class ProjectControllerIT {
             true,
             true,
             1L,
+            startDate = LocalDate.now().minusMonths(2L),
         )
         val projectFilter = ProjectFilterDTO(1, false)
         whenever(projectByFilterUseCase.getProjects(projectFilter)).thenReturn(listOf(projectRequestBody))

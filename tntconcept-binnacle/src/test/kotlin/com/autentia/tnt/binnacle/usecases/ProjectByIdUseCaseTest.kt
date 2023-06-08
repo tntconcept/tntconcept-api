@@ -60,7 +60,8 @@ internal class ProjectByIdUseCaseTest {
             PROJECT.name,
             PROJECT.open,
             PROJECT.billable,
-            1L
+            1L,
+            PROJECT.startDate,
         )
     }
 

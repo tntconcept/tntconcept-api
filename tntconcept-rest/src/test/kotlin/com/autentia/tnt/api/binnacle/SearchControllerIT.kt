@@ -22,6 +22,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -86,7 +87,7 @@ internal class SearchControllerIT {
         private const val YEAR = 2023
 
         private val AUTENTIA = OrganizationResponseDTO(1, "Autentia")
-        private val TRAINING = ProjectResponseDTO(1, "Formación Autentia", true, false, AUTENTIA.id)
+        private val TRAINING = ProjectResponseDTO(1, "Formación Autentia", true, false, AUTENTIA.id, LocalDate.now())
         private val STUDENT = ProjectRoleUserDTO(
                 1,
                 "Alumno en formación",
