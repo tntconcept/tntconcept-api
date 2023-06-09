@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.User
 import io.micronaut.context.MessageSource
 import jakarta.inject.Singleton
@@ -15,7 +14,7 @@ internal class ApprovedActivityMailService(
     private val messageSource: MessageSource,
     private val appProperties: AppProperties
 ) {
-    fun sendApprovedActivityMail(activity: Activity, user: User, locale: Locale){
+    fun sendApprovedActivityMail(activity: com.autentia.tnt.binnacle.core.domain.Activity, user: User, locale: Locale){
         if (!appProperties.mail.enabled) {
             logger.info("Mailing of approval activities is disabled")
             return
@@ -24,8 +23,8 @@ internal class ApprovedActivityMailService(
             .getMessage(
                 "mail.request.approvedActivity.template",
                 locale,
-                activity.start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
-                activity.end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                activity.timeInterval.start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                activity.timeInterval.end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 activity.description
             )
             .orElse(null) ?: error("Cannot find message mail.request.approvedActivity.template")

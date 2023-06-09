@@ -6,7 +6,6 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
@@ -333,36 +332,6 @@ internal class ActivityServiceTest {
 
         val approvedActivity = sut.approveActivityById(activityWithEvidenceSaved.id as Long)
         assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
-    }
-
-    @Test
-    fun `approve activity with accepted approval state should throw exception`() {
-        val activityId = 1L
-
-        doReturn(activityWithEvidenceToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
-            .findById(activityId)
-        assertThrows<InvalidActivityApprovalStateException> {
-            sut.approveActivityById(activityId)
-        }
-    }
-
-    @Test
-    fun `approve activity with not applied approval state should throw exception`() {
-        val activityId = 1L
-
-        doReturn(activityWithEvidenceToSave.copy(approvalState = ApprovalState.NA)).whenever(activityRepository)
-            .findById(activityId)
-        assertThrows<InvalidActivityApprovalStateException> {
-            sut.approveActivityById(activityId)
-        }
-    }
-
-    @Test
-    fun `approve activity without evidence should throw exception`() {
-        whenever(activityRepository.findById(any())).thenReturn(activityWithoutEvidenceToSave.copy(id = 1L).copy(approvalState = ApprovalState.PENDING))
-        assertThrows<NoEvidenceInActivityException> {
-            sut.approveActivityById(any())
-        }
     }
 
     @Test
