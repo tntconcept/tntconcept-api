@@ -82,8 +82,4 @@ internal class HookController(
     @Error
     internal fun onNoEvidenceInActivityException(request: HttpRequest<*>, e: NoEvidenceInActivityException) =
         HttpResponse.badRequest(ErrorResponse("No image", e.message))
-
-    @Error
-    internal fun onProjectBlockedException(request: HttpRequest<*>, e: ProjectBlockedException) =
-        HttpResponse.badRequest(ErrorResponse("BLOCKED_PROJECT", e.message))
 }
