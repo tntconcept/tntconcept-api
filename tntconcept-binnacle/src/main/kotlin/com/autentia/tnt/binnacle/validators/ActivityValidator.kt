@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.Project
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.domain.User
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -36,7 +37,7 @@ internal class ActivityValidator(
         when {
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
-            isProjectBlocked(project, activityToCreate) -> throw ActivityForBlockedProjectException()
+            isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException()
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
@@ -197,7 +198,6 @@ internal class ActivityValidator(
         }
     }
 
-
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long) {
@@ -231,6 +231,16 @@ internal class ActivityValidator(
         }
         val activities = activityService.findOverlappedActivities(activity.getStart(), activity.getEnd(), userId)
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
+    }
+
+    @Transactional
+    @ReadOnly
+    fun checkActivityIsValidForApproval(id: Long) {
+        val activity = activityService.getActivityById(id)
+        when {
+            activity.approvalState == ApprovalState.ACCEPTED || activity.approvalState == ApprovalState.NA -> throw InvalidActivityApprovalStateException()
+            !activity.hasEvidences -> throw NoEvidenceInActivityException(id)
+        }
     }
 
     private companion object {
