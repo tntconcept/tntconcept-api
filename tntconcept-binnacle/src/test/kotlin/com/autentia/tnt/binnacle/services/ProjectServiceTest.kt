@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
@@ -54,6 +55,15 @@ internal class ProjectServiceTest {
         whenever(projectRepository.findById(projectId)).thenReturn(Optional.empty())
 
         assertThrows<ProjectNotFoundException> {
+            projectService.blockProject(projectId, LocalDate.now(), userId)
+        }
+    }
+
+    @Test
+    fun `blocking closed project should throw`() {
+        whenever(projectRepository.findById(projectId)).thenReturn(Optional.of(projectClosedNotBlocked))
+
+        assertThrows<ProjectClosedException> {
             projectService.blockProject(projectId, LocalDate.now(), userId)
         }
     }
@@ -116,6 +126,17 @@ internal class ProjectServiceTest {
             user.id,
             Organization(1, "Organization", emptyList()),
             emptyList()
+        )
+        private val projectClosedNotBlocked = com.autentia.tnt.binnacle.entities.Project(
+                1,
+                "NotBlockedProjectButClosed",
+                open = false,
+                billable = true,
+                startDate = LocalDate.now(),
+                blockDate = null,
+                blockedByUser = null,
+                Organization(1, "Organization", emptyList()),
+                emptyList()
         )
         private val project = projectBlocked.toDomain()
     }

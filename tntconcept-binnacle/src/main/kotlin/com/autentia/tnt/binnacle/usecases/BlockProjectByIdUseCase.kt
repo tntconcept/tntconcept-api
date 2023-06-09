@@ -18,6 +18,7 @@ class BlockProjectByIdUseCase internal constructor(
 
     fun blockProject(projectId: Long, blockDate: LocalDate): ProjectResponseDTO {
         val authentication = securityService.checkBlockProjectsRole()
+        require(blockDate <=  LocalDate.now()){ "Invalid blocked date. It can't be a future date." }
         val projectBlocked = projectService.blockProject(projectId, blockDate, authentication.id())
         return projectResponseConverter.toProjectResponseDTO(projectBlocked)
     }

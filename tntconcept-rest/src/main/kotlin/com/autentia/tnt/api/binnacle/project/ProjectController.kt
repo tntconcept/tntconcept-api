@@ -1,9 +1,13 @@
 package com.autentia.tnt.api.binnacle.project
 
+import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.usecases.*
+import io.micronaut.http.HttpRequest
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.*
 import io.swagger.v3.oas.annotations.Operation
 
@@ -40,4 +44,8 @@ internal class ProjectController(
     @Operation(summary = "Unblocks a project")
     @Post("/{projectId}/unblock")
     fun unblockProjectById(projectId: Long): ProjectResponseDTO = unblockProjectByIdUseCase.unblockProject(projectId)
+
+    @Error
+    internal fun onProjectClosedException(request: HttpRequest<*>, e: ProjectClosedException) =
+            HttpResponse.badRequest(ErrorResponse("CLOSED_PROJECT", e.message))
 }
