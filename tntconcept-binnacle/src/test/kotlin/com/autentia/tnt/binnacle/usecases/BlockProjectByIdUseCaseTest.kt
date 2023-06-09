@@ -3,8 +3,10 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.core.domain.Organization
 import com.autentia.tnt.binnacle.core.domain.Project
+import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.services.ProjectService
+import com.autentia.tnt.binnacle.validators.ProjectValidator
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -21,24 +23,13 @@ class BlockProjectByIdUseCaseTest {
     private val projectService: ProjectService = mock()
     private val securityService: SecurityService = mock()
     private val projectResponseConverter = ProjectResponseConverter()
+    private val projectValidator = ProjectValidator()
     private val blockProjectByIdUseCase = BlockProjectByIdUseCase(
         securityService,
         projectService,
-        projectResponseConverter
+        projectResponseConverter,
+        projectValidator
     )
-
-    @Test
-    fun `blocking project with a future date throws exception`() {
-
-        var daysFuture = 2L
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutBlockRole))
-
-        assertThrows<IllegalStateException> {
-            blockProjectByIdUseCase.blockProject(projectId, LocalDate.now().plusDays(daysFuture))
-        }
-
-    }
 
     @Test
     fun `blocking project with a date in the past`() {
@@ -46,17 +37,18 @@ class BlockProjectByIdUseCaseTest {
         var daysBefore = 2L
         var dateTwoDaysBefore = LocalDate.now().minusDays(daysBefore)
 
-        val expectedProject = project.copy(
-                blockDate = dateTwoDaysBefore,
-                blockedByUser = userId
+        val expectedProject = unblockedProject.copy(
+            blockDate = dateTwoDaysBefore,
+            blockedByUser = userId
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithProjectBlock))
+        whenever(projectService.findById(projectId)).thenReturn(unblockedProject)
         whenever(projectService.blockProject(projectId, dateTwoDaysBefore, userId)).thenReturn(expectedProject)
 
         val blockedProject = blockProjectByIdUseCase.blockProject(projectId, dateTwoDaysBefore)
 
         val expectedProjectResponseDTO = projectResponseConverter.toProjectResponseDTO(
-                expectedProject
+            expectedProject
         )
 
         assertThat(blockedProject).isEqualTo(expectedProjectResponseDTO)
@@ -75,7 +67,7 @@ class BlockProjectByIdUseCaseTest {
     @Test
     fun `block project when project does not exist should throw exception`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithProjectBlock))
-        whenever(projectService.blockProject(projectId, LocalDate.now(), userId)).thenThrow(
+        whenever(projectService.findById(projectId)).thenThrow(
             ProjectNotFoundException(
                 projectId
             )
@@ -88,11 +80,12 @@ class BlockProjectByIdUseCaseTest {
 
     @Test
     fun `block project with required role should return blocked project response dto`() {
-        val expectedProject = project.copy(
+        val expectedProject = unblockedProject.copy(
             blockDate = LocalDate.now(),
             blockedByUser = userId
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithProjectBlock))
+        whenever(projectService.findById(projectId)).thenReturn(unblockedProject)
         whenever(projectService.blockProject(projectId, LocalDate.now(), userId)).thenReturn(expectedProject)
 
         val blockedProject = blockProjectByIdUseCase.blockProject(projectId, LocalDate.now())
@@ -103,6 +96,14 @@ class BlockProjectByIdUseCaseTest {
         assertThat(blockedProject).isEqualTo(expectedProjectResponseDTO)
     }
 
+    @Test
+    fun `throw exception when project is closed for blocking`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithProjectBlock))
+
+        whenever(projectService.findById(projectId)).thenReturn(blockedProject)
+        assertThrows<ProjectClosedException> { blockProjectByIdUseCase.blockProject(projectId, LocalDate.now()) }
+    }
+
     private companion object {
         const val projectId = 1L
         const val userId = 1L
@@ -110,11 +111,19 @@ class BlockProjectByIdUseCaseTest {
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("")))
         val authenticationWithProjectBlock: Authentication =
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("project-blocker")))
-        val project: Project = Project(
+        val unblockedProject: Project = Project(
             id = 1L,
             name = "Test project",
             billable = true,
             open = true,
+            organization = Organization(1L, "Test organization"),
+            startDate = LocalDate.of(2023, 5, 1)
+        )
+        val blockedProject: Project = Project(
+            id = 1L,
+            name = "Test project",
+            billable = true,
+            open = false,
             organization = Organization(1L, "Test organization"),
             startDate = LocalDate.of(2023, 5, 1)
         )

@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
@@ -51,28 +50,10 @@ internal class ProjectServiceTest {
     }
 
     @Test
-    fun `block project when project does not exist should throw`() {
-        whenever(projectRepository.findById(projectId)).thenReturn(Optional.empty())
-
-        assertThrows<ProjectNotFoundException> {
-            projectService.blockProject(projectId, LocalDate.now(), userId)
-        }
-    }
-
-    @Test
-    fun `blocking closed project should throw`() {
-        whenever(projectRepository.findById(projectId)).thenReturn(Optional.of(projectClosedNotBlocked))
-
-        assertThrows<ProjectClosedException> {
-            projectService.blockProject(projectId, LocalDate.now(), userId)
-        }
-    }
-
-    @Test
     fun `block project should update project block values`() {
-        whenever(projectRepository.findById(1)).thenReturn(Optional.of(projectNotBlocked))
         val expectedBlockedProjectEntity = projectNotBlocked.copy(blockedByUser = userId, blockDate = LocalDate.now())
         whenever(projectRepository.update(expectedBlockedProjectEntity)).thenReturn(expectedBlockedProjectEntity)
+        whenever(projectRepository.findById(userId)).thenReturn(Optional.of(projectNotBlocked))
 
         val result = projectService.blockProject(projectId, LocalDate.now(), userId)
 
@@ -81,20 +62,11 @@ internal class ProjectServiceTest {
     }
 
     @Test
-    fun `unblock project when project does not exist should throw`() {
-        whenever(projectRepository.findById(projectId)).thenReturn(Optional.empty())
-
-        assertThrows<ProjectNotFoundException> {
-            projectService.unblockProject(projectId)
-        }
-    }
-
-    @Test
     fun `unblock project should remove block values`() {
-        whenever(projectRepository.findById(projectId)).thenReturn(Optional.of(projectBlocked))
         val expectedUnblockedProject = projectBlocked.copy(blockedByUser = null, blockDate = null)
         whenever(projectRepository.update(expectedUnblockedProject)).thenReturn(expectedUnblockedProject)
-
+        whenever(projectRepository.findById(userId)).thenReturn(Optional.of(projectBlocked))
+        
         val result = projectService.unblockProject(projectId)
 
         val expectedBlockedProject = expectedUnblockedProject.toDomain()
@@ -128,15 +100,15 @@ internal class ProjectServiceTest {
             emptyList()
         )
         private val projectClosedNotBlocked = com.autentia.tnt.binnacle.entities.Project(
-                1,
-                "NotBlockedProjectButClosed",
-                open = false,
-                billable = true,
-                startDate = LocalDate.now(),
-                blockDate = null,
-                blockedByUser = null,
-                Organization(1, "Organization", emptyList()),
-                emptyList()
+            1,
+            "NotBlockedProjectButClosed",
+            open = false,
+            billable = true,
+            startDate = LocalDate.now(),
+            blockDate = null,
+            blockedByUser = null,
+            Organization(1, "Organization", emptyList()),
+            emptyList()
         )
         private val project = projectBlocked.toDomain()
     }

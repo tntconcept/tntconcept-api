@@ -1,8 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.core.domain.Project
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
-
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import io.micronaut.data.jpa.repository.criteria.Specification
@@ -13,7 +11,7 @@ import javax.transaction.Transactional
 
 @Singleton
 internal class ProjectService(
-    private val projectRepository: ProjectRepository
+    private val projectRepository: ProjectRepository,
 ) {
     @Transactional
     @ReadOnly
@@ -22,22 +20,12 @@ internal class ProjectService(
             .findById(id).map { it.toDomain() }.orElseThrow { throw ProjectNotFoundException(id) }
     }
 
-
-    
-    
     fun blockProject(projectId: Long, blockDate: LocalDate, userId: Long): Project {
         val project = projectRepository.findById(projectId).orElseThrow { ProjectNotFoundException(projectId) }
-        if (!isProjectOpen(project)) { throw ProjectClosedException() }
         project.blockedByUser = userId
         project.blockDate = blockDate
         return projectRepository.update(project).toDomain()
     }
-
-    private fun isProjectOpen(project: com.autentia.tnt.binnacle.entities.Project): Boolean {
-        return project.open
-    }
-
-
 
     @Transactional
     @ReadOnly
