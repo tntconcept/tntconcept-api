@@ -23,7 +23,7 @@ internal class HookController(
     private val imputableOrganizationsUseCase: ImputableOrganizationsUseCase,
     private val imputableProjectsByOrganizationIdUseCase: ImputableProjectsByOrganizationIdUseCase,
     private val projectRolesByProjectIdUseCase: ProjectRolesByProjectIdUseCase,
-    private val projectResponseConverter: ProjectResponseConverter
+    private val projectResponseConverter: ProjectResponseConverter,
 ) {
     @Post("/activity")
     @Operation(summary = "Creates a new activity.")
@@ -82,4 +82,8 @@ internal class HookController(
     @Error
     internal fun onNoEvidenceInActivityException(request: HttpRequest<*>, e: NoEvidenceInActivityException) =
         HttpResponse.badRequest(ErrorResponse("No image", e.message))
+
+    @Error
+    internal fun onProjectBlockedException(request: HttpRequest<*>, e: ProjectBlockedException) =
+        HttpResponse.badRequest(ErrorResponse("BLOCKED_PROJECT", e.message))
 }

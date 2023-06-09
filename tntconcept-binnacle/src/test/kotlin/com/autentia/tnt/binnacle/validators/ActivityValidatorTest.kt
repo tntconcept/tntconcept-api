@@ -72,11 +72,11 @@ internal class ActivityValidatorTest {
                 ActivityPeriodClosedException()
             ),
             arrayOf(
-                "ActivityForBlockedProjectException",
+                "ProjectBlockedException",
                 newActivityBeforeBlockedProject,
                 blockedProjectRole,
                 user,
-                ActivityForBlockedProjectException()
+                ProjectBlockedException()
             ),
             arrayOf(
                 "ActivityBeforeHiringDateException",
@@ -135,7 +135,7 @@ internal class ActivityValidatorTest {
             whenever(projectRoleService.getByProjectRoleId(blockedProjectRole.id)).thenReturn(blockedProjectRole.toDomain())
             whenever(projectService.findById(blockedProjectRole.project.id)).thenReturn(blockedProject.toDomain())
 
-            assertThrows<ActivityForBlockedProjectException> {
+            assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForCreation(newActivitySameDayBlockedProject, user)
             }
         }

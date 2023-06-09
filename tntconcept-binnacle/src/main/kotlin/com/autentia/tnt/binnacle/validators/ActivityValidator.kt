@@ -36,7 +36,7 @@ internal class ActivityValidator(
         when {
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
-            isProjectBlocked(project, activityToCreate) -> throw ActivityForBlockedProjectException()
+            isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException()
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
