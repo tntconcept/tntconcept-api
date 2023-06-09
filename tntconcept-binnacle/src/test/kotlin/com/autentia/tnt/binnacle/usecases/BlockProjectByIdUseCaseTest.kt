@@ -28,6 +28,41 @@ class BlockProjectByIdUseCaseTest {
     )
 
     @Test
+    fun `blocking project with a future date throws exception`() {
+
+        var daysFuture = 2L
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutBlockRole))
+
+        assertThrows<IllegalStateException> {
+            blockProjectByIdUseCase.blockProject(projectId, LocalDate.now().plusDays(daysFuture))
+        }
+
+    }
+
+    @Test
+    fun `blocking project with a date in the past`() {
+
+        var daysBefore = 2L
+        var dateTwoDaysBefore = LocalDate.now().minusDays(daysBefore)
+
+        val expectedProject = project.copy(
+                blockDate = dateTwoDaysBefore,
+                blockedByUser = userId
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithProjectBlock))
+        whenever(projectService.blockProject(projectId, dateTwoDaysBefore, userId)).thenReturn(expectedProject)
+
+        val blockedProject = blockProjectByIdUseCase.blockProject(projectId, dateTwoDaysBefore)
+
+        val expectedProjectResponseDTO = projectResponseConverter.toProjectResponseDTO(
+                expectedProject
+        )
+
+        assertThat(blockedProject).isEqualTo(expectedProjectResponseDTO)
+    }
+
+    @Test
     fun `block project without required role should throw exception`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutBlockRole))
 
