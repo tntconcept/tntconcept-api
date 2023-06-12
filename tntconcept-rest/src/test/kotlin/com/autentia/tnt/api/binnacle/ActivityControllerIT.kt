@@ -301,7 +301,7 @@ internal class ActivityControllerIT {
 
     @ParameterizedTest
     @MethodSource("putFailProvider")
-    fun `fail if try to put an activity and exception is throw`(
+    fun `fail if try to put an activity and exception is thrown`(
             exception: Exception,
             expectedResponseStatus: HttpStatus,
             expectedErrorCode: String,
