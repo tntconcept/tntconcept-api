@@ -12,7 +12,7 @@ class ProjectValidator {
     fun checkProjectIsValidForBlocking(project: Project, blockDate: LocalDate) {
         when {
             isClosedProject(project) -> throw ProjectClosedException()
-            isNewBlockDateInvalid(blockDate) -> throw InvalidBlockDateException("Invalid blocked date. It can't be a future date.")
+            isNewBlockDateInvalid(blockDate) -> throw InvalidBlockDateException("Invalid block date. It can't be a future date.")
         }
     }
 
