@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.core.domain.Organization
 import com.autentia.tnt.binnacle.core.domain.Project
+import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.services.ProjectService
@@ -33,9 +34,8 @@ class BlockProjectByIdUseCaseTest {
 
     @Test
     fun `blocking project with a date in the past`() {
-
-        var daysBefore = 2L
-        var dateTwoDaysBefore = LocalDate.now().minusDays(daysBefore)
+        val daysBefore = 2L
+        val dateTwoDaysBefore = LocalDate.now().minusDays(daysBefore)
 
         val expectedProject = unblockedProject.copy(
             blockDate = dateTwoDaysBefore,
@@ -55,13 +55,24 @@ class BlockProjectByIdUseCaseTest {
     }
 
     @Test
+    fun `blocking project with an invalid date should throw exception`() {
+        val dateTwoDaysBefore = LocalDate.now().plusDays(2L)
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithProjectBlock))
+        whenever(projectService.findById(projectId)).thenReturn(unblockedProject)
+
+        assertThrows<InvalidBlockDateException> {
+            blockProjectByIdUseCase.blockProject(projectId, dateTwoDaysBefore)
+        }
+    }
+
+    @Test
     fun `block project without required role should throw exception`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutBlockRole))
 
         assertThrows<IllegalStateException> {
             blockProjectByIdUseCase.blockProject(projectId, LocalDate.now())
         }
-
     }
 
     @Test

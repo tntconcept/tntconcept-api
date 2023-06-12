@@ -4,6 +4,7 @@ import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
@@ -48,4 +49,9 @@ internal class ProjectController(
     @Error
     internal fun onProjectClosedException(request: HttpRequest<*>, e: ProjectClosedException) =
             HttpResponse.badRequest(ErrorResponse("CLOSED_PROJECT", e.message))
+
+    @Error
+    internal fun onInvalidBlockDateException(request: HttpRequest<*>, e: InvalidBlockDateException) =
+            HttpResponse.badRequest(ErrorResponse("INVALID_BLOCK_DATE", e.message))
+
 }
