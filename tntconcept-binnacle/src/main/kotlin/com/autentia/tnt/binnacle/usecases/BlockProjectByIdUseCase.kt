@@ -20,9 +20,11 @@ class BlockProjectByIdUseCase internal constructor(
 
     fun blockProject(projectId: Long, blockDate: LocalDate): ProjectResponseDTO {
         val authentication = securityService.checkBlockProjectsRole()
+        val userId = authentication.id()
+
         val project = projectService.findById(projectId)
         projectValidator.checkProjectIsValidForBlocking(project, blockDate)
-        val projectBlocked = projectService.blockProject(projectId, blockDate, authentication.id())
+        val projectBlocked = projectService.blockProject(projectId, blockDate, userId)
         return projectResponseConverter.toProjectResponseDTO(projectBlocked)
     }
 }

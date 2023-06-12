@@ -18,6 +18,7 @@ class UnblockProjectByIdUseCase internal constructor(
 
     fun unblockProject(projectId: Long): ProjectResponseDTO {
         securityService.checkBlockProjectsRole()
+
         val project = projectService.findById(projectId)
         projectValidator.checkProjectIsValidForUnblocking(project)
         val unblockedProject = projectService.unblockProject(projectId)
