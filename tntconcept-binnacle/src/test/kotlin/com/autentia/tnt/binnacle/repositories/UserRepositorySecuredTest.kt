@@ -42,7 +42,7 @@ class UserRepositorySecuredTest {
     }
 
     @Test
-    fun `find all users when no user logged`() {
+    fun `find all users when no user logged throws exception`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> { userRepositorySecured.find() }
@@ -58,12 +58,23 @@ class UserRepositorySecuredTest {
     }
 
     @Test
+    fun `find all users when the rol is project-blocker`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(projectBlockerAuth))
+
+        userRepositorySecured.find()
+
+        verify(userDao).findByActiveTrue()
+        verify(userDao, never()).findById(projectBlockerAuth.id())
+    }
+
+    @Test
     fun `find all users when the rol is activity approval`() {
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
 
         userRepositorySecured.find()
 
         verify(userDao).findByActiveTrue()
+        verify(userDao, never()).findById(activityApprovalAuth.id())
     }
 
     @Test
@@ -150,7 +161,9 @@ class UserRepositorySecuredTest {
         private val adminAuth =
             ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin", "activity-approval")))
         private val activityApprovalAuth =
-            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin", "activity-approval")))
+            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("activity-approval")))
+        private val projectBlockerAuth =
+            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("project-blocker")))
         private val userAuth = ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 }

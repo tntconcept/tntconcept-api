@@ -6,7 +6,6 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
@@ -336,36 +335,6 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `approve activity with accepted approval state should throw exception`() {
-        val activityId = 1L
-
-        doReturn(activityWithEvidenceToSave.copy(approvalState = ApprovalState.ACCEPTED)).whenever(activityRepository)
-            .findById(activityId)
-        assertThrows<InvalidActivityApprovalStateException> {
-            sut.approveActivityById(activityId)
-        }
-    }
-
-    @Test
-    fun `approve activity with not applied approval state should throw exception`() {
-        val activityId = 1L
-
-        doReturn(activityWithEvidenceToSave.copy(approvalState = ApprovalState.NA)).whenever(activityRepository)
-            .findById(activityId)
-        assertThrows<InvalidActivityApprovalStateException> {
-            sut.approveActivityById(activityId)
-        }
-    }
-
-    @Test
-    fun `approve activity without evidence should throw exception`() {
-        whenever(activityRepository.findById(any())).thenReturn(activityWithoutEvidenceToSave.copy(id = 1L).copy(approvalState = ApprovalState.PENDING))
-        assertThrows<NoEvidenceInActivityException> {
-            sut.approveActivityById(any())
-        }
-    }
-
-    @Test
     fun `delete activity by id`() {
         whenever(activityRepository.findById(activityWithoutEvidenceSaved.id!!)).thenReturn(activityWithoutEvidenceSaved)
 
@@ -389,11 +358,33 @@ internal class ActivityServiceTest {
         )
     }
 
+    @Test
+    fun `should find overlapped activites`() {
+        val userId = 1L
+        val startDate = LocalDate.of(2019, 1, 1)
+        val endDate = LocalDate.of(2019, 1, 31)
+        val timeInterval = TimeInterval.of(
+            startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX)
+        )
+        val expectedActivities = activities.map(Activity::toDomain)
+
+        whenever(
+            activityRepository.findOverlapped(
+                startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX), userId
+            )
+        ).thenReturn(activities)
+
+        val result = sut.findOverlappedActivities(startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX), userId)
+
+        assertEquals(expectedActivities, result)
+    }
+
     private companion object {
         private val USER = createUser()
 
         private val organization = Organization(1L, "Autentia", emptyList())
-        private val project = Project(1L, "Back-end developers", true, false, organization, emptyList())
+        private val project =
+            Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
         private val projectRole =
             ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
 

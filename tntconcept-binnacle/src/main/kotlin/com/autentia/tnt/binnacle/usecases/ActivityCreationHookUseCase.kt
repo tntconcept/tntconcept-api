@@ -12,7 +12,7 @@ import javax.validation.Valid
 
 @Singleton
 @Validated
-open class ActivityCreationHookUseCase internal constructor(
+class ActivityCreationHookUseCase internal constructor(
     private val activityService: HookActivityService,
     private val userService: UserService,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,

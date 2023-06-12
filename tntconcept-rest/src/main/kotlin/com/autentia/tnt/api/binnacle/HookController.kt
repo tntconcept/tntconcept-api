@@ -23,7 +23,7 @@ internal class HookController(
     private val imputableOrganizationsUseCase: ImputableOrganizationsUseCase,
     private val imputableProjectsByOrganizationIdUseCase: ImputableProjectsByOrganizationIdUseCase,
     private val projectRolesByProjectIdUseCase: ProjectRolesByProjectIdUseCase,
-    private val projectResponseConverter: ProjectResponseConverter
+    private val projectResponseConverter: ProjectResponseConverter,
 ) {
     @Post("/activity")
     @Operation(summary = "Creates a new activity.")

@@ -6,7 +6,6 @@ import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -14,6 +13,7 @@ import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.time.LocalDateTime
 import java.time.LocalTime
 import javax.transaction.Transactional
 
@@ -126,23 +126,12 @@ internal class ActivityService(
     }
 
     @Transactional(rollbackOn = [Exception::class])
-    fun approveActivityById(id: Long): Activity {
+    fun approveActivityById(id: Long): com.autentia.tnt.binnacle.core.domain.Activity {
         val activityToApprove = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
-        checkIfActivityCanBeApproved(activityToApprove)
-
         activityToApprove.approvalState = ApprovalState.ACCEPTED
         return activityRepository.update(
             activityToApprove
-        )
-    }
-
-    private fun checkIfActivityCanBeApproved(activityToApprove: Activity) {
-        if (activityToApprove.approvalState == ApprovalState.ACCEPTED || activityToApprove.approvalState == ApprovalState.NA) {
-            throw InvalidActivityApprovalStateException()
-        }
-        if (!activityToApprove.hasEvidences) {
-            throw NoEvidenceInActivityException(activityToApprove.id!!)
-        }
+        ).toDomain()
     }
 
     @Transactional
@@ -153,6 +142,10 @@ internal class ActivityService(
         }
         activityRepository.deleteById(id)
     }
+
+    @Transactional
+    fun findOverlappedActivities(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long) =
+        activityRepository.findOverlapped(startDate, endDate, userId).map(Activity::toDomain)
 
     fun getProjectRoleActivities(projectRoleId: Long, userId: Long): List<Activity> =
         activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)

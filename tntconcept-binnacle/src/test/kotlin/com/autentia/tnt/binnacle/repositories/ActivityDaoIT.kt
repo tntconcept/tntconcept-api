@@ -171,7 +171,7 @@ internal class ActivityDaoIT {
 
         projectRepository.update(
             Project(
-                project.id, project.name, false, project.billable, project.organization, project.projectRoles
+                project.id, project.name, false, project.billable, LocalDate.now(), null, null, project.organization, project.projectRoles
             )
         )
         projectRepository.update(
@@ -180,6 +180,9 @@ internal class ActivityDaoIT {
                 openedProject.name,
                 true,
                 openedProject.billable,
+                openedProject.startDate,
+                openedProject.blockDate,
+                openedProject.blockedByUser,
                 openedProject.organization,
                 openedProject.projectRoles
             )

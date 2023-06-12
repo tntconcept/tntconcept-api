@@ -102,7 +102,7 @@ class ActivityDaoSpecificationIT {
 
         projectRepository.update(
             (Project(
-                project.id, project.name, false, project.billable, organization.get(), project.projectRoles
+                project.id, project.name, false, project.billable, LocalDate.now(), null, null, organization.get(), project.projectRoles
             ))
         )
 

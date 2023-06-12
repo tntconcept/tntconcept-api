@@ -69,6 +69,9 @@ internal fun createProject(id: Long = 1L) = Project(
     name = "Dummy Project",
     open = true,
     billable = false,
+    LocalDate.now(),
+    null,
+    null,
     projectRoles = listOf(),
     organization = createOrganization()
 )
@@ -79,18 +82,7 @@ internal fun createProjectResponseDTO(id: Long = 1L, open: Boolean = false, bill
         "Dummy Project",
         open,
         billable,
-        1L
+        1L,
+        LocalDate.now(),
     )
 
-internal fun createProjectRoleUserDTO(id: Long = 1L, requireEvidence: RequireEvidence = RequireEvidence.NO) = ProjectRoleUserDTO(
-    id,
-    "Dummy Project Role",
-    id,
-    id,
-    10,
-    5,
-    TimeUnit.DAYS,
-    requireEvidence,
-    true,
-    id
-)

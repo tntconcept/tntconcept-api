@@ -9,13 +9,13 @@ import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
@@ -26,10 +26,14 @@ internal class ActivityCreationUseCaseTest {
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val pendingApproveActivityMailService = mock<PendingApproveActivityMailService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
+    private val projectService = mock<ProjectService>()
     private val projectRoleService = ProjectRoleService(projectRoleRepository)
-    private val activityRepository = mock<ActivityRepository>()
     private val activityValidator =
-        ActivityValidator(activityService, activityRepository, activityCalendarService, projectRoleRepository)
+        ActivityValidator(
+            activityService,
+            activityCalendarService,
+            projectService
+        )
     private val userService = mock<UserService>()
 
     private val activityCreationUseCase = ActivityCreationUseCase(
@@ -50,6 +54,7 @@ internal class ActivityCreationUseCaseTest {
         val activity = createActivity(userId = user.id).toDomain()
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectService.findById(activity.projectRole.project.id)).thenReturn(activity.projectRole.project)
         whenever(projectRoleRepository.findById(any())).thenReturn(
             ProjectRole.of(
                 activity.projectRole,
@@ -68,6 +73,7 @@ internal class ActivityCreationUseCaseTest {
         val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_APPROVAL).toDomain()
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectService.findById(activity.projectRole.project.id)).thenReturn(activity.projectRole.project)
         whenever(projectRoleRepository.findById(any())).thenReturn(
             ProjectRole.of(
                 activity.projectRole,
@@ -90,8 +96,8 @@ internal class ActivityCreationUseCaseTest {
     fun `created activity without approval required`() {
         val activity = createActivity(userId = user.id, projectRole = PROJECT_ROLE_NO_APPROVAL).toDomain()
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
-
         whenever(activityService.createActivity(any(), eq(null))).thenReturn(activity)
+        whenever(projectService.findById(activity.projectRole.project.id)).thenReturn(activity.projectRole.project)
         whenever(projectRoleRepository.findById(any())).thenReturn(
             ProjectRole.of(
                 activity.projectRole,
@@ -120,6 +126,9 @@ internal class ActivityCreationUseCaseTest {
             "Dummy Project",
             open = true,
             billable = false,
+            LocalDate.now(),
+            null,
+            null,
             ORGANIZATION,
             listOf()
         )
@@ -170,7 +179,7 @@ internal class ActivityCreationUseCaseTest {
             billable: Boolean = false,
             hasEvidences: Boolean = false,
             projectRole: ProjectRole = PROJECT_ROLE_NO_APPROVAL,
-            approvalState: ApprovalState = ApprovalState.NA
+            approvalState: ApprovalState = ApprovalState.NA,
         ): Activity =
             Activity(
                 id = id,
@@ -195,7 +204,7 @@ internal class ActivityCreationUseCaseTest {
             billable: Boolean = false,
             hasEvidences: Boolean = false,
             projectRoleId: Long = 10L,
-            approvalState: ApprovalState = ApprovalState.NA
+            approvalState: ApprovalState = ApprovalState.NA,
         ): ActivityResponseDTO =
             ActivityResponseDTO(
                 billable,

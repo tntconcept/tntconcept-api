@@ -521,6 +521,28 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
+    fun `update activity should throw IllegalArgumentException when id doesn't exist`() {
+        val activity = Activity(
+            id = 1L,
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Updated test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
+        whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(null)
+
+        assertThrows<IllegalArgumentException> {
+            activityRepositorySecured.update(activity)
+        }
+    }
+
+    @Test
     fun `delete activity should throw IllegalStateException if user is not authenticated`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
