@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.entities.User
 import io.micronaut.context.MessageSource
 import jakarta.inject.Singleton
@@ -14,7 +15,7 @@ internal class ApprovedActivityMailService(
     private val messageSource: MessageSource,
     private val appProperties: AppProperties
 ) {
-    fun sendApprovedActivityMail(activity: com.autentia.tnt.binnacle.core.domain.Activity, user: User, locale: Locale){
+    fun sendApprovedActivityMail(activity: Activity, user: User, locale: Locale){
         if (!appProperties.mail.enabled) {
             logger.info("Mailing of approval activities is disabled")
             return
