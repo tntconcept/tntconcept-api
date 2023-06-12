@@ -59,11 +59,11 @@ internal class ProjectControllerIT {
     @AfterEach
     fun resetMocks() {
         reset(
-                projectByIdUseCase,
-                projectRoleByProjectIdUseCase,
-                blockProjectByIdUseCase,
-                unblockProjectByIdUseCase,
-                projectByFilterUseCase
+            projectByIdUseCase,
+            projectRoleByProjectIdUseCase,
+            blockProjectByIdUseCase,
+            unblockProjectByIdUseCase,
+            projectByFilterUseCase
 
         )
     }
@@ -77,12 +77,12 @@ internal class ProjectControllerIT {
     fun `return the correct project`() {
         // setup
         val projectRequestBody = ProjectResponseDTO(
-                1L,
-                "Vacaciones",
-                true,
-                true,
-                1L,
-                startDate = LocalDate.now(),
+            1L,
+            "Vacaciones",
+            true,
+            true,
+            1L,
+            startDate = LocalDate.now(),
         )
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)
@@ -101,16 +101,16 @@ internal class ProjectControllerIT {
         val year = 2023
 
         val projectRoleUser = ProjectRoleUserDTO(
-                1L,
-                "Vacaciones",
-                2L,
-                3L,
-                960,
-                480,
-                TimeUnit.MINUTES,
-                RequireEvidence.NO,
-                true,
-                4L
+            1L,
+            "Vacaciones",
+            2L,
+            3L,
+            960,
+            480,
+            TimeUnit.MINUTES,
+            RequireEvidence.NO,
+            true,
+            4L
         )
 
         doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId, year)
@@ -127,16 +127,16 @@ internal class ProjectControllerIT {
         val projectId = 3L
 
         val projectRoleUser = ProjectRoleUserDTO(
-                1L,
-                "Vacaciones",
-                2L,
-                3L,
-                960,
-                480,
-                TimeUnit.MINUTES,
-                RequireEvidence.NO,
-                true,
-                4L
+            1L,
+            "Vacaciones",
+            2L,
+            3L,
+            960,
+            480,
+            TimeUnit.MINUTES,
+            RequireEvidence.NO,
+            true,
+            4L
         )
 
         doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId, null)
@@ -149,16 +149,16 @@ internal class ProjectControllerIT {
 
 
     private fun putFailProvider() = arrayOf(
-            arrayOf(InvalidBlockDateException(), BAD_REQUEST, "INVALID_BLOCK_DATE"),
-            arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
+        arrayOf(InvalidBlockDateException(), BAD_REQUEST, "INVALID_BLOCK_DATE"),
+        arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
     )
 
     @ParameterizedTest
     @MethodSource("putFailProvider")
-    fun `fail to block project and exception is throw`(
-            exception: Exception,
-            expectedResponseStatus: HttpStatus,
-            expectedErrorCode: String,
+    fun `fail to block project and exception is thrown`(
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorCode: String,
     ) {
 
         val projectId = 1L
@@ -168,7 +168,7 @@ internal class ProjectControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                    POST("/api/project/$projectId/block", blockProjectRequest)
+                POST("/api/project/$projectId/block", blockProjectRequest)
             )
         }
 
@@ -178,7 +178,7 @@ internal class ProjectControllerIT {
 
 
     @Test
-    fun `fail to unblock project and exception is throw`() {
+    fun `fail to unblock project and exception is thrown`() {
 
         val projectId = 1L
 
@@ -186,7 +186,7 @@ internal class ProjectControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                    POST("/api/project/$projectId/unblock", "")
+                POST("/api/project/$projectId/unblock", "")
             )
         }
 
@@ -200,11 +200,11 @@ internal class ProjectControllerIT {
         val blockProjectRequest = BlockProjectRequestDTO(blockDate = LocalDate.of(2023, 5, 5))
         val projectResponseDTO = createProjectResponseDTO()
         whenever(blockProjectByIdUseCase.blockProject(projectId, blockProjectRequest.blockDate)).thenReturn(
-                projectResponseDTO
+            projectResponseDTO
         )
 
         val response =
-                client.exchangeObject<ProjectResponseDTO>(POST("/api/project/$projectId/block", blockProjectRequest))
+            client.exchangeObject<ProjectResponseDTO>(POST("/api/project/$projectId/block", blockProjectRequest))
 
         assertThat(response.status).isEqualTo(OK)
         assertThat(response.getBody<ProjectResponseDTO>().get()).isEqualTo(projectResponseDTO)
@@ -223,10 +223,10 @@ internal class ProjectControllerIT {
 
     @ParameterizedTest
     @MethodSource("getFailProvider")
-    fun `FAIL when the project to retrieve is not found in the database and exception is throw`(
-            exception: Exception,
-            expectedResponseStatus: HttpStatus,
-            expectedErrorCode: String,
+    fun `FAIL when the project to retrieve is not found in the database and exception is thrown`(
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorCode: String,
     ) {
 
         val projectId = 1L
@@ -245,12 +245,12 @@ internal class ProjectControllerIT {
     @Test
     fun `return all filtered projects`() {
         val projectRequestBody = ProjectResponseDTO(
-                1L,
-                "Vacaciones",
-                true,
-                true,
-                1L,
-                startDate = LocalDate.now().minusMonths(2L),
+            1L,
+            "Vacaciones",
+            true,
+            true,
+            1L,
+            startDate = LocalDate.now().minusMonths(2L),
         )
         val projectFilter = ProjectFilterDTO(1, false)
         whenever(projectByFilterUseCase.getProjects(projectFilter)).thenReturn(listOf(projectRequestBody))
@@ -262,7 +262,7 @@ internal class ProjectControllerIT {
     }
 
     private fun getFailProvider() = arrayOf(
-            arrayOf(ProjectNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+        arrayOf(ProjectNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
     )
 
 }
