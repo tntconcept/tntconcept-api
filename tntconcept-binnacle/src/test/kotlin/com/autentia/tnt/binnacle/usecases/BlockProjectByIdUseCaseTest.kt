@@ -33,7 +33,7 @@ class BlockProjectByIdUseCaseTest {
     )
 
     @Test
-    fun `blocking project with a date in the past`() {
+    fun `should block a project with a date in the past`() {
         val daysBefore = 2L
         val dateTwoDaysBefore = LocalDate.now().minusDays(daysBefore)
 
