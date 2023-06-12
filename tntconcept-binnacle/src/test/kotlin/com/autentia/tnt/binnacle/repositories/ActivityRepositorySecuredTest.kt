@@ -521,7 +521,7 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
-    fun `update activity should throw IllegalArgumentException when id doesnt exists`() {
+    fun `update activity should throw IllegalArgumentException when id doesn't exist`() {
         val activity = Activity(
             id = 1L,
             start = today.atTime(10, 0, 0),

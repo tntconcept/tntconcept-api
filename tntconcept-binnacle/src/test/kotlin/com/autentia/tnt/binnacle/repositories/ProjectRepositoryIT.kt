@@ -55,7 +55,7 @@ internal class ProjectRepositoryIT {
     }
 
     @Test
-    fun `should find returns empty optional when id doesnt exists`() {
+    fun `should find returns empty optional when id doesn't exist`() {
         val result = projectRepository.findById(Long.MAX_VALUE)
 
         assert(result.isEmpty)

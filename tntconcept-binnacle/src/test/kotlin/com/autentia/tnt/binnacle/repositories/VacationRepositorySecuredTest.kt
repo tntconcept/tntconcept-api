@@ -175,7 +175,7 @@ class VacationRepositorySecuredTest {
     }
 
     @Test
-    fun `update vacation when activity does not exists`() {
+    fun `update vacation when activity does not exist`() {
         val vacationId = 1L
         val vacation = Vacation(
             id = vacationId,

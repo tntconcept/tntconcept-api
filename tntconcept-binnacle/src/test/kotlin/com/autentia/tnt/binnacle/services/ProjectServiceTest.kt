@@ -41,7 +41,7 @@ internal class ProjectServiceTest {
     }
 
     @Test
-    fun `throw ProjectNotFoundException when Id doesnt exists`() {
+    fun `throw ProjectNotFoundException when Id doesn't exist`() {
         whenever(projectRepository.findById(projectId)).thenReturn(Optional.empty())
 
         assertThrows<ProjectNotFoundException> {
@@ -96,17 +96,6 @@ internal class ProjectServiceTest {
             LocalDate.now(),
             LocalDate.now(),
             user.id,
-            Organization(1, "Organization", emptyList()),
-            emptyList()
-        )
-        private val projectClosedNotBlocked = com.autentia.tnt.binnacle.entities.Project(
-            1,
-            "NotBlockedProjectButClosed",
-            open = false,
-            billable = true,
-            startDate = LocalDate.now(),
-            blockDate = null,
-            blockedByUser = null,
             Organization(1, "Organization", emptyList()),
             emptyList()
         )
