@@ -172,7 +172,5 @@ internal class ActivitiesByFilterUseCaseTest {
                 false,
                 approvalState = ApprovalState.PENDING
             )
-
-
     }
 }

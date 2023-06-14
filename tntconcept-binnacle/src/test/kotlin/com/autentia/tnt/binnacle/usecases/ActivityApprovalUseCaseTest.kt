@@ -4,14 +4,11 @@ import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createActivityResponseDTO
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.*
-import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.ApprovedActivityMailService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -19,15 +16,15 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.*
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import java.util.*
 
 internal class ActivityApprovalUseCaseTest {
 
     private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
     private val securityService = mock<SecurityService>()
     private val userService = mock<UserService>()
     private val converter = mock<ActivityResponseConverter>()
@@ -37,7 +34,7 @@ internal class ActivityApprovalUseCaseTest {
     private val activityValidator = ActivityValidator(activityService, activityCalendarService, projectService)
 
     private val activityApprovalUseCase: ActivityApprovalUseCase = ActivityApprovalUseCase(
-        activityService, securityService, converter, userService, approvedActivityMailService, activityValidator
+        activityRepository, securityService, converter, userService, approvedActivityMailService, activityValidator
     )
 
     @Test
@@ -61,27 +58,28 @@ internal class ActivityApprovalUseCaseTest {
     @Test
     fun `should approve activity`() {
         val user = createUser()
-        val activityToApprove = createActivity(approvalState = ApprovalState.PENDING).copy(hasEvidences = true).toDomain()
+        val activityToApprove =
+            createActivity(approvalState = ApprovalState.PENDING).copy(hasEvidences = true)
         val approvedActivity = activityToApprove.copy(approvalState = ApprovalState.ACCEPTED)
         val activityResponseDTO = createActivityResponseDTO(
             activityId,
-            approvedActivity.timeInterval.start,
-            approvedActivity.timeInterval.end,
+            approvedActivity.start,
+            approvedActivity.end,
             approvedActivity.hasEvidences,
             approvedActivity.approvalState
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithActivityApprovalRole))
-        whenever(activityService.getActivityById(activityId)).thenReturn(activityToApprove)
+        whenever(activityRepository.findById(activityId)).thenReturn(activityToApprove)
         whenever(userService.getById(activityToApprove.userId)).thenReturn(user)
-        whenever(activityService.approveActivityById(activityId)).thenReturn(approvedActivity)
-        whenever(converter.toActivityResponseDTO(approvedActivity)).thenReturn(activityResponseDTO)
+        whenever(activityRepository.update(approvedActivity)).thenReturn(approvedActivity)
+        whenever(converter.toActivityResponseDTO(approvedActivity.toDomain())).thenReturn(activityResponseDTO)
 
         val result = activityApprovalUseCase.approveActivity(activityId, Locale.ENGLISH)
 
         assertThat(result).isEqualTo(activityResponseDTO)
         verify(approvedActivityMailService, times(1)).sendApprovedActivityMail(
-            approvedActivity,
+            approvedActivity.toDomain(),
             user,
             Locale.ENGLISH
         )
@@ -89,25 +87,21 @@ internal class ActivityApprovalUseCaseTest {
 
     @Test
     fun `approve activity with accepted approval state should throw exception`() {
-        val activityId = 1L
+        val activityWithApprovedState = createActivity(activityId, ApprovalState.ACCEPTED)
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithActivityApprovalRole))
-        doReturn(activityWithEvidence.copy(approvalState = ApprovalState.ACCEPTED)).whenever(
-            activityService
-        )
-            .getActivityById(activityId)
+        whenever(activityRepository.findById(activityId)).thenReturn(activityWithApprovedState)
+
         assertThrows<InvalidActivityApprovalStateException> {
             activityApprovalUseCase.approveActivity(activityId, Locale.ENGLISH)
         }
     }
 
     @Test
-    fun `approve activity with not applied approval state should throw exception`() {
-        val activityId = 1L
+    fun `approve activity with not applicable approval state should throw exception`() {
+        val activityWithNotApplicableState = createActivity(activityId, ApprovalState.NA)
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithActivityApprovalRole))
-        doReturn(activityWithEvidence.copy(approvalState = ApprovalState.NA)).whenever(
-            activityService
-        )
-            .getActivityById(activityId)
+        whenever(activityRepository.findById(activityId)).thenReturn(activityWithNotApplicableState)
+
         assertThrows<InvalidActivityApprovalStateException> {
             activityApprovalUseCase.approveActivity(activityId, Locale.ENGLISH)
         }
@@ -115,10 +109,10 @@ internal class ActivityApprovalUseCaseTest {
 
     @Test
     fun `approve activity without evidence should throw exception`() {
-        val activityId = 1L
+        val activityWithoutEvidence = createActivity(activityId, ApprovalState.PENDING)
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithActivityApprovalRole))
-        whenever(activityService.getActivityById(activityId)).thenReturn(
-            activityWithoutEvidence.copy(approvalState = ApprovalState.PENDING)
+        whenever(activityRepository.findById(activityId)).thenReturn(
+            activityWithoutEvidence
         )
         assertThrows<NoEvidenceInActivityException> {
             activityApprovalUseCase.approveActivity(activityId, Locale.ENGLISH)
@@ -132,23 +126,5 @@ internal class ActivityApprovalUseCaseTest {
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("activity-approval")))
         private val authenticationWithoutAdminRole =
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
-
-        private val organization = Organization(1L, "Autentia", emptyList())
-        private val project =
-            Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
-        private val projectRole =
-            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
-        private val activityWithoutEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            null, TimeInterval.of(
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-            ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA
-        )
-        private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            null, TimeInterval.of(
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-            ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA
-        )
     }
 }

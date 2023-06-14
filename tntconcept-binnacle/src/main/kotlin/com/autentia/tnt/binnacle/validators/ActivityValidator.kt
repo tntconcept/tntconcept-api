@@ -232,13 +232,10 @@ internal class ActivityValidator(
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
     }
 
-    @Transactional
-    @ReadOnly
-    fun checkActivityIsValidForApproval(id: Long) {
-        val activity = activityService.getActivityById(id)
+    fun checkActivityIsValidForApproval(activity: Activity) {
         when {
             activity.approvalState == ApprovalState.ACCEPTED || activity.approvalState == ApprovalState.NA -> throw InvalidActivityApprovalStateException()
-            !activity.hasEvidences -> throw NoEvidenceInActivityException(id)
+            !activity.hasEvidences -> throw NoEvidenceInActivityException(activity.id!!)
         }
     }
 
