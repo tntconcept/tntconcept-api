@@ -21,7 +21,7 @@ internal class ActivityService(
     private val activityRepository: ActivityRepository,
     @param:Named("Internal") private val internalActivityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
-    private val activityEvidenceService: ActivityEvidenceService
+    private val activityEvidenceService: ActivityEvidenceService,
 ) {
 
     @Transactional
@@ -69,7 +69,7 @@ internal class ActivityService(
 
     @Transactional(rollbackOn = [Exception::class])
     fun createActivity(
-        activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?
+        activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?,
     ): com.autentia.tnt.binnacle.core.domain.Activity {
         val projectRole = projectRoleRepository.findById(activityToCreate.projectRole.id)
             ?: error { "Cannot find projectRole with id = ${activityToCreate.projectRole.id}" }
@@ -88,34 +88,8 @@ internal class ActivityService(
     }
 
     fun filterActivitiesByTimeInterval(
-        filterTimeInterval: TimeInterval, activities: List<Activity>
+        filterTimeInterval: TimeInterval, activities: List<Activity>,
     ) = activities.map(Activity::toDomain).filter { it.isInTheTimeInterval(filterTimeInterval) }.toList()
-
-    @Transactional(rollbackOn = [Exception::class])
-    fun updateActivity(
-        activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?
-    ): com.autentia.tnt.binnacle.core.domain.Activity {
-        val projectRole = projectRoleRepository.findById(activityToUpdate.projectRole.id)
-            ?: error { "Cannot find projectRole with id = ${activityToUpdate.projectRole.id}" }
-
-        val oldActivity =
-            activityRepository.findById(activityToUpdate.id!!) ?: throw ActivityNotFoundException(activityToUpdate.id)
-
-        // Update stored image
-        if (activityToUpdate.hasEvidences) {
-            checkAttachedEvidence(activityToUpdate, evidence)
-            activityEvidenceService.storeActivityEvidence(
-                activityToUpdate.id, evidence!!, oldActivity.insertDate!!
-            )
-        }
-
-        // Delete stored image
-        if (!activityToUpdate.hasEvidences && oldActivity.hasEvidences) {
-            activityEvidenceService.deleteActivityEvidence(activityToUpdate.id, oldActivity.insertDate!!)
-        }
-
-        return activityRepository.update(Activity.of(activityToUpdate, projectRole)).toDomain()
-    }
 
     @Transactional(rollbackOn = [Exception::class])
     fun approveActivityById(id: Long): com.autentia.tnt.binnacle.core.domain.Activity {
@@ -143,7 +117,7 @@ internal class ActivityService(
         activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
 
     private fun checkAttachedEvidence(
-        activity: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?
+        activity: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?,
     ) {
         if (activity.hasEvidences && evidence == null) {
             throw NoEvidenceInActivityException(
