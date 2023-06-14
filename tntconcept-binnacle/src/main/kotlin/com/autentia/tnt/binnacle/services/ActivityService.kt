@@ -32,14 +32,6 @@ internal class ActivityService(
 
     @Transactional
     @ReadOnly
-    fun getActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
-        val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
-        val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
-        return activityRepository.findByUserId(startDateMinHour, endDateMaxHour, userId)
-    }
-
-    @Transactional
-    @ReadOnly
     fun getUserActivitiesBetweenDates(dateInterval: DateInterval, userId: Long): List<Activity> {
         val startDateMinHour = dateInterval.start.atTime(LocalTime.MIN)
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)

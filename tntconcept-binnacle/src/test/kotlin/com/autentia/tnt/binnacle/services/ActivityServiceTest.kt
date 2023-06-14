@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
@@ -60,23 +59,6 @@ internal class ActivityServiceTest {
         assertThrows<ActivityNotFoundException> {
             sut.getActivityById(notFoundActivityId)
         }
-    }
-
-    @Test
-    fun `get activities between start and end date with userId`() {
-        val userId = 1L
-        val startDate = LocalDate.of(2019, 1, 1)
-        val endDate = LocalDate.of(2019, 1, 31)
-
-        whenever(
-            activityRepository.findByUserId(
-                startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX), userId
-            )
-        ).thenReturn(listOf(activityWithoutEvidenceSaved))
-
-        val actual = sut.getActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
-
-        assertEquals(listOf(activityWithoutEvidenceSaved), actual)
     }
 
     @Test
@@ -250,9 +232,6 @@ internal class ActivityServiceTest {
         val userId = 1L
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)
-        val timeInterval = TimeInterval.of(
-            startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX)
-        )
         val expectedActivities = activities.map(Activity::toDomain)
 
         whenever(
@@ -268,15 +247,12 @@ internal class ActivityServiceTest {
     }
 
     private companion object {
-        private val USER = createUser()
 
         private val organization = Organization(1L, "Autentia", emptyList())
         private val project =
             Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
         private val projectRole =
             ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
-
-        private val TODAY_NOON = LocalDateTime.of(LocalDate.now(), LocalTime.NOON)
 
         private const val notFoundActivityId = 1L
 
