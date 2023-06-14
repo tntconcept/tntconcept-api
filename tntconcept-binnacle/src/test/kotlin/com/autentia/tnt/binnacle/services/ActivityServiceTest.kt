@@ -204,30 +204,6 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `delete activity by id`() {
-        whenever(activityRepository.findById(activityWithoutEvidenceSaved.id!!)).thenReturn(activityWithoutEvidenceSaved)
-
-        sut.deleteActivityById(activityWithoutEvidenceSaved.id as Long)
-
-        verify(activityRepository).deleteById(activityWithoutEvidenceSaved.id!!)
-        verifyNoInteractions(activityEvidenceService)
-    }
-
-    @Test
-    fun `delete activity by id and its image`() {
-        whenever(activityRepository.findById(activityWithoutEvidenceSaved.id!!)).thenReturn(activityWithEvidenceSaved)
-
-        whenever(activityRepository.findById(activityWithEvidenceSaved.id!!)).thenReturn(activityWithEvidenceSaved)
-
-        sut.deleteActivityById(activityWithEvidenceSaved.id!!)
-
-        verify(activityRepository).deleteById(activityWithEvidenceSaved.id!!)
-        verify(activityEvidenceService).deleteActivityEvidence(
-            activityWithEvidenceSaved.id!!, activityWithEvidenceSaved.insertDate!!
-        )
-    }
-
-    @Test
     fun `should find overlapped activites`() {
         val userId = 1L
         val startDate = LocalDate.of(2019, 1, 1)

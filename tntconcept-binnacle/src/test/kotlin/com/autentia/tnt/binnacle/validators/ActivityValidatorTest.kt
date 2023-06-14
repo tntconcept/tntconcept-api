@@ -836,20 +836,7 @@ internal class ActivityValidatorTest {
             whenever(activityService.getActivityById(id)).thenReturn(activity.toDomain())
             whenever(projectService.findById(vacationProject.id)).thenReturn(vacationProject.toDomain())
 
-            activityValidator.checkActivityIsValidForDeletion(id)
-        }
-
-        @Test
-        fun `throw ActivityNotFoundException with id when activity is not in the database`() {
-            val id = 1L
-
-            whenever(activityService.getActivityById(1L)).thenThrow(ActivityNotFoundException(1))
-            whenever(projectService.findById(vacationProject.id)).thenReturn(vacationProject.toDomain())
-
-            val exception = assertThrows<ActivityNotFoundException> {
-                activityValidator.checkActivityIsValidForDeletion(id)
-            }
-            assertEquals(id, exception.id)
+            activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
         }
 
         @Test
@@ -870,7 +857,7 @@ internal class ActivityValidatorTest {
             whenever(activityService.getActivityById(id)).thenReturn(activity.toDomain())
             whenever(projectService.findById(vacationProject.id)).thenReturn(vacationProject.toDomain())
 
-            activityValidator.checkActivityIsValidForDeletion(id)
+            activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
         }
 
         @Test
@@ -891,7 +878,7 @@ internal class ActivityValidatorTest {
             whenever(projectService.findById(vacationProject.id)).thenReturn(vacationProject.toDomain())
 
             assertThrows<ActivityPeriodClosedException> {
-                activityValidator.checkActivityIsValidForDeletion(id)
+                activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
             }
         }
 
@@ -913,7 +900,7 @@ internal class ActivityValidatorTest {
             whenever(projectService.findById(blockedProject.id)).thenReturn(blockedProject.toDomain())
 
             assertThrows<ProjectBlockedException> {
-                activityValidator.checkActivityIsValidForDeletion(id)
+                activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
             }
         }
     }

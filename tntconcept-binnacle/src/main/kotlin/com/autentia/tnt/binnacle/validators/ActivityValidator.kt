@@ -200,8 +200,7 @@ internal class ActivityValidator(
 
     @Transactional
     @ReadOnly
-    fun checkActivityIsValidForDeletion(id: Long) {
-        val activity = activityService.getActivityById(id)
+    fun checkActivityIsValidForDeletion(activity: Activity) {
         val project = projectService.findById(activity.projectRole.project.id)
         when {
             isProjectBlocked(project, activity) -> throw ProjectBlockedException()

@@ -93,15 +93,6 @@ internal class ActivityService(
     }
 
     @Transactional
-    fun deleteActivityById(id: Long) {
-        val activityToDelete = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
-        if (activityToDelete.hasEvidences) {
-            activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
-        }
-        activityRepository.deleteById(id)
-    }
-
-    @Transactional
     fun findOverlappedActivities(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long) =
         activityRepository.findOverlapped(startDate, endDate, userId).map(Activity::toDomain)
 
