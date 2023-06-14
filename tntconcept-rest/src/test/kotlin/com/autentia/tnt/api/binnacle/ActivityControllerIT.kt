@@ -1,6 +1,8 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.api.binnacle.activity.ActivityRequest
+import com.autentia.tnt.api.binnacle.activity.ActivityResponse
+import com.autentia.tnt.api.binnacle.activity.ActivitySummaryResponse
 import com.autentia.tnt.api.binnacle.activity.TimeInterval
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month.JANUARY
@@ -73,7 +76,8 @@ internal class ActivityControllerIT {
     fun `get all activities between the start and end date`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
-        val activities = listOf(ACTIVITY_RESPONSE_DTO)
+        val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE)
 
         whenever(
                 activitiesByFilterUseCase.getActivities(
@@ -81,9 +85,9 @@ internal class ActivityControllerIT {
                                 startDate = startDate, endDate = endDate
                         )
                 )
-        ).thenReturn(activities)
+        ).thenReturn(activityResponseDTOs)
 
-        val response = client.exchangeList<ActivityResponseDTO>(
+        val response = client.exchangeList<ActivityResponse>(
                 GET("/api/activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
@@ -94,13 +98,14 @@ internal class ActivityControllerIT {
     @Test
     fun `get all activities by approvalState`() {
         val approvalState = ApprovalState.PENDING
-        val activities = listOf(ACTIVITY_RESPONSE_DTO)
+        val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE)
 
         whenever(activitiesByFilterUseCase.getActivities(ActivityFilterDTO(approvalState = approvalState))).thenReturn(
-                activities
+            activityResponseDTOs
         )
 
-        val response = client.exchangeList<ActivityResponseDTO>(
+        val response = client.exchangeList<ActivityResponse>(
                 GET("/api/activity?approvalState=${approvalState}"),
         )
 
@@ -126,10 +131,12 @@ internal class ActivityControllerIT {
                 roleId,
                 userId,
         )
-        val activities = listOf(ACTIVITY_RESPONSE_DTO)
-        whenever(activitiesByFilterUseCase.getActivities(activitiesFilter)).thenReturn(activities)
+        val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE)
 
-        val response = client.exchangeList<ActivityResponseDTO>(
+        whenever(activitiesByFilterUseCase.getActivities(activitiesFilter)).thenReturn(activityResponseDTOs)
+
+        val response = client.exchangeList<ActivityResponse>(
                 GET(
                         "/api/activity?" + "approvalState=${approvalState}" + "&startDate=${startDate.toJson()}" + "&endDate=${endDate.toJson()}" + "&organizationId=${organizationId}" + "&projectId=${projectId}" + "&roleId=${roleId}" + "&userId=${userId}"
                 ),
@@ -143,27 +150,28 @@ internal class ActivityControllerIT {
     fun `get summary activities between the start and end date`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
-        val activities = listOf(ACTIVITY_RESPONSE_DTO)
-        doReturn(activities).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
+        val activitySummaryDTOs = listOf(ACTIVITY_SUMMARY_DTO)
+        val activitySummaryResponses = listOf(ACTIVITY_SUMMARY_RESPONSE)
+        doReturn(activitySummaryDTOs).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
 
-        val response = client.exchangeList<ActivityResponseDTO>(
+        val response = client.exchangeList<ActivitySummaryResponse>(
                 GET("/api/activity/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
         assertEquals(OK, response.status)
-        assertEquals(activities, response.body.get())
+        assertEquals(activitySummaryResponses, response.body.get())
     }
 
     @Test
     fun `get activity by id`() {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityRetrievalUseCase).getActivityById(ACTIVITY_RESPONSE_DTO.id)
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
+        val response = client.exchangeObject<ActivityResponse>(
                 GET("/api/activity/${ACTIVITY_RESPONSE_DTO.id}")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+        assertEquals(ACTIVITY_RESPONSE, response.body.get())
     }
 
     @Test
@@ -197,24 +205,24 @@ internal class ActivityControllerIT {
     fun `post a new activity without evidence`() {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
+        val response = client.exchangeObject<ActivityResponse>(
                 POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+        assertEquals(ACTIVITY_RESPONSE, response.body.get())
     }
 
     @Test
     fun `post a new activity with evidence`() {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
+        val response = client.exchangeObject<ActivityResponse>(
                 POST("/api/activity", ACTIVITY_WITH_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+        assertEquals(ACTIVITY_RESPONSE, response.body.get())
     }
 
     @Test
@@ -279,14 +287,15 @@ internal class ActivityControllerIT {
         val updatedActivity = ACTIVITY_RESPONSE_DTO.copy(
                 description = putActivity.description
         )
+        val updatedActivityResponse = ActivityResponse.from(updatedActivity)
         doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
+        val response = client.exchangeObject<ActivityResponse>(
                 PUT("/api/activity", ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
         )
 
         assertEquals(OK, response.status)
-        assertEquals(updatedActivity, response.body.get())
+        assertEquals(updatedActivityResponse, response.body.get())
     }
 
     private fun putFailProvider() = arrayOf(
@@ -360,12 +369,12 @@ internal class ActivityControllerIT {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase)
                 .approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
+        val response = client.exchangeObject<ActivityResponse>(
                 POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+        assertEquals(ACTIVITY_RESPONSE, response.body.get())
     }
 
     private fun activityApprovalFailedProvider() = arrayOf(
@@ -466,6 +475,13 @@ internal class ActivityControllerIT {
                 42,
                 ApprovalState.ACCEPTED
         )
+        private val ACTIVITY_RESPONSE = ActivityResponse.from(ACTIVITY_RESPONSE_DTO)
+
+        private val ACTIVITY_SUMMARY_DTO = ActivitySummaryDTO (
+            START_DATE.toLocalDate(),
+            BigDecimal.TEN
+        )
+        private val ACTIVITY_SUMMARY_RESPONSE = ActivitySummaryResponse.from(ACTIVITY_SUMMARY_DTO)
 
         private val ACTIVITY_PUT_JSON = """
             {
