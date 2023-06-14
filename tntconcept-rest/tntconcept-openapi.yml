@@ -822,7 +822,6 @@ paths:
               - $ref: '#/components/schemas/RequestVacationDTO'
               - required:
                 - locale
-                type: object
                 properties:
                   locale:
                     $ref: '#/components/schemas/Locale'
@@ -847,7 +846,6 @@ paths:
               - $ref: '#/components/schemas/RequestVacationDTO'
               - required:
                 - locale
-                type: object
                 properties:
                   locale:
                     $ref: '#/components/schemas/Locale'
@@ -1151,41 +1149,24 @@ components:
       properties:
         id:
           type: integer
-          description: The activity identifier. It is required for updating and not
-            for creating
           format: int64
           nullable: true
-          example: 1
         interval:
-          allOf:
-          - $ref: '#/components/schemas/TimeInterval'
-          - type: object
-            description: The interval for the activity
+          $ref: '#/components/schemas/TimeInterval'
         description:
           maxLength: 2048
           type: string
-          description: The description of the activity
-          example: "Feature: Store user in database"
         billable:
           type: boolean
-          description: Specifies whether the activity is billable or not
-          example: true
         projectRoleId:
           type: integer
-          description: The ID of the project role associated with the activity
           format: int64
-          example: 3
         hasEvidences:
           type: boolean
-          description: Specifies whether the activity has evidences or not
-          example: true
         evidence:
           pattern: "^data:[^,]+;base64,.+$"
           type: string
-          description: The evidence file associated with the activity
           nullable: true
-          example: "data:image/jpg;base64,SGVsbG8gV29ybGQh"
-      description: A request data for creating or updating an activity
     ActivityRequestBodyHookDTO:
       required:
       - billable
