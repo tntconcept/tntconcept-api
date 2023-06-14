@@ -191,4 +191,12 @@
         <url>https://github.com/autentia/tntconcept-api</url>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Maven repository</name>
+            <url>https://maven.pkg.github.com/autentia/tntconcept-api</url>
+        </repository>
+    </distributionManagement>
+
 </project>
