@@ -9,7 +9,6 @@ import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -38,13 +37,6 @@ internal class ActivityService(
         val endDateMaxHour = dateInterval.end.atTime(LocalTime.MAX)
         return activityRepository.findByUserId(startDateMinHour, endDateMaxHour, userId)
     }
-
-    @Transactional
-    @ReadOnly
-    fun getActivities(activitySpecification: Specification<Activity>): List<com.autentia.tnt.binnacle.core.domain.Activity> {
-        return activityRepository.findAll(activitySpecification).map { it.toDomain() }
-    }
-
 
     @Transactional
     @ReadOnly

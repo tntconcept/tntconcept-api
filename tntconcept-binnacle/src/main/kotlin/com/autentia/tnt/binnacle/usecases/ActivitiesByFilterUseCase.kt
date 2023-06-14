@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.approvalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.endDateGreaterThanOrEqualTo
@@ -13,9 +14,7 @@ import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.role
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.startDateLessThanOrEqualTo
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.userId
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
-import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.security.application.checkAuthentication
-import com.autentia.tnt.security.application.id
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
@@ -23,19 +22,18 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ActivitiesByFilterUseCase internal constructor(
-    private val activityService: ActivityService,
+    private val activityRepository: ActivityRepository,
     private val securityService: SecurityService,
     private val activityResponseConverter: ActivityResponseConverter,
 ) {
     fun getActivities(activityFilter: ActivityFilterDTO): List<ActivityResponseDTO> {
-        val authentication = securityService.checkAuthentication()
-        val userId = authentication.id()
-        val predicate: Specification<Activity> = getPredicateFromActivityFilter(activityFilter, userId)
-        val activities = activityService.getActivities(predicate)
+        securityService.checkAuthentication()
+        val predicate: Specification<Activity> = getPredicateFromActivityFilter(activityFilter)
+        val activities = activityRepository.findAll(predicate).map { it.toDomain() }
         return activities.map { activityResponseConverter.toActivityResponseDTO(it) }
     }
 
-    private fun getPredicateFromActivityFilter(activityFilter: ActivityFilterDTO, userId: Long): Specification<Activity> {
+    private fun getPredicateFromActivityFilter(activityFilter: ActivityFilterDTO): Specification<Activity> {
         var predicate: Specification<Activity> = ActivityPredicates.ALL
 
         if (activityFilter.approvalState !== null) {

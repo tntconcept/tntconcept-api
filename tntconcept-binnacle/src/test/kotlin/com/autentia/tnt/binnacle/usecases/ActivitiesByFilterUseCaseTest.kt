@@ -6,8 +6,8 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.predicates.*
-import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.assertj.core.api.Assertions.assertThat
@@ -17,14 +17,14 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
-import java.util.Optional
+import java.util.*
 
 internal class ActivitiesByFilterUseCaseTest {
-    private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
     private val securityService = mock<SecurityService>()
     private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
     private val activitiesByFilterUseCase =
-        ActivitiesByFilterUseCase(activityService, securityService, activityResponseConverter)
+        ActivitiesByFilterUseCase(activityRepository, securityService, activityResponseConverter)
 
     @BeforeEach
     fun setUp() {
@@ -40,7 +40,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -56,7 +56,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -70,13 +70,13 @@ internal class ActivitiesByFilterUseCaseTest {
             ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.startDate!!)
         )
 
-        whenever(activityService.getActivities(compositedSpecification)).thenReturn(listOf(activity))
+        whenever(activityRepository.findAll(compositedSpecification)).thenReturn(listOf(activity))
 
         val activities = activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        val expectedActivity = activityResponseConverter.toActivityResponseDTO(activity)
+        val expectedActivity = activityResponseConverter.toActivityResponseDTO(activity.toDomain())
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
         assertThat(activities).containsExactly(expectedActivity)
     }
 
@@ -90,7 +90,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -102,7 +102,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -119,7 +119,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -145,7 +145,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     private companion object {
@@ -171,7 +171,8 @@ internal class ActivitiesByFilterUseCaseTest {
                 null,
                 false,
                 approvalState = ApprovalState.PENDING
-            ).toDomain()
+            )
+
 
     }
 }
