@@ -9,11 +9,9 @@ import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.mockito.BDDMockito.given
 import org.mockito.BDDMockito.verify
 import org.mockito.BDDMockito.verifyNoInteractions
 import org.mockito.kotlin.*
@@ -189,22 +187,7 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `approve activity by id`() {
-        given(activityRepository.findById(activityWithEvidenceSaved.id as Long)).willReturn(
-            activityWithEvidenceSaved
-        )
-        given(
-            activityRepository.update(
-                activityWithEvidenceSaved
-            )
-        ).willReturn(activityWithEvidenceSaved)
-
-        val approvedActivity = sut.approveActivityById(activityWithEvidenceSaved.id as Long)
-        assertThat(approvedActivity.approvalState).isEqualTo(ApprovalState.ACCEPTED)
-    }
-
-    @Test
-    fun `should find overlapped activites`() {
+    fun `should find overlapped activities`() {
         val userId = 1L
         val startDate = LocalDate.of(2019, 1, 1)
         val endDate = LocalDate.of(2019, 1, 31)

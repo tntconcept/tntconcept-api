@@ -13,6 +13,7 @@ import com.autentia.tnt.security.application.checkActivityApprovalRole
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.util.*
+import javax.transaction.Transactional
 
 @Singleton
 class ActivityApprovalUseCase internal constructor(
@@ -23,6 +24,7 @@ class ActivityApprovalUseCase internal constructor(
     private val approvedActivityMailService: ApprovedActivityMailService,
     private val activityValidator: ActivityValidator,
 ) {
+    @Transactional(rollbackOn = [Exception::class])
     fun approveActivity(id: Long, locale: Locale): ActivityResponseDTO {
         securityService.checkActivityApprovalRole()
         val activityToApprove = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)

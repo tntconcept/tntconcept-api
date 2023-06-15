@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
@@ -82,15 +81,6 @@ internal class ActivityService(
     fun filterActivitiesByTimeInterval(
         filterTimeInterval: TimeInterval, activities: List<Activity>,
     ) = activities.map(Activity::toDomain).filter { it.isInTheTimeInterval(filterTimeInterval) }.toList()
-
-    @Transactional(rollbackOn = [Exception::class])
-    fun approveActivityById(id: Long): com.autentia.tnt.binnacle.core.domain.Activity {
-        val activityToApprove = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
-        activityToApprove.approvalState = ApprovalState.ACCEPTED
-        return activityRepository.update(
-            activityToApprove
-        ).toDomain()
-    }
 
     @Transactional
     fun findOverlappedActivities(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long) =
