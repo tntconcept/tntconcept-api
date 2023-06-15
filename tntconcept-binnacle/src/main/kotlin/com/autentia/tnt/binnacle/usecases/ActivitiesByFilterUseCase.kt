@@ -17,7 +17,9 @@ import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.security.application.checkAuthentication
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
+import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
+import javax.transaction.Transactional
 
 
 @Singleton
@@ -26,6 +28,9 @@ class ActivitiesByFilterUseCase internal constructor(
     private val securityService: SecurityService,
     private val activityResponseConverter: ActivityResponseConverter,
 ) {
+
+    @Transactional
+    @ReadOnly
     fun getActivities(activityFilter: ActivityFilterDTO): List<ActivityResponseDTO> {
         securityService.checkAuthentication()
         val predicate: Specification<Activity> = getPredicateFromActivityFilter(activityFilter)
