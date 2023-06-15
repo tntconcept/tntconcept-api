@@ -905,6 +905,35 @@ internal class ActivityValidatorTest {
         }
     }
 
+    @Nested
+    inner class CheckActivityIsValidForApproval {
+        @Test
+        fun `throw InvalidActivityApprovalStateException when activity approval state is accepted`() {
+            assertThrows<InvalidActivityApprovalStateException> {
+                activityValidator.checkActivityIsValidForApproval(activityWithAcceptedApprovalState)
+            }
+        }
+
+        @Test
+        fun `throw InvalidActivityApprovalStateException when activity approval state is not applicable`() {
+            assertThrows<InvalidActivityApprovalStateException> {
+                activityValidator.checkActivityIsValidForApproval(activityWithNotApplicableApprovalState)
+            }
+        }
+
+        @Test
+        fun `throw NoEvidenceInActivityException when activity has no evidences`() {
+            assertThrows<NoEvidenceInActivityException> {
+                activityValidator.checkActivityIsValidForApproval(activityWithoutEvidence)
+            }
+        }
+
+        @Test
+        fun `no exception is thrown when activity is valid for approval`() {
+            assertDoesNotThrow { activityValidator.checkActivityIsValidForApproval(activityValidForApproval) }
+        }
+    }
+
     private companion object {
 
         private val user = createDomainUser()
@@ -1136,12 +1165,6 @@ internal class ActivityValidatorTest {
             HOUR,
             projectRole.toDomain()
         )
-        private val activityUpdateNonexistentID = createDomainActivity(
-            someYearsAgoLocalDateTime(2),
-            someYearsAgoLocalDateTime(2).plusMinutes(HOUR.toLong()),
-            HOUR,
-            projectRole.toDomain()
-        )
 
         private val activityInvalidPeriodForMinutesProjectRole = createDomainActivity(
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
@@ -1211,6 +1234,14 @@ internal class ActivityValidatorTest {
             481,
             projectRole.toDomain()
         ).copy(id = null)
+
+        private val activityWithAcceptedApprovalState =
+            createDomainActivity().copy(approvalState = ApprovalState.ACCEPTED)
+        private val activityWithNotApplicableApprovalState =
+            createDomainActivity().copy(approvalState = ApprovalState.NA)
+        private val activityWithoutEvidence = createDomainActivity().copy(approvalState = ApprovalState.PENDING)
+        private val activityValidForApproval =
+            createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = true)
 
         private fun createActivity(
             start: LocalDateTime,
