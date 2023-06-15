@@ -1,15 +1,12 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivitiesResponse
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivitiesResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleResponseDTOOld
 import jakarta.inject.Singleton
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @Deprecated("Use ActivityResponseConverter instead")
 @Singleton
