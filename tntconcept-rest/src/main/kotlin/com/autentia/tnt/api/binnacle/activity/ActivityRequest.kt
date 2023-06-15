@@ -21,7 +21,7 @@ data class ActivityRequest(
         regexp = "^data:[^,]+;base64,.+$", message = "String format should be data:<mediatype>;base64,<data>"
     )
     @field:Nullable
-    val evidence: String? = null
+    val evidence: String? = null,
 ) {
     fun toDto(): ActivityRequestDTO = ActivityRequestDTO(
         id,
