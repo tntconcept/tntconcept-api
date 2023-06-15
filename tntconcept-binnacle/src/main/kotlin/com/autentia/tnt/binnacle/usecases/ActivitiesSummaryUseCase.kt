@@ -9,9 +9,11 @@ import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
+import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.LocalTime
+import javax.transaction.Transactional
 
 @Singleton
 class ActivitiesSummaryUseCase internal constructor(
@@ -20,6 +22,8 @@ class ActivitiesSummaryUseCase internal constructor(
     private val activitiesSummaryConverter: ActivitySummaryConverter,
     private val securityService: SecurityService
 ) {
+    @Transactional
+    @ReadOnly
     fun getActivitiesSummary(startDate: LocalDate, endDate: LocalDate): List<ActivitySummaryDTO> {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
