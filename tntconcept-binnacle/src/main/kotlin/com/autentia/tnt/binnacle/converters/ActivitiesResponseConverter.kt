@@ -18,19 +18,6 @@ class ActivitiesResponseConverter(
     private val projectResponseConverter: ProjectResponseConverter,
 ) {
 
-    fun mapActivityToActivityResponseDTO(activity: Activity) = ActivitiesResponseDTO(
-        id = activity.id!!,
-        startDate = activity.start,
-        billable = activity.billable,
-        userId = activity.userId,
-        description = activity.description,
-        organization = organizationResponseConverter.toOrganizationResponseDTO(activity.projectRole.project.organization),
-        project = projectResponseConverter.toProjectResponseDTO(activity.projectRole.project),
-        projectRole = toProjectRoleDTOOld(activity.projectRole),
-        duration = activity.duration,
-        hasImage = activity.hasEvidences
-    )
-
     fun mapActivityToActivityResponse(activity: Activity) = ActivitiesResponse(
         id = activity.id!!,
         startDate = activity.start,
