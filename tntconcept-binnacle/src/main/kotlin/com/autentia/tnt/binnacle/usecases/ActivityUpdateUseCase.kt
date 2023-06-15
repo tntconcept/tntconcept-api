@@ -17,9 +17,11 @@ import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 
 import java.util.*
+import javax.transaction.Transactional
 
 @Singleton
 class ActivityUpdateUseCase internal constructor(
@@ -33,6 +35,8 @@ class ActivityUpdateUseCase internal constructor(
     private val activityEvidenceMailService: ActivityEvidenceMailService,
     private val activityEvidenceService: ActivityEvidenceService,
 ) {
+    @Transactional
+    @ReadOnly
     fun updateActivity(activityRequest: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
 
         val user = userService.getAuthenticatedDomainUser()
