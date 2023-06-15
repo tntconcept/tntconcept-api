@@ -1,86 +1,101 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createDomainActivity
-import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
-import com.autentia.tnt.binnacle.services.ActivityService
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.*
 
+@TestInstance(Lifecycle.PER_CLASS)
 internal class ActivityEvidenceRetrievalUseCaseTest {
 
-    private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
     private val activityEvidenceService = mock<ActivityEvidenceService>()
 
     private val activityEvidenceRetrievalUseCase =
         ActivityEvidenceRetrievalUseCase(
-            activityService,
+            activityRepository,
             activityEvidenceService
         )
 
+    @AfterEach
+    fun resetMocks() {
+        reset(activityRepository, activityEvidenceService)
+    }
+
     @Test
     fun `return image in base 64 from service`() {
-        whenever(activityService.getActivityById(todayActivity.id!!)).thenReturn(todayActivity)
-        whenever(activityEvidenceService.getActivityEvidenceAsBase64String(todayActivity.id!!, TODAY_DATE)).thenReturn(
+        whenever(activityRepository.findById(activityWithEvidenceEntity.id!!)).thenReturn(activityWithEvidenceEntity)
+        whenever(
+            activityEvidenceService.getActivityEvidence(
+                activityWithEvidenceEntity.id!!,
+                toDate(activityWithEvidenceEntity.toDomain().insertDate)!!
+            )
+        ).thenReturn(
             IMAGE
         )
 
-        assertEquals(IMAGE, activityEvidenceRetrievalUseCase.getActivityEvidence(1L))
+        assertEquals(IMAGE, activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(ID))
     }
 
     @Test
     fun `throw NoImageInActivityException with correct id when activity doesn't have an image`() {
-        whenever(activityService.getActivityById(ID)).thenReturn(activityWithoutImage)
+        whenever(activityRepository.findById(ID)).thenReturn(activityWithoutEvidenceEntity)
 
         val exception = assertThrows<NoEvidenceInActivityException> {
-            activityEvidenceRetrievalUseCase.getActivityEvidence(ID)
+            activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(ID)
         }
 
         assertEquals(exception.id, ID)
     }
 
     private companion object {
+        private const val ID = 1L
         private val TODAY = LocalDateTime.now()
-        private val TODAY_DATE = Date()
-        private const val IMAGE = "Image in base 64"
-        private const val ID = 2L
+        private val IMAGE = EvidenceDTO("Image in base 64", "")
+        private val organization = Organization(1L, "Autentia", emptyList())
+        private val project =
+            Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
+        private val projectRole =
+            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
 
-        private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
-
-        private val PROJECT = Project(
-            1L,
-            "Dummy Project",
-            true,
-            false,
-            LocalDate.now(),
-            null,
-            null,
-            ORGANIZATION,
-            listOf(),
+        private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            1L, TimeInterval.of(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
+            ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, TODAY, true, ApprovalState.NA
         )
-        private val PROJECT_ROLE =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 
-        private val todayActivity = createDomainActivity(
-            TODAY,
-            TODAY.plusMinutes(60),
-            60
-        ).copy(projectRole = PROJECT_ROLE.toDomain(), hasEvidences = true, insertDate = toLocalDateTime(TODAY_DATE))
+        private val activityWithoutEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            1L, TimeInterval.of(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
+            ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, TODAY, false, ApprovalState.NA
+        )
 
-        val activityWithoutImage = createDomainActivity(
-            TODAY,
-            TODAY.plusMinutes(60),
-            60
-        ).copy(
-            projectRole = PROJECT_ROLE.toDomain(), insertDate = toLocalDateTime(TODAY_DATE)
+        private val activityWithEvidenceEntity = Activity.of(
+            activityWithEvidence,
+            projectRole
+        )
+
+        private val activityWithoutEvidenceEntity = Activity.of(
+            activityWithoutEvidence,
+            projectRole
         )
     }
 }
