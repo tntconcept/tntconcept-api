@@ -149,6 +149,7 @@ internal class ActivityValidator(
         user: User,
     ) {
         require(activityToUpdate.id != null) { "Cannot update an activity without id." }
+        require(currentActivity.approvalState != ApprovalState.ACCEPTED) { "Cannot update an activity already approved." }
         val projectToUpdate = projectService.findById(activityToUpdate.projectRole.project.id)
         val currentProject = projectService.findById(currentActivity.projectRole.project.id)
         val activityToUpdateStartYear = activityToUpdate.getYearOfStart()
@@ -202,6 +203,7 @@ internal class ActivityValidator(
     @ReadOnly
     fun checkActivityIsValidForDeletion(id: Long) {
         val activity = activityService.getActivityById(id)
+        require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
         val project = projectService.findById(activity.projectRole.project.id)
         when {
             isProjectBlocked(project, activity) -> throw ProjectBlockedException()

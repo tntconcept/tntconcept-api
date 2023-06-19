@@ -544,6 +544,26 @@ internal class ActivityValidatorTest {
             }
         }
 
+        @Test
+        fun `throw IllegalArgumentException when the CURRENT activity to update is already approved`() {
+            val approvedActivity = validActivityToUpdate.copy(approvalState = ApprovalState.ACCEPTED)
+
+            assertThrows<IllegalArgumentException> {
+                activityValidator.checkActivityIsValidForUpdate(approvedActivity, approvedActivity, user)
+            }
+        }
+
+        @Test
+        fun `throw IllegalArgumentException when the activity to update has not an id`() {
+            assertThrows<IllegalArgumentException> {
+                activityValidator.checkActivityIsValidForUpdate(
+                    activityUpdateNonexistentID,
+                    activityUpdateNonexistentID,
+                    user
+                )
+            }
+        }
+
         private fun maxHoursRoleLimitProviderUpdate() = arrayOf(
             arrayOf(
                 "reached limit no remaining hours for activity related to the year before",
@@ -916,6 +936,17 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForDeletion(id)
             }
         }
+
+        @Test
+        fun `throw IllegalArgumentException when the activity to delete is already approved`() {
+            val activityId = 1L
+            val approvedActivity = validActivityToUpdate.copy(approvalState = ApprovalState.ACCEPTED)
+            whenever(activityService.getActivityById(activityId)).thenReturn(approvedActivity)
+
+            assertThrows<IllegalArgumentException> {
+                activityValidator.checkActivityIsValidForDeletion(activityId)
+            }
+        }
     }
 
     private companion object {
@@ -1154,7 +1185,7 @@ internal class ActivityValidatorTest {
             someYearsAgoLocalDateTime(2).plusMinutes(HOUR.toLong()),
             HOUR,
             projectRole.toDomain()
-        )
+        ).copy(id = null)
 
         private val activityInvalidPeriodForMinutesProjectRole = createDomainActivity(
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
