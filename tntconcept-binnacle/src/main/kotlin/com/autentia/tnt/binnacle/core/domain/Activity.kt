@@ -20,14 +20,17 @@ data class Activity private constructor(
     var approvalState: ApprovalState
 ) : ActivityTimeInterval(timeInterval, projectRole.timeUnit) {
     fun getStart() = timeInterval.start
+
     fun getEnd() = timeInterval.end
+
     fun getYearOfStart() = timeInterval.getYearOfStart()
-    fun getYearOfEnd() = timeInterval.getYearOfEnd()
+
     fun getDurationInUnits(): Int {
-        if (timeUnit === TimeUnit.DAYS) {
-            return duration / (60 * 8)
+        return when (timeUnit)  {
+            TimeUnit.DAYS -> duration / (60 * 8)
+            TimeUnit.NATURAL_DAYS -> timeInterval.getDurationInDays()
+            TimeUnit.MINUTES -> duration
         }
-        return duration
     }
 
     fun isMoreThanOneDay() = projectRole.timeUnit === TimeUnit.DAYS || timeInterval.getDuration().toDays().toInt() > 0
