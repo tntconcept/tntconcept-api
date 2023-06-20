@@ -3,7 +3,7 @@ package com.autentia.tnt.api.binnacle
 import com.autentia.tnt.api.binnacle.activity.ActivityRequest
 import com.autentia.tnt.api.binnacle.activity.ActivityResponse
 import com.autentia.tnt.api.binnacle.activity.ActivitySummaryResponse
-import com.autentia.tnt.api.binnacle.activity.TimeInterval
+import com.autentia.tnt.api.binnacle.activity.TimeIntervalRequest
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
@@ -413,7 +413,7 @@ internal class ActivityControllerIT {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
         private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 12, 0)
 
-        private val INTERVAL_REQUEST_DTO = TimeInterval(
+        private val INTERVAL_REQUEST_DTO = TimeIntervalRequest(
                 START_DATE, END_DATE
         )
 

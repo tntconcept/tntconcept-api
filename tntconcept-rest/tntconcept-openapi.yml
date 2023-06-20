@@ -1001,7 +1001,7 @@ components:
           format: int64
           nullable: true
         interval:
-          $ref: '#/components/schemas/TimeInterval'
+          $ref: '#/components/schemas/TimeIntervalRequest'
         description:
           maxLength: 2048
           type: string
@@ -1552,7 +1552,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectRoleUserDTO'
-    TimeInterval:
+    TimeIntervalRequest:
       required:
       - end
       - start
