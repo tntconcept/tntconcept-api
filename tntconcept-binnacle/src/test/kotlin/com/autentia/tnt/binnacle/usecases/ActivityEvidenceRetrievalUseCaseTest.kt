@@ -60,7 +60,8 @@ internal class ActivityEvidenceRetrievalUseCaseTest {
         val exception = assertThrows<NoEvidenceInActivityException> {
             activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(ID)
         }
-
+        
+        assertEquals(exception.id, ID)
     }
 
     private companion object {

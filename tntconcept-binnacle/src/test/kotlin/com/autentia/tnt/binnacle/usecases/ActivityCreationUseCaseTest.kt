@@ -18,12 +18,17 @@ import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
+@TestInstance(PER_CLASS)
 internal class ActivityCreationUseCaseTest {
 
     private val user = createDomainUser()
@@ -84,8 +89,23 @@ internal class ActivityCreationUseCaseTest {
     }
 
 
-    @Test
-    fun `create activity with incomplete evidence information throws an exception`() {
+    private fun exceptionProvider() = arrayOf(
+        arrayOf(
+            "ActivityWithEvidenceButNotAttachedException",
+            ACTIVITY_WITH_EVIDENCE_BUT_NOT_ATTACHED_DTO
+        ),
+        arrayOf(
+            "ActivityWithAttachedEvidenceButNotTrueException",
+            ACTIVITY_WITH_ATTACHED_EVIDENCE_BUT_NOT_AS_TRUE
+        )
+    )
+
+    @ParameterizedTest
+    @MethodSource("exceptionProvider")
+    fun `create activity with incomplete evidence information throws an exception`(
+        testDescription: String,
+        activityRequest: ActivityRequestDTO,
+    ) {
 
         val activityEntity = createActivity(userId = user.id)
         val activityDomain = activityEntity.toDomain();
@@ -95,14 +115,9 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
         whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
 
-        fun executeTest(activityRequest: ActivityRequestDTO) {
-            assertThrows<NoEvidenceInActivityException> {
-                activityCreationUseCase.createActivity(activityRequest, Locale.ENGLISH)
-            }
+        assertThrows<NoEvidenceInActivityException> {
+            activityCreationUseCase.createActivity(activityRequest, Locale.ENGLISH)
         }
-
-        executeTest(ACTIVITY_WITH_EVIDENCE_BUT_NOT_ATTACHED_DTO)
-        executeTest(ACTIVITY_WITH_ATTACHED_EVIDENCE_BUT_NOT_AS_TRUE)
 
     }
 

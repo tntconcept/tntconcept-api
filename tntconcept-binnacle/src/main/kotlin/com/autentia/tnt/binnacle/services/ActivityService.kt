@@ -3,9 +3,7 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -70,13 +68,4 @@ internal class ActivityService(
     fun getProjectRoleActivities(projectRoleId: Long, userId: Long): List<Activity> =
         activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
 
-    private fun checkAttachedEvidence(
-        activity: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?,
-    ) {
-        if (activity.hasEvidences && evidence == null) {
-            throw NoEvidenceInActivityException(
-                activity.id ?: 0, "Activity sets hasEvidence to true but no evidence was found"
-            )
-        }
-    }
 }
