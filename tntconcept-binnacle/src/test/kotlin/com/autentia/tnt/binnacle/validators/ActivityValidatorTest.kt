@@ -156,7 +156,8 @@ internal class ActivityValidatorTest {
                 null,
                 LocalDateTime.now(),
                 false,
-                ApprovalState.NA
+                ApprovalState.NA,
+                null
             )
 
             whenever(
@@ -1088,7 +1089,8 @@ internal class ActivityValidatorTest {
             null,
             null,
             false,
-            ApprovalState.NA
+            ApprovalState.NA,
+            null
         )
 
         private val newActivityInClosedProject = createDomainActivity(

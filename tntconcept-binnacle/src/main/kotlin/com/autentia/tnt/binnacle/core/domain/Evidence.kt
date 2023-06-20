@@ -1,4 +1,3 @@
 package com.autentia.tnt.binnacle.core.domain
 
-class Evidence {
-}
+data class Evidence constructor(val mediaType: String, val base64data: String)

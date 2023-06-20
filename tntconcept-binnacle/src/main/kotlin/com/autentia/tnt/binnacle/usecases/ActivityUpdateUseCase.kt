@@ -68,7 +68,7 @@ class ActivityUpdateUseCase internal constructor(
         if (activityToUpdate.hasEvidences) {
             checkAttachedEvidence(activityToUpdate, activityRequest.evidence)
             activityEvidenceService.storeActivityEvidence(
-                activityToUpdate.id!!, activityRequest.evidence!!, currentActivityEntity.insertDate!!
+                activityToUpdate.id!!, activityToUpdate.evidence!!, currentActivityEntity.insertDate!!
             )
         }
 

@@ -5,15 +5,12 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
-import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.mockito.BDDMockito.verify
-import org.mockito.BDDMockito.verifyNoInteractions
 import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -137,54 +134,6 @@ internal class ActivityServiceTest {
         assertEquals(expectedActivities, result)
     }
 
-    @Test
-    fun `create activity without evidence`() {
-        whenever(activityRepository.save(activityWithoutEvidenceToSave)).thenReturn(activityWithoutEvidenceSaved)
-
-        val result = sut.createActivity(activityWithoutEvidence, null)
-
-        assertEquals(activityWithoutEvidenceSaved.toDomain(), result)
-        verifyNoInteractions(activityEvidenceService)
-    }
-
-    @Test
-    fun `fail when create activity without evidence attached but hasEvidence is true`() {
-        whenever(activityRepository.save(activityWithoutEvidenceAttachedToSave)).thenReturn(
-            activityWithoutEvidenceAttachedSaved
-        )
-
-        assertThrows<NoEvidenceInActivityException> {
-            sut.createActivity(activityWithoutEvidenceAttached, null)
-        }
-
-        verifyNoInteractions(activityEvidenceService)
-    }
-
-    @Test
-    fun `create activity and store evidence`() {
-        whenever(activityRepository.save(activityWithEvidenceToSave)).thenReturn(activityWithEvidenceSaved)
-
-        val result = sut.createActivity(activityWithEvidence, evidence)
-
-        assertEquals(activityWithEvidenceSaved.toDomain(), result)
-        verify(activityEvidenceService).storeActivityEvidence(
-            activityWithEvidenceSaved.id!!, evidence, activityWithEvidenceSaved.insertDate!!
-        )
-    }
-
-    @Test
-    fun `create activity with nonexistent project role`() {
-        whenever(projectRoleRepository.findById(99)).thenReturn(null)
-
-        val activityWithoutImageAndNonExistentRole =
-            activityWithoutEvidence.copy(projectRole = projectRole.toDomain().copy(id = 88))
-
-        assertThrows<IllegalStateException> {
-            sut.createActivity(
-                activityWithoutImageAndNonExistentRole, null
-            )
-        }
-    }
 
     @Test
     fun `should find overlapped activities`() {
@@ -217,23 +166,23 @@ internal class ActivityServiceTest {
 
         private val activityWithoutEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null, TimeInterval.of(
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-            ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
+        ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA, null
         )
 
         private val activityWithoutEvidenceAttached = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null, TimeInterval.of(
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-            ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
+        ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA, null
         )
 
         private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null, TimeInterval.of(
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-            ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
+        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA, null
         )
 
         private val evidence = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")

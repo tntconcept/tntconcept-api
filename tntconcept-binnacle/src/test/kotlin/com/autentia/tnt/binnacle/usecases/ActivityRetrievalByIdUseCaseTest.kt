@@ -73,9 +73,9 @@ internal class ActivityRetrievalByIdUseCaseTest {
 
         private val ACTIVITY = com.autentia.tnt.binnacle.core.domain.Activity.of(
             1L, TimeInterval.of(
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-            ), 60, "Dummy description", PROJECT_ROLE.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
+        ), 60, "Dummy description", PROJECT_ROLE.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA, null
         )
 
         private const val notFoundActivityId = 1L

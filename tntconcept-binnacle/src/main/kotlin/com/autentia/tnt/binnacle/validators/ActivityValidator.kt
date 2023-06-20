@@ -35,6 +35,7 @@ internal class ActivityValidator(
             getTotalRegisteredDurationByProjectRole(emptyActivity, activityToCreateEndYear, user.id)
 
         when {
+            isEvidenceInputIncoherent(activityToCreate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException()
@@ -72,6 +73,11 @@ internal class ActivityValidator(
                 activityToCreateEndYear
             )
         }
+    }
+
+    private fun isEvidenceInputIncoherent(activityToCreate: Activity): Boolean {
+        return activityToCreate.hasEvidences && activityToCreate.evidence == null
+            || !activityToCreate.hasEvidences && activityToCreate.evidence != null
     }
 
     private fun getTotalRegisteredDurationByProjectRole(

@@ -58,25 +58,6 @@ internal class ActivityService(
     fun getActivitiesOfLatestProjects(timeInterval: TimeInterval, userId: Long) =
         activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)
 
-    @Transactional(rollbackOn = [Exception::class])
-    fun createActivity(
-        activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity, evidence: EvidenceDTO?,
-    ): com.autentia.tnt.binnacle.core.domain.Activity {
-        val projectRole = projectRoleRepository.findById(activityToCreate.projectRole.id)
-            ?: error { "Cannot find projectRole with id = ${activityToCreate.projectRole.id}" }
-
-        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
-
-        if (activityToCreate.hasEvidences) {
-            checkAttachedEvidence(activityToCreate, evidence)
-            activityEvidenceService.storeActivityEvidence(
-                savedActivity.id!!, evidence!!, savedActivity.insertDate!!
-            )
-        }
-
-
-        return savedActivity.toDomain()
-    }
 
     fun filterActivitiesByTimeInterval(
         filterTimeInterval: TimeInterval, activities: List<Activity>,

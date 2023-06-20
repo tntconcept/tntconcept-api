@@ -58,7 +58,7 @@ internal class ActivityEvidenceServiceIT {
             ]
         )
         fun `should create a new file with the decoded value of the image`(mimeType: String) {
-            val evidence = EvidenceDTO.from("data:$mimeType;base64,SGVsbG8gV29ybGQh")
+            val evidence = EvidenceDTO.from("data:$mimeType;base64,SGVsbG8gV29ybGQh").toDomain()
             activityEvidenceService.storeActivityEvidence(2L, evidence, date)
 
             val expectedExtension = getExtensionForMimeType(mimeType)

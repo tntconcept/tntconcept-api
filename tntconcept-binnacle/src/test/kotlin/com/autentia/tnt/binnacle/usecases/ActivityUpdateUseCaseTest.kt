@@ -74,13 +74,13 @@ internal class ActivityUpdateUseCaseTest {
         whenever(projectRoleRepository.findById(10L)).thenReturn(PROJECT_ROLE)
         whenever(activityRepository.findById(activityId)).thenReturn(oldActivity)
         willDoNothing().given(activityEvidenceService)
-            .storeActivityEvidence(activityId, evidence, oldActivityInsertDate)
+            .storeActivityEvidence(activityId, evidenceDomain, oldActivityInsertDate)
         whenever(activityRepository.update(any())).thenReturn(oldActivity)
 
         activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO_WITH_EVIDENCES, Locale.ENGLISH)
 
         verify(activityEvidenceService).storeActivityEvidence(
-            activityId, evidence, oldActivityInsertDate
+            activityId, evidenceDomain, oldActivityInsertDate
         )
     }
 
@@ -107,7 +107,7 @@ internal class ActivityUpdateUseCaseTest {
         whenever(projectRoleRepository.findById(10L)).thenReturn(PROJECT_ROLE)
         whenever(activityRepository.findById(activityId)).thenReturn(oldActivity)
         willDoNothing().given(activityEvidenceService)
-            .storeActivityEvidence(activityToUpdate.id!!, evidence, oldActivityInsertDate)
+            .storeActivityEvidence(activityToUpdate.id!!, evidence.toDomain(), oldActivityInsertDate)
         whenever(activityRepository.update(any())).thenReturn(oldActivity)
         whenever(activityEvidenceService.deleteActivityEvidence(activityId, oldActivityInsertDate)).thenReturn(
             true
@@ -237,6 +237,7 @@ internal class ActivityUpdateUseCaseTest {
         )
 
         private val evidence = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")
+        private val evidenceDomain = evidence.toDomain()
 
         private val PROJECT_ROLE =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
@@ -299,7 +300,8 @@ internal class ActivityUpdateUseCaseTest {
             null,
             LocalDateTime.now(),
             false,
-            ApprovalState.NA
+            ApprovalState.NA,
+            null
         )
 
         private val currentActivity = Activity.of(activityToUpdate, PROJECT_ROLE)

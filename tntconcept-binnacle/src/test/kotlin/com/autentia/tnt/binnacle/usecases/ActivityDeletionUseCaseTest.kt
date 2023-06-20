@@ -26,7 +26,7 @@ internal class ActivityDeletionUseCaseTest {
     @Test
     fun `call the repository to delete the activity`() {
         whenever(activityRepository.findById(1L)).thenReturn(entityActivity)
-        
+
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
@@ -72,7 +72,8 @@ internal class ActivityDeletionUseCaseTest {
             null,
             LocalDateTime.now(),
             false,
-            ApprovalState.NA
+            ApprovalState.NA,
+            null
         )
 
         private val entityActivity = Activity.of(activity, PROJECT_ROLE)
