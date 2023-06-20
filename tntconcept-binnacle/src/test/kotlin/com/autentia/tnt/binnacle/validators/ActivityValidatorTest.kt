@@ -534,6 +534,34 @@ internal class ActivityValidatorTest {
             }
         }
 
+        @Test
+        fun `throw IllegalArgumentException when the CURRENT activity to update is already approved`() {
+            val approvedActivity = validActivityToUpdate.copy(approvalState = ApprovalState.ACCEPTED)
+
+            assertThrows<IllegalArgumentException> {
+                activityValidator.checkActivityIsValidForUpdate(approvedActivity, approvedActivity, user)
+            }
+        }
+
+        @Test
+        fun `throw IllegalArgumentException when the activity to update has not an id`() {
+            assertThrows<IllegalArgumentException> {
+                activityValidator.checkActivityIsValidForUpdate(
+                    activityUpdateNonexistentID,
+                    activityUpdateNonexistentID,
+                    user
+                )
+            }
+        }
+
+        @Test
+        fun `throw IllegalArgumentException when the activity to delete is already approved`() {
+            val approvedActivity = validActivityToUpdate.copy(approvalState = ApprovalState.ACCEPTED)
+            assertThrows<IllegalArgumentException> {
+                activityValidator.checkActivityIsValidForDeletion(approvedActivity)
+            }
+        }
+
         private fun maxHoursRoleLimitProviderUpdate() = arrayOf(
             arrayOf(
                 "reached limit no remaining hours for activity related to the year before",
@@ -1103,6 +1131,13 @@ internal class ActivityValidatorTest {
         private val newActivityLastYear = createDomainActivity(
             someYearsAgoLocalDateTime(1),
             someYearsAgoLocalDateTime(1).plusMinutes(HOUR.toLong()).plusMinutes(HOUR.toLong()),
+            HOUR,
+            projectRole.toDomain()
+        ).copy(id = null)
+
+        private val activityUpdateNonexistentID = createDomainActivity(
+            someYearsAgoLocalDateTime(2),
+            someYearsAgoLocalDateTime(2).plusMinutes(HOUR.toLong()),
             HOUR,
             projectRole.toDomain()
         ).copy(id = null)

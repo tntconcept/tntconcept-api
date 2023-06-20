@@ -209,6 +209,7 @@ internal class ActivityValidator(
     @ReadOnly
     fun checkActivityIsValidForDeletion(activity: Activity) {
         val project = projectService.findById(activity.projectRole.project.id)
+        require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
         when {
             isProjectBlocked(project, activity) -> throw ProjectBlockedException()
             !isOpenPeriod(activity.getStart()) -> throw ActivityPeriodClosedException()
