@@ -13,7 +13,7 @@ enum class RequireEvidence {
 }
 
 enum class TimeUnit {
-    MINUTES, DAYS
+    MINUTES, DAYS, NATURAL_DAYS
 }
 
 @Entity

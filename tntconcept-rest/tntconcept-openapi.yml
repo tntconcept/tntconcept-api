@@ -1685,6 +1685,7 @@ components:
       enum:
       - MINUTES
       - DAYS
+      - NATURAL_DAYS
     TokenRefreshRequest:
       required:
       - grant_type
