@@ -97,7 +97,13 @@ internal class ActivityController(
 
     @Error
     internal fun onProjectBlockedException(request: HttpRequest<*>, e: ProjectBlockedException) =
-        HttpResponse.badRequest(ErrorResponse("BLOCKED_PROJECT", e.message))
+        HttpResponse.badRequest(
+            ErrorResponseBlockedProject(
+                "BLOCKED_PROJECT",
+                e.message,
+                ErrorResponseBlockedProject.ErrorValues(e.blockedDate)
+            )
+        )
 
     @Error
     internal fun onActivityPeriodClosedException(request: HttpRequest<*>, e: ActivityPeriodClosedException) =
