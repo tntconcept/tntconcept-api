@@ -155,6 +155,7 @@ internal class ActivityValidator(
         user: User,
     ) {
         require(activityToUpdate.id != null) { "Cannot update an activity without id." }
+        require(currentActivity.approvalState != ApprovalState.ACCEPTED) { "Cannot update an activity already approved." }
         val projectToUpdate = projectService.findById(activityToUpdate.projectRole.project.id)
         val currentProject = projectService.findById(currentActivity.projectRole.project.id)
         val activityToUpdateStartYear = activityToUpdate.getYearOfStart()
