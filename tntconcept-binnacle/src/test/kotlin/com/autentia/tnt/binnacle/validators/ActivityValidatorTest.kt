@@ -76,7 +76,7 @@ internal class ActivityValidatorTest {
                 newActivityBeforeBlockedProject,
                 blockedProjectRole,
                 user,
-                ProjectBlockedException()
+                ProjectBlockedException(blockedProject.blockDate!!)
             ),
             arrayOf(
                 "ActivityBeforeHiringDateException",
@@ -135,9 +135,11 @@ internal class ActivityValidatorTest {
             whenever(projectRoleService.getByProjectRoleId(blockedProjectRole.id)).thenReturn(blockedProjectRole.toDomain())
             whenever(projectService.findById(blockedProjectRole.project.id)).thenReturn(blockedProject.toDomain())
 
-            assertThrows<ProjectBlockedException> {
+            val exception = assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForCreation(newActivitySameDayBlockedProject, user)
             }
+
+            assertEquals(blockedProject.blockDate!!, exception.blockedDate)
         }
 
         @Test
@@ -402,9 +404,11 @@ internal class ActivityValidatorTest {
             whenever(projectService.findById(nonBlockedProject.id)).thenReturn(nonBlockedProject.toDomain())
             whenever(projectService.findById(blockedProject.id)).thenReturn(blockedProject.toDomain())
 
-            assertThrows<ProjectBlockedException> {
+            val exception = assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
             }
+
+            assertEquals(blockedProject.blockDate!!, exception.blockedDate)
         }
 
         @Test
@@ -457,9 +461,11 @@ internal class ActivityValidatorTest {
             whenever(projectService.findById(nonBlockedProject.id)).thenReturn(nonBlockedProject.toDomain())
             whenever(projectService.findById(blockedProject.id)).thenReturn(blockedProject.toDomain())
 
-            assertThrows<ProjectBlockedException> {
+            val exception = assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
             }
+
+            assertEquals(blockedProject.blockDate!!, exception.blockedDate)
         }
 
         @Test
@@ -912,9 +918,11 @@ internal class ActivityValidatorTest {
             whenever(activityService.getActivityById(id)).thenReturn(activity.toDomain())
             whenever(projectService.findById(blockedProject.id)).thenReturn(blockedProject.toDomain())
 
-            assertThrows<ProjectBlockedException> {
+            val exception = assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForDeletion(id)
             }
+
+            assertEquals(blockedProject.blockDate!!, exception.blockedDate)
         }
     }
 
@@ -1146,12 +1154,6 @@ internal class ActivityValidatorTest {
         private val activityLastYear = createDomainActivity(
             someYearsAgoLocalDateTime(1),
             someYearsAgoLocalDateTime(1).plusMinutes(HOUR.toLong()),
-            HOUR,
-            projectRole.toDomain()
-        )
-        private val activityUpdateNonexistentID = createDomainActivity(
-            someYearsAgoLocalDateTime(2),
-            someYearsAgoLocalDateTime(2).plusMinutes(HOUR.toLong()),
             HOUR,
             projectRole.toDomain()
         )
