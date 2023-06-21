@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.repositories.UserRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.util.Optional
 import javax.transaction.Transactional
 
 @Singleton
@@ -21,14 +20,15 @@ class UserService internal constructor(
         userRepository.findByAuthenticatedUser()
             .orElseThrow { IllegalStateException("There isn't authenticated user") }.toDomain()
 
-    fun findActive(): List<User> =
-        userRepository.findByActiveTrue()
+    fun getActiveUsersWithoutSecurity(): List<User> =
+        userRepository.findWithoutSecurity()
 
-    fun findAll(): List<User> =
+    fun getActiveUsers(): List<User> =
         userRepository.find()
 
+    fun getByUserName(userName: String): User =
+        userRepository.findByUsername(userName) ?: error("User is not found")
 
-    fun getUserByUserName(userName: String): User =
-        Optional.ofNullable(userRepository.findByUsername(userName))
-            .orElseThrow { IllegalStateException("There isn't authenticated user") }
+    fun getById(userId: Long): User =
+        userRepository.find(userId) ?: error("User is not found")
 }

@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
 
 internal class ProjectRoleUserConverterTest {
 
@@ -72,7 +73,7 @@ internal class ProjectRoleUserConverterTest {
     }
 
     private companion object {
-        val project = Project(1, "Dummy project", false, false, Organization(2, "Organzation", listOf()), listOf())
+        val project = Project(1, "Dummy project", false, false, LocalDate.now(), null, null, Organization(2, "Organzation", listOf()), listOf())
         val role = ProjectRole(1, "First Role", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
         val projectRoleUser =
             ProjectRoleUser(1, "Project role", 2L, 3L, 250, 100, TimeUnit.MINUTES, RequireEvidence.NO, false, 4L)

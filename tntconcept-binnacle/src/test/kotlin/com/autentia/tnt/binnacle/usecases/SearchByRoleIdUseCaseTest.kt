@@ -1,23 +1,15 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
-import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
-import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.converters.SearchConverter
-import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
-import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.Organization
-import com.autentia.tnt.binnacle.core.domain.Project
-import com.autentia.tnt.binnacle.core.domain.ProjectRole
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.converters.*
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HolidayService
 import com.autentia.tnt.binnacle.services.ProjectRoleService
+import com.autentia.tnt.security.application.id
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,7 +18,8 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
-import java.util.Optional
+import java.time.LocalDate
+import java.util.*
 
 internal class SearchByRoleIdUseCaseTest {
 
@@ -57,14 +50,14 @@ internal class SearchByRoleIdUseCaseTest {
     )
 
     @Test
-    fun `return empty list when roleid is not found`() {
+    fun `return empty list when roleid is not found for current year`() {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
 
         doReturn(emptyList<ProjectRole>())
             .whenever(projectRoleService).getAllByIds(listOf(UNKONW_ROLE_ID))
 
-        val roles = searchByRoleIdUseCase.getDescriptions(listOf(UNKONW_ROLE_ID))
+        val roles = searchByRoleIdUseCase.getDescriptions(listOf(UNKONW_ROLE_ID), null)
 
         assertEquals(0, roles.organizations.size)
         assertEquals(0, roles.projects.size)
@@ -72,20 +65,20 @@ internal class SearchByRoleIdUseCaseTest {
     }
 
     @Test
-    fun `return an unique element for Organization, Project and Role when search only for one projectRole`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
-
+    fun `return an unique element for Organization, Project and Role when search only for one projectRole and current year`() {
         val rolesForSearch = listOf(INTERNAL_STUDENT.id)
         val activity = createDomainActivity().copy(projectRole = INTERNAL_STUDENT)
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
-
-        doReturn(listOf(INTERNAL_STUDENT)).whenever(projectRoleService).getAllByIds(rolesForSearch)
-        doReturn(listOf(activity)).whenever(
-            activityService
-        ).getActivitiesByProjectRoleIds(TimeInterval.ofYear(2023), rolesForSearch)
-
-        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch)
+        whenever(projectRoleService.getAllByIds(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
+        whenever(
+            activityService.getActivitiesByProjectRoleIds(
+                TimeInterval.ofYear( LocalDate.now().year),
+                rolesForSearch,
+                authenticatedUser.id()
+            )
+        ).thenReturn(listOf(activity))
+        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch, null)
 
         assertEquals(1, roles.organizations.size)
         assertEquals(1, roles.projects.size)
@@ -97,6 +90,37 @@ internal class SearchByRoleIdUseCaseTest {
             projectRoleResponseConverter.toProjectRoleUserDTO(
                 projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT, 1380, 1L)
             ), roles.projectRoles[0]
+        )
+    }
+
+
+    @Test
+    fun `return an unique element for Organization, Project and Role when search only for one projectRole filtering by year`() {
+
+        val rolesForSearch = listOf(INTERNAL_STUDENT.id)
+        val activity = createDomainActivity().copy(projectRole = INTERNAL_STUDENT)
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+        whenever(projectRoleService.getAllByIds(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
+        whenever(
+                activityService.getActivitiesByProjectRoleIds(
+                        TimeInterval.ofYear(2023),
+                        rolesForSearch,
+                        authenticatedUser.id()
+                )
+        ).thenReturn(listOf(activity))
+        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch, 2023)
+
+        assertEquals(1, roles.organizations.size)
+        assertEquals(1, roles.projects.size)
+        assertEquals(1, roles.projectRoles.size)
+
+        assertEquals(organizationResponseConverter.toOrganizationResponseDTO(AUTENTIA), roles.organizations[0])
+        assertEquals(projectResponseConverter.toProjectResponseDTO(INTERNAL_TRAINING), roles.projects[0])
+        assertEquals(
+                projectRoleResponseConverter.toProjectRoleUserDTO(
+                        projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT, 1380, 1L)
+                ), roles.projectRoles[0]
         )
     }
 
@@ -119,12 +143,15 @@ internal class SearchByRoleIdUseCaseTest {
             EXTERNAL_TEACHER
         )
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
-        doReturn(rolesToReturn).whenever(projectRoleService).getAllByIds(rolesForSearch)
-        doReturn(listOf(internalStudentActivity, internalTeacherActivity)).whenever(
-            activityService
-        ).getActivitiesByProjectRoleIds(TimeInterval.ofYear(2023), rolesForSearch)
-
-        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch)
+        whenever(projectRoleService.getAllByIds(rolesForSearch)).thenReturn(rolesToReturn)
+        whenever(
+            activityService.getActivitiesByProjectRoleIds(
+                TimeInterval.ofYear(LocalDate.now().year),
+                rolesForSearch,
+                authenticatedUser.id()
+            )
+        ).thenReturn(listOf(internalStudentActivity, internalTeacherActivity))
+        val roles = searchByRoleIdUseCase.getDescriptions(rolesForSearch, null)
 
         assertEquals(2, roles.organizations.size)
         assertEquals(2, roles.projects.size)
@@ -163,7 +190,8 @@ internal class SearchByRoleIdUseCaseTest {
         private val UNKONW_ROLE_ID = -1L
 
         private val AUTENTIA = Organization(1, "Autentia")
-        private val INTERNAL_TRAINING = Project(1, "Internal training", true, true, AUTENTIA)
+        private val INTERNAL_TRAINING =
+            Project(1, "Internal training", true, true, LocalDate.now(), null, null, AUTENTIA)
         private val INTERNAL_STUDENT =
             ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 1440, TimeUnit.MINUTES, true, false)
         private val INTERNAL_TEACHER =
@@ -179,7 +207,8 @@ internal class SearchByRoleIdUseCaseTest {
             )
 
         private val OTHER_COMPANY = Organization(2, "Other S.A.")
-        private val EXTERNAL_TRAINING = Project(2, "External training", true, true, OTHER_COMPANY)
+        private val EXTERNAL_TRAINING =
+            Project(2, "External training", true, true, LocalDate.now(), null, null, OTHER_COMPANY)
         private val EXTERNAL_STUDENT =
             ProjectRole(
                 3,
@@ -188,8 +217,7 @@ internal class SearchByRoleIdUseCaseTest {
                 EXTERNAL_TRAINING,
                 0,
 
-                TimeUnit.MINUTES
-            ,
+                TimeUnit.MINUTES,
                 true,
                 false
             )

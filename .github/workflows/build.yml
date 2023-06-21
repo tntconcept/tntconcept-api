@@ -1,14 +1,14 @@
 name: Build
 
 on:
-  pull_request:
-    branches: [ main ]
   push:
-    branches: [ main ]
+    branches: [ main, hotfix/**, release/** ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v3
 
@@ -18,5 +18,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build with Maven
-        run: ./mvnw --batch-mode clean install
+      - name: Build and deploy on maven repository
+        run: ./mvnw --batch-mode clean deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

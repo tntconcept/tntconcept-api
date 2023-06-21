@@ -1,8 +1,8 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.HolidayResponseConverter
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.HolidayResponse
-import com.autentia.tnt.binnacle.core.domain.StartEndDate
 import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
@@ -30,7 +30,7 @@ class PrivateHolidaysByChargeYearUseCase internal constructor(
 
         val userTimeSinceHiringYear = getTimeSinceHiringYear(user.hiringDate.year)
         val holidays: List<Holiday> =
-            holidayService.findAllBetweenDate(userTimeSinceHiringYear.startDate, userTimeSinceHiringYear.endDate)
+            holidayService.findAllBetweenDate(userTimeSinceHiringYear.start, userTimeSinceHiringYear.end)
         val vacations: List<Vacation> = vacationService.getVacationsByChargeYear(chargeYear)
 
         val holidayResponse = HolidayResponse(holidays, vacations)
@@ -38,11 +38,11 @@ class PrivateHolidaysByChargeYearUseCase internal constructor(
         return holidayResponseConverter.toHolidayResponseDTO(holidayResponse)
     }
 
-    private fun getTimeSinceHiringYear(year: Int): StartEndDate {
+    private fun getTimeSinceHiringYear(year: Int): DateInterval {
         val startDate = LocalDate.of(year, Month.JANUARY, 1)
         val endDate = LocalDate.of(LocalDate.now().year + 1, Month.DECEMBER, 31)
 
-        return StartEndDate(startDate, endDate)
+        return DateInterval.of(startDate, endDate)
     }
 
 

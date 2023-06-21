@@ -31,8 +31,11 @@ data class Activity private constructor(
     }
 
     fun isMoreThanOneDay() = projectRole.timeUnit === TimeUnit.DAYS || timeInterval.getDuration().toDays().toInt() > 0
+
     fun activityCanBeApproved() =
         RequireEvidence.isRequired(projectRole.requireEvidence) && approvalState === ApprovalState.PENDING && hasEvidences
+
+    fun isWorkingTimeActivity() = projectRole.isWorkingTime
 
     companion object {
 
@@ -48,23 +51,22 @@ data class Activity private constructor(
             insertDate: LocalDateTime?,
             hasEvidences: Boolean,
             approvalState: ApprovalState,
-        ) =
-            Activity(
-                id,
-                TimeInterval.of(
-                    getDateAtTimeIfNecessary(timeInterval.start, projectRole.timeUnit, LocalTime.MIN),
-                    getDateAtTimeIfNecessary(timeInterval.end, projectRole.timeUnit, LocalTime.of(23, 59, 59))
-                ),
-                duration,
-                description,
-                projectRole,
-                userId,
-                billable,
-                departmentId,
-                insertDate,
-                hasEvidences,
-                approvalState
-            )
+        ) = Activity(
+            id,
+            TimeInterval.of(
+                getDateAtTimeIfNecessary(timeInterval.start, projectRole.timeUnit, LocalTime.MIN),
+                getDateAtTimeIfNecessary(timeInterval.end, projectRole.timeUnit, LocalTime.of(23, 59, 59))
+            ),
+            duration,
+            description,
+            projectRole,
+            userId,
+            billable,
+            departmentId,
+            insertDate,
+            hasEvidences,
+            approvalState
+        )
 
         fun emptyActivity(projectRole: ProjectRole, user: User) = Activity(
             0,

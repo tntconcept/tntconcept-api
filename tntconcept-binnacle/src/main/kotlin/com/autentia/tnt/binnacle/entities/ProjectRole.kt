@@ -12,7 +12,7 @@ enum class RequireEvidence {
     }
 }
 
-enum class TimeUnit{
+enum class TimeUnit {
     MINUTES, DAYS
 }
 

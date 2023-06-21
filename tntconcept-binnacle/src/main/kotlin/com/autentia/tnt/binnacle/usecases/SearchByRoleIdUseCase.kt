@@ -11,6 +11,7 @@ import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Singleton
@@ -24,18 +25,21 @@ class SearchByRoleIdUseCase internal constructor(
 
     ) {
 
-    fun getDescriptions(roleIds: List<Long>): SearchResponseDTO {
+    private fun getTimeInterval(year: Int?) = TimeInterval.ofYear(year ?: LocalDate.now().year)
+
+    fun getDescriptions(roleIds: List<Long>, year: Int?): SearchResponseDTO {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
         val projectRoleIds = roleIds.distinct()
-        val currentYearTimeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
 
+
+        val timeInterval = getTimeInterval(year)
         val projectRoles = projectRoleService.getAllByIds(projectRoleIds)
-        val activities = activityService.getActivitiesByProjectRoleIds(currentYearTimeInterval, projectRoleIds)
+        val activities = activityService.getActivitiesByProjectRoleIds(timeInterval, projectRoleIds, userId)
 
         val projectRoleUsers = projectRoles.map { projectRole ->
             val remainingOfProjectRole = activityCalendarService.getRemainingOfProjectRoleForUser(
-                projectRole, activities, currentYearTimeInterval.getDateInterval(), userId
+                projectRole, activities, timeInterval.getDateInterval(), userId
             )
             projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRole, userId)
         }

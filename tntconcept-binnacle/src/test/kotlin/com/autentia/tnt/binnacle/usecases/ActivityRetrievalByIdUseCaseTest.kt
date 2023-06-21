@@ -4,17 +4,11 @@ import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
@@ -25,7 +19,6 @@ import java.time.LocalDate
 internal class ActivityRetrievalByIdUseCaseTest {
 
     private val activityService = mock<ActivityService>()
-    private val userService = mock<UserService>()
 
     private val activityRetrievalByIdUseCase =
         ActivityRetrievalByIdUseCase(
@@ -37,8 +30,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
 
     @Test
     fun `return the activity`() {
-        doReturn(USER).whenever(userService).getAuthenticatedUser()
-
         doReturn(yesterdayActivity).whenever(activityService).getActivityById(2L)
 
         assertEquals(yesterdayActivityResponseDTO, activityRetrievalByIdUseCase.getActivityById(2L))
@@ -57,6 +48,9 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 "Dummy Project",
                 true,
                 false,
+                LocalDate.now(),
+                null,
+                null,
                 Organization(1L, "Dummy Organization", listOf()),
                 listOf(),
             ),

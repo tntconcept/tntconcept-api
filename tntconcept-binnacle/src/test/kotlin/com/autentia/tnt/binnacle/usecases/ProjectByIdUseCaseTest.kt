@@ -12,6 +12,7 @@ import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 import java.util.Optional
 
 internal class ProjectByIdUseCaseTest {
@@ -48,6 +49,9 @@ internal class ProjectByIdUseCaseTest {
             "Dummy Project",
             open = false,
             billable = false,
+            LocalDate.now(),
+            null,
+            null,
             ORGANIZATION,
             listOf()
         )
@@ -56,7 +60,8 @@ internal class ProjectByIdUseCaseTest {
             PROJECT.name,
             PROJECT.open,
             PROJECT.billable,
-            1L
+            1L,
+            PROJECT.startDate,
         )
     }
 

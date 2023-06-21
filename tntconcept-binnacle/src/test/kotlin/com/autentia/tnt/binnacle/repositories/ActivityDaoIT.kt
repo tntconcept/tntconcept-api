@@ -21,10 +21,7 @@ internal class ActivityDaoIT {
 
     @Inject
     private lateinit var projectRepository: ProjectRepository
-
-    @Inject
-    private lateinit var userDao: UserDao
-
+    
     @Test
     fun `should find activity by id`() {
         val activity = Activity(
@@ -174,12 +171,20 @@ internal class ActivityDaoIT {
 
         projectRepository.update(
             Project(
-                project.id, project.name, false, project.billable, project.organization, project.projectRoles
+                project.id, project.name, false, project.billable, LocalDate.now(), null, null, project.organization, project.projectRoles
             )
         )
         projectRepository.update(
             Project(
-                openedProject.id, openedProject.name, true, openedProject.billable, openedProject.organization, openedProject.projectRoles
+                openedProject.id,
+                openedProject.name,
+                true,
+                openedProject.billable,
+                openedProject.startDate,
+                openedProject.blockDate,
+                openedProject.blockedByUser,
+                openedProject.organization,
+                openedProject.projectRoles
             )
         )
 

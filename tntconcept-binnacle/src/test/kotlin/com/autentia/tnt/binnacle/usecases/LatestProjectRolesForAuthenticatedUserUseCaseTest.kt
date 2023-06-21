@@ -11,6 +11,7 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
@@ -29,7 +30,10 @@ import java.util.*
 internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleResponseConverter = ProjectRoleResponseConverter()
-    private val activityService = mock<ActivityService>()
+    private val activityRepository: ActivityRepository = mock()
+    private val activityService = ActivityService(
+        activityRepository, mock(), mock(), mock()
+    )
     private val holidayService = mock<HolidayService>()
     private val securityService = mock<SecurityService>()
     private val projectRoleConverter = ProjectRoleConverter()
@@ -38,33 +42,152 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activityCalendarFactory)
     private val latestProjectRolesForAuthenticatedUserUseCase = LatestProjectRolesForAuthenticatedUserUseCase(
-        projectRoleRepository, projectRoleResponseConverter, activityService, activityCalendarService, securityService, projectRoleConverter
+        projectRoleRepository,
+        projectRoleResponseConverter,
+        activityService,
+        activityCalendarService,
+        securityService,
+        projectRoleConverter
     )
 
     @Test
-    fun `return the last imputed roles`() {
-        val startDate = BEGINNING_OF_THE_YEAR.atTime(LocalTime.MIN)
-        val endDate = TODAY.atTime(23, 59, 59)
-        val timeInterval = TimeInterval.of(startDate, END_OF_THE_YEAR.atTime(23, 59, 59))
-        val oneMonthTimeInterval = TimeInterval.of(TODAY.minusMonths(1).atTime(LocalTime.MIN), endDate)
+    fun `return the last imputed roles ordered by activity start date without year parameter`() {
+        val userId = 1L
+        val yearTimeInterval = TimeInterval.ofYear(BEGINNING_OF_THE_YEAR.year)
+        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
 
         val activities = listOf(
-            createActivity().copy(projectRole = projectRole1).copy(start = TODAY.minusDays(15).atTime(7,30,0)).copy(end = TODAY.minusDays(15).atTime(9,0,0)),
+            createActivity().copy(
+                projectRole = projectRole1,
+                start = TODAY.minusDays(15).atTime(7, 30, 0),
+                end = TODAY.minusDays(15).atTime(9, 0, 0)
+            ),
             createActivity().copy(projectRole = projectRole2),
-            createActivity().copy(projectRole = projectRole2).copy(start = TODAY.minusDays(2).atStartOfDay()).copy(end = TODAY.minusDays(2).atTime(9,0,0)),
+            createActivity().copy(
+                projectRole = projectRole2,
+                start = TODAY.minusDays(2).atStartOfDay(),
+                end = TODAY.minusDays(2).atTime(9, 0, 0)
+            )
         )
-        val filteredActivities = listOf(activities[0].toDomain(), activities[2].toDomain())
 
+        whenever(
+            activityRepository.findOfLatestProjects(
+                yearTimeInterval.start,
+                yearTimeInterval.end,
+                userId
+            )
+        ).thenReturn(
+            activities
+        )
+        whenever(activityRepository.findOfLatestProjects(oneMonthTimeInterval.start, oneMonthTimeInterval.end, userId))
+            .thenReturn(activities)
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
-        whenever(activityService.getActivitiesOfLatestProjects(timeInterval)).thenReturn(activities)
-        whenever(activityService.filterActivitiesByTimeInterval(oneMonthTimeInterval, activities)).thenReturn(filteredActivities)
 
         val expectedProjectRoles = listOf(
-            buildProjectRoleUserDTO(1L, 30, 120),
             buildProjectRoleUserDTO(2L, 0, 0),
+            buildProjectRoleUserDTO(1L, 30, 120),
         )
 
-        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get())
+        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(null))
+    }
+
+    @Test
+    fun `return the last imputed roles ordered by activity start date with past year parameter`() {
+        val userId = 1L
+        val year = 2021
+        val yearTimeInterval = TimeInterval.ofYear(year)
+        val yearTimeDate = yearTimeInterval.end
+        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
+
+        val lastMonthActivities = listOf(
+            createActivity().copy(
+                projectRole = projectRole1,
+                start = TODAY.minusDays(15).atTime(7, 30, 0),
+                end = TODAY.minusDays(15).atTime(9, 0, 0)
+            ),
+            createActivity().copy(projectRole = projectRole2),
+            createActivity().copy(
+                projectRole = projectRole2,
+                start = TODAY.minusDays(2).atStartOfDay(),
+                end = TODAY.minusDays(2).atTime(9, 0, 0)
+            )
+        )
+
+        val pastYearActivities = listOf(
+            createActivity().copy(
+                projectRole = projectRole1,
+                start = yearTimeDate.minusDays(15).minusMinutes(30),
+                end = yearTimeDate.minusDays(15)
+            ),
+            createActivity().copy(projectRole = projectRole2),
+            createActivity().copy(
+                projectRole = projectRole2,
+                start = yearTimeDate.minusDays(2).minusHours(9),
+                end = yearTimeDate.minusDays(2)
+            )
+        )
+
+        whenever(
+            activityRepository.findOfLatestProjects(
+                yearTimeInterval.start,
+                yearTimeInterval.end,
+                userId
+            )
+        ).thenReturn(
+            pastYearActivities
+        )
+        whenever(activityRepository.findOfLatestProjects(oneMonthTimeInterval.start, oneMonthTimeInterval.end, userId))
+            .thenReturn(lastMonthActivities)
+        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
+
+        val expectedProjectRoles = listOf(
+            buildProjectRoleUserDTO(2L, 0, 0),
+            buildProjectRoleUserDTO(1L, 90, 120),
+        )
+
+        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(year))
+    }
+
+    @Test
+    fun `return the last imputed roles ordered by activity start date with future year parameter`() {
+        val userId = 1L
+        val year = 2025
+        val yearTimeInterval = TimeInterval.ofYear(year)
+        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
+
+        val activities = listOf(
+            createActivity().copy(
+                projectRole = projectRole1,
+                start = TODAY.minusDays(15).atTime(7, 30, 0),
+                end = TODAY.minusDays(15).atTime(9, 0, 0)
+            ),
+            createActivity().copy(projectRole = projectRole2),
+            createActivity().copy(
+                projectRole = projectRole2,
+                start = TODAY.minusDays(2).atStartOfDay(),
+                end = TODAY.minusDays(2).atTime(9, 0, 0)
+            )
+        )
+
+        whenever(
+            activityRepository.findOfLatestProjects(
+                yearTimeInterval.start,
+                yearTimeInterval.end,
+                userId
+            )
+        ).thenReturn(
+            activities
+        )
+        whenever(activityRepository.findOfLatestProjects(oneMonthTimeInterval.start, oneMonthTimeInterval.end, userId))
+            .thenReturn(activities)
+        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
+
+        val expectedProjectRoles = listOf(
+            buildProjectRoleUserDTO(2L, 0, 0),
+            buildProjectRoleUserDTO(1L, 30, 120),
+        )
+
+        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(year))
     }
 
     @Test
@@ -107,18 +230,19 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
                 requireEvidence = RequireEvidence.WEEKLY
             )
 
-        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxAllowed: Int): ProjectRoleUserDTO = ProjectRoleUserDTO(
-            id = id,
-            name = "Role ID $id",
-            projectId = 1L,
-            organizationId = 1L,
-            maxAllowed = maxAllowed,
-            remaining = remaining,
-            timeUnit = TimeUnit.MINUTES,
-            requireEvidence = RequireEvidence.WEEKLY,
-            requireApproval = false,
-            userId = 1L
-        )
+        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxAllowed: Int): ProjectRoleUserDTO =
+            ProjectRoleUserDTO(
+                id = id,
+                name = "Role ID $id",
+                projectId = 1L,
+                organizationId = 1L,
+                maxAllowed = maxAllowed,
+                remaining = remaining,
+                timeUnit = TimeUnit.MINUTES,
+                requireEvidence = RequireEvidence.WEEKLY,
+                requireApproval = false,
+                userId = 1L
+            )
 
         private val PROJECT_ROLES_RECENT = listOf(
             buildProjectRoleRecent(1L, START_DATE),
@@ -126,5 +250,14 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             buildProjectRoleRecent(5L, START_DATE.minusDays(3), false),
             buildProjectRoleRecent(1L, END_DATE),
         )
+
+        private fun oneMonthTimeIntervalFromCurrentYear(): TimeInterval {
+            val now = LocalDate.now()
+
+            return TimeInterval.of(
+                now.minusMonths(1).atTime(LocalTime.MIN),
+                now.atTime(23, 59, 59)
+            )
+        }
     }
 }

@@ -1,22 +1,11 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.binnacle.entities.dto.*
-import com.autentia.tnt.binnacle.exception.ActivityBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
-import com.autentia.tnt.binnacle.exception.MaxHoursPerRoleException
-import com.autentia.tnt.binnacle.exception.NoImageInActivityException
-import com.autentia.tnt.binnacle.exception.OverlapsAnotherTimeException
-import com.autentia.tnt.binnacle.exception.ProjectClosedException
+import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Delete
-import io.micronaut.http.annotation.Error
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.*
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import java.time.LocalDate
@@ -70,7 +59,13 @@ internal class ActivitiesController(
 
     @Error
     internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxHoursPerRoleException) =
-        HttpResponse.badRequest(ErrorResponseMaxHoursLimit("MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",e.message, ErrorValues(e.maxAllowedHours, e.remainingHours, e.year)))
+        HttpResponse.badRequest(
+            ErrorResponseMaxHoursLimit(
+                "MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",
+                e.message,
+                ErrorValues(e.maxAllowedHours, e.remainingHours, e.year)
+            )
+        )
 
     @Error
     internal fun onProjectClosedException(request: HttpRequest<*>, e: ProjectClosedException) =
@@ -85,7 +80,7 @@ internal class ActivitiesController(
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_BEFORE_HIRING_DATE", e.message))
 
     @Error
-    internal fun onNoImageInActivityException(request: HttpRequest<*>, e: NoImageInActivityException) =
+    internal fun onNoEvidenceInActivityException(request: HttpRequest<*>, e: NoEvidenceInActivityException) =
         HttpResponse.badRequest(ErrorResponse("No image", e.message))
 
 }

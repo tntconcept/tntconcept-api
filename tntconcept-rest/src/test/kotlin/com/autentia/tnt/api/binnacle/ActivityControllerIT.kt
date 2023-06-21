@@ -1,5 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.api.binnacle.activity.ActivityRequest
+import com.autentia.tnt.api.binnacle.activity.TimeInterval
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
@@ -16,19 +18,13 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month.JANUARY
@@ -39,7 +35,7 @@ import java.util.*
 internal class ActivityControllerIT {
 
     @Inject
-    @field:Client("/")
+    @field:Client(value = "/", errorType = String::class)
     private lateinit var httpClient: HttpClient
 
     private lateinit var client: BlockingHttpClient
@@ -56,8 +52,8 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityDeletionUseCase::class)
     internal val activityDeletionUseCase = mock<ActivityDeletionUseCase>()
 
-    @get:MockBean(ActivityImageRetrievalUseCase::class)
-    internal val activityImageRetrievalUseCase = mock<ActivityImageRetrievalUseCase>()
+    @get:MockBean(ActivityEvidenceRetrievalUseCase::class)
+    internal val activityEvidenceRetrievalUseCase = mock<ActivityEvidenceRetrievalUseCase>()
 
     @get:MockBean(ActivitiesSummaryUseCase::class)
     internal val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
@@ -82,8 +78,7 @@ internal class ActivityControllerIT {
         whenever(
             activitiesByFilterUseCase.getActivities(
                 ActivityFilterDTO(
-                    startDate = startDate,
-                    endDate = endDate
+                    startDate = startDate, endDate = endDate
                 )
             )
         ).thenReturn(activities)
@@ -121,27 +116,22 @@ internal class ActivityControllerIT {
         val organizationId = 1L
         val projectId = 1L
         val roleId = 1L
-        val activitiesFilter =
-            ActivityFilterDTO(
-                startDate,
-                endDate,
-                ApprovalState.PENDING,
-                organizationId,
-                projectId,
-                roleId
-            )
+        val userId = 5L
+        val activitiesFilter = ActivityFilterDTO(
+            startDate,
+            endDate,
+            ApprovalState.PENDING,
+            organizationId,
+            projectId,
+            roleId,
+            userId,
+        )
         val activities = listOf(ACTIVITY_RESPONSE_DTO)
         whenever(activitiesByFilterUseCase.getActivities(activitiesFilter)).thenReturn(activities)
 
         val response = client.exchangeList<ActivityResponseDTO>(
             GET(
-                "/api/activity?" +
-                        "approvalState=${approvalState}" +
-                        "&startDate=${startDate.toJson()}" +
-                        "&endDate=${endDate.toJson()}" +
-                        "&organizationId=${organizationId}" +
-                        "&projectId=${projectId}" +
-                        "&roleId=${roleId}"
+                "/api/activity?" + "approvalState=${approvalState}" + "&startDate=${startDate.toJson()}" + "&endDate=${endDate.toJson()}" + "&organizationId=${organizationId}" + "&projectId=${projectId}" + "&roleId=${roleId}" + "&userId=${userId}"
             ),
         )
 
@@ -191,12 +181,13 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `get an image's activity by id`() {
-        val userId = ACTIVITY_RESPONSE_DTO.userId
-        doReturn(ACTIVITY_IMAGE).whenever(activityImageRetrievalUseCase).getActivityImage(userId)
+    fun `get an evidence activity by id`() {
+        val activityId = ACTIVITY_RESPONSE_DTO.id
+        doReturn(EvidenceDTO.from(ACTIVITY_IMAGE)).whenever(activityEvidenceRetrievalUseCase)
+            .getActivityEvidenceByActivityId(activityId)
 
         val response = client.exchangeObject<String>(
-            GET("/api/activity/$userId/image")
+            GET("/api/activity/$activityId/evidence")
         )
 
         assertEquals(OK, response.status)
@@ -204,9 +195,8 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `post a new activity`() {
-        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase)
-            .createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
+    fun `post a new activity without evidence`() {
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
 
         val response = client.exchangeObject<ActivityResponseDTO>(
             POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -217,10 +207,32 @@ internal class ActivityControllerIT {
     }
 
     @Test
+    fun `post a new activity with evidence`() {
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
+
+        val response = client.exchangeObject<ActivityResponseDTO>(
+            POST("/api/activity", ACTIVITY_WITH_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+    }
+
+    @Test
+    fun `post a new activity with wrong evidence format will result in bad request`() {
+        try {
+            client.exchangeObject<Any>(
+                POST("/api/activity", ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+            )
+        } catch (ex: HttpClientResponseException) {
+            assertThat(ex.response.status).isEqualTo(BAD_REQUEST)
+        }
+    }
+
+    @Test
     fun `fail if try to post activity with too long description`() {
         val tooLongDescriptionJson = ACTIVITY_POST_JSON.replace(
-            ACTIVITY_REQUEST_BODY_DTO.description,
-            "x".repeat(2049)
+            ACTIVITY_REQUEST_BODY_DTO.description, "x".repeat(2049)
         )
 
         val ex = assertThrows<HttpClientResponseException> {
@@ -238,7 +250,8 @@ internal class ActivityControllerIT {
         arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
         arrayOf(OverlapsAnotherTimeException(), BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
         arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
-        arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE")
+        arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
+        arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
     )
 
     @ParameterizedTest
@@ -248,7 +261,7 @@ internal class ActivityControllerIT {
         expectedResponseStatus: HttpStatus,
         expectedErrorCode: String,
     ) {
-        doThrow(exception).whenever(activityCreationUseCase).createActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
+        doThrow(exception).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
@@ -263,13 +276,12 @@ internal class ActivityControllerIT {
     @Test
     fun `put an activity`() {
         val putActivity = ACTIVITY_REQUEST_BODY_DTO.copy(
-            id = ACTIVITY_RESPONSE_DTO.id,
-            description = "Updated activity description"
+            id = ACTIVITY_RESPONSE_DTO.id, description = "Updated activity description"
         )
         val updatedActivity = ACTIVITY_RESPONSE_DTO.copy(
             description = putActivity.description
         )
-        doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(putActivity, Locale.ENGLISH)
+        doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(any(), eq(Locale.ENGLISH))
 
         val response = client.exchangeObject<ActivityResponseDTO>(
             PUT("/api/activity", ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
@@ -286,17 +298,18 @@ internal class ActivityControllerIT {
         arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
         arrayOf(OverlapsAnotherTimeException(), BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
         arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
-        arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE")
+        arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
+        arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
     )
 
     @ParameterizedTest
     @MethodSource("putFailProvider")
-    fun `fail if try to put an activity and exception is throw`(
+    fun `fail if try to put an activity and exception is thrown`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
         expectedErrorCode: String,
     ) {
-        doThrow(exception).whenever(activityUpdateUseCase).updateActivity(ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
+        doThrow(exception).whenever(activityUpdateUseCase).updateActivity(any(), eq(Locale.ENGLISH))
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
@@ -323,7 +336,8 @@ internal class ActivityControllerIT {
     private fun deleteFailProvider() = arrayOf(
         arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND"),
         arrayOf(ActivityNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-        arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED")
+        arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
+        arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
     )
 
     @ParameterizedTest
@@ -347,7 +361,8 @@ internal class ActivityControllerIT {
 
     @Test
     fun `approve an activity`() {
-        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
+        doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase)
+            .approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
 
         val response = client.exchangeObject<ActivityResponseDTO>(
             POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en")
@@ -362,8 +377,7 @@ internal class ActivityControllerIT {
             UserPermissionException(),
             NOT_FOUND,
             ErrorResponse("RESOURCE_NOT_FOUND", "You don't have permission to access the resource")
-        ),
-        arrayOf(
+        ), arrayOf(
             InvalidActivityApprovalStateException(),
             CONFLICT,
             ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", "Activity could not been approved")
@@ -394,19 +408,12 @@ internal class ActivityControllerIT {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
         private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 12, 0)
 
-        private val INTERVAL_REQUEST_DTO = TimeIntervalRequestDTO(
-            START_DATE,
-            END_DATE
+        private val INTERVAL_REQUEST_DTO = TimeInterval(
+            START_DATE, END_DATE
         )
 
-        private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequestBodyDTO(
-            null,
-            INTERVAL_REQUEST_DTO,
-            "Activity description",
-            true,
-            3,
-            false,
-            null
+        private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequest(
+            null, INTERVAL_REQUEST_DTO, "Activity description", true, 3, false, null
         )
 
         private val ACTIVITY_POST_JSON = """
@@ -422,6 +429,34 @@ internal class ActivityControllerIT {
             }
         """.trimIndent()
 
+        private val ACTIVITY_WITH_EVIDENCE_POST_JSON = """
+            {
+                "interval": {
+                    "start": "${ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
+                    "end": "${ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
+                },                
+                "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
+                "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
+                "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
+                "hasEvidences": true,
+                "evidence": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+            }
+        """.trimIndent()
+
+        private val ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON = """
+            {
+                "interval": {
+                    "start": "${ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
+                    "end": "${ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
+                },                
+                "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
+                "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
+                "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
+                "hasEvidences": true,
+                "evidence": "VBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+            }
+        """.trimIndent()
+
 
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             ACTIVITY_REQUEST_BODY_DTO.billable,
@@ -430,9 +465,7 @@ internal class ActivityControllerIT {
             2L,
             ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
             IntervalResponseDTO(
-                ACTIVITY_REQUEST_BODY_DTO.interval.start,
-                ACTIVITY_REQUEST_BODY_DTO.interval.end,
-                240, TimeUnit.MINUTES
+                ACTIVITY_REQUEST_BODY_DTO.interval.start, ACTIVITY_REQUEST_BODY_DTO.interval.end, 240, TimeUnit.MINUTES
             ),
             42,
             ApprovalState.ACCEPTED
@@ -452,7 +485,8 @@ internal class ActivityControllerIT {
             }
         """.trimIndent()
 
-        private val ACTIVITY_IMAGE = "base64image"
+        private const val ACTIVITY_IMAGE =
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
     }
 
 }

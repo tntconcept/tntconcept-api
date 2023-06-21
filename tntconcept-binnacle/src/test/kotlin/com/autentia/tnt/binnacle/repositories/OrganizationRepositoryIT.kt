@@ -27,7 +27,7 @@ internal class OrganizationRepositoryIT {
     fun `should find all the organizations`() {
         val result = organizationRepository.findAll()
 
-        assertEquals(2, result.count())
+        assertEquals(3, result.count())
     }
 
 }

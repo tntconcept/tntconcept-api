@@ -1,5 +1,6 @@
 package com.autentia.tnt.api
 
+import com.autentia.tnt.api.OpenApiTag.Companion.ACTIVITY
 import com.autentia.tnt.api.OpenApiTag.Companion.SECURITY
 import io.micronaut.openapi.annotation.OpenAPIInclude
 import io.micronaut.runtime.Micronaut
@@ -8,7 +9,7 @@ import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.servers.Server
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.time.ZoneOffset
-import java.util.TimeZone
+import java.util.*
 
 @OpenAPIDefinition(
     info = Info(
@@ -17,6 +18,7 @@ import java.util.TimeZone
     ),
     tags = [
         Tag(name = SECURITY, description = "Security related endpoints."),
+        Tag(name = ACTIVITY, description = "Activity related endpoints."),
     ],
     servers = [Server(url = "http://localhost:8080/")]
 )

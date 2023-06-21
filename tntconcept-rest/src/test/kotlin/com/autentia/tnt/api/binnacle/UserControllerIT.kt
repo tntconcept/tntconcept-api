@@ -3,8 +3,9 @@ package com.autentia.tnt.api.binnacle
 import com.autentia.tnt.binnacle.entities.Role
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
+import com.autentia.tnt.binnacle.entities.dto.UserInfoResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
-import com.autentia.tnt.binnacle.usecases.FindByUserNameUseCase
+import com.autentia.tnt.binnacle.usecases.FindUserInfoUseCase
 import com.autentia.tnt.binnacle.usecases.UsersRetrievalUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus.*
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -34,8 +34,8 @@ internal class UserControllerIT {
 
     private lateinit var client: BlockingHttpClient
 
-    @get:MockBean(FindByUserNameUseCase::class)
-    internal val findByUserNameUseCase = mock<FindByUserNameUseCase>()
+    @get:MockBean(FindUserInfoUseCase::class)
+    internal val findUserInfoUseCase = mock<FindUserInfoUseCase>()
 
     @get:MockBean(UsersRetrievalUseCase::class)
     internal val usersRetrievalUseCase = mock<UsersRetrievalUseCase>()
@@ -62,19 +62,22 @@ internal class UserControllerIT {
             Role(4, "role"),
             true
         )
-        doReturn(user).whenever(findByUserNameUseCase).find()
+        val roles = listOf("user")
+
+        val userInfoResponseDTO = UserInfoResponseDTO(user.id, user.username, user.hiringDate, roles)
+        whenever(findUserInfoUseCase.find()).thenReturn(userInfoResponseDTO)
 
         val request = HttpRequest.GET<Any>("/api/user/me")
 
-        val response = client.exchange(request, UserResponse::class.java)
+        val response = client.exchange(request, UserInfoResponseDTO::class.java)
 
         assertEquals(200, response.status.code)
-        assertEquals(UserResponse(user), response.body.get())
+        assertEquals(userInfoResponseDTO, response.body.get())
     }
 
     @Test
-    fun `get users`() {
-        whenever(usersRetrievalUseCase.getAllUsers()).thenReturn(listOf(USER_RESPONSE_DTO))
+    fun `get all active users`() {
+        whenever(usersRetrievalUseCase.getAllActiveUsers()).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponseDTO>(
             HttpRequest.GET("/api/user"),
@@ -88,15 +91,7 @@ internal class UserControllerIT {
         private val USER_RESPONSE_DTO = UserResponseDTO(
             1L,
             "username",
-            2L,
-            "name",
-            "photoUrl",
-            dayDuration = 24,
-            WorkingAgreement(3L, emptySet()),
-            null,
-            LocalDate.now(),
-            "email",
-            "role",
+            "Name surname",
         )
     }
 

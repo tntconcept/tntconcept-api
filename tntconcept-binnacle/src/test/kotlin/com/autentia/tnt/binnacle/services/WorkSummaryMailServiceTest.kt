@@ -1,46 +1,84 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.core.domain.Mail
+import io.micronaut.context.MessageSource
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import java.io.File
+import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class WorkSummaryMailServiceTest {
 
-    private val mailService = mock<MailService>()
-    private val appProperties = AppProperties().apply {
-        mail.from = FROM
-        binnacle.workSummary.mail.to = TO
+    @Nested
+    @DisplayName("Send emails test")
+    inner class ServiceTest {
+
+        private val mailService = mock<MailService>()
+        private val workSummaryMailBuilder: WorkSummaryMailBuilder = mock()
+        private val appProperties = AppProperties().apply {
+            mail.from = "from@test.com"
+            binnacle.workSummary.mail.to = listOf("to@test.com")
+            binnacle.workSummary.mail.enabled = true
+        }
+
+        private val workSummaryMailService = WorkSummaryMailService(mailService, workSummaryMailBuilder, appProperties)
+
+        @Test
+        fun `given report should try to send email`() {
+            val report: File = mock()
+            val mailToSend = Mail("subject", "body")
+            whenever(workSummaryMailBuilder.buildMail()).thenReturn(mailToSend)
+
+            workSummaryMailService.sendReport(report)
+
+            verify(mailService).send(
+                appProperties.mail.from,
+                appProperties.binnacle.workSummary.mail.to,
+                mailToSend.subject,
+                mailToSend.body,
+                report
+            )
+
+        }
+
+        @Test
+        fun `should not send email when not enabled`() {
+            val report: File = mock()
+            whenever(workSummaryMailBuilder.buildMail()).thenReturn(Mail("subject", "body"))
+            appProperties.binnacle.workSummary.mail.enabled = false
+
+            workSummaryMailService.sendReport(report)
+
+            verifyNoInteractions(mailService)
+        }
     }
 
-    private val sut = WorkSummaryMailService(mailService, appProperties)
+    @Nested
+    @DisplayName("Message builder test")
+    inner class BuilderTest {
+        private val subjectKey = "mail.request.workSummary.subject"
+        private val bodyKey = "mail.request.workSummary.template"
+        private val messageSource: MessageSource = mock()
+        private val workSummaryMailBuilder = WorkSummaryMailBuilder(messageSource = messageSource)
 
-    private fun sendReportParametersProvider() = arrayOf(
-        arrayOf(true, Result.success("OK")),
-        arrayOf(true, Result.failure<String>(RuntimeException("FAIL"))),
-        arrayOf(false, Result.failure<String>(RuntimeException("FAIL")))
-    )
+        @Test
+        fun `test build mail`() {
+            val subject = "Subject"
+            val body = "Body"
+            val locale = Locale.ENGLISH
+            whenever(messageSource.getMessage(subjectKey, locale)).thenReturn(Optional.of(subject))
+            whenever(messageSource.getMessage(bodyKey, locale)).thenReturn(Optional.of(body))
 
-    @ParameterizedTest
-    @MethodSource("sendReportParametersProvider")
-    fun `given report should try to send email`(enabled: Boolean, mailResult: Result<String>) {
-        val report = mock<File>()
+            val mail = workSummaryMailBuilder.buildMail()
 
-        appProperties.binnacle.workSummary.mail.enabled = enabled
-        doReturn(mailResult).whenever(mailService).send(FROM, TO, SUBJECT, BODY_TEXT, report)
-
-        sut.sendReport(report)
-
-        val invocations = if(enabled) 1 else 0
-        verify(mailService, times(invocations)).send(FROM, TO, SUBJECT, BODY_TEXT, report)
+            assertThat(mail.subject).isEqualTo(subject)
+            assertThat(mail.body).isEqualTo(body)
+        }
     }
-
-    private companion object {
-        private const val FROM = "from@test.com"
-        private val TO = listOf("to@test.com")
-    }
-
 }

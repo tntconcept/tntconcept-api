@@ -1,36 +1,49 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.security.application.canAccessAllUsers
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
-import com.autentia.tnt.security.application.isAdmin
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
-import java.util.Optional
+import java.util.*
 
 @Singleton
 internal class UserRepositorySecured(
     private val userDao: UserDao,
     private val securityService: SecurityService
-): UserRepository {
+) : UserRepository {
 
     override fun findByAuthenticatedUser(): Optional<User> {
         val authentication = securityService.checkAuthentication()
         return userDao.findById(authentication.id())
     }
+
     override fun findByUsername(username: String): User? {
         return userDao.findByUsername(username)
     }
 
-    override fun findByActiveTrue(): List<User> {
+    override fun find(userId: Long): User? {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.canAccessAllUsers()) {
+            userDao.findById(userId).orElse(null)
+        } else {
+            userDao.findById(authentication.id()).orElse(null)
+        }
+    }
+
+    override fun findWithoutSecurity(): List<User> {
         return userDao.findByActiveTrue()
     }
-    override fun find(): List<User>{
+
+    override fun find(): List<User> {
         val authentication = securityService.checkAuthentication()
-        return if(authentication.isAdmin()) {
+        return if (authentication.canAccessAllUsers()) {
             userDao.findByActiveTrue()
-        }else{
-            emptyList()
+        } else {
+            val user = userDao.findById(authentication.id())
+            check(user.isPresent) { "Authenticated user not found" }
+            listOf(user.get())
         }
     }
 

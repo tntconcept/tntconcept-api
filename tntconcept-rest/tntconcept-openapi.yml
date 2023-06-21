@@ -1,0 +1,1858 @@
+openapi: 3.0.1
+info:
+  title: tntconcept API
+  version: 0.0.1
+servers:
+- url: http://localhost:8080/
+tags:
+- name: security
+  description: Security related endpoints.
+- name: activity
+  description: Activity related endpoints.
+paths:
+  /api-hook/activity:
+    get:
+      summary: Gets activities between two dates.
+      operationId: get$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: user
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityDateDTO'
+    post:
+      summary: Creates a new activity.
+      operationId: post$tntconcept_rest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - activityRequest
+              type: object
+              properties:
+                activityRequest:
+                  $ref: '#/components/schemas/ActivityRequestBodyHookDTO'
+        required: true
+      responses:
+        "200":
+          description: post$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponseDTO'
+  /api-hook/organization:
+    get:
+      summary: Retrieves a list of all organizations
+      operationId: getAllOrganizations
+      responses:
+        "200":
+          description: getAllOrganizations 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationResponseDTO'
+  /api-hook/organization/{id}/project:
+    get:
+      summary: Retrieves a list of imputable projects from an organization ID
+      operationId: getOrganizationsProjects
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getOrganizationsProjects 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectResponseDTO'
+  /api-hook/project/{id}/role:
+    get:
+      summary: Retrieves a list of project roles from a project ID
+      operationId: getProjectRolesByProjectId
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: getProjectRolesByProjectId 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectRoleDTO'
+  /api/activities:
+    get:
+      summary: Gets activities between two dates.
+      operationId: get$tntconcept_rest_1
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityDateDTO'
+      deprecated: true
+    put:
+      summary: Updates an existing activity.
+      operationId: put$tntconcept_rest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivitiesRequestBodyDTO'
+        required: true
+      responses:
+        "200":
+          description: put$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivitiesResponseDTO'
+      deprecated: true
+    post:
+      summary: Creates a new activity.
+      operationId: post$tntconcept_rest_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - activityRequest
+              type: object
+              properties:
+                activityRequest:
+                  $ref: '#/components/schemas/ActivitiesRequestBodyDTO'
+        required: true
+      responses:
+        "200":
+          description: post$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivitiesResponseDTO'
+      deprecated: true
+  /api/activities/{id}:
+    get:
+      summary: Gets an activity by its id.
+      operationId: get$tntconcept_rest_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivitiesResponseDTO'
+      deprecated: true
+    delete:
+      summary: Deletes an activity by its id.
+      operationId: delete$tntconcept_rest
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: delete$tntconcept_rest 200 response
+      deprecated: true
+  /api/activities/{id}/image:
+    get:
+      summary: Retrieves an activity image by the activity id.
+      operationId: getImage$tntconcept_rest
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getImage$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: string
+      deprecated: true
+  /api/activity:
+    get:
+      tags:
+      - activity
+      summary: Gets activities with specified filters
+      operationId: get$tntconcept_rest_3
+      parameters:
+      - name: startDate
+        in: query
+        schema:
+          type: string
+          format: date
+          nullable: true
+      - name: endDate
+        in: query
+        schema:
+          type: string
+          format: date
+          nullable: true
+      - name: approvalState
+        in: query
+        schema:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/ApprovalState'
+      - name: organizationId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      - name: projectId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      - name: roleId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      - name: userId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityResponseDTO'
+    put:
+      tags:
+      - activity
+      summary: Updates an existing activity
+      operationId: put$tntconcept_rest_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityRequest'
+        required: true
+      responses:
+        "200":
+          description: put$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponseDTO'
+    post:
+      tags:
+      - activity
+      summary: Creates a new activity
+      operationId: post$tntconcept_rest_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityRequest'
+        required: true
+      responses:
+        "200":
+          description: post$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponseDTO'
+  /api/activity/summary:
+    get:
+      tags:
+      - activity
+      summary: Gets activities summary between two dates
+      operationId: summary$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: summary$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivitySummaryDTO'
+  /api/activity/{id}:
+    get:
+      tags:
+      - activity
+      summary: Gets an activity by its id.
+      operationId: get$tntconcept_rest_4
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponseDTO'
+    delete:
+      tags:
+      - activity
+      summary: Deletes an activity by its id.
+      operationId: delete$tntconcept_rest_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: delete$tntconcept_rest 200 response
+  /api/activity/{id}/approve:
+    post:
+      tags:
+      - activity
+      summary: Approve an existing activity by id.
+      operationId: approve$tntconcept_rest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - locale
+              type: integer
+              properties:
+                locale:
+                  $ref: '#/components/schemas/Locale'
+              format: int64
+        required: true
+      responses:
+        "200":
+          description: approve$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponseDTO'
+  /api/activity/{id}/evidence:
+    get:
+      tags:
+      - activity
+      summary: Retrieves an activity evidence by the activity id.
+      operationId: getEvidenceByActivityId$tntconcept_rest
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getEvidenceByActivityId$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: string
+  /api/calendar/workable-days/count:
+    get:
+      summary: Retrieves workable days within a given period.
+      operationId: getNumberOfWorkableDays$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: getNumberOfWorkableDays$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+  /api/holidays:
+    get:
+      summary: Retrieves existing holidays within a period
+      operationId: getHolidaysBetweenDate
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: getHolidaysBetweenDate 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HolidayResponseDTO'
+  /api/organizations:
+    get:
+      summary: Retrieves a list of all organizations
+      operationId: getAllOrganizations_1
+      responses:
+        "200":
+          description: getAllOrganizations_1 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationResponseDTO'
+  /api/organizations/{id}/projects:
+    get:
+      summary: Retrieves a list of imputable projects from an organization ID
+      operationId: getOrganizationsProjects_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getOrganizationsProjects_1 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectResponseDTO'
+  /api/project:
+    get:
+      summary: Gets projects with specified filters
+      operationId: get
+      parameters:
+      - name: organizationId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: open
+        in: query
+        schema:
+          type: boolean
+          nullable: true
+      responses:
+        "200":
+          description: get 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectResponseDTO'
+  /api/project-role:
+    get:
+      summary: Retrieves a project roles list by given user IDs
+      operationId: getProjectRoleByUserIds
+      parameters:
+      - name: userIds
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      - name: year
+        in: query
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+      responses:
+        "200":
+          description: getProjectRoleByUserIds 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectRoleUserDTO'
+  /api/project-role/latest:
+    get:
+      summary: Retrieves recent used roles
+      operationId: getLatestRoles
+      parameters:
+      - name: year
+        in: query
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+      responses:
+        "200":
+          description: getLatestRoles 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectRoleUserDTO'
+  /api/project-role/{id}:
+    get:
+      summary: Retrieves a project role by a given ID
+      operationId: getProjectRoleById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getProjectRoleById 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectRoleDTO'
+  /api/project-roles/recents:
+    get:
+      summary: Retrieves recent used roles
+      operationId: getLatestRoles_1
+      responses:
+        "200":
+          description: getLatestRoles_1 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectRoleRecentDTO'
+      deprecated: true
+  /api/project-roles/{id}:
+    get:
+      summary: Retrieves a project role by a given ID
+      operationId: getProjectRoleById_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getProjectRoleById_1 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectRoleDTO'
+      deprecated: true
+  /api/project/{id}:
+    get:
+      summary: Retrieves a project´s information from its ID
+      operationId: getProjectById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getProjectById 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponseDTO'
+  /api/project/{projectId}/block:
+    post:
+      summary: Blocks a project until given date
+      operationId: blockProjectById
+      parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockProjectRequestDTO'
+        required: true
+      responses:
+        "200":
+          description: blockProjectById 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponseDTO'
+  /api/project/{projectId}/role:
+    get:
+      summary: Retrieves a list of project roles from a project ID
+      operationId: getProjectRolesByProjectId_1
+      parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: year
+        in: query
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+      responses:
+        "200":
+          description: getProjectRolesByProjectId_1 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectRoleUserDTO'
+  /api/project/{projectId}/unblock:
+    post:
+      summary: Unblocks a project
+      operationId: unblockProjectById
+      parameters:
+      - name: projectId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: unblockProjectById 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponseDTO'
+  /api/projects/{id}:
+    get:
+      summary: Retrieves a project´s information from its ID
+      operationId: getProjectById_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getProjectById_1 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectResponseDTO'
+      deprecated: true
+  /api/projects/{id}/roles:
+    get:
+      summary: Retrieves a list of project roles from a project ID
+      operationId: getProjectRolesByProjectId_2
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: getProjectRolesByProjectId_2 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectRoleDTO'
+      deprecated: true
+  /api/search:
+    get:
+      operationId: searchBy
+      parameters:
+      - name: roleIds
+        in: query
+        required: true
+        schema:
+          type: array
+          items:
+            type: integer
+            format: int64
+      - name: year
+        in: query
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+      responses:
+        "200":
+          description: searchBy 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponseDTO'
+  /api/time-summary:
+    get:
+      summary: Retrieves working time from a given date
+      operationId: getTimeSummary
+      parameters:
+      - name: date
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: getTimeSummary 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeSummaryDTO'
+  /api/user:
+    get:
+      summary: Retrieves the list of active users
+      operationId: get$tntconcept_rest_5
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponseDTO'
+  /api/user/me:
+    get:
+      summary: Retrieves the logged user
+      operationId: getUser$tntconcept_rest
+      responses:
+        "200":
+          description: getUser$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoResponseDTO'
+  /api/vacations:
+    get:
+      summary: Retrieves holidays within a given charge year.
+      operationId: getPrivateHolidaysByChargeYear$tntconcept_rest
+      parameters:
+      - name: chargeYear
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: getPrivateHolidaysByChargeYear$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HolidayResponseDTO'
+    put:
+      summary: Updates a holiday period.
+      operationId: updatePrivateHolidayPeriod$tntconcept_rest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RequestVacationDTO'
+              - required:
+                - locale
+                type: object
+                properties:
+                  locale:
+                    $ref: '#/components/schemas/Locale'
+        required: true
+      responses:
+        "200":
+          description: updatePrivateHolidayPeriod$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreateVacationResponseDTO'
+    post:
+      summary: Creates a holiday period.
+      operationId: createPrivateHolidayPeriod$tntconcept_rest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+              - $ref: '#/components/schemas/RequestVacationDTO'
+              - required:
+                - locale
+                type: object
+                properties:
+                  locale:
+                    $ref: '#/components/schemas/Locale'
+        required: true
+      responses:
+        "200":
+          description: createPrivateHolidayPeriod$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreateVacationResponseDTO'
+  /api/vacations/days:
+    get:
+      summary: Retrieves holidays within a given period.
+      operationId: getPrivateHolidaysPeriodDays$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: getPrivateHolidaysPeriodDays$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
+      deprecated: true
+  /api/vacations/details:
+    get:
+      summary: Retrieves details for a holiday within a given charge year.
+      operationId: getPrivateHolidayDetails$tntconcept_rest
+      parameters:
+      - name: chargeYear
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        "200":
+          description: getPrivateHolidayDetails$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VacationDetailsDTO'
+  /api/vacations/{id}:
+    delete:
+      summary: Deletes a holiday period by a given ID.
+      operationId: deletePrivateHolidayPeriod$tntconcept_rest
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: deletePrivateHolidayPeriod$tntconcept_rest 200 response
+  /api/version:
+    get:
+      summary: Retrieves api version
+      description: 200 expected
+      operationId: getVersion
+      responses:
+        "200":
+          description: getVersion 200 response
+          content:
+            application/json:
+              schema:
+                type: string
+  /login:
+    post:
+      tags:
+      - security
+      operationId: login
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsernamePasswordCredentials'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsernamePasswordCredentials'
+        required: true
+      responses:
+        "200":
+          description: login 200 response
+          content:
+            application/json:
+              schema:
+                type: object
+  /logout:
+    get:
+      tags:
+      - security
+      operationId: indexGet
+      responses:
+        "200":
+          description: indexGet 200 response
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+      - security
+      operationId: index
+      responses:
+        "200":
+          description: index 200 response
+          content:
+            application/json:
+              schema:
+                type: object
+  /oauth/access_token:
+    get:
+      tags:
+      - security
+      operationId: index_1
+      parameters:
+      - name: JWT_REFRESH_TOKEN
+        in: cookie
+        schema:
+          type: string
+          nullable: true
+      responses:
+        "200":
+          description: index_1 200 response
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+      - security
+      operationId: index_2
+      parameters:
+      - name: JWT_REFRESH_TOKEN
+        in: cookie
+        schema:
+          type: string
+          nullable: true
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+              nullable: true
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: string
+              nullable: true
+        required: true
+      responses:
+        "200":
+          description: index_2 200 response
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  schemas:
+    ActivitiesRequestBodyDTO:
+      required:
+      - billable
+      - description
+      - duration
+      - hasImage
+      - projectRoleId
+      - startDate
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int32
+        description:
+          maxLength: 2048
+          type: string
+        billable:
+          type: boolean
+        projectRoleId:
+          type: integer
+          format: int64
+        hasImage:
+          type: boolean
+        imageFile:
+          type: string
+          nullable: true
+    ActivitiesResponseDTO:
+      required:
+      - billable
+      - description
+      - duration
+      - id
+      - organization
+      - project
+      - projectRole
+      - startDate
+      - userId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int32
+        description:
+          type: string
+        projectRole:
+          $ref: '#/components/schemas/ProjectRoleResponseDTOOld'
+        userId:
+          type: integer
+          format: int64
+        billable:
+          type: boolean
+        organization:
+          $ref: '#/components/schemas/OrganizationResponseDTO'
+        project:
+          $ref: '#/components/schemas/ProjectResponseDTO'
+        hasImage:
+          type: boolean
+          nullable: true
+    ActivityDateDTO:
+      required:
+      - activities
+      - date
+      - workedMinutes
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        workedMinutes:
+          type: integer
+          format: int32
+        activities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActivitiesResponseDTO'
+    ActivityRequest:
+      required:
+      - billable
+      - description
+      - hasEvidences
+      - interval
+      - projectRoleId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        interval:
+          $ref: '#/components/schemas/TimeInterval'
+        description:
+          maxLength: 2048
+          type: string
+        billable:
+          type: boolean
+        projectRoleId:
+          type: integer
+          format: int64
+        hasEvidences:
+          type: boolean
+        evidence:
+          pattern: "^data:[^,]+;base64,.+$"
+          type: string
+          nullable: true
+    ActivityRequestBodyHookDTO:
+      required:
+      - billable
+      - description
+      - duration
+      - hasImage
+      - projectRoleId
+      - startDate
+      - userName
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int32
+        description:
+          maxLength: 2048
+          type: string
+        billable:
+          type: boolean
+        projectRoleId:
+          type: integer
+          format: int64
+        hasImage:
+          type: boolean
+        imageFile:
+          type: string
+          nullable: true
+        userName:
+          type: string
+    ActivityResponseDTO:
+      required:
+      - approvalState
+      - billable
+      - description
+      - id
+      - interval
+      - projectRoleId
+      - userId
+      type: object
+      properties:
+        billable:
+          type: boolean
+        description:
+          type: string
+        hasEvidences:
+          type: boolean
+          nullable: true
+        id:
+          type: integer
+          format: int64
+        projectRoleId:
+          type: integer
+          format: int64
+        interval:
+          $ref: '#/components/schemas/IntervalResponseDTO'
+        userId:
+          type: integer
+          format: int64
+        approvalState:
+          $ref: '#/components/schemas/ApprovalState'
+    ActivitySummaryDTO:
+      required:
+      - date
+      - worked
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        worked:
+          type: number
+    AnnualBalanceDTO:
+      required:
+      - balance
+      - notRequestedVacations
+      - target
+      - worked
+      type: object
+      properties:
+        worked:
+          type: number
+        target:
+          type: number
+        notRequestedVacations:
+          type: number
+        balance:
+          type: number
+    ApprovalState:
+      type: string
+      enum:
+      - NA
+      - PENDING
+      - ACCEPTED
+    BaseLocale:
+      type: object
+      properties:
+        language:
+          type: string
+        script:
+          type: string
+        region:
+          type: string
+        variant:
+          type: string
+    BlockProjectRequestDTO:
+      required:
+      - blockDate
+      type: object
+      properties:
+        blockDate:
+          type: string
+          format: date
+    CreateVacationResponseDTO:
+      required:
+      - chargeYear
+      - days
+      - endDate
+      - startDate
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        days:
+          type: integer
+          format: int32
+        chargeYear:
+          type: integer
+          format: int32
+    HolidayDTO:
+      required:
+      - date
+      - description
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+        date:
+          type: string
+          format: date
+    HolidayResponseDTO:
+      required:
+      - holidays
+      - vacations
+      type: object
+      properties:
+        holidays:
+          type: array
+          items:
+            $ref: '#/components/schemas/HolidayDTO'
+        vacations:
+          type: array
+          items:
+            $ref: '#/components/schemas/VacationDTO'
+    IntervalResponseDTO:
+      required:
+      - duration
+      - end
+      - start
+      - timeUnit
+      type: object
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int32
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
+    Locale:
+      required:
+      - country
+      - language
+      - variant
+      type: object
+      properties:
+        language:
+          type: string
+        script:
+          type: string
+        country:
+          type: string
+        variant:
+          type: string
+        extensionKeys:
+          type: array
+          items:
+            type: string
+        unicodeLocaleAttributes:
+          type: array
+          items:
+            type: string
+        unicodeLocaleKeys:
+          type: array
+          items:
+            type: string
+        baseLocale:
+          $ref: '#/components/schemas/BaseLocale'
+        localeExtensions:
+          $ref: '#/components/schemas/LocaleExtensions'
+        ISO3Language:
+          type: string
+        ISO3Country:
+          type: string
+        displayLanguage:
+          type: string
+        displayScript:
+          type: string
+        displayCountry:
+          type: string
+        displayVariant:
+          type: string
+        displayName:
+          type: string
+    LocaleExtensions:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            type: string
+        unicodeLocaleAttributes:
+          type: array
+          items:
+            type: string
+        unicodeLocaleKeys:
+          type: array
+          items:
+            type: string
+        empty:
+          type: boolean
+        ID:
+          type: string
+    MonthlyBalanceDTO:
+      required:
+      - balance
+      - recommended
+      - roles
+      - vacations
+      - workable
+      - worked
+      type: object
+      properties:
+        workable:
+          type: number
+        worked:
+          type: number
+        recommended:
+          type: number
+        balance:
+          type: number
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonthlyRolesDTO'
+        vacations:
+          $ref: '#/components/schemas/VacationsDTO'
+    MonthlyRolesDTO:
+      required:
+      - hours
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        hours:
+          type: number
+    OrganizationResponseDTO:
+      required:
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    PreviousAnnualBalanceDTO:
+      required:
+      - balance
+      - target
+      - worked
+      type: object
+      properties:
+        worked:
+          type: number
+        target:
+          type: number
+        balance:
+          type: number
+    ProjectResponseDTO:
+      required:
+      - billable
+      - id
+      - name
+      - open
+      - organizationId
+      - startDate
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        open:
+          type: boolean
+        billable:
+          type: boolean
+        organizationId:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date
+        blockDate:
+          type: string
+          format: date
+          nullable: true
+        blockedByUser:
+          type: integer
+          format: int64
+          nullable: true
+    ProjectRoleDTO:
+      required:
+      - id
+      - isWorkingTime
+      - maxAllowed
+      - name
+      - organizationId
+      - projectId
+      - requireApproval
+      - requireEvidence
+      - timeUnit
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        organizationId:
+          type: integer
+          format: int64
+        projectId:
+          type: integer
+          format: int64
+        maxAllowed:
+          type: integer
+          format: int32
+        isWorkingTime:
+          type: boolean
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
+        requireEvidence:
+          $ref: '#/components/schemas/RequireEvidence'
+        requireApproval:
+          type: boolean
+    ProjectRoleRecentDTO:
+      required:
+      - date
+      - id
+      - name
+      - organizationName
+      - projectBillable
+      - projectName
+      - projectOpen
+      - requireEvidence
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        projectName:
+          type: string
+        organizationName:
+          type: string
+        projectBillable:
+          type: boolean
+        projectOpen:
+          type: boolean
+        date:
+          type: string
+          format: date-time
+        requireEvidence:
+          type: boolean
+    ProjectRoleResponseDTOOld:
+      required:
+      - id
+      - name
+      - requireEvidence
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        requireEvidence:
+          type: boolean
+    ProjectRoleUserDTO:
+      required:
+      - id
+      - maxAllowed
+      - name
+      - organizationId
+      - projectId
+      - remaining
+      - requireApproval
+      - requireEvidence
+      - timeUnit
+      - userId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        organizationId:
+          type: integer
+          format: int64
+        projectId:
+          type: integer
+          format: int64
+        maxAllowed:
+          type: integer
+          format: int32
+        remaining:
+          type: integer
+          format: int32
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
+        requireEvidence:
+          $ref: '#/components/schemas/RequireEvidence'
+        requireApproval:
+          type: boolean
+        userId:
+          type: integer
+          format: int64
+    RequestVacationDTO:
+      required:
+      - endDate
+      - startDate
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        description:
+          maxLength: 1024
+          type: string
+          nullable: true
+    RequireEvidence:
+      type: string
+      enum:
+      - "NO"
+      - ONCE
+      - WEEKLY
+    SearchResponseDTO:
+      required:
+      - organizations
+      - projectRoles
+      - projects
+      type: object
+      properties:
+        organizations:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationResponseDTO'
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectResponseDTO'
+        projectRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectRoleUserDTO'
+    TimeInterval:
+      required:
+      - end
+      - start
+      type: object
+      properties:
+        start:
+          type: string
+          description: Start time of the interval
+          format: date-time
+        end:
+          type: string
+          description: End time of the interval
+          format: date-time
+      description: Time interval
+    TimeSummaryDTO:
+      required:
+      - months
+      - year
+      type: object
+      properties:
+        year:
+          $ref: '#/components/schemas/YearAnnualBalanceDTO'
+        months:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonthlyBalanceDTO'
+    TimeUnit:
+      type: string
+      enum:
+      - MINUTES
+      - DAYS
+    UserInfoResponseDTO:
+      required:
+      - hiringDate
+      - id
+      - roles
+      - username
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        hiringDate:
+          type: string
+          format: date
+        roles:
+          type: array
+          items:
+            type: string
+    UserResponseDTO:
+      required:
+      - id
+      - name
+      - username
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        name:
+          type: string
+    UsernamePasswordCredentials:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          minLength: 1
+          type: string
+        password:
+          minLength: 1
+          type: string
+        identity:
+          type: string
+        secret:
+          type: string
+    VacationDTO:
+      required:
+      - chargeYear
+      - days
+      - endDate
+      - startDate
+      - state
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        observations:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        state:
+          $ref: '#/components/schemas/VacationState'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        days:
+          type: array
+          items:
+            type: string
+            format: date
+        chargeYear:
+          type: string
+          format: date
+    VacationDetailsDTO:
+      required:
+      - acceptedVacations
+      - correspondingVacations
+      - holidaysAgreement
+      - remainingVacations
+      type: object
+      properties:
+        holidaysAgreement:
+          type: integer
+          format: int32
+        correspondingVacations:
+          type: integer
+          format: int32
+        acceptedVacations:
+          type: integer
+          format: int32
+        remainingVacations:
+          type: integer
+          format: int32
+    VacationState:
+      type: string
+      enum:
+      - PENDING
+      - ACCEPT
+      - REJECT
+      - CANCELLED
+    VacationsDTO:
+      required:
+      - charged
+      - enjoyed
+      type: object
+      properties:
+        charged:
+          type: number
+        enjoyed:
+          type: number
+    YearAnnualBalanceDTO:
+      required:
+      - current
+      - previous
+      type: object
+      properties:
+        previous:
+          $ref: '#/components/schemas/PreviousAnnualBalanceDTO'
+        current:
+          $ref: '#/components/schemas/AnnualBalanceDTO'

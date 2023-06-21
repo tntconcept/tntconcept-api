@@ -7,12 +7,13 @@ import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
 @Singleton
 internal class HookActivityService(
-    private val activityRepository: ActivityRepository,
+    @param:Named("Internal") private val activityRepository: ActivityRepository,
     private val projectRoleRepository: ProjectRoleRepository,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter
 ) {
@@ -23,7 +24,7 @@ internal class HookActivityService(
             .findById(activityRequest.projectRoleId)
             ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
-        return activityRepository.saveWithoutSecurity(
+        return activityRepository.save(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
                 activityRequest, projectRole, user
             )
@@ -37,9 +38,9 @@ internal class HookActivityService(
             ?: error { "Cannot find projectRole with id = ${activityRequest.projectRoleId}" }
 
         val oldActivity = activityRepository
-            .findByIdWithoutSecurity(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
+            .findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
 
-        return activityRepository.updateWithoutSecurity(
+        return activityRepository.update(
             activityRequestBodyConverter.mapActivityRequestBodyToActivity(
                 activityRequest, projectRole, user, oldActivity.insertDate
             )

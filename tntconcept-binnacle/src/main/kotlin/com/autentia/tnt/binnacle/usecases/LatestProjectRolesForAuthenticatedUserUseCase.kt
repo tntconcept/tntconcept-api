@@ -27,30 +27,32 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     private val activityCalendarService: ActivityCalendarService,
     private val securityService: SecurityService,
     private val projectRoleConverter: ProjectRoleConverter
-){
+) {
 
     @Transactional
     @ReadOnly
-    fun get(): List<ProjectRoleUserDTO> {
+    fun get(year: Int?): List<ProjectRoleUserDTO> {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
-        val oneMonthDateRange = oneMonthTimeIntervalFromCurrentDate()
-        val dateRange = dateRangeOfCurrentYear()
-        val currentYearTimeInterval = TimeInterval.of(dateRange.startDate, dateRange.endDate)
+        val oneMonthDateRange = oneMonthTimeIntervalFromCurrentYear()
+        val timeIntervalForRemainingCalculation = getTimeIntervalForRemainingCalculation(year)
 
-        val activities =
-            activityService.getActivitiesOfLatestProjects(currentYearTimeInterval)
-        val lastMonthActivities = activityService.filterActivitiesByTimeInterval(oneMonthDateRange, activities)
+        val requestedYearActivities =
+            activityService.getActivitiesOfLatestProjects(timeIntervalForRemainingCalculation, userId)
+        val lastMonthActivities =
+            activityService.getActivitiesOfLatestProjects(oneMonthDateRange, userId).map(Activity::toDomain)
 
-        val latestUserProjectRoles = lastMonthActivities.map { it.projectRole }.distinct().map { projectRole ->
-            val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
-                projectRole,
-                activities.map(Activity::toDomain),
-                currentYearTimeInterval.getDateInterval(),
-                userId
-            )
-            projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
-        }
+        val latestUserProjectRoles =
+            lastMonthActivities.sortedByDescending { it.timeInterval.start }.map { it.projectRole }.distinct()
+                .map { projectRole ->
+                    val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
+                        projectRole,
+                        requestedYearActivities.map(Activity::toDomain),
+                        timeIntervalForRemainingCalculation.getDateInterval(),
+                        userId
+                    )
+                    projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
+                }
 
         return latestUserProjectRoles.map(projectRoleResponseConverter::toProjectRoleUserDTO)
     }
@@ -80,19 +82,16 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         return StartEndLocalDateTime(startDate, endDate)
     }
 
-    private fun oneMonthTimeIntervalFromCurrentDate(): TimeInterval {
+    private fun oneMonthTimeIntervalFromCurrentYear(): TimeInterval {
         val now = LocalDate.now()
-        val startDate = now.minusMonths(1).atTime(LocalTime.MIN)
-        val endDate = now.atTime(23, 59, 59)
 
-        return TimeInterval.of(startDate, endDate)
+        return TimeInterval.of(
+            now.minusMonths(1).atTime(LocalTime.MIN),
+            now.atTime(23, 59, 59)
+        )
     }
 
-    private fun dateRangeOfCurrentYear(): StartEndLocalDateTime {
-        val now = LocalDate.now()
-        val startDate = LocalDate.of(now.year, 1, 1).atTime(LocalTime.MIN)
-        val endDate = LocalDate.of(now.year, 12, 31).atTime(23, 59, 59)
+    private fun getTimeIntervalForRemainingCalculation(year: Int?): TimeInterval =
+        TimeInterval.ofYear(year ?: LocalDate.now().year)
 
-        return StartEndLocalDateTime(startDate, endDate)
-    }
 }

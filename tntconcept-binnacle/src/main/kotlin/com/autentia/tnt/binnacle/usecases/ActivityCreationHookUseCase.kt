@@ -12,7 +12,7 @@ import jakarta.validation.Valid
 
 @Singleton
 @Validated
-open class ActivityCreationHookUseCase internal constructor(
+class ActivityCreationHookUseCase internal constructor(
     private val activityService: HookActivityService,
     private val userService: UserService,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
@@ -20,7 +20,7 @@ open class ActivityCreationHookUseCase internal constructor(
 ) {
 
     fun createActivity(@Valid activityRequestBody: ActivityRequestBodyHookDTO): ActivityResponseDTO {
-        val user = userService.getUserByUserName(activityRequestBody.userName)
+        val user = userService.getByUserName(activityRequestBody.userName)
         val activityRequest = activityRequestBodyConverter
             .mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBody)
 

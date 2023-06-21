@@ -4,8 +4,7 @@ import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createOrganization
 import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -27,13 +26,13 @@ class ActivityDaoSpecificationIT {
     @Inject
     private lateinit var organizationRepository: OrganizationRepository
 
+    @Inject
 
     @Test
     fun `test findAll without condition`() {
 
         val activitiesToSave = listOf(
-            createActivity().copy(id = null),
-            createActivity().copy(id = null, userId = 1L)
+            createActivity().copy(id = null), createActivity().copy(id = null, userId = 1L)
         )
         activityDao.saveAll(activitiesToSave)
 
@@ -58,8 +57,7 @@ class ActivityDaoSpecificationIT {
     fun `test findAll by approvalState`() {
 
         val activitiesToSave = listOf(
-            createActivity().copy(id = null),
-            createActivity().copy(id = null, approvalState = ApprovalState.ACCEPTED)
+            createActivity().copy(id = null), createActivity().copy(id = null, approvalState = ApprovalState.ACCEPTED)
         )
         activityDao.saveAll(activitiesToSave)
 
@@ -73,8 +71,7 @@ class ActivityDaoSpecificationIT {
     fun `test findAll by projectRole`() {
 
         val activitiesToSave = listOf(
-            createActivity(null),
-            createActivity(null).copy(projectRole = createProjectRole(2L))
+            createActivity(null), createActivity(null).copy(projectRole = createProjectRole(2L))
         )
         activityDao.saveAll(activitiesToSave)
 
@@ -104,21 +101,13 @@ class ActivityDaoSpecificationIT {
         val organization = organizationRepository.findById(2L)
 
         projectRepository.update(
-            (
-                    Project(
-                        project.id,
-                        project.name,
-                        false,
-                        project.billable,
-                        organization.get(),
-                        project.projectRoles
-                    )
-                    )
+            (Project(
+                project.id, project.name, false, project.billable, LocalDate.now(), null, null, organization.get(), project.projectRoles
+            ))
         )
 
         val activitiesToSave = listOf(
-            createActivity(null),
-            createActivity(null).copy(
+            createActivity(null), createActivity(null).copy(
                 projectRole = createProjectRole(2L).copy(
                     project = createProject(id = 2L).copy(
                         organization = createOrganization(2L)
@@ -142,37 +131,26 @@ class ActivityDaoSpecificationIT {
         val endDate = startDate.plusDays(1)
 
         val expectedActivityAtStart = activity.copy(
-            id = null,
-            start = startDate.atStartOfDay().minusDays(1),
-            end = startDate.atStartOfDay()
+            id = null, start = startDate.atStartOfDay().minusDays(1), end = startDate.atStartOfDay()
         )
 
         val expectedActivityAtMiddle = activity.copy(
-            id = null,
-            start = startDate.atStartOfDay(),
-            end = endDate.atTime(23, 59, 59)
+            id = null, start = startDate.atStartOfDay(), end = endDate.atTime(23, 59, 59)
         )
 
         val expectedActivityAtEnd = activity.copy(
-            id = null,
-            start = endDate.atTime(23, 59, 59).minusSeconds(1),
+            id = null, start = endDate.atTime(23, 59, 59).minusSeconds(1),
             end = endDate.atTime(23, 59, 59).plusDays(1)
         )
 
         val activitiesToSave = listOf(
             activity.copy(
-                id = null,
-                start = startDate.atStartOfDay().minusDays(1),
-                end = startDate.atStartOfDay().minusSeconds(1)
-            ),
-            activity.copy(
+                id = null, start = startDate.atStartOfDay().minusDays(1), end = startDate.atStartOfDay().minusSeconds(1)
+            ), activity.copy(
                 id = null,
                 start = endDate.atTime(23, 59, 59).plusSeconds(1),
                 end = endDate.atTime(23, 59, 59).plusDays(1)
-            ),
-            expectedActivityAtStart,
-            expectedActivityAtMiddle,
-            expectedActivityAtEnd
+            ), expectedActivityAtStart, expectedActivityAtMiddle, expectedActivityAtEnd
         )
 
         activityDao.saveAll(activitiesToSave)

@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.entities
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
+import java.time.LocalDate
 import jakarta.persistence.*
 
 @Entity
@@ -13,6 +14,9 @@ data class Project(
     val name: String,
     val open: Boolean,
     val billable: Boolean,
+    val startDate: LocalDate,
+    var blockDate: LocalDate? = null,
+    var blockedByUser: Long? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizationId")
@@ -23,5 +27,14 @@ data class Project(
     @JsonIgnore
     val projectRoles: List<ProjectRole>
 ) {
-    fun toDomain() = com.autentia.tnt.binnacle.core.domain.Project(id, name, open, billable, organization.toDomain())
+    fun toDomain() = com.autentia.tnt.binnacle.core.domain.Project(
+        id,
+        name,
+        open,
+        billable,
+        startDate,
+        blockDate,
+        blockedByUser,
+        organization.toDomain()
+    )
 }

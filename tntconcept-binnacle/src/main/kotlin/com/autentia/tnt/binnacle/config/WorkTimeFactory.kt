@@ -1,17 +1,8 @@
 package com.autentia.tnt.binnacle.config
 
-import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
-import com.autentia.tnt.binnacle.core.domain.ProjectRoleId
-import com.autentia.tnt.binnacle.core.services.TargetWorkService
-import com.autentia.tnt.binnacle.core.services.TimeSummaryService
-import com.autentia.tnt.binnacle.core.services.TimeWorkableService
-import com.autentia.tnt.binnacle.core.services.WorkRecommendationCurrentMonthAccumulationService
-import com.autentia.tnt.binnacle.core.services.WorkRecommendationService
-import com.autentia.tnt.binnacle.core.services.WorkedTimeService
-import com.autentia.tnt.binnacle.core.utils.WorkableProjectRoleIdChecker
+import com.autentia.tnt.binnacle.core.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ProjectRoleService
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 
@@ -25,24 +16,8 @@ internal class WorkTimeFactory {
     fun timeWorkableService(): TimeWorkableService = TimeWorkableService()
 
     @Singleton
-    fun workedTimeService(
-        activityCalendarService: ActivityCalendarService,
-        workableProjectRoleIdChecker: WorkableProjectRoleIdChecker
-    ): WorkedTimeService =
-        WorkedTimeService(activityCalendarService, workableProjectRoleIdChecker)
-
-    @Singleton
-    fun workableProjectRoleIdChecker(
-        appProperties: AppProperties,
-        projectRoleService: ProjectRoleService,
-    ): WorkableProjectRoleIdChecker {
-        val projectRoleIds =
-            if (appProperties.binnacle.notWorkableProjects.isEmpty()) emptyList()
-            else projectRoleService
-                .getAllByProjectIds(appProperties.binnacle.notWorkableProjects)
-                .map { ProjectRoleId(it.id) }
-        return WorkableProjectRoleIdChecker(projectRoleIds)
-    }
+    fun workedTimeService(activityCalendarService: ActivityCalendarService): WorkedTimeService =
+        WorkedTimeService(activityCalendarService)
 
     @Singleton
     fun workRecommendationService(): WorkRecommendationService = WorkRecommendationCurrentMonthAccumulationService()
@@ -54,13 +29,8 @@ internal class WorkTimeFactory {
         workedTimeService: WorkedTimeService,
         workRecommendationService: WorkRecommendationService,
         timeSummaryConverter: TimeSummaryConverter,
-    ): TimeSummaryService =
-        TimeSummaryService(
-            targetWorkService,
-            timeWorkableService,
-            workedTimeService,
-            workRecommendationService,
-            timeSummaryConverter
-        )
+    ): TimeSummaryService = TimeSummaryService(
+        targetWorkService, timeWorkableService, workedTimeService, workRecommendationService, timeSummaryConverter
+    )
 
 }

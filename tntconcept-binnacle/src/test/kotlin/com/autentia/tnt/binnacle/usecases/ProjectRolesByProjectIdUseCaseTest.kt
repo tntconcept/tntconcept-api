@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 
 internal class ProjectRolesByProjectIdUseCaseTest {
 
@@ -48,7 +49,7 @@ internal class ProjectRolesByProjectIdUseCaseTest {
         private const val PROJECT_ID = 1L
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
-        private val PROJECT = Project(1L, "Dummy project", true,  false, ORGANIZATION, listOf())
+        private val PROJECT = Project(1L, "Dummy project", true,  false, LocalDate.now(), null, null, ORGANIZATION, listOf())
 
         private val PROJECT_ROLE = ProjectRole(PROJECT_ID, "Dummy Role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
 

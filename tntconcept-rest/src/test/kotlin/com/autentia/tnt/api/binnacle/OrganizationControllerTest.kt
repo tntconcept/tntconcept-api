@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 
 internal class OrganizationControllerTest {
 
@@ -39,13 +40,13 @@ internal class OrganizationControllerTest {
     @Test
     fun `return all projects by organization`() {
         val organization = createOrganization()
-        val project = Project(1, "Dummy Project", true, true, organization, listOf())
+        val project = Project(1, "Dummy Project", true, true, LocalDate.now(), null, null, organization, listOf())
 
         doReturn(listOf(project)).whenever(imputableProjectsByOrganizationIdUseCase).get(organization.id)
 
         val result = organizationController.getOrganizationsProjects(organization.id)
 
-        val expectedProjectDTO = ProjectResponseDTO(1, "Dummy Project", true, true, 1L)
+        val expectedProjectDTO = ProjectResponseDTO(1, "Dummy Project", true, true, 1L, startDate = LocalDate.now())
         assertEquals(listOf(expectedProjectDTO), result)
     }
 

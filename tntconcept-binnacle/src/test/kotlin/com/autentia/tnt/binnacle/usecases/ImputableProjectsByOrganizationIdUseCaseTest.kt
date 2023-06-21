@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 
 internal class ImputableProjectsByOrganizationIdUseCaseTest {
 
@@ -35,6 +36,9 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
                 " Project is Closed",
                 false,
                 false,
+                LocalDate.now(),
+                null,
+                null,
                 ORGANIZATION,
                 emptyList()
             ),
@@ -52,6 +56,9 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
                 " Project open",
                 true,
                 false,
+                LocalDate.now(),
+                null,
+                null,
                 ORGANIZATION,
                 emptyList()
             ),
@@ -61,10 +68,10 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
             TimeUnit.MINUTES
         )
 
-        private val projectOpen = Project(1L, "Project is Open", true,  false,  ORGANIZATION,
+        private val projectOpen = Project(1L, "Project is Open", true,  false,  LocalDate.now(), null, null, ORGANIZATION,
             listOf(PROJECT_ROLE_PROJECT_OPEN))
 
-        private val projectClosed = Project(2L, " Project is Closed", false,  false,  ORGANIZATION,
+        private val projectClosed = Project(2L, " Project is Closed", false,  false,  LocalDate.now(), null, null, ORGANIZATION,
             listOf(PROJECT_ROLE_PROJECT_CLOSED)
         )
 

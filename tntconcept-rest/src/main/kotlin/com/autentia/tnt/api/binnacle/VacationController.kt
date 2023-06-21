@@ -66,7 +66,8 @@ internal class VacationController(
             return privateHolidayDetailsUseCase.get(chargeYear, vacationsByChargeYear)
         }
 
-        @Get("/days")
+    @Deprecated("use Calendar API workable-days instead")
+    @Get("/days")
         @Operation(summary = "Retrieves holidays within a given period.")
         internal fun getPrivateHolidaysPeriodDays(startDate: LocalDate, endDate: LocalDate): Int =
             privateHolidaysPeriodDaysUseCase.get(startDate, endDate)

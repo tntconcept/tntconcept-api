@@ -3,6 +3,7 @@ package com.autentia.tnt
 import io.micronaut.context.annotation.ConfigurationProperties
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
 
 @ConfigurationProperties("app")
 internal class AppProperties {
@@ -17,7 +18,10 @@ internal class AppProperties {
     @ConfigurationProperties("files")
     internal class FilesProperties {
         @NotBlank
-        var activityImages: String = ""
+        var evidencesPath: String = ""
+
+        @NotEmpty
+        var supportedMimeTypes: Map<String, String> = emptyMap()
     }
 
     @ConfigurationProperties("mail")
@@ -32,11 +36,12 @@ internal class AppProperties {
     internal class BinnacleProperties {
         @Email
         var vacationsApprovers: List<String> = emptyList()
+
         @Email
         var activitiesApprovers: List<String> = emptyList()
 
-        var notWorkableProjects: List<Int> = emptyList()
         var workSummary = WorkSummaryProperties()
+        var missingEvidencesNotification = MissingEvidencesNotificationProperties()
 
 
         @ConfigurationProperties("work-summary")
@@ -65,5 +70,12 @@ internal class AppProperties {
             }
 
         }
+
+        @ConfigurationProperties("missing-evidences-notification")
+        internal class MissingEvidencesNotificationProperties {
+            var enabled: Boolean = false
+            var cronExpression: String? = null
+        }
+
     }
 }

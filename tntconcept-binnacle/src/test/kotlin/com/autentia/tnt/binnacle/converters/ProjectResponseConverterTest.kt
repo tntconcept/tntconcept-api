@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import java.time.LocalDate
 
 internal class ProjectResponseConverterTest {
     private lateinit var sut: ProjectResponseConverter
@@ -24,6 +25,9 @@ internal class ProjectResponseConverterTest {
             name = "Dummy Project",
             open = false,
             billable = false,
+            LocalDate.now(),
+            null,
+            null,
             projectRoles = listOf(),
             organization = Mockito.mock(Organization::class.java)
         )
@@ -40,12 +44,16 @@ internal class ProjectResponseConverterTest {
     fun `given Project list should return ProjectResponseDTO list with converted values`() {
         val organization = createOrganization()
         //Given
+        val startDate = LocalDate.now()
         val projectList = listOf(
             Project(
                 id = 1,
                 name = "First Project",
                 open = false,
                 billable = false,
+                startDate,
+                null,
+                null,
                 projectRoles = listOf(),
                 organization = organization
             ),
@@ -54,6 +62,9 @@ internal class ProjectResponseConverterTest {
                 name = "Second Project",
                 open = false,
                 billable = true,
+                startDate,
+                null,
+                null,
                 projectRoles = listOf(),
                 organization = organization
             ),
@@ -69,14 +80,16 @@ internal class ProjectResponseConverterTest {
                 name = "First Project",
                 open = false,
                 billable = false,
-                1L
+                1L,
+                startDate,
             ),
             ProjectResponseDTO(
                 id = 2,
                 name = "Second Project",
                 open = false,
                 billable = true,
-                1L
+                1L,
+                startDate,
             ),
         )
 

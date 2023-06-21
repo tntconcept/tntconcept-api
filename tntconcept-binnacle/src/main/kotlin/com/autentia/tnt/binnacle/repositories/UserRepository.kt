@@ -6,13 +6,14 @@ import java.util.Optional
 
 internal interface UserRepository {
 
+    fun find(userId: Long): User?
+
     fun findByAuthenticatedUser(): Optional<User>
 
     fun findByUsername(username: String): User?
 
-    fun findByActiveTrue(): List<User>
+    fun findWithoutSecurity(): List<User>
 
     fun find(): List<User>
-
 
 }

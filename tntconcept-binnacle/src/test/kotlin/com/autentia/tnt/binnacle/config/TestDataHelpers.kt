@@ -1,18 +1,7 @@
 package com.autentia.tnt.binnacle.config
 
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Holiday
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
-import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.Role
-import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.entities.WorkingAgreement
-import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
+import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
@@ -65,11 +54,11 @@ internal fun getHolidaysFrom2022(): List<LocalDate> = listOf<LocalDate>(
 )
 
 internal fun getVacationsInOneMonth2022(): List<LocalDate> {
-    val vacationsRequested = mutableListOf<LocalDate>()
+    val vacationsEnjoyed = mutableListOf<LocalDate>()
     for (i in 1..31) {
-          vacationsRequested.add(LocalDate.of(2022, Month.JANUARY, i))
+          vacationsEnjoyed.add(LocalDate.of(2022, Month.JANUARY, i))
     }
-    return vacationsRequested
+    return vacationsEnjoyed
 }
 
 
@@ -105,6 +94,21 @@ internal fun createProject(id: Long = 1L) = Project(
     name = "Dummy Project",
     open = true,
     billable = false,
+    LocalDate.now(),
+    null,
+    null,
+    projectRoles = listOf(),
+    organization = createOrganization()
+)
+
+internal fun createBlockedProject(id: Long = 1L) = Project(
+    id = id,
+    name = "Dummy Project",
+    open = true,
+    billable = false,
+    LocalDate.now(),
+    blockDate = LocalDate.of(2000,1,1),
+    null,
     projectRoles = listOf(),
     organization = createOrganization()
 )

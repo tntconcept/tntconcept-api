@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeSummary
@@ -23,7 +22,6 @@ class UserTimeSummaryUseCase internal constructor(
     private val vacationService: VacationService,
     private val myVacationsDetailService: MyVacationsDetailService,
     private val timeSummaryService: TimeSummaryService,
-    private val activityResponseConverter: ActivityResponseConverter,
     private val timeSummaryConverter: TimeSummaryConverter
 ) {
     fun getTimeSummary(date: LocalDate): TimeSummaryDTO {
@@ -44,7 +42,7 @@ class UserTimeSummaryUseCase internal constructor(
         val vacationsRequestedThisYear = vacationService.getVacationsBetweenDates(startYearDate, endYearDate, user)
             .filter { it.isRequestedVacation() }
 
-        val vacationDaysRequestedThisYear =
+        val vacationDaysEnjoyedThisYear =
             vacationsRequestedThisYear.flatMap { it.days }.filter { it.year == startYearDate.year }
 
         val vacationsChargedThisYear = vacationService.getVacationsByChargeYear(startYearDate.year, user)
@@ -65,7 +63,7 @@ class UserTimeSummaryUseCase internal constructor(
             user,
             annualWorkSummary,
             holidaysDates,
-            vacationDaysRequestedThisYear,
+            vacationDaysEnjoyedThisYear,
             vacationsChargedThisYear,
             correspondingVacations,
             activities,
