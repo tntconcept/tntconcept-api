@@ -6,19 +6,9 @@ import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
 import com.fasterxml.jackson.annotation.JsonIgnore
 import io.micronaut.data.annotation.DateCreated
 import java.time.LocalDateTime
-import java.util.Date
-import javax.persistence.Entity
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
+import java.util.*
+import javax.persistence.*
 import javax.persistence.FetchType.LAZY
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
-import javax.persistence.JoinColumn
-import javax.persistence.ManyToOne
-import javax.persistence.NamedAttributeNode
-import javax.persistence.NamedEntityGraph
-import javax.persistence.NamedSubgraph
 
 enum class ApprovalState {
     NA, PENDING, ACCEPTED
@@ -87,13 +77,13 @@ data class Activity(
             toLocalDateTime(insertDate),
             hasEvidences,
             approvalState,
-
-            )
+            null
+        )
 
     companion object {
 
         fun of(
-            activity: com.autentia.tnt.binnacle.core.domain.Activity, projectRole: ProjectRole
+            activity: com.autentia.tnt.binnacle.core.domain.Activity, projectRole: ProjectRole,
         ) =
             Activity(
                 activity.id,
@@ -122,7 +112,7 @@ data class Activity(
             departmentId: Long?,
             insertDate: Date?,
             hasEvidences: Boolean,
-            approvalState: ApprovalState
+            approvalState: ApprovalState,
         ) =
             Activity(
                 id,

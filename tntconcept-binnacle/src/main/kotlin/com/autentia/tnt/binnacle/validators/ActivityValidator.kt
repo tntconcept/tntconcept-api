@@ -35,6 +35,7 @@ internal class ActivityValidator(
             getTotalRegisteredDurationByProjectRole(emptyActivity, activityToCreateEndYear, user.id)
 
         when {
+            isEvidenceInputIncoherent(activityToCreate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
@@ -72,6 +73,11 @@ internal class ActivityValidator(
                 activityToCreateEndYear
             )
         }
+    }
+
+    private fun isEvidenceInputIncoherent(activityToCreate: Activity): Boolean {
+        return activityToCreate.hasEvidences && activityToCreate.evidence == null
+            || !activityToCreate.hasEvidences && activityToCreate.evidence != null
     }
 
     private fun getTotalRegisteredDurationByProjectRole(
@@ -209,10 +215,9 @@ internal class ActivityValidator(
 
     @Transactional
     @ReadOnly
-    fun checkActivityIsValidForDeletion(id: Long) {
-        val activity = activityService.getActivityById(id)
-        require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
+    fun checkActivityIsValidForDeletion(activity: Activity) {
         val project = projectService.findById(activity.projectRole.project.id)
+        require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
         when {
             isProjectBlocked(project, activity) -> throw ProjectBlockedException(project.blockDate!!)
             !isOpenPeriod(activity.getStart()) -> throw ActivityPeriodClosedException()
@@ -243,13 +248,10 @@ internal class ActivityValidator(
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
     }
 
-    @Transactional
-    @ReadOnly
-    fun checkActivityIsValidForApproval(id: Long) {
-        val activity = activityService.getActivityById(id)
+    fun checkActivityIsValidForApproval(activity: Activity) {
         when {
             activity.approvalState == ApprovalState.ACCEPTED || activity.approvalState == ApprovalState.NA -> throw InvalidActivityApprovalStateException()
-            !activity.hasEvidences -> throw NoEvidenceInActivityException(id)
+            !activity.hasEvidences -> throw NoEvidenceInActivityException(activity.id!!)
         }
     }
 

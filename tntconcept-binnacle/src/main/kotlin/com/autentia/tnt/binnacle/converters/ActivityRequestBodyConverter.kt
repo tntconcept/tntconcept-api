@@ -32,6 +32,7 @@ class ActivityRequestBodyConverter() {
             insertDate,
             activityRequestBody.hasEvidences,
             projectRole.getApprovalState(),
+            activityRequestBody.evidence?.toDomain()
         )
 
     fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =
@@ -51,7 +52,7 @@ class ActivityRequestBodyConverter() {
         activityRequestBody: ActivityRequestBody,
         projectRole: ProjectRole,
         user: User,
-        insertDate: Date? = null
+        insertDate: Date? = null,
     ) =
         Activity(
             activityRequestBody.id,

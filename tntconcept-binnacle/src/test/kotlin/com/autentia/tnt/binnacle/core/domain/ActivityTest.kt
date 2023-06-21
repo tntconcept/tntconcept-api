@@ -5,9 +5,7 @@ import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.HolidayService
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import java.time.LocalDateTime
@@ -49,7 +47,8 @@ class ActivityTest {
                 null,
                 LocalDateTime.now(),
                 false,
-                ApprovalState.NA
+                ApprovalState.NA,
+                null
             ).getDurationByCountingDays(0)
         )
     }
@@ -72,7 +71,8 @@ class ActivityTest {
                 null,
                 LocalDateTime.now(),
                 false,
-                ApprovalState.NA
+                ApprovalState.NA,
+                null
             ).getDurationByCountingDays(1)
         )
     }
@@ -92,7 +92,8 @@ class ActivityTest {
                 null,
                 LocalDateTime.now(),
                 false,
-                ApprovalState.NA
+                ApprovalState.NA,
+                null
             ).getDurationByCountingDays(1)
         )
     }
@@ -113,7 +114,8 @@ class ActivityTest {
                 null,
                 LocalDateTime.now(),
                 false,
-                ApprovalState.NA
+                ApprovalState.NA,
+                null
             ).getDurationByCountingWorkableDays(calendar)
         )
     }
@@ -136,7 +138,8 @@ class ActivityTest {
                 null,
                 LocalDateTime.now(),
                 false,
-                ApprovalState.NA
+                ApprovalState.NA,
+                null
             ).getDurationByCountingWorkableDays(calendar)
         )
     }
@@ -157,7 +160,8 @@ class ActivityTest {
                 null,
                 LocalDateTime.now(),
                 false,
-                ApprovalState.NA
+                ApprovalState.NA,
+                null
             ).getDurationByCountingWorkableDays(calendar)
         )
     }

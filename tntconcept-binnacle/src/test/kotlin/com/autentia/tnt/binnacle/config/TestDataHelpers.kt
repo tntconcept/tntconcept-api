@@ -24,11 +24,11 @@ internal fun createUser(hiringDate: LocalDate, id: Long = 1L, name: String = "Jo
     agreementYearDuration = null,
     agreement = WorkingAgreement(
         1L, setOf(
-            WorkingAgreementTerms(1, LocalDate.of(1970, 1, 1), 20, 105900),
-            WorkingAgreementTerms(2, LocalDate.of(2020, 1, 1), 19, 105900),
-            WorkingAgreementTerms(3, LocalDate.of(2020, 6, 1), 22, 105900),
-            WorkingAgreementTerms(4, LocalDate.of(2022, 7, 1), 23, 105900)
-        )
+        WorkingAgreementTerms(1, LocalDate.of(1970, 1, 1), 20, 105900),
+        WorkingAgreementTerms(2, LocalDate.of(2020, 1, 1), 19, 105900),
+        WorkingAgreementTerms(3, LocalDate.of(2020, 6, 1), 22, 105900),
+        WorkingAgreementTerms(4, LocalDate.of(2022, 7, 1), 23, 105900)
+    )
     ),
     active = true
 )
@@ -56,7 +56,7 @@ internal fun getHolidaysFrom2022(): List<LocalDate> = listOf<LocalDate>(
 internal fun getVacationsInOneMonth2022(): List<LocalDate> {
     val vacationsEnjoyed = mutableListOf<LocalDate>()
     for (i in 1..31) {
-          vacationsEnjoyed.add(LocalDate.of(2022, Month.JANUARY, i))
+        vacationsEnjoyed.add(LocalDate.of(2022, Month.JANUARY, i))
     }
     return vacationsEnjoyed
 }
@@ -107,7 +107,7 @@ internal fun createBlockedProject(id: Long = 1L) = Project(
     open = true,
     billable = false,
     LocalDate.now(),
-    blockDate = LocalDate.of(2000,1,1),
+    blockDate = LocalDate.of(2000, 1, 1),
     null,
     projectRoles = listOf(),
     organization = createOrganization()
@@ -147,7 +147,7 @@ internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = Approv
     1L,
     null,
     false,
-   approvalState
+    approvalState
 )
 
 internal fun createActivity(projectRole: ProjectRole) = Activity(
@@ -169,7 +169,7 @@ internal fun createDomainActivity(
     start: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     end: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
     duration: Int = 60,
-    projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = createDomainProjectRole()
+    projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = createDomainProjectRole(),
 ) =
     com.autentia.tnt.binnacle.core.domain.Activity.of(
         1L,
@@ -185,8 +185,8 @@ internal fun createDomainActivity(
         null,
         null,
         false,
-        ApprovalState.NA
-
+        ApprovalState.NA,
+        null
     )
 
 internal fun createDomainProjectRole() = createProjectRole().toDomain()
@@ -194,7 +194,7 @@ internal fun createDomainProjectRole() = createProjectRole().toDomain()
 internal fun createDomainUser(
     id: Long = 1L,
     name: String = "John Doe",
-    hiringDate: LocalDate = LocalDate.of(2020, Month.JANUARY, 1)
+    hiringDate: LocalDate = LocalDate.of(2020, Month.JANUARY, 1),
 ) =
     createUser(hiringDate, id, name).toDomain()
 
@@ -203,14 +203,14 @@ internal fun createActivityResponseDTO(
     start: LocalDateTime,
     end: LocalDateTime,
     hasEvidences: Boolean,
-    approvalState: ApprovalState = ApprovalState.NA
+    approvalState: ApprovalState = ApprovalState.NA,
 ) = ActivityResponseDTO(
     billable = true,
     description = "Dummy description",
     hasEvidences = hasEvidences,
     id = id,
     projectRoleId = 1L,
-    interval = IntervalResponseDTO(start, end,45, TimeUnit.MINUTES),
+    interval = IntervalResponseDTO(start, end, 45, TimeUnit.MINUTES),
     userId = 1L,
     approvalState = approvalState
 )

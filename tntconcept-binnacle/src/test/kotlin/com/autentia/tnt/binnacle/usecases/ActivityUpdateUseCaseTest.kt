@@ -8,15 +8,18 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.services.*
+import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
+import com.autentia.tnt.binnacle.services.ActivityEvidenceService
+import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.BDDMockito.willDoNothing
 import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -24,37 +27,106 @@ import java.util.*
 
 internal class ActivityUpdateUseCaseTest {
 
-    private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val activityValidator = mock<ActivityValidator>()
-    private val projectRoleService = mock<ProjectRoleService>()
+    private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val userService = mock<UserService>()
     private val activityEvidenceMailService = mock<ActivityEvidenceMailService>()
+    private val activityEvidenceService = mock<ActivityEvidenceService>()
 
     private val activityUpdateUseCase = ActivityUpdateUseCase(
-        activityService,
+        activityRepository,
         activityCalendarService,
-        projectRoleService,
+        projectRoleRepository,
         userService,
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
         ),
-        activityEvidenceMailService
+        activityEvidenceMailService,
+        activityEvidenceService
     )
 
     private val projectRole = createDomainProjectRole().copy(id = 10L)
 
     @Test
+    fun `update activity and update the stored image`() {
+        val activityId = NEW_ACTIVITY_DTO_WITH_EVIDENCES.id!!
+
+        val oldActivityInsertDate = Date()
+        val oldActivity = Activity(
+            id = activityId,
+            start = activityToUpdate.getStart(),
+            duration = 120,
+            end = activityToUpdate.getStart().plusHours(2L),
+            description = "Test activity",
+            projectRole = PROJECT_ROLE,
+            userId = USER.id,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.NA,
+            insertDate = oldActivityInsertDate,
+        )
+
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+        whenever(projectRoleRepository.findById(10L)).thenReturn(PROJECT_ROLE)
+        whenever(activityRepository.findById(activityId)).thenReturn(oldActivity)
+        willDoNothing().given(activityEvidenceService)
+            .storeActivityEvidence(activityId, evidenceDomain, oldActivityInsertDate)
+        whenever(activityRepository.update(any())).thenReturn(oldActivity)
+
+        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO_WITH_EVIDENCES, Locale.ENGLISH)
+
+        verify(activityEvidenceService).storeActivityEvidence(
+            activityId, evidenceDomain, oldActivityInsertDate
+        )
+    }
+
+    @Test
+    fun `update activity should delete the stored image`() {
+        val activityId = NEW_ACTIVITY_DTO.id!!
+
+        val oldActivityInsertDate = Date()
+        val oldActivity = Activity(
+            id = activityId,
+            start = activityToUpdate.getStart(),
+            duration = 120,
+            end = activityToUpdate.getStart().plusHours(2L),
+            description = "Test activity",
+            projectRole = PROJECT_ROLE,
+            userId = USER.id,
+            billable = false,
+            hasEvidences = true,
+            approvalState = ApprovalState.NA,
+            insertDate = oldActivityInsertDate,
+        )
+
+        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+        whenever(projectRoleRepository.findById(10L)).thenReturn(PROJECT_ROLE)
+        whenever(activityRepository.findById(activityId)).thenReturn(oldActivity)
+        willDoNothing().given(activityEvidenceService)
+            .storeActivityEvidence(activityToUpdate.id!!, evidence.toDomain(), oldActivityInsertDate)
+        whenever(activityRepository.update(any())).thenReturn(oldActivity)
+        whenever(activityEvidenceService.deleteActivityEvidence(activityId, oldActivityInsertDate)).thenReturn(
+            true
+        )
+
+        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
+
+        verify(activityEvidenceService).deleteActivityEvidence(activityId, oldActivityInsertDate)
+    }
+
+    @Test
     fun `return updated activity for the authenticated user when it is valid`() {
         doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
-        doReturn(projectRole).whenever(projectRoleService).getByProjectRoleId(projectRole.id)
+        doReturn(PROJECT_ROLE).whenever(projectRoleRepository).findById(projectRole.id)
 
-        doReturn(todayActivity).whenever(activityService).getActivityById(todayActivity.id!!)
+        doReturn(currentTodayActivity).whenever(activityRepository).findById(todayActivity.id!!)
 
-        doReturn(todayActivity).whenever(activityService).updateActivity(any(), eq(null))
+        doReturn(currentTodayActivity).whenever(activityRepository).update(any())
 
         assertEquals(todayActivityResponseDTO, activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH))
     }
@@ -79,12 +151,12 @@ internal class ActivityUpdateUseCaseTest {
 
         doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
-        doReturn(projectRole).whenever(projectRoleService)
-            .getByProjectRoleId(projectRole.id)
+        doReturn(PROJECT_ROLE).whenever(projectRoleRepository)
+            .findById(projectRole.id)
 
-        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
+        doReturn(currentTodayActivity).whenever(activityRepository).findById(activity.id!!)
 
-        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
+        doReturn(currentTodayActivity).whenever(activityRepository).update(any())
 
         activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO.copy(hasEvidences = false), Locale.ENGLISH)
 
@@ -104,11 +176,11 @@ internal class ActivityUpdateUseCaseTest {
         )
         doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
-        doReturn(projectRole).whenever(projectRoleService)
-            .getByProjectRoleId(projectRole.id)
+        doReturn(PROJECT_ROLE).whenever(projectRoleRepository)
+            .findById(projectRole.id)
 
-        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
-        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
+        doReturn(currentTodayActivity).whenever(activityRepository).findById(activity.id!!)
+        doReturn(currentTodayActivity).whenever(activityRepository).update(any())
 
         activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
 
@@ -125,19 +197,23 @@ internal class ActivityUpdateUseCaseTest {
         val activity = todayActivity.copy(
             approvalState = ApprovalState.PENDING,
             projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY),
-            hasEvidences = true
+            hasEvidences = true,
+            insertDate = LocalDateTime.now()
         )
+
+        val currentActivity = Activity.of(activity, PROJECT_ROLE.copy(requireEvidence = RequireEvidence.WEEKLY))
         doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
-        doReturn(projectRole).whenever(projectRoleService)
-            .getByProjectRoleId(projectRole.id)
-        doReturn(activity).whenever(activityService).getActivityById(activity.id!!)
-        doReturn(activity).whenever(activityService).updateActivity(any(), eq(null))
+        doReturn(currentActivity).whenever(activityRepository).findById(activity.id!!)
+        doReturn(currentActivity).whenever(activityRepository).update(any())
+
+        doReturn(PROJECT_ROLE).whenever(projectRoleRepository)
+            .findById(projectRole.id)
 
         activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
 
         verify(activityEvidenceMailService, times(1)).sendActivityEvidenceMail(
-            activity,
+            currentActivity.toDomain(),
             USER.username,
             Locale.ENGLISH
         )
@@ -159,6 +235,9 @@ internal class ActivityUpdateUseCaseTest {
             projectRoles = listOf(),
             organization = ORGANIZATION
         )
+
+        private val evidence = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")
+        private val evidenceDomain = evidence.toDomain()
 
         private val PROJECT_ROLE =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
@@ -183,6 +262,17 @@ internal class ActivityUpdateUseCaseTest {
             PROJECT_ROLE.id,
             false,
         )
+        private val NEW_ACTIVITY_DTO_WITH_EVIDENCES = ActivityRequestDTO(
+            90,
+            TODAY,
+            TODAY.plusMinutes(75L),
+            "New activity",
+            false,
+            PROJECT_ROLE.id,
+            true,
+            evidence = evidence
+        )
+
         private val todayActivity = createDomainActivity(
             TODAY,
             TODAY.plusMinutes(75L),
@@ -210,8 +300,13 @@ internal class ActivityUpdateUseCaseTest {
             null,
             LocalDateTime.now(),
             false,
-            ApprovalState.NA
+            ApprovalState.NA,
+            null
         )
+
+        private val currentActivity = Activity.of(activityToUpdate, PROJECT_ROLE)
+
+        private val currentTodayActivity = Activity.of(todayActivity, PROJECT_ROLE)
     }
 }
 
