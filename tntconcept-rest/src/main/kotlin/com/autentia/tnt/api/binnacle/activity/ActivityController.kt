@@ -4,8 +4,6 @@ import com.autentia.tnt.api.OpenApiTag.Companion.ACTIVITY
 import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.api.binnacle.ErrorResponseMaxHoursLimit
 import com.autentia.tnt.api.binnacle.ErrorValues
-import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
@@ -32,18 +30,16 @@ internal class ActivityController(
     private val activityEvidenceRetrievalUseCase: ActivityEvidenceRetrievalUseCase,
     private val activitiesSummaryUseCase: ActivitiesSummaryUseCase,
     private val activityApprovalUseCase: ActivityApprovalUseCase,
-    private val activityConverter: ActivityConverter,
 ) {
-
-    @Get("{?activityFilterDTO*}")
+    @Get("{?activityFilterRequest*}")
     @Operation(summary = "Gets activities with specified filters")
-    internal fun get(activityFilterDTO: ActivityFilterDTO): List<ActivityResponseDTO> =
-        activityByFilterUserCase.getActivities(activityFilterDTO)
-
+    internal fun get(activityFilterRequest: ActivityFilterRequest): List<ActivityResponse> =
+        activityByFilterUserCase.getActivities(activityFilterRequest.toDto()).map { ActivityResponse.from(it) }
 
     @Get("/{id}")
     @Operation(summary = "Gets an activity by its id.")
-    internal fun get(id: Long): ActivityResponseDTO? = activityRetrievalUseCase.getActivityById(id)
+    internal fun get(id: Long): ActivityResponse? =
+        ActivityResponse.fromNullable(activityRetrievalUseCase.getActivityById(id))
 
     @Get("/{id}/evidence")
     @Operation(summary = "Retrieves an activity evidence by the activity id.")
@@ -54,31 +50,28 @@ internal class ActivityController(
     @Operation(summary = "Creates a new activity")
     internal fun post(
         @Body @Valid activityRequest: ActivityRequest, @Parameter(hidden = true) locale: Locale,
-    ): ActivityResponseDTO =
-        activityCreationUseCase.createActivity(activityConverter.convertTo(activityRequest), locale)
+    ): ActivityResponse = ActivityResponse.from(activityCreationUseCase.createActivity(activityRequest.toDto(), locale))
 
     @Put
     @Operation(summary = "Updates an existing activity")
     internal fun put(
         @Valid @Body activityRequest: ActivityRequest, @Parameter(hidden = true) locale: Locale,
-    ): ActivityResponseDTO = activityUpdateUseCase.updateActivity(activityConverter.convertTo(activityRequest), locale)
-
+    ): ActivityResponse = ActivityResponse.from(activityUpdateUseCase.updateActivity(activityRequest.toDto(), locale))
 
     @Delete("/{id}")
     @Operation(summary = "Deletes an activity by its id.")
     internal fun delete(id: Long) = activityDeletionUseCase.deleteActivityById(id)
 
-
     @Get("/summary")
     @Operation(summary = "Gets activities summary between two dates")
     internal fun summary(startDate: LocalDate, endDate: LocalDate) =
-        activitiesSummaryUseCase.getActivitiesSummary(startDate, endDate)
+        activitiesSummaryUseCase.getActivitiesSummary(startDate, endDate).map { ActivitySummaryResponse.from(it) }
 
     @Post("/{id}/approve")
     @Operation(summary = "Approve an existing activity by id.")
     internal fun approve(
         @Body id: Long, locale: Locale,
-    ): ActivityResponseDTO = activityApprovalUseCase.approveActivity(id, locale)
+    ): ActivityResponse = ActivityResponse.from(activityApprovalUseCase.approveActivity(id, locale))
 
     @Error
     internal fun onTimeIntervalException(request: HttpRequest<*>, e: TimeIntervalException) =
