@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
+import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.*
@@ -379,6 +380,25 @@ internal class ActivityValidatorTest {
         }
 
         @Test
+        fun `throw NoEvidenceInActivityException when activity evidence is incoherent`() {
+            val firstIncoherentActivity =
+                createDomainActivity().copy(hasEvidences = true, evidence = null)
+            val secondIncoherentActivity =
+                createDomainActivity().copy(hasEvidences = false, evidence = Evidence("", ""))
+
+            assertThrows<NoEvidenceInActivityException> {
+                activityValidator.checkActivityIsValidForUpdate(firstIncoherentActivity, firstIncoherentActivity, user)
+            }
+            assertThrows<NoEvidenceInActivityException> {
+                activityValidator.checkActivityIsValidForUpdate(
+                    secondIncoherentActivity,
+                    secondIncoherentActivity,
+                    user
+                )
+            }
+        }
+
+        @Test
         fun `throw ProjectBlockedException when currentProject is blocked`() {
             val newActivity = createDomainActivity(
                 LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
@@ -409,7 +429,7 @@ internal class ActivityValidatorTest {
         }
 
         @Test
-        fun `do nothing when blocked date doesnt block current change`() {
+        fun `do nothing when blocked date does not block current change`() {
             val newActivity = createDomainActivity(
                 LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
                 LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(60L),
