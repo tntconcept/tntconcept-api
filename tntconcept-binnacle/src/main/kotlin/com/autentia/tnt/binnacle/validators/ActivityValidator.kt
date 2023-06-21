@@ -37,7 +37,7 @@ internal class ActivityValidator(
         when {
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
-            isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException()
+            isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
@@ -159,8 +159,16 @@ internal class ActivityValidator(
         val totalRegisteredDurationForThisRoleEndYear =
             getTotalRegisteredDurationByProjectRole(activityToUpdate, activityToUpdateEndYear, user.id)
         when {
-            isProjectBlocked(projectToUpdate, activityToUpdate) -> throw ProjectBlockedException()
-            isProjectBlocked(currentProject, currentActivity) -> throw ProjectBlockedException()
+            isProjectBlocked(
+                projectToUpdate,
+                activityToUpdate
+            ) -> throw ProjectBlockedException(projectToUpdate.blockDate!!)
+
+            isProjectBlocked(
+                currentProject,
+                currentActivity
+            ) -> throw ProjectBlockedException(currentProject.blockDate!!)
+
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
@@ -206,7 +214,7 @@ internal class ActivityValidator(
         require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
         val project = projectService.findById(activity.projectRole.project.id)
         when {
-            isProjectBlocked(project, activity) -> throw ProjectBlockedException()
+            isProjectBlocked(project, activity) -> throw ProjectBlockedException(project.blockDate!!)
             !isOpenPeriod(activity.getStart()) -> throw ActivityPeriodClosedException()
         }
     }
