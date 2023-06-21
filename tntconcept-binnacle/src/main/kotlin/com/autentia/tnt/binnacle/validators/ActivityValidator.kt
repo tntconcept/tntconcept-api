@@ -89,7 +89,7 @@ internal class ActivityValidator(
                 listOf(activityToUpdate.projectRole.id),
                 userId
             )
-        return activities.sumOf { it.getDurationByCountingWorkableDays(yearCalendar) }
+        return activities.sumOf { it.getDuration(yearCalendar) }
     }
 
     private fun getTotalRegisteredDurationForThisRoleAfterSave(
@@ -100,8 +100,8 @@ internal class ActivityValidator(
     ): Int {
         val yearTimeInterval = TimeInterval.ofYear(year)
         val yearCalendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
-        val currentActivityDuration = currentActivity.getDurationByCountingWorkableDays(yearCalendar)
-        val activityToUpdateDuration = activityToUpdate.getDurationByCountingWorkableDays(yearCalendar)
+        val currentActivityDuration = currentActivity.getDuration(yearCalendar)
+        val activityToUpdateDuration = activityToUpdate.getDuration(yearCalendar)
 
         var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 

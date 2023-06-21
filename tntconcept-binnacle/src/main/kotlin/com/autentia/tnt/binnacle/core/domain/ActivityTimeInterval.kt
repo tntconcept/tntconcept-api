@@ -29,9 +29,9 @@ open class ActivityTimeInterval protected constructor(open val timeInterval: Tim
 
     fun getDuration(calendar: Calendar): Int {
         return when (timeUnit) {
-            TimeUnit.MINUTES -> return timeInterval.getDurationInMinutes().toInt()
+            TimeUnit.MINUTES -> timeInterval.getDurationInMinutes().toInt()
             TimeUnit.NATURAL_DAYS -> getDurationByCountingDays(calendar.getAllDays(getDateInterval()).size)
-            TimeUnit.DAYS -> return  getDurationByCountingDays(calendar.getWorkableDays(getDateInterval()).size)
+            TimeUnit.DAYS -> getDurationByCountingDays(calendar.getWorkableDays(getDateInterval()).size)
         }
     }
 

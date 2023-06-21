@@ -185,7 +185,7 @@ class ActivityCalendarServiceTest {
 
     @Test
     fun `get duration by counting number of days of activity should return the number of days`() {
-        val duration = activityCalendarService.getDurationByCountingNumberOfDays(activityInMinutes, 1)
+        val duration = activityInMinutes.getDurationByCountingDays(1)
         assertEquals(60, duration)
     }
 }
