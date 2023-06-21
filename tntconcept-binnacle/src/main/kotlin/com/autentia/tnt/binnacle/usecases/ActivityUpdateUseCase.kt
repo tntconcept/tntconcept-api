@@ -62,18 +62,23 @@ class ActivityUpdateUseCase internal constructor(
 
         activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
 
-        val updatedActivity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity)).toDomain()
+        val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
+
+        val updatedActivity = updatedActivityEntity.toDomain();
 
         if (activityToUpdate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(
-                updatedActivity.id!!,
+                updatedActivityEntity.id!!,
                 activityToUpdate.evidence!!,
-                currentActivityEntity.insertDate!!
+                updatedActivityEntity.insertDate!!
             )
         }
 
         if (!activityToUpdate.hasEvidences && currentActivityEntity.hasEvidences) {
-            activityEvidenceService.deleteActivityEvidence(activityToUpdate.id!!, currentActivityEntity.insertDate!!)
+            activityEvidenceService.deleteActivityEvidence(
+                updatedActivityEntity.id!!,
+                updatedActivityEntity.insertDate!!
+            )
         }
 
         if (updatedActivity.activityCanBeApproved()) {
