@@ -383,34 +383,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectResponseDTO'
-  /api/project-role:
-    get:
-      summary: Retrieves a project roles list by given user IDs
-      operationId: getProjectRoleByUserIds
-      parameters:
-      - name: userIds
-        in: query
-        required: true
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int64
-      - name: year
-        in: query
-        schema:
-          type: integer
-          format: int32
-          nullable: true
-      responses:
-        "200":
-          description: getProjectRoleByUserIds 200 response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProjectRoleUserDTO'
   /api/project-role/latest:
     get:
       summary: Retrieves recent used roles
