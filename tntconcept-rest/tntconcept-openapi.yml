@@ -283,7 +283,8 @@ paths:
                 type: string
   /api/calendar/days/count:
     get:
-      summary: Retrieves workable days within a given period.
+      summary: Retrieves the days within a given period in the time unit of the selected
+        project role
       operationId: getNumberOfDaysOfPeriodByProjectRole$tntconcept_rest
       parameters:
       - name: startDate
