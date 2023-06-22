@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createDomainUser
+import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
@@ -26,6 +27,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.*
 
 @TestInstance(PER_CLASS)
@@ -148,6 +150,54 @@ internal class ActivityCreationUseCaseTest {
     }
 
     @Test
+    fun `create activity with interval of natural days`() {
+
+        val start = LocalDate.now().atTime(LocalTime.MIN)
+        val end = LocalDate.now().plusDays(2).atTime(23, 59, 59)
+        val activityEntity = createActivity(userId = user.id, projectRole = NATURAL_DAYS_PROJECT_ROLE, start = start, end = end)
+        val activityDomain = activityEntity.toDomain()
+
+        whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
+        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRoleRepository.findById(any())).thenReturn(
+            ProjectRole.of(
+                activityDomain.projectRole,
+                createProject()
+            )
+        )
+
+        val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
+
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, start = start, end = end, duration = 3, timeUnit = TimeUnit.NATURAL_DAYS)
+        assertEquals(expectedResponseDTO, result)
+    }
+
+    @Test
+    fun `create activity with interval of workable days`() {
+
+        val start = LocalDate.now().atTime(LocalTime.MIN)
+        val end = LocalDate.now().plusDays(2).atTime(23, 59, 59)
+        val activityEntity = createActivity(userId = user.id, projectRole = WORKABLE_DAYS_PROJECT_ROLE, start = start, end = end, duration = 960)
+        val activityDomain = activityEntity.toDomain()
+
+        whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
+        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRoleRepository.findById(any())).thenReturn(
+            ProjectRole.of(
+                activityDomain.projectRole,
+                createProject()
+            )
+        )
+
+        val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
+
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, start = start, end = end, duration = 2, timeUnit = TimeUnit.DAYS)
+        assertEquals(expectedResponseDTO, result)
+    }
+
+    @Test
     fun `created activity with with evidence and no approval required for project role, none mail is sent`() {
 
         val activityEntity = createActivity(userId = user.id)
@@ -224,6 +274,13 @@ internal class ActivityCreationUseCaseTest {
 
         private val PROJECT_ROLE_APPROVAL =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.MINUTES)
+
+        private val NATURAL_DAYS_PROJECT_ROLE =
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.NATURAL_DAYS)
+
+        private val WORKABLE_DAYS_PROJECT_ROLE =
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.DAYS)
+
 
 
         private val EVIDENCE = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")
@@ -329,6 +386,7 @@ internal class ActivityCreationUseCaseTest {
             hasEvidences: Boolean = false,
             projectRoleId: Long = 10L,
             approvalState: ApprovalState = ApprovalState.NA,
+            timeUnit: TimeUnit = PROJECT_ROLE_NO_APPROVAL.timeUnit,
         ): ActivityResponseDTO =
             ActivityResponseDTO(
                 billable,
@@ -336,7 +394,7 @@ internal class ActivityCreationUseCaseTest {
                 hasEvidences,
                 id,
                 projectRoleId,
-                IntervalResponseDTO(start, end, duration, PROJECT_ROLE_NO_APPROVAL.timeUnit),
+                IntervalResponseDTO(start, end, duration, timeUnit),
                 userId,
                 approvalState
             )

@@ -21,17 +21,6 @@ class ActivityResponseConverter(
         approvalState = activity.approvalState
     )
 
-    fun mapActivityToActivityResponseDTO(activity: Activity) = ActivityResponseDTO(
-        billable = activity.billable,
-        description = activity.description,
-        hasEvidences = activity.hasEvidences,
-        id = activity.id!!,
-        projectRoleId = activity.projectRole.id,
-        interval = activityIntervalResponseConverter.mapActivityToIntervalResponseDTO(activity),
-        userId = activity.userId,
-        approvalState = activity.approvalState
-    )
-
     fun mapActivityToActivityResponse(activity: Activity) = ActivityResponse(
         id = activity.id!!,
         start = activity.start,

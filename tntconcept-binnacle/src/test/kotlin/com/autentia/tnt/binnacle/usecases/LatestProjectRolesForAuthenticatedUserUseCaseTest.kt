@@ -151,7 +151,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     @Test
     fun `return the last imputed roles ordered by activity start date with future year parameter`() {
         val userId = 1L
-        val year = 2025
+        val year = TODAY.year
         val yearTimeInterval = TimeInterval.ofYear(year)
         val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
 
@@ -160,6 +160,11 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
                 projectRole = projectRole1,
                 start = TODAY.minusDays(15).atTime(7, 30, 0),
                 end = TODAY.minusDays(15).atTime(9, 0, 0)
+            ),
+            createActivity().copy(
+                projectRole = projectRole3,
+                start = TODAY.minusDays(15).atTime(LocalTime.MIN),
+                end = TODAY.minusDays(14).atTime(23, 59, 59)
             ),
             createActivity().copy(projectRole = projectRole2),
             createActivity().copy(
@@ -185,6 +190,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         val expectedProjectRoles = listOf(
             buildProjectRoleUserDTO(2L, 0, 0),
             buildProjectRoleUserDTO(1L, 30, 120),
+            buildProjectRoleUserDTO(3L, 0, 2, TimeUnit.NATURAL_DAYS),
         )
 
         assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(year))
@@ -210,11 +216,11 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         private const val USER_ID = 1L
         private val TODAY = LocalDate.now()
         private val BEGINNING_OF_THE_YEAR = LocalDate.of(TODAY.year, 1, 1)
-        private val END_OF_THE_YEAR = LocalDate.of(TODAY.year, 12, 31)
         private val START_DATE = TODAY.minusDays(1)
         private val END_DATE = TODAY.minusDays(4)
         private val projectRole1 = createProjectRole().copy(name = "Role ID 1").copy(maxAllowed = 120)
         private val projectRole2 = createProjectRole(id = 2).copy(name = "Role ID 2")
+        private val projectRole3 = createProjectRole(id = 3).copy(maxAllowed = 960).copy(name = "Role ID 3").copy(timeUnit = TimeUnit.NATURAL_DAYS)
         private val authentication =
             ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("admin")))
 
@@ -230,7 +236,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
                 requireEvidence = RequireEvidence.WEEKLY
             )
 
-        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxAllowed: Int): ProjectRoleUserDTO =
+        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxAllowed: Int, timeUnit: TimeUnit? = TimeUnit.MINUTES): ProjectRoleUserDTO =
             ProjectRoleUserDTO(
                 id = id,
                 name = "Role ID $id",
@@ -238,7 +244,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
                 organizationId = 1L,
                 maxAllowed = maxAllowed,
                 remaining = remaining,
-                timeUnit = TimeUnit.MINUTES,
+                timeUnit = timeUnit!!,
                 requireEvidence = RequireEvidence.WEEKLY,
                 requireApproval = false,
                 userId = 1L

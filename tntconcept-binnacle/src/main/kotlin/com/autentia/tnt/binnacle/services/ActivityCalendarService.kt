@@ -117,10 +117,7 @@ internal class ActivityCalendarService(
     }
 
     fun getDurationByCountingNumberOfDays(activities: List<Activity>, numberOfDays: Int) =
-        activities.sumOf { getDurationByCountingNumberOfDays(it, numberOfDays) }
-
-    fun getDurationByCountingNumberOfDays(activity: Activity, numberOfDays: Int) =
-        activity.getDurationByCountingDays(numberOfDays)
+        activities.sumOf { it.getDurationByCountingDays(numberOfDays) }
 
     private companion object {
         private val MINUTES_IN_HOUR = BigDecimal(60)

@@ -21,9 +21,9 @@ data class TimeInterval private constructor(val start: LocalDateTime, val end: L
 
     fun getDateInterval() = DateInterval.of(start.toLocalDate(), end.toLocalDate())
     fun getYearOfStart() = start.year
-    fun getYearOfEnd() = end.year
     fun getDuration(): Duration = Duration.between(start, end)
     fun getDurationInMinutes() = getDuration().toMinutes()
+    fun getDurationInDays() = getDuration().toDays().toInt() + 1
 
     fun isOneDay() = start.toLocalDate().isEqual(end.toLocalDate())
 

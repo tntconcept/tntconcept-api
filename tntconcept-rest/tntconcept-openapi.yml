@@ -281,6 +281,38 @@ paths:
             application/json:
               schema:
                 type: string
+  /api/calendar/days/count:
+    get:
+      summary: Retrieves the days within a given period in the time unit of the selected
+        project role
+      operationId: getNumberOfDaysOfPeriodByProjectRole$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: roleId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getNumberOfDaysOfPeriodByProjectRole$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
   /api/calendar/workable-days/count:
     get:
       summary: Retrieves workable days within a given period.
@@ -383,34 +415,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectResponseDTO'
-  /api/project-role:
-    get:
-      summary: Retrieves a project roles list by given user IDs
-      operationId: getProjectRoleByUserIds
-      parameters:
-      - name: userIds
-        in: query
-        required: true
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int64
-      - name: year
-        in: query
-        schema:
-          type: integer
-          format: int32
-          nullable: true
-      responses:
-        "200":
-          description: getProjectRoleByUserIds 200 response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProjectRoleUserDTO'
   /api/project-role/latest:
     get:
       summary: Retrieves recent used roles
@@ -1581,6 +1585,7 @@ components:
       enum:
       - MINUTES
       - DAYS
+      - NATURAL_DAYS
     TokenRefreshRequest:
       required:
       - grant_type

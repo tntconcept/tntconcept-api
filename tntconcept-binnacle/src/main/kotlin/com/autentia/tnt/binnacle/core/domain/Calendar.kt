@@ -18,4 +18,6 @@ class Calendar(private val dateInterval: DateInterval, private val holidays: Lis
     }
 
     fun getWorkableDays(dateInterval: DateInterval) = workableDays.filter { dateInterval.includes(it) }
+
+    fun getAllDays(dateInterval: DateInterval) = allDays.filter { dateInterval.includes(it) }
 }

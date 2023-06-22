@@ -1,0 +1,2 @@
+ALTER TABLE ProjectRole
+    MODIFY timeUnit VARCHAR(20) NOT NULL;
