@@ -20,7 +20,7 @@ internal class CalendarController(
         calendarWorkableDaysUseCase.get(startDate, endDate)
 
     @Get("/days/count")
-    @Operation(summary = "Retrieves workable days within a given period.")
+    @Operation(summary = "Retrieves the days within a given period in the time unit of the selected project role")
     internal fun getNumberOfDaysOfPeriodByProjectRole(@QueryValue startDate: LocalDate, @QueryValue endDate: LocalDate, @QueryValue roleId: Long): Int =
         calendarDaysForProjectRoleUseCase.get(startDate, endDate, roleId)
 
