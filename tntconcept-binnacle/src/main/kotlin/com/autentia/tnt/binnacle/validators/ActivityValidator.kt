@@ -75,9 +75,9 @@ internal class ActivityValidator(
         }
     }
 
-    private fun isEvidenceInputIncoherent(activityToCreate: Activity): Boolean {
-        return activityToCreate.hasEvidences && activityToCreate.evidence == null
-            || !activityToCreate.hasEvidences && activityToCreate.evidence != null
+    private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
+        return activity.hasEvidences && activity.evidence == null
+                || !activity.hasEvidences && activity.evidence != null
     }
 
     private fun getTotalRegisteredDurationByProjectRole(
@@ -165,6 +165,8 @@ internal class ActivityValidator(
         val totalRegisteredDurationForThisRoleEndYear =
             getTotalRegisteredDurationByProjectRole(activityToUpdate, activityToUpdateEndYear, user.id)
         when {
+            isEvidenceInputIncoherent(activityToUpdate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
+
             isProjectBlocked(
                 projectToUpdate,
                 activityToUpdate
