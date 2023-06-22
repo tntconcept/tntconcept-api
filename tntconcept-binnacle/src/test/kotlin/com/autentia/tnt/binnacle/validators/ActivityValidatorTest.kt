@@ -234,8 +234,8 @@ internal class ActivityValidatorTest {
                 "reached limit no remaining hours for projectRole with days configuration",
                 listOf(
                     createActivity(
-                        start = LocalDate.now().atTime(LocalTime.MIN),
-                        end = LocalDate.now().plusDays(1L).atTime(23, 59, 59),
+                        start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
+                        end = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(23, 59, 59),
                         duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
                         projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS).copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
@@ -245,8 +245,8 @@ internal class ActivityValidatorTest {
                     timeUnit = TimeUnit.DAYS
                 ),
                 createActivity(
-                    start = LocalDate.now().plusDays(2L).atTime(LocalTime.MIN),
-                    end = LocalDate.now().plusDays(2L).atTime(23, 59, 59),
+                    start = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(LocalTime.MIN),
+                    end = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(23, 59, 59),
                     duration = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
                     projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS).copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
@@ -258,8 +258,8 @@ internal class ActivityValidatorTest {
                 "reached limit no remaining hours for projectRole with natural days configuration",
                 listOf(
                     createActivity(
-                        start = LocalDate.now().atTime(LocalTime.MIN),
-                        end = LocalDate.now().plusDays(1L).atTime(23, 59, 59),
+                        start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
+                        end = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(23, 59, 59),
                         duration = (DAYS - 1) * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
                         projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS).copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
@@ -269,8 +269,8 @@ internal class ActivityValidatorTest {
                     timeUnit = TimeUnit.NATURAL_DAYS
                 ),
                 createActivity(
-                    start = LocalDate.now().plusDays(2L).atTime(LocalTime.MIN),
-                    end = LocalDate.now().plusDays(3L).atTime(23, 59, 59),
+                    start = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(LocalTime.MIN),
+                    end = LocalDate.of(2023, 6, 21).plusDays(3L).atTime(23, 59, 59),
                     duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
                     projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS).copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
