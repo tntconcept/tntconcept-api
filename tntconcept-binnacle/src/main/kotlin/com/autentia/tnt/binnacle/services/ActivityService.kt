@@ -3,9 +3,7 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -17,15 +15,7 @@ import javax.transaction.Transactional
 internal class ActivityService(
     private val activityRepository: ActivityRepository,
     @param:Named("Internal") private val internalActivityRepository: ActivityRepository,
-    private val projectRoleRepository: ProjectRoleRepository,
-    private val activityEvidenceService: ActivityEvidenceService,
 ) {
-
-    @Transactional
-    @ReadOnly
-    fun getActivityById(id: Long): com.autentia.tnt.binnacle.core.domain.Activity {
-        return activityRepository.findById(id)?.toDomain() ?: throw ActivityNotFoundException(id)
-    }
 
     @Transactional
     @ReadOnly
@@ -40,10 +30,6 @@ internal class ActivityService(
     fun getActivities(timeInterval: TimeInterval, userIds: List<Long>): List<Activity> =
         activityRepository.find(timeInterval.start, timeInterval.end, userIds)
 
-    @Transactional
-    @ReadOnly
-    fun getActivitiesByProjectId(timeInterval: TimeInterval, projectId: Long, userId: Long): List<Activity> =
-        activityRepository.findByProjectId(timeInterval.start, timeInterval.end, projectId, userId)
 
     @Transactional
     @ReadOnly
