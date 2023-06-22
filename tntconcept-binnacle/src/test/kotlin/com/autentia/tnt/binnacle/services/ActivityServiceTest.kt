@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
-import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -22,38 +21,20 @@ internal class ActivityServiceTest {
     private val activityRepository = mock<ActivityRepository>()
     private val internalActivityRepository = mock<InternalActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val activityEvidenceService = mock<ActivityEvidenceService>()
+
 
     private val sut = ActivityService(
-        activityRepository, internalActivityRepository, projectRoleRepository, activityEvidenceService
+        activityRepository, internalActivityRepository
     )
 
     @AfterEach
     fun resetMocks() {
-        reset(activityRepository, internalActivityRepository, projectRoleRepository, activityEvidenceService)
+        reset(activityRepository, internalActivityRepository, projectRoleRepository)
     }
 
     @BeforeEach
     fun setMocks() {
         whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
-    }
-
-    @Test
-    fun `get activity by id`() {
-        whenever(activityRepository.findById(activityWithoutEvidenceSaved.id!!)).thenReturn(
-            activityWithoutEvidenceSaved
-        )
-
-        val actual = sut.getActivityById(activityWithoutEvidenceSaved.id!!)
-
-        assertEquals(activityWithoutEvidenceSaved.toDomain(), actual)
-    }
-
-    @Test
-    fun `fail when the activity was not found by id`() {
-        assertThrows<ActivityNotFoundException> {
-            sut.getActivityById(notFoundActivityId)
-        }
     }
 
     @Test
@@ -92,15 +73,6 @@ internal class ActivityServiceTest {
         doReturn(activities).whenever(activityRepository).find(timeInterval.start, timeInterval.end, userIds)
 
         assertEquals(activities, sut.getActivities(timeInterval, userIds))
-    }
-
-    @Test
-    fun `get activities by project should call repository`() {
-        val userId = 1L
-        whenever(activityRepository.findByProjectId(timeInterval.start, timeInterval.end, 1L, userId)).thenReturn(
-            activities
-        )
-        assertEquals(activities, sut.getActivitiesByProjectId(timeInterval, 1L, userId))
     }
 
     @Test

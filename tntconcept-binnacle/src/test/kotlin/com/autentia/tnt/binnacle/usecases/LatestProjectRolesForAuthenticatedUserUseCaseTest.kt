@@ -32,7 +32,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     private val projectRoleResponseConverter = ProjectRoleResponseConverter()
     private val activityRepository: ActivityRepository = mock()
     private val activityService = ActivityService(
-        activityRepository, mock(), mock(), mock()
+        activityRepository, mock()
     )
     private val holidayService = mock<HolidayService>()
     private val securityService = mock<SecurityService>()
