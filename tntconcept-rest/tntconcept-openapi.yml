@@ -281,6 +281,37 @@ paths:
             application/json:
               schema:
                 type: string
+  /api/calendar/days/count:
+    get:
+      summary: Retrieves workable days within a given period.
+      operationId: getNumberOfDaysOfPeriodByProjectRole$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: roleId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getNumberOfDaysOfPeriodByProjectRole$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
   /api/calendar/workable-days/count:
     get:
       summary: Retrieves workable days within a given period.

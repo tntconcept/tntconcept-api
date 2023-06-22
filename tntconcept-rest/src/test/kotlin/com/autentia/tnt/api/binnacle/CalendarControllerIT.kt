@@ -1,5 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.binnacle.usecases.CalendarDaysForProjectRoleUseCase
 import com.autentia.tnt.binnacle.usecases.CalendarWorkableDaysUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -24,6 +25,9 @@ internal class CalendarControllerIT {
     @get:MockBean(CalendarWorkableDaysUseCase::class)
     internal val calendarWorkableDaysUseCase = mock<CalendarWorkableDaysUseCase>()
 
+    @get:MockBean(CalendarDaysForProjectRoleUseCase::class)
+    internal val calendarDaysForProjectRoleUseCase = mock<CalendarDaysForProjectRoleUseCase>()
+
     @Inject
     @field:Client("/")
     private lateinit var httpClient: HttpClient
@@ -44,6 +48,22 @@ internal class CalendarControllerIT {
 
         val response = client.exchangeObject<Int>(
             HttpRequest.GET("/api/calendar/workable-days/count?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}")
+        )
+
+        assertEquals(HttpStatus.OK, response.status)
+        assertEquals(3, response.body.get())
+    }
+
+    @Test
+    fun `get days between dates for project role`() {
+        val startDate = LocalDate.of(2023, 1, 10)
+        val endDate = LocalDate.of(2023, 1, 20)
+        val roleId = 1L
+
+        whenever(calendarDaysForProjectRoleUseCase.get(startDate, endDate, roleId)).thenReturn(3)
+
+        val response = client.exchangeObject<Int>(
+            HttpRequest.GET("/api/calendar/days/count?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}&roleId=${roleId}")
         )
 
         assertEquals(HttpStatus.OK, response.status)
