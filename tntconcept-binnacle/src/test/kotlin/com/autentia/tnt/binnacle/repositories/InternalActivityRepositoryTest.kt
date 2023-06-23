@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import io.micronaut.data.model.Sort
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -28,7 +29,7 @@ class InternalActivityRepositoryTest {
         )
         val activitySpecification = ActivityPredicates.ALL
 
-        whenever(activityDao.findAll(activitySpecification)).thenReturn(activities)
+        whenever(activityDao.findAll(activitySpecification, Sort.of(Sort.Order("start")))).thenReturn(activities)
 
         val result = internalActivityRepository.findAll(ActivityPredicates.ALL)
 

@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import io.micronaut.data.model.Sort
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,6 +39,27 @@ class ActivityDaoSpecificationIT {
 
         val actualActivities = activityDao.findAll(ActivityPredicates.ALL)
         assertEquals(2, actualActivities.size)
+    }
+
+    @Test
+    fun `test findAll with order`() {
+
+        val activitiesToSave = listOf(
+            createActivity().copy(id = null, start = LocalDate.now().plusDays(1L).atTime(10, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
+            createActivity().copy(id = null, start = LocalDate.now().plusDays(2L).atTime(12, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
+            createActivity().copy(id = null, start = LocalDate.now().atTime(12, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
+            createActivity().copy(id = null, userId = 1L, start = LocalDate.now().atTime(9, 0, 0), end = LocalDate.now().atTime(12, 30, 0)),
+        )
+        activityDao.saveAll(activitiesToSave)
+
+        val actualActivities = activityDao.findAll(ActivityPredicates.ALL, Sort.of(Sort.Order("start")))
+
+        assertEquals(4, actualActivities.size)
+        assertEquals(activitiesToSave[3].start, actualActivities[0].start)
+        assertEquals(activitiesToSave[2].start, actualActivities[1].start)
+        assertEquals(activitiesToSave[0].start, actualActivities[2].start)
+        assertEquals(activitiesToSave[1].start, actualActivities[3].start)
+
     }
 
     @Test
