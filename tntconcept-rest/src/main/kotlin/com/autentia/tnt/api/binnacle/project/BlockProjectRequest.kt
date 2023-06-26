@@ -4,6 +4,6 @@ import io.micronaut.core.annotation.Introspected
 import java.time.LocalDate
 
 @Introspected
-data class BlockProjectRequestDTO(
+data class BlockProjectRequest(
     val blockDate: LocalDate
 )
