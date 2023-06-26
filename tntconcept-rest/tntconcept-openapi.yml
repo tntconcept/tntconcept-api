@@ -519,7 +519,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BlockProjectRequestDTO'
+              $ref: '#/components/schemas/BlockProjectRequest'
         required: true
       responses:
         "200":
@@ -1151,7 +1151,7 @@ components:
       - NA
       - PENDING
       - ACCEPTED
-    BlockProjectRequestDTO:
+    BlockProjectRequest:
       required:
       - blockDate
       type: object
