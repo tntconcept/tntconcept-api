@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.jpa.repository.criteria.Specification
+import io.micronaut.data.model.Sort
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
 import java.util.*
@@ -13,7 +14,7 @@ import java.util.*
 internal class InternalActivityRepository(private val activityDao: ActivityDao) : ActivityRepository {
 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
-        activityDao.findAll(activitySpecification)
+        activityDao.findAll(activitySpecification, Sort.of(Sort.Order("start")))
 
     override fun findById(id: Long): Activity? {
         val activity: Optional<Activity> = activityDao.findById(id)

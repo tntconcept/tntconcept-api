@@ -17,17 +17,21 @@ data class Activity private constructor(
     val departmentId: Long?,
     var insertDate: LocalDateTime? = null,
     val hasEvidences: Boolean,
-    var approvalState: ApprovalState
+    var approvalState: ApprovalState,
+    var evidence: Evidence?,
 ) : ActivityTimeInterval(timeInterval, projectRole.timeUnit) {
     fun getStart() = timeInterval.start
+
     fun getEnd() = timeInterval.end
+
     fun getYearOfStart() = timeInterval.getYearOfStart()
-    fun getYearOfEnd() = timeInterval.getYearOfEnd()
+
     fun getDurationInUnits(): Int {
-        if (timeUnit === TimeUnit.DAYS) {
-            return duration / (60 * 8)
+        return when (timeUnit)  {
+            TimeUnit.DAYS -> duration / (60 * 8)
+            TimeUnit.NATURAL_DAYS -> timeInterval.getDurationInDays()
+            TimeUnit.MINUTES -> duration
         }
-        return duration
     }
 
     fun isMoreThanOneDay() = projectRole.timeUnit === TimeUnit.DAYS || timeInterval.getDuration().toDays().toInt() > 0
@@ -51,6 +55,7 @@ data class Activity private constructor(
             insertDate: LocalDateTime?,
             hasEvidences: Boolean,
             approvalState: ApprovalState,
+            evidence: Evidence?,
         ) = Activity(
             id,
             TimeInterval.of(
@@ -65,7 +70,8 @@ data class Activity private constructor(
             departmentId,
             insertDate,
             hasEvidences,
-            approvalState
+            approvalState,
+            evidence
         )
 
         fun emptyActivity(projectRole: ProjectRole, user: User) = Activity(
@@ -80,6 +86,7 @@ data class Activity private constructor(
             LocalDateTime.MIN,
             false,
             ApprovalState.NA,
+            null
         )
     }
 }

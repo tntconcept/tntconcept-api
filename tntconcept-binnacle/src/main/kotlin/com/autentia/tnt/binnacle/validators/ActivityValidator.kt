@@ -35,9 +35,10 @@ internal class ActivityValidator(
             getTotalRegisteredDurationByProjectRole(emptyActivity, activityToCreateEndYear, user.id)
 
         when {
+            isEvidenceInputIncoherent(activityToCreate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
-            isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException()
+            isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
@@ -74,6 +75,11 @@ internal class ActivityValidator(
         }
     }
 
+    private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
+        return activity.hasEvidences && activity.evidence == null
+                || !activity.hasEvidences && activity.evidence != null
+    }
+
     private fun getTotalRegisteredDurationByProjectRole(
         activityToUpdate: Activity,
         year: Int,
@@ -89,7 +95,7 @@ internal class ActivityValidator(
                 listOf(activityToUpdate.projectRole.id),
                 userId
             )
-        return activities.sumOf { it.getDurationByCountingWorkableDays(yearCalendar) }
+        return activities.sumOf { it.getDuration(yearCalendar) }
     }
 
     private fun getTotalRegisteredDurationForThisRoleAfterSave(
@@ -100,8 +106,8 @@ internal class ActivityValidator(
     ): Int {
         val yearTimeInterval = TimeInterval.ofYear(year)
         val yearCalendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
-        val currentActivityDuration = currentActivity.getDurationByCountingWorkableDays(yearCalendar)
-        val activityToUpdateDuration = activityToUpdate.getDurationByCountingWorkableDays(yearCalendar)
+        val currentActivityDuration = currentActivity.getDuration(yearCalendar)
+        val activityToUpdateDuration = activityToUpdate.getDuration(yearCalendar)
 
         var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 
@@ -159,8 +165,18 @@ internal class ActivityValidator(
         val totalRegisteredDurationForThisRoleEndYear =
             getTotalRegisteredDurationByProjectRole(activityToUpdate, activityToUpdateEndYear, user.id)
         when {
-            isProjectBlocked(projectToUpdate, activityToUpdate) -> throw ProjectBlockedException()
-            isProjectBlocked(currentProject, currentActivity) -> throw ProjectBlockedException()
+            isEvidenceInputIncoherent(activityToUpdate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
+
+            isProjectBlocked(
+                projectToUpdate,
+                activityToUpdate
+            ) -> throw ProjectBlockedException(projectToUpdate.blockDate!!)
+
+            isProjectBlocked(
+                currentProject,
+                currentActivity
+            ) -> throw ProjectBlockedException(currentProject.blockDate!!)
+
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
@@ -201,12 +217,11 @@ internal class ActivityValidator(
 
     @Transactional
     @ReadOnly
-    fun checkActivityIsValidForDeletion(id: Long) {
-        val activity = activityService.getActivityById(id)
-        require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
+    fun checkActivityIsValidForDeletion(activity: Activity) {
         val project = projectService.findById(activity.projectRole.project.id)
+        require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
         when {
-            isProjectBlocked(project, activity) -> throw ProjectBlockedException()
+            isProjectBlocked(project, activity) -> throw ProjectBlockedException(project.blockDate!!)
             !isOpenPeriod(activity.getStart()) -> throw ActivityPeriodClosedException()
         }
     }
@@ -235,13 +250,10 @@ internal class ActivityValidator(
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
     }
 
-    @Transactional
-    @ReadOnly
-    fun checkActivityIsValidForApproval(id: Long) {
-        val activity = activityService.getActivityById(id)
+    fun checkActivityIsValidForApproval(activity: Activity) {
         when {
             activity.approvalState == ApprovalState.ACCEPTED || activity.approvalState == ApprovalState.NA -> throw InvalidActivityApprovalStateException()
-            !activity.hasEvidences -> throw NoEvidenceInActivityException(id)
+            !activity.hasEvidences -> throw NoEvidenceInActivityException(activity.id!!)
         }
     }
 

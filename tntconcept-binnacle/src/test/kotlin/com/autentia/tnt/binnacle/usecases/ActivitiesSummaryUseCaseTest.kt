@@ -5,8 +5,8 @@ import com.autentia.tnt.binnacle.converters.ActivitySummaryConverter
 import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.DailyWorkingTime
 import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,17 +17,18 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ActivitiesSummaryUseCaseTest {
     private val activityCalendarService = mock<ActivityCalendarService>()
-    private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
     private val activitiesSummaryConverter = ActivitySummaryConverter()
     private val securityService = mock<SecurityService>()
 
     private val activitiesSummaryUseCase = ActivitiesSummaryUseCase(
-        activityCalendarService, activityService, activitiesSummaryConverter, securityService
+        activityCalendarService, activityRepository, activitiesSummaryConverter, securityService
     )
 
     @BeforeAll
@@ -50,7 +51,13 @@ internal class ActivitiesSummaryUseCaseTest {
         val dailyWorkingTime = listOf(DailyWorkingTime(start, BigDecimal(10)))
         val activitiesSummaryDto = activitiesSummaryConverter.toListActivitySummaryDTO(dailyWorkingTime)
 
-        whenever(activityService.getActivitiesBetweenDates(dateInterval, userId)).thenReturn(activitiesEntity)
+        whenever(
+            activityRepository.findByUserId(
+                start.atTime(LocalTime.MIN),
+                end.atTime(LocalTime.MAX),
+                userId
+            )
+        ).thenReturn(activitiesEntity)
         whenever(activityCalendarService.getActivityDurationSummaryInHours(activitiesDomain, dateInterval)).thenReturn(
             dailyWorkingTime
         )

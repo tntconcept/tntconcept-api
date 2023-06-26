@@ -115,137 +115,19 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectRoleDTO'
-  /api/activities:
-    get:
-      summary: Gets activities between two dates.
-      operationId: get$tntconcept_rest_1
-      parameters:
-      - name: startDate
-        in: query
-        required: true
-        schema:
-          type: string
-          format: date
-      - name: endDate
-        in: query
-        required: true
-        schema:
-          type: string
-          format: date
-      responses:
-        "200":
-          description: get$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ActivityDateDTO'
-      deprecated: true
-    put:
-      summary: Updates an existing activity.
-      operationId: put$tntconcept_rest
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ActivitiesRequestBodyDTO'
-        required: true
-      responses:
-        "200":
-          description: put$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ActivitiesResponseDTO'
-      deprecated: true
-    post:
-      summary: Creates a new activity.
-      operationId: post$tntconcept_rest_1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              required:
-              - activityRequest
-              type: object
-              properties:
-                activityRequest:
-                  $ref: '#/components/schemas/ActivitiesRequestBodyDTO'
-        required: true
-      responses:
-        "200":
-          description: post$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ActivitiesResponseDTO'
-      deprecated: true
-  /api/activities/{id}:
-    get:
-      summary: Gets an activity by its id.
-      operationId: get$tntconcept_rest_2
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: get$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ActivitiesResponseDTO'
-      deprecated: true
-    delete:
-      summary: Deletes an activity by its id.
-      operationId: delete$tntconcept_rest
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: delete$tntconcept_rest 200 response
-      deprecated: true
-  /api/activities/{id}/image:
-    get:
-      summary: Retrieves an activity image by the activity id.
-      operationId: getImage$tntconcept_rest
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: getImage$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                type: string
-      deprecated: true
   /api/activity:
     get:
       tags:
       - activity
       summary: Gets activities with specified filters
-      operationId: get$tntconcept_rest_3
+      operationId: get$tntconcept_rest_1
       parameters:
-      - name: activityFilterDTO
+      - name: activityFilterRequest
         in: query
         required: true
         explode: true
         schema:
-          $ref: '#/components/schemas/ActivityFilterDTO'
+          $ref: '#/components/schemas/ActivityFilterRequest'
       responses:
         "200":
           description: get$tntconcept_rest 200 response
@@ -254,12 +136,12 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ActivityResponseDTO'
+                  $ref: '#/components/schemas/ActivityResponse'
     put:
       tags:
       - activity
       summary: Updates an existing activity
-      operationId: put$tntconcept_rest_1
+      operationId: put$tntconcept_rest
       requestBody:
         content:
           application/json:
@@ -272,12 +154,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ActivityResponseDTO'
+                $ref: '#/components/schemas/ActivityResponse'
     post:
       tags:
       - activity
       summary: Creates a new activity
-      operationId: post$tntconcept_rest_2
+      operationId: post$tntconcept_rest_1
       requestBody:
         content:
           application/json:
@@ -290,7 +172,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ActivityResponseDTO'
+                $ref: '#/components/schemas/ActivityResponse'
   /api/activity/summary:
     get:
       tags:
@@ -318,13 +200,13 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ActivitySummaryDTO'
+                  $ref: '#/components/schemas/ActivitySummaryResponse'
   /api/activity/{id}:
     get:
       tags:
       - activity
       summary: Gets an activity by its id.
-      operationId: get$tntconcept_rest_4
+      operationId: get$tntconcept_rest_2
       parameters:
       - name: id
         in: path
@@ -338,12 +220,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ActivityResponseDTO'
+                $ref: '#/components/schemas/ActivityResponse'
     delete:
       tags:
       - activity
       summary: Deletes an activity by its id.
-      operationId: delete$tntconcept_rest_1
+      operationId: delete$tntconcept_rest
       parameters:
       - name: id
         in: path
@@ -378,7 +260,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ActivityResponseDTO'
+                $ref: '#/components/schemas/ActivityResponse'
   /api/activity/{id}/evidence:
     get:
       tags:
@@ -399,6 +281,38 @@ paths:
             application/json:
               schema:
                 type: string
+  /api/calendar/days/count:
+    get:
+      summary: Retrieves the days within a given period in the time unit of the selected
+        project role
+      operationId: getNumberOfDaysOfPeriodByProjectRole$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: roleId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getNumberOfDaysOfPeriodByProjectRole$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int32
   /api/calendar/workable-days/count:
     get:
       summary: Retrieves workable days within a given period.
@@ -501,34 +415,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectResponseDTO'
-  /api/project-role:
-    get:
-      summary: Retrieves a project roles list by given user IDs
-      operationId: getProjectRoleByUserIds
-      parameters:
-      - name: userIds
-        in: query
-        required: true
-        schema:
-          type: array
-          items:
-            type: integer
-            format: int64
-      - name: year
-        in: query
-        schema:
-          type: integer
-          format: int32
-          nullable: true
-      responses:
-        "200":
-          description: getProjectRoleByUserIds 200 response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProjectRoleUserDTO'
   /api/project-role/latest:
     get:
       summary: Retrieves recent used roles
@@ -772,7 +658,7 @@ paths:
   /api/user:
     get:
       summary: Retrieves the list of active users
-      operationId: get$tntconcept_rest_5
+      operationId: get$tntconcept_rest_3
       responses:
         "200":
           description: get$tntconcept_rest 200 response
@@ -1019,39 +905,6 @@ paths:
                 $ref: '#/components/schemas/Object'
 components:
   schemas:
-    ActivitiesRequestBodyDTO:
-      required:
-      - billable
-      - description
-      - duration
-      - hasImage
-      - projectRoleId
-      - startDate
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          nullable: true
-        startDate:
-          type: string
-          format: date-time
-        duration:
-          type: integer
-          format: int32
-        description:
-          maxLength: 2048
-          type: string
-        billable:
-          type: boolean
-        projectRoleId:
-          type: integer
-          format: int64
-        hasImage:
-          type: boolean
-        imageFile:
-          type: string
-          nullable: true
     ActivitiesResponseDTO:
       required:
       - billable
@@ -1107,7 +960,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ActivitiesResponseDTO'
-    ActivityFilterDTO:
+    ActivityFilterRequest:
       type: object
       properties:
         startDate:
@@ -1152,7 +1005,7 @@ components:
           format: int64
           nullable: true
         interval:
-          $ref: '#/components/schemas/TimeInterval'
+          $ref: '#/components/schemas/TimeIntervalRequest'
         description:
           maxLength: 2048
           type: string
@@ -1203,6 +1056,37 @@ components:
           nullable: true
         userName:
           type: string
+    ActivityResponse:
+      required:
+      - approvalState
+      - billable
+      - description
+      - id
+      - interval
+      - projectRoleId
+      - userId
+      type: object
+      properties:
+        billable:
+          type: boolean
+        description:
+          type: string
+        hasEvidences:
+          type: boolean
+          nullable: true
+        id:
+          type: integer
+          format: int64
+        projectRoleId:
+          type: integer
+          format: int64
+        interval:
+          $ref: '#/components/schemas/IntervalResponse'
+        userId:
+          type: integer
+          format: int64
+        approvalState:
+          $ref: '#/components/schemas/ApprovalState'
     ActivityResponseDTO:
       required:
       - approvalState
@@ -1234,7 +1118,7 @@ components:
           format: int64
         approvalState:
           $ref: '#/components/schemas/ApprovalState'
-    ActivitySummaryDTO:
+    ActivitySummaryResponse:
       required:
       - date
       - worked
@@ -1324,6 +1208,25 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VacationDTO'
+    IntervalResponse:
+      required:
+      - duration
+      - end
+      - start
+      - timeUnit
+      type: object
+      properties:
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int32
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
     IntervalResponseDTO:
       required:
       - duration
@@ -1653,7 +1556,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectRoleUserDTO'
-    TimeInterval:
+    TimeIntervalRequest:
       required:
       - end
       - start
@@ -1661,13 +1564,10 @@ components:
       properties:
         start:
           type: string
-          description: Start time of the interval
           format: date-time
         end:
           type: string
-          description: End time of the interval
           format: date-time
-      description: Time interval
     TimeSummaryDTO:
       required:
       - months
@@ -1685,6 +1585,7 @@ components:
       enum:
       - MINUTES
       - DAYS
+      - NATURAL_DAYS
     TokenRefreshRequest:
       required:
       - grant_type

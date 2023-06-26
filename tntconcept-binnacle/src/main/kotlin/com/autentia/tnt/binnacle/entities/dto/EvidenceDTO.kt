@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.entities.dto
 
+import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.exception.InvalidEvidenceFormatException
 
 
@@ -32,4 +33,6 @@ data class EvidenceDTO internal constructor(val mediaType: String, val base64dat
     }
 
     fun getDataUrl(): String = "data:${mediaType};base64,${base64data}"
+
+    fun toDomain() = Evidence(mediaType, base64data)
 }

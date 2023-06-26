@@ -1,7 +1,9 @@
 package com.autentia.tnt.api.binnacle
 
 import com.autentia.tnt.api.binnacle.activity.ActivityRequest
-import com.autentia.tnt.api.binnacle.activity.TimeInterval
+import com.autentia.tnt.api.binnacle.activity.ActivityResponse
+import com.autentia.tnt.api.binnacle.activity.ActivitySummaryResponse
+import com.autentia.tnt.api.binnacle.activity.TimeIntervalRequest
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month.JANUARY
@@ -73,18 +76,19 @@ internal class ActivityControllerIT {
     fun `get all activities between the start and end date`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
-        val activities = listOf(ACTIVITY_RESPONSE_DTO)
+        val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE)
 
         whenever(
-                activitiesByFilterUseCase.getActivities(
-                        ActivityFilterDTO(
-                                startDate = startDate, endDate = endDate
-                        )
+            activitiesByFilterUseCase.getActivities(
+                ActivityFilterDTO(
+                    startDate = startDate, endDate = endDate
                 )
-        ).thenReturn(activities)
+            )
+        ).thenReturn(activityResponseDTOs)
 
-        val response = client.exchangeList<ActivityResponseDTO>(
-                GET("/api/activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
+        val response = client.exchangeList<ActivityResponse>(
+            GET("/api/activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
         assertEquals(OK, response.status)
@@ -94,14 +98,15 @@ internal class ActivityControllerIT {
     @Test
     fun `get all activities by approvalState`() {
         val approvalState = ApprovalState.PENDING
-        val activities = listOf(ACTIVITY_RESPONSE_DTO)
+        val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE)
 
         whenever(activitiesByFilterUseCase.getActivities(ActivityFilterDTO(approvalState = approvalState))).thenReturn(
-                activities
+            activityResponseDTOs
         )
 
-        val response = client.exchangeList<ActivityResponseDTO>(
-                GET("/api/activity?approvalState=${approvalState}"),
+        val response = client.exchangeList<ActivityResponse>(
+            GET("/api/activity?approvalState=${approvalState}"),
         )
 
         assertEquals(OK, response.status)
@@ -118,21 +123,23 @@ internal class ActivityControllerIT {
         val roleId = 1L
         val userId = 5L
         val activitiesFilter = ActivityFilterDTO(
-                startDate,
-                endDate,
-                ApprovalState.PENDING,
-                organizationId,
-                projectId,
-                roleId,
-                userId,
+            startDate,
+            endDate,
+            ApprovalState.PENDING,
+            organizationId,
+            projectId,
+            roleId,
+            userId,
         )
-        val activities = listOf(ACTIVITY_RESPONSE_DTO)
-        whenever(activitiesByFilterUseCase.getActivities(activitiesFilter)).thenReturn(activities)
+        val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
+        val activities = listOf(ACTIVITY_RESPONSE)
 
-        val response = client.exchangeList<ActivityResponseDTO>(
-                GET(
-                        "/api/activity?" + "approvalState=${approvalState}" + "&startDate=${startDate.toJson()}" + "&endDate=${endDate.toJson()}" + "&organizationId=${organizationId}" + "&projectId=${projectId}" + "&roleId=${roleId}" + "&userId=${userId}"
-                ),
+        whenever(activitiesByFilterUseCase.getActivities(activitiesFilter)).thenReturn(activityResponseDTOs)
+
+        val response = client.exchangeList<ActivityResponse>(
+            GET(
+                "/api/activity?" + "approvalState=${approvalState}" + "&startDate=${startDate.toJson()}" + "&endDate=${endDate.toJson()}" + "&organizationId=${organizationId}" + "&projectId=${projectId}" + "&roleId=${roleId}" + "&userId=${userId}"
+            ),
         )
 
         assertEquals(OK, response.status)
@@ -143,27 +150,28 @@ internal class ActivityControllerIT {
     fun `get summary activities between the start and end date`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
         val endDate = LocalDate.of(2018, JANUARY, 31)
-        val activities = listOf(ACTIVITY_RESPONSE_DTO)
-        doReturn(activities).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
+        val activitySummaryDTOs = listOf(ACTIVITY_SUMMARY_DTO)
+        val activitySummaryResponses = listOf(ACTIVITY_SUMMARY_RESPONSE)
+        doReturn(activitySummaryDTOs).whenever(activitiesSummaryUseCase).getActivitiesSummary(startDate, endDate)
 
-        val response = client.exchangeList<ActivityResponseDTO>(
-                GET("/api/activity/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
+        val response = client.exchangeList<ActivitySummaryResponse>(
+            GET("/api/activity/summary?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
         assertEquals(OK, response.status)
-        assertEquals(activities, response.body.get())
+        assertEquals(activitySummaryResponses, response.body.get())
     }
 
     @Test
     fun `get activity by id`() {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityRetrievalUseCase).getActivityById(ACTIVITY_RESPONSE_DTO.id)
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
-                GET("/api/activity/${ACTIVITY_RESPONSE_DTO.id}")
+        val response = client.exchangeObject<ActivityResponse>(
+            GET("/api/activity/${ACTIVITY_RESPONSE_DTO.id}")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+        assertEquals(ACTIVITY_RESPONSE, response.body.get())
     }
 
     @Test
@@ -173,7 +181,7 @@ internal class ActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                    GET("/api/activity/$nonExistingId"),
+                GET("/api/activity/$nonExistingId"),
             )
         }
 
@@ -183,10 +191,11 @@ internal class ActivityControllerIT {
     @Test
     fun `get an evidence activity by id`() {
         val activityId = ACTIVITY_RESPONSE_DTO.id
-        doReturn(EvidenceDTO.from(ACTIVITY_IMAGE)).whenever(activityEvidenceRetrievalUseCase).getActivityEvidenceByActivityId(activityId)
+        doReturn(EvidenceDTO.from(ACTIVITY_IMAGE)).whenever(activityEvidenceRetrievalUseCase)
+            .getActivityEvidenceByActivityId(activityId)
 
         val response = client.exchangeObject<String>(
-                GET("/api/activity/$activityId/evidence")
+            GET("/api/activity/$activityId/evidence")
         )
 
         assertEquals(OK, response.status)
@@ -197,31 +206,31 @@ internal class ActivityControllerIT {
     fun `post a new activity without evidence`() {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
-                POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+        val response = client.exchangeObject<ActivityResponse>(
+            POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+        assertEquals(ACTIVITY_RESPONSE, response.body.get())
     }
 
     @Test
     fun `post a new activity with evidence`() {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
-                POST("/api/activity", ACTIVITY_WITH_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+        val response = client.exchangeObject<ActivityResponse>(
+            POST("/api/activity", ACTIVITY_WITH_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+        assertEquals(ACTIVITY_RESPONSE, response.body.get())
     }
 
     @Test
     fun `post a new activity with wrong evidence format will result in bad request`() {
         try {
             client.exchangeObject<Any>(
-                    POST("/api/activity", ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+                POST("/api/activity", ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
             )
         } catch (ex: HttpClientResponseException) {
             assertThat(ex.response.status).isEqualTo(BAD_REQUEST)
@@ -231,12 +240,12 @@ internal class ActivityControllerIT {
     @Test
     fun `fail if try to post activity with too long description`() {
         val tooLongDescriptionJson = ACTIVITY_POST_JSON.replace(
-                ACTIVITY_REQUEST_BODY_DTO.description, "x".repeat(2049)
+            ACTIVITY_REQUEST_BODY_DTO.description, "x".repeat(2049)
         )
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                    POST("/api/activity", tooLongDescriptionJson).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+                POST("/api/activity", tooLongDescriptionJson).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -244,26 +253,27 @@ internal class ActivityControllerIT {
     }
 
     private fun postFailProvider() = arrayOf(
-            arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-            arrayOf(ProjectRoleNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-            arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
-            arrayOf(OverlapsAnotherTimeException(), BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
-            arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
-            arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE")
+        arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+        arrayOf(ProjectRoleNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+        arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
+        arrayOf(OverlapsAnotherTimeException(), BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
+        arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
+        arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
+        arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
     )
 
     @ParameterizedTest
     @MethodSource("postFailProvider")
     fun `fail if try to post an activity and a exception is throw`(
-            exception: Exception,
-            expectedResponseStatus: HttpStatus,
-            expectedErrorCode: String,
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(activityCreationUseCase).createActivity(any(), eq(Locale.ENGLISH))
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                    POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+                POST("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -274,43 +284,45 @@ internal class ActivityControllerIT {
     @Test
     fun `put an activity`() {
         val putActivity = ACTIVITY_REQUEST_BODY_DTO.copy(
-                id = ACTIVITY_RESPONSE_DTO.id, description = "Updated activity description"
+            id = ACTIVITY_RESPONSE_DTO.id, description = "Updated activity description"
         )
         val updatedActivity = ACTIVITY_RESPONSE_DTO.copy(
-                description = putActivity.description
+            description = putActivity.description
         )
+        val updatedActivityResponse = ActivityResponse.from(updatedActivity)
         doReturn(updatedActivity).whenever(activityUpdateUseCase).updateActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
-                PUT("/api/activity", ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+        val response = client.exchangeObject<ActivityResponse>(
+            PUT("/api/activity", ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
         )
 
         assertEquals(OK, response.status)
-        assertEquals(updatedActivity, response.body.get())
+        assertEquals(updatedActivityResponse, response.body.get())
     }
 
     private fun putFailProvider() = arrayOf(
-            arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-            arrayOf(ActivityNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-            arrayOf(ProjectRoleNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-            arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
-            arrayOf(OverlapsAnotherTimeException(), BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
-            arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
-            arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE")
+        arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+        arrayOf(ActivityNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+        arrayOf(ProjectRoleNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+        arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
+        arrayOf(OverlapsAnotherTimeException(), BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
+        arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
+        arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
+        arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
     )
 
     @ParameterizedTest
     @MethodSource("putFailProvider")
     fun `fail if try to put an activity and exception is thrown`(
-            exception: Exception,
-            expectedResponseStatus: HttpStatus,
-            expectedErrorCode: String,
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(activityUpdateUseCase).updateActivity(any(), eq(Locale.ENGLISH))
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                    PUT("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+                PUT("/api/activity", ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -323,7 +335,7 @@ internal class ActivityControllerIT {
         val activityIdToDelete = 14L
 
         val response = client.exchange<Any, Any>(
-                DELETE("/api/activity/$activityIdToDelete")
+            DELETE("/api/activity/$activityIdToDelete")
         )
 
         assertEquals(OK, response.status)
@@ -331,23 +343,24 @@ internal class ActivityControllerIT {
     }
 
     private fun deleteFailProvider() = arrayOf(
-            arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-            arrayOf(ActivityNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-            arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED")
+        arrayOf(UserPermissionException(), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+        arrayOf(ActivityNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+        arrayOf(ActivityPeriodClosedException(), BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
+        arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
     )
 
     @ParameterizedTest
     @MethodSource("deleteFailProvider")
     fun `fail if try to delete an activity and exception is throw`(
-            exception: Exception,
-            expectedResponseStatus: HttpStatus,
-            expectedErrorCode: String,
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(activityDeletionUseCase).deleteActivityById(ACTIVITY_RESPONSE_DTO.id)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Unit>(
-                    DELETE("/api/activity/${ACTIVITY_RESPONSE_DTO.id}"),
+                DELETE("/api/activity/${ACTIVITY_RESPONSE_DTO.id}"),
             )
         }
 
@@ -358,40 +371,40 @@ internal class ActivityControllerIT {
     @Test
     fun `approve an activity`() {
         doReturn(ACTIVITY_RESPONSE_DTO).whenever(activityApprovalUseCase)
-                .approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
+            .approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
 
-        val response = client.exchangeObject<ActivityResponseDTO>(
-                POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en")
+        val response = client.exchangeObject<ActivityResponse>(
+            POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_RESPONSE_DTO, response.body.get())
+        assertEquals(ACTIVITY_RESPONSE, response.body.get())
     }
 
     private fun activityApprovalFailedProvider() = arrayOf(
-            arrayOf(
-                    UserPermissionException(),
-                    NOT_FOUND,
-                    ErrorResponse("RESOURCE_NOT_FOUND", "You don't have permission to access the resource")
-            ), arrayOf(
+        arrayOf(
+            UserPermissionException(),
+            NOT_FOUND,
+            ErrorResponse("RESOURCE_NOT_FOUND", "You don't have permission to access the resource")
+        ), arrayOf(
             InvalidActivityApprovalStateException(),
             CONFLICT,
             ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", "Activity could not been approved")
-    )
+        )
     )
 
     @ParameterizedTest
     @MethodSource("activityApprovalFailedProvider")
     fun `fail if try to approve an activity and exception is throw`(
-            exception: Exception,
-            expectedResponseStatus: HttpStatus,
-            expectedErrorResponse: ErrorResponse?,
+        exception: Exception,
+        expectedResponseStatus: HttpStatus,
+        expectedErrorResponse: ErrorResponse?,
     ) {
         doThrow(exception).whenever(activityApprovalUseCase).approveActivity(ACTIVITY_RESPONSE_DTO.id, Locale.ENGLISH)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Unit>(
-                    POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+                POST("/api/activity/${ACTIVITY_RESPONSE_DTO.id}/approve", "").header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -404,12 +417,12 @@ internal class ActivityControllerIT {
         private val START_DATE = LocalDateTime.of(2018, JANUARY, 10, 8, 0)
         private val END_DATE = LocalDateTime.of(2018, JANUARY, 10, 12, 0)
 
-        private val INTERVAL_REQUEST_DTO = TimeInterval(
-                START_DATE, END_DATE
+        private val INTERVAL_REQUEST_DTO = TimeIntervalRequest(
+            START_DATE, END_DATE
         )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequest(
-                null, INTERVAL_REQUEST_DTO, "Activity description", true, 3, false, null
+            null, INTERVAL_REQUEST_DTO, "Activity description", true, 3, false, null
         )
 
         private val ACTIVITY_POST_JSON = """
@@ -455,17 +468,24 @@ internal class ActivityControllerIT {
 
 
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
-                ACTIVITY_REQUEST_BODY_DTO.billable,
-                ACTIVITY_REQUEST_BODY_DTO.description,
-                ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
-                2L,
-                ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
-                IntervalResponseDTO(
-                        ACTIVITY_REQUEST_BODY_DTO.interval.start, ACTIVITY_REQUEST_BODY_DTO.interval.end, 240, TimeUnit.MINUTES
-                ),
-                42,
-                ApprovalState.ACCEPTED
+            ACTIVITY_REQUEST_BODY_DTO.billable,
+            ACTIVITY_REQUEST_BODY_DTO.description,
+            ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
+            2L,
+            ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
+            IntervalResponseDTO(
+                ACTIVITY_REQUEST_BODY_DTO.interval.start, ACTIVITY_REQUEST_BODY_DTO.interval.end, 240, TimeUnit.MINUTES
+            ),
+            42,
+            ApprovalState.ACCEPTED
         )
+        private val ACTIVITY_RESPONSE = ActivityResponse.from(ACTIVITY_RESPONSE_DTO)
+
+        private val ACTIVITY_SUMMARY_DTO = ActivitySummaryDTO(
+            START_DATE.toLocalDate(),
+            BigDecimal.TEN
+        )
+        private val ACTIVITY_SUMMARY_RESPONSE = ActivitySummaryResponse.from(ACTIVITY_SUMMARY_DTO)
 
         private val ACTIVITY_PUT_JSON = """
             {
@@ -481,7 +501,8 @@ internal class ActivityControllerIT {
             }
         """.trimIndent()
 
-        private const val ACTIVITY_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
+        private const val ACTIVITY_IMAGE =
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
     }
 
 }

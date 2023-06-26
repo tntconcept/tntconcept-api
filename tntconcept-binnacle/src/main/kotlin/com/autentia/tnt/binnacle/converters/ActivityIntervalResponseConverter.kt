@@ -16,13 +16,6 @@ class ActivityIntervalResponseConverter {
         timeUnit = activity.timeUnit
     )
 
-    fun mapActivityToIntervalResponseDTO(activity: Activity) = IntervalResponseDTO(
-        start = activity.start,
-        end = activity.end,
-        duration = intervalDurationToTimeUnit(activity),
-        timeUnit = activity.projectRole.timeUnit
-    )
-
     fun mapActivityResponseToIntervalResponseDTO(activityResponse: ActivityResponse) = IntervalResponseDTO(
         start = activityResponse.start,
         end = activityResponse.end,
@@ -35,8 +28,4 @@ class ActivityIntervalResponseConverter {
         return if (activityResponse.projectRole.timeUnit == TimeUnit.DAYS) durationToDays else activityResponse.duration
     }
 
-    private fun intervalDurationToTimeUnit(activity: Activity): Int {
-        val durationToDays = activity.getTimeInterval().getDuration().toDays().toInt()
-        return if (activity.projectRole.timeUnit == TimeUnit.DAYS) durationToDays else activity.duration
-    }
 }
