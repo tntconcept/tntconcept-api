@@ -75,12 +75,6 @@ internal class VacationService(
             val days = calendar.getWorkableDays(DateInterval.of(it.startDate, it.endDate))
             vacationConverter.toVacationDomain(it, days)
         }
-    private fun getVacationsWithWorkableDays2(vacations: List<Vacation>): List<VacationDomain> =
-        vacations.map {
-            val calendar = calendarFactory.create(DateInterval.of(it.startDate, it.endDate))
-            val days = calendar.workableDays
-            vacationConverter.toVacationDomain(it, days)
-        }
 
     @Transactional
     fun createVacationPeriod(requestVacation: RequestVacation, user: User): MutableList<CreateVacationResponse> {
