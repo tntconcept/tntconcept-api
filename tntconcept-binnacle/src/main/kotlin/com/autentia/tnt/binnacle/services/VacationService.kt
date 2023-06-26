@@ -86,12 +86,8 @@ internal class VacationService(
         val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
         val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
 
-        val calendar = calendarFactory.create(DateInterval.of(lastYearFirstDay, nextYearLastDay))
-
-        val vacations = vacationRepository.findBetweenChargeYears(lastYearFirstDay, nextYearLastDay)
-
         val vacationsByYear: Map<Int, List<VacationDomain>> =
-            getVacationsWithWorkableDays(calendar, vacations).groupBy { it.chargeYear.year }
+            getVacationsByYear(lastYearFirstDay, nextYearLastDay)
 
         val lastYearRemainingVacations = myVacationsDetailService
             .getRemainingVacations(lastYear, vacationsByYear.getOrElse(lastYear) { listOf() }, user)
@@ -100,7 +96,7 @@ internal class VacationService(
         val nextYearRemainingVacations = myVacationsDetailService
             .getRemainingVacations(nextYear, vacationsByYear.getOrElse(nextYear) { listOf() }, user)
 
-        var selectedDays = calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate))
+        var selectedDays = getRequestedVacationsSelectedYear(lastYearFirstDay, nextYearLastDay, requestVacation)
 
         val remainingHolidaysLastAndCurrentYear = lastYearRemainingVacations + currentYearRemainingVacations
 
@@ -154,6 +150,26 @@ internal class VacationService(
         vacationRepository.saveAll(vacationsToSave)
 
         return vacationPeriods
+    }
+
+    private fun getRequestedVacationsSelectedYear(
+        lastYearFirstDay: LocalDate,
+        nextYearLastDay: LocalDate,
+        requestVacation: RequestVacation
+    ): List<LocalDate> {
+        val calendar = calendarFactory.create(DateInterval.of(lastYearFirstDay, nextYearLastDay))
+        var selectedDays = calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate))
+        return selectedDays
+    }
+
+    private fun getVacationsByYear(
+        lastYearFirstDay: LocalDate,
+        nextYearLastDay: LocalDate
+    ): Map<Int, List<com.autentia.tnt.binnacle.core.domain.Vacation>> {
+        val vacations = vacationRepository.findBetweenChargeYears(lastYearFirstDay, nextYearLastDay)
+        val vacationsByYear: Map<Int, List<VacationDomain>> =
+            getVacationsWithWorkableDays(vacations).groupBy { it.chargeYear.year }
+        return vacationsByYear
     }
 
     @Transactional
