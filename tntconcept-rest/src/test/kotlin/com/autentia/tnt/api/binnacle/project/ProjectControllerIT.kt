@@ -92,20 +92,7 @@ internal class ProjectControllerIT {
         val projectId = 3L
         val year = 2023
 
-        val projectRoleUser = ProjectRoleUserDTO(
-            1L,
-            "Vacaciones",
-            2L,
-            3L,
-            960,
-            480,
-            TimeUnit.MINUTES,
-            RequireEvidence.NO,
-            true,
-            4L
-        )
-
-        doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId, year)
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, year)
 
         val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project/$projectId/role?year=$year"))
 
@@ -118,20 +105,7 @@ internal class ProjectControllerIT {
 
         val projectId = 3L
 
-        val projectRoleUser = ProjectRoleUserDTO(
-            1L,
-            "Vacaciones",
-            2L,
-            3L,
-            960,
-            480,
-            TimeUnit.MINUTES,
-            RequireEvidence.NO,
-            true,
-            4L
-        )
-
-        doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId, null)
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, null)
 
         val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project/$projectId/role"))
 
@@ -262,6 +236,19 @@ internal class ProjectControllerIT {
         )
 
         private val PROJECT_ROLE_USER_RESPONSE = ProjectRoleUserResponse(
+            1L,
+            "Vacaciones",
+            2L,
+            3L,
+            960,
+            480,
+            TimeUnit.MINUTES,
+            RequireEvidence.NO,
+            true,
+            4L
+        )
+
+        private val PROJECT_ROLE_USER_DTO = ProjectRoleUserDTO(
             1L,
             "Vacaciones",
             2L,
