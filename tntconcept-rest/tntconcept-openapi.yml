@@ -434,7 +434,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectRoleUserDTO'
+                  $ref: '#/components/schemas/ProjectRoleUserResponse'
   /api/project-role/{id}:
     get:
       summary: Retrieves a project role by a given ID
@@ -452,40 +452,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectRoleDTO'
-  /api/project-roles/recents:
-    get:
-      summary: Retrieves recent used roles
-      operationId: getLatestRoles_1
-      responses:
-        "200":
-          description: getLatestRoles_1 200 response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProjectRoleRecentDTO'
-      deprecated: true
-  /api/project-roles/{id}:
-    get:
-      summary: Retrieves a project role by a given ID
-      operationId: getProjectRoleById_1
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: getProjectRoleById_1 200 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectRoleDTO'
-      deprecated: true
+                $ref: '#/components/schemas/ProjectRoleResponse'
   /api/project/{id}:
     get:
       summary: Retrieves a project´s information from its ID
@@ -1420,16 +1387,17 @@ components:
           $ref: '#/components/schemas/RequireEvidence'
         requireApproval:
           type: boolean
-    ProjectRoleRecentDTO:
+    ProjectRoleResponse:
       required:
-      - date
       - id
+      - isWorkingTime
+      - maxAllowed
       - name
-      - organizationName
-      - projectBillable
-      - projectName
-      - projectOpen
+      - organizationId
+      - projectId
+      - requireApproval
       - requireEvidence
+      - timeUnit
       type: object
       properties:
         id:
@@ -1437,18 +1405,22 @@ components:
           format: int64
         name:
           type: string
-        projectName:
-          type: string
-        organizationName:
-          type: string
-        projectBillable:
+        organizationId:
+          type: integer
+          format: int64
+        projectId:
+          type: integer
+          format: int64
+        maxAllowed:
+          type: integer
+          format: int32
+        isWorkingTime:
           type: boolean
-        projectOpen:
-          type: boolean
-        date:
-          type: string
-          format: date-time
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
         requireEvidence:
+          $ref: '#/components/schemas/RequireEvidence'
+        requireApproval:
           type: boolean
     ProjectRoleResponseDTOOld:
       required:

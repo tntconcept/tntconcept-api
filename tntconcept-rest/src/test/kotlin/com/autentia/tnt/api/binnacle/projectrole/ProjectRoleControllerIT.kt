@@ -1,5 +1,9 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.projectrole
 
+import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.api.binnacle.exchangeList
+import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.api.binnacle.getBody
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
@@ -70,10 +74,10 @@ internal class ProjectRoleControllerIT {
         doReturn(projectRole).whenever(projectRoleByIdUseCase).get(projectRole.id)
 
 
-        val response = client.exchangeObject<ProjectRoleDTO>(GET("/api/project-role/$projectId"))
+        val response = client.exchangeObject<ProjectRoleResponse>(GET("/api/project-role/$projectId"))
 
         assertEquals(OK, response.status)
-        assertEquals(projectRole, response.body.get())
+        assertEquals(ProjectRoleResponse.from(projectRole), response.body.get())
 
     }
 
@@ -115,10 +119,10 @@ internal class ProjectRoleControllerIT {
 
         doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(null)
 
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role/latest"))
+        val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project-role/latest"))
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(projectRoleUserDTO), response.body.get())
+        assertEquals(listOf(ProjectRoleUserResponse.from(projectRoleUserDTO)), response.body.get())
 
     }
 
@@ -140,10 +144,10 @@ internal class ProjectRoleControllerIT {
 
         doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(year)
 
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project-role/latest?year=${year}"))
+        val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project-role/latest?year=${year}"))
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(projectRoleUserDTO), response.body.get())
+        assertEquals(listOf(ProjectRoleUserResponse.from(projectRoleUserDTO)), response.body.get())
 
     }
 

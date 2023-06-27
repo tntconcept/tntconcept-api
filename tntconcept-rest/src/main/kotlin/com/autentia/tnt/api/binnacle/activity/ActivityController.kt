@@ -39,7 +39,7 @@ internal class ActivityController(
     @Get("/{id}")
     @Operation(summary = "Gets an activity by its id.")
     internal fun get(id: Long): ActivityResponse? =
-        ActivityResponse.fromNullable(activityRetrievalUseCase.getActivityById(id))
+        ActivityResponse.from(activityRetrievalUseCase.getActivityById(id))
 
     @Get("/{id}/evidence")
     @Operation(summary = "Retrieves an activity evidence by the activity id.")
