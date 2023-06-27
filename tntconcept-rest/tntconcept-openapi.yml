@@ -434,7 +434,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectRoleUserDTO'
+                  $ref: '#/components/schemas/ProjectRoleUserResponse'
   /api/project-role/{id}:
     get:
       summary: Retrieves a project role by a given ID
@@ -452,7 +452,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectRoleDTO'
+                $ref: '#/components/schemas/ProjectRoleResponse'
   /api/project-roles/recents:
     get:
       summary: Retrieves recent used roles
@@ -1457,6 +1457,41 @@ components:
           format: date-time
         requireEvidence:
           type: boolean
+    ProjectRoleResponse:
+      required:
+      - id
+      - isWorkingTime
+      - maxAllowed
+      - name
+      - organizationId
+      - projectId
+      - requireApproval
+      - requireEvidence
+      - timeUnit
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        organizationId:
+          type: integer
+          format: int64
+        projectId:
+          type: integer
+          format: int64
+        maxAllowed:
+          type: integer
+          format: int32
+        isWorkingTime:
+          type: boolean
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
+        requireEvidence:
+          $ref: '#/components/schemas/RequireEvidence'
+        requireApproval:
+          type: boolean
     ProjectRoleResponseDTOOld:
       required:
       - id
@@ -1472,6 +1507,46 @@ components:
         requireEvidence:
           type: boolean
     ProjectRoleUserDTO:
+      required:
+      - id
+      - maxAllowed
+      - name
+      - organizationId
+      - projectId
+      - remaining
+      - requireApproval
+      - requireEvidence
+      - timeUnit
+      - userId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        organizationId:
+          type: integer
+          format: int64
+        projectId:
+          type: integer
+          format: int64
+        maxAllowed:
+          type: integer
+          format: int32
+        remaining:
+          type: integer
+          format: int32
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
+        requireEvidence:
+          $ref: '#/components/schemas/RequireEvidence'
+        requireApproval:
+          type: boolean
+        userId:
+          type: integer
+          format: int64
+    ProjectRoleUserResponse:
       required:
       - id
       - maxAllowed
