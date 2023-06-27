@@ -572,46 +572,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectResponse'
-  /api/projects/{id}:
-    get:
-      summary: Retrieves a project´s information from its ID
-      operationId: getProjectById_1
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: getProjectById_1 200 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectResponseDTO'
-      deprecated: true
-  /api/projects/{id}/roles:
-    get:
-      summary: Retrieves a list of project roles from a project ID
-      operationId: getProjectRolesByProjectId_2
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
-      responses:
-        "200":
-          description: getProjectRolesByProjectId_2 200 response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProjectRoleDTO'
-      deprecated: true
   /api/search:
     get:
       operationId: searchBy

@@ -200,7 +200,7 @@ internal class ProjectControllerIT {
         doThrow(exception).whenever(projectByIdUseCase).get(projectId)
 
         val ex = assertThrows<HttpClientResponseException> {
-            client.exchangeObject<Any>(GET("/api/projects/$projectId"))
+            client.exchangeObject<Any>(GET("/api/project/$projectId"))
         }
 
         assertEquals(expectedResponseStatus, ex.status)
