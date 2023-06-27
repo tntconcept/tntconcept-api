@@ -24,8 +24,8 @@ internal class ProjectController(
 
     @Operation(summary = "Retrieves a project´s information from its ID")
     @Get("/{id}")
-    fun getProjectById(id: Long): ProjectResponse? =
-         ProjectResponse.fromNullable(projectByIdUseCase.get(id))
+    fun getProjectById(id: Long): ProjectResponse =
+         ProjectResponse.from(projectByIdUseCase.get(id))
 
     @Operation(summary = "Retrieves a list of project roles from a project ID")
     @Get("/{projectId}/role")

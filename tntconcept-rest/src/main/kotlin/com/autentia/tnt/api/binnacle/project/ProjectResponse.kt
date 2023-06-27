@@ -25,8 +25,5 @@ data class ProjectResponse(
                 projectResponseDTO.blockDate,
                 projectResponseDTO.blockedByUser,
             )
-        fun fromNullable(projectResponseDTO: ProjectResponseDTO?) : ProjectResponse? {
-            return if (projectResponseDTO !=null) from(projectResponseDTO) else null
-        }
     }
 }
