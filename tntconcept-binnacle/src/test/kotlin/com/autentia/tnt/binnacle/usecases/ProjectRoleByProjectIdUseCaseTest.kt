@@ -8,10 +8,10 @@ import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.ProjectRoleService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,7 +26,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
     private val activityRepository: ActivityRepository = mock()
     private val activityService = ActivityService(activityRepository, mock())
     private val holidayService = mock<HolidayService>()
-    private val projectRoleService = mock<ProjectRoleService>()
+    private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val calendarFactory = CalendarFactory(holidayService)
     private val securityService = mock<SecurityService>()
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
@@ -38,7 +38,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
             activityService,
             activityCalendarService,
             securityService,
-            projectRoleService,
+            projectRoleRepository,
             projectRoleResponseConverter,
             projectRoleConverter
         )
@@ -100,7 +100,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
-        whenever(projectRoleService.getAllByProjectId(PROJECT_ID)).thenReturn(projectRoles.map(ProjectRole::toDomain))
+        whenever(projectRoleRepository.getAllByProjectId(PROJECT_ID)).thenReturn(projectRoles)
         whenever(activityRepository.findByProjectRoleIdAndUserId(1L, userId)).thenReturn(activitiesProjectRole1)
         whenever(activityRepository.findByProjectRoleIdAndUserId(2L, userId)).thenReturn(activitiesProjectRole2)
         whenever(activityRepository.findByProjectRoleIdAndUserId(3L, userId)).thenReturn(emptyList())
@@ -131,7 +131,6 @@ internal class ProjectRoleByProjectIdUseCaseTest {
     private companion object {
         private const val USER_ID = 1L
         private const val PROJECT_ID = 1L
-        private const val YEAR = 2023
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
         private val PROJECT = Project(1L, "Dummy project", true, false, LocalDate.now(), null, null, ORGANIZATION, listOf())
