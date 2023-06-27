@@ -1,9 +1,7 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.activity
 
-import com.autentia.tnt.api.binnacle.activity.ActivityRequest
-import com.autentia.tnt.api.binnacle.activity.ActivityResponse
-import com.autentia.tnt.api.binnacle.activity.ActivitySummaryResponse
-import com.autentia.tnt.api.binnacle.activity.TimeIntervalRequest
+import com.autentia.tnt.api.binnacle.*
+import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
@@ -177,7 +175,8 @@ internal class ActivityControllerIT {
     @Test
     fun `fail if try to get an activity with a non existing id`() {
         val nonExistingId = 8L
-        doReturn(null).whenever(activityRetrievalUseCase).getActivityById(nonExistingId)
+
+        doThrow(ActivityNotFoundException(1L)).whenever(activityRetrievalUseCase).getActivityById(nonExistingId)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
@@ -186,6 +185,7 @@ internal class ActivityControllerIT {
         }
 
         assertEquals(NOT_FOUND, ex.status)
+        assertEquals("RESOURCE_NOT_FOUND", ex.response.getBody<ErrorResponse>().get().code)
     }
 
     @Test

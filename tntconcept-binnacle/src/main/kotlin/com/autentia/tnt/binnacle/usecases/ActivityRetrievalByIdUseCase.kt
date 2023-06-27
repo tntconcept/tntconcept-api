@@ -15,7 +15,7 @@ class ActivityRetrievalByIdUseCase internal constructor(
 ) {
     @Transactional
     @ReadOnly
-    fun getActivityById(id: Long): ActivityResponseDTO? {
+    fun getActivityById(id: Long): ActivityResponseDTO {
         val activity = activityRepository.findById(id)?.toDomain() ?: throw ActivityNotFoundException(id)
         return activityResponseConverter.toActivityResponseDTO(activity)
     }

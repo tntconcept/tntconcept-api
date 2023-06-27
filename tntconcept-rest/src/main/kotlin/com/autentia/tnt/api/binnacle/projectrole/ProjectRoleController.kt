@@ -1,7 +1,5 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.projectrole
 
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
 import io.micronaut.http.annotation.Controller
@@ -17,11 +15,11 @@ internal class ProjectRoleController(
 
     @Operation(summary = "Retrieves a project role by a given ID")
     @Get("/{id}")
-    fun getProjectRoleById(id: Long): ProjectRoleDTO =
-        projectRoleByIdUseCase.get(id)
+    fun getProjectRoleById(id: Long): ProjectRoleResponse =
+        ProjectRoleResponse.from(projectRoleByIdUseCase.get(id))
 
     @Operation(summary = "Retrieves recent used roles")
     @Get("/latest")
-    fun getLatestRoles(@QueryValue year: Int?): List<ProjectRoleUserDTO> =
-        latestProjectRolesForAuthenticatedUserUseCase.get(year)
+    fun getLatestRoles(@QueryValue year: Int?): List<ProjectRoleUserResponse> =
+        latestProjectRolesForAuthenticatedUserUseCase.get(year).map { ProjectRoleUserResponse.from(it) }
 }

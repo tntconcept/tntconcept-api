@@ -14,13 +14,11 @@ import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.services.HolidayService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -31,9 +29,6 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleResponseConverter = ProjectRoleResponseConverter()
     private val activityRepository: ActivityRepository = mock()
-    private val activityService = ActivityService(
-        activityRepository, mock()
-    )
     private val holidayService = mock<HolidayService>()
     private val securityService = mock<SecurityService>()
     private val projectRoleConverter = ProjectRoleConverter()
@@ -42,9 +37,8 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activityCalendarFactory)
     private val latestProjectRolesForAuthenticatedUserUseCase = LatestProjectRolesForAuthenticatedUserUseCase(
-        projectRoleRepository,
         projectRoleResponseConverter,
-        activityService,
+        activityRepository,
         activityCalendarService,
         securityService,
         projectRoleConverter
@@ -194,22 +188,6 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         )
 
         assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(year))
-    }
-
-    @Test
-    fun `get project roles recent should return project roles`() {
-        val startDate = TODAY.minusMonths(1).atTime(LocalTime.MIN)
-        val endDate = TODAY.atTime(23, 59, 59)
-
-        doReturn(PROJECT_ROLES_RECENT).whenever(projectRoleRepository)
-            .findDistinctProjectRolesBetweenDate(startDate, endDate)
-
-        val expectedProjectRoles = listOf(
-            buildProjectRoleRecent(1L, START_DATE),
-            buildProjectRoleRecent(2L, START_DATE.minusDays(2)),
-        )
-
-        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.getProjectRolesRecent())
     }
 
     private companion object {

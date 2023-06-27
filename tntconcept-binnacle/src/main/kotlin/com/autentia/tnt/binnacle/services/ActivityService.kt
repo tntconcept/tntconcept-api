@@ -37,11 +37,6 @@ internal class ActivityService(
         activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds, userId)
             .map(Activity::toDomain)
 
-    @Transactional
-    @ReadOnly
-    fun getActivitiesOfLatestProjects(timeInterval: TimeInterval, userId: Long) =
-        activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)
-
 
     fun filterActivitiesByTimeInterval(
         filterTimeInterval: TimeInterval, activities: List<Activity>,
