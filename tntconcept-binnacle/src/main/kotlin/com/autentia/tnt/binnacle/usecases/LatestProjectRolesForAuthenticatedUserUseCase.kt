@@ -6,7 +6,6 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
@@ -19,7 +18,6 @@ import javax.transaction.Transactional
 
 @Singleton
 class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
-    private val projectRoleRepository: ProjectRoleRepository,
     private val projectRoleResponseConverter: ProjectRoleResponseConverter,
     private val activityRepository: ActivityRepository,
     private val activityCalendarService: ActivityCalendarService,

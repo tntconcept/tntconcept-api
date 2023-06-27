@@ -76,15 +76,6 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun testGetActivitiesOfLatestProjects() {
-        val userId = 1L
-        whenever(activityRepository.findOfLatestProjects(timeInterval.start, timeInterval.end, userId)).thenReturn(
-            activities
-        )
-        assertEquals(activities, sut.getActivitiesOfLatestProjects(timeInterval, userId))
-    }
-
-    @Test
     fun `get activities by project role ids with user id`() {
         val userId = 1L
         val startDate = LocalDate.of(2019, 1, 1)
