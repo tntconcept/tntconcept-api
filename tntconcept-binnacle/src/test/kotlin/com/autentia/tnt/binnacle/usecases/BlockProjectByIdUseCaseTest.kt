@@ -1,13 +1,10 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.core.domain.Organization
-import com.autentia.tnt.binnacle.core.domain.Project
 import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
-import com.autentia.tnt.binnacle.services.ProjectService
 import com.autentia.tnt.binnacle.validators.ProjectValidator
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
