@@ -175,7 +175,8 @@ internal class ActivityControllerIT {
     @Test
     fun `fail if try to get an activity with a non existing id`() {
         val nonExistingId = 8L
-        doReturn(null).whenever(activityRetrievalUseCase).getActivityById(nonExistingId)
+
+        doThrow(ActivityNotFoundException(1L)).whenever(activityRetrievalUseCase).getActivityById(nonExistingId)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
@@ -184,6 +185,7 @@ internal class ActivityControllerIT {
         }
 
         assertEquals(NOT_FOUND, ex.status)
+        assertEquals("RESOURCE_NOT_FOUND", ex.response.getBody<ErrorResponse>().get().code)
     }
 
     @Test

@@ -25,9 +25,5 @@ data class ActivityResponse(
                 activityResponseDTO.userId,
                 activityResponseDTO.approvalState
             )
-
-        fun fromNullable(activityResponseDTO: ActivityResponseDTO?): ActivityResponse? {
-            return if (activityResponseDTO != null) from(activityResponseDTO) else null
-        }
     }
 }

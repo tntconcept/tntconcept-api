@@ -1,7 +1,5 @@
 package com.autentia.tnt.api.binnacle.projectrole
 
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
 import io.micronaut.http.annotation.Controller

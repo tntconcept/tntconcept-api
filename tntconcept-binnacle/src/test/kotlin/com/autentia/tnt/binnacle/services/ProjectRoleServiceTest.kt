@@ -60,25 +60,6 @@ internal class ProjectRoleServiceTest {
     }
 
     @Test
-    fun `getByProjectRoleId should throw project role not found exception`() {
-        whenever(projectRoleRepository.findById(1L)).thenReturn(null)
-
-        assertThrows<ProjectRoleNotFoundException> { projectRoleService.getByProjectRoleId(1L) }
-    }
-
-    @Test
-    fun `getByProjectRoleId should call repository`() {
-        val projectRole = createProjectRole()
-        val expectedResult = projectRole.toDomain()
-
-        whenever(projectRoleRepository.findById(1L)).thenReturn(projectRole)
-
-        val result = projectRoleService.getByProjectRoleId(1L)
-
-        assertEquals(expectedResult, result)
-    }
-
-    @Test
     fun `getAllByProjectId should call repository`() {
         val projectRoles = listOf(
             createProjectRole(),
