@@ -1,36 +1,16 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.api.binnacle.vacation.HolidayRequest
+import com.autentia.tnt.api.binnacle.vacation.HolidayResponse
+import com.autentia.tnt.api.binnacle.vacation.VacationRequest
 import com.autentia.tnt.binnacle.entities.VacationState
-import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
-import com.autentia.tnt.binnacle.entities.dto.VacationDTO
-import com.autentia.tnt.binnacle.entities.dto.VacationDetailsDTO
-import com.autentia.tnt.binnacle.exception.DateRangeException
-import com.autentia.tnt.binnacle.exception.MaxNextYearRequestVacationException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
-import com.autentia.tnt.binnacle.exception.VacationBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.VacationNotFoundException
-import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.exception.VacationRequestEmptyException
-import com.autentia.tnt.binnacle.exception.VacationRequestOverlapsException
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayDetailsUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodCreateUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodDeleteUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodUpdateUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysByChargeYearUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysPeriodDaysUseCase
+import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpHeaders.ACCEPT_LANGUAGE
-import io.micronaut.http.HttpRequest.DELETE
-import io.micronaut.http.HttpRequest.GET
-import io.micronaut.http.HttpRequest.POST
-import io.micronaut.http.HttpRequest.PUT
+import io.micronaut.http.HttpRequest.*
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.HttpStatus.BAD_REQUEST
-import io.micronaut.http.HttpStatus.NOT_FOUND
-import io.micronaut.http.HttpStatus.OK
+import io.micronaut.http.HttpStatus.*
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
@@ -46,14 +26,10 @@ import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit.DAYS
-import java.util.Locale
+import java.util.*
 
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -92,12 +68,12 @@ internal class VacationControllerIT {
     fun `get the vacations by charge year`() {
         doReturn(HOLIDAY_RESPONSE_DTO).whenever(privateHolidaysByChargeYearUseCase).get(CURRENT_YEAR)
 
-        val response = client.exchangeObject<HolidayResponseDTO>(
+        val response = client.exchangeObject<HolidayResponse>(
             GET("/api/vacations?chargeYear=$CURRENT_YEAR")
         )
 
         assertEquals(OK, response.status())
-        assertEquals(HOLIDAY_RESPONSE_DTO, response.body.get())
+        assertEquals(HOLIDAY_RESPONSE, response.body.get())
     }
 
     @Test
@@ -181,7 +157,7 @@ internal class VacationControllerIT {
     fun `fail if try to post a vacation and a exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
@@ -225,7 +201,7 @@ internal class VacationControllerIT {
     fun `fail if try to put a vacation and a exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
@@ -261,7 +237,7 @@ internal class VacationControllerIT {
     fun `fail if try to delete a vacation and a exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
@@ -309,10 +285,25 @@ internal class VacationControllerIT {
             listOf(CREATE_VACATION_RESPONSE_DTO.startDate),
             CREATE_VACATION_RESPONSE_DTO.startDate
         )
+        val VACATION_REQUEST = VacationRequest(
+            2,
+            "Observations",
+            "Description",
+            VacationState.PENDING,
+            CREATE_VACATION_RESPONSE_DTO.startDate,
+            CREATE_VACATION_RESPONSE_DTO.endDate,
+            listOf(CREATE_VACATION_RESPONSE_DTO.startDate),
+            CREATE_VACATION_RESPONSE_DTO.startDate
+        )
 
         private val HOLIDAY_RESPONSE_DTO = HolidayResponseDTO(
             listOf(HolidayDTO(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
             listOf(VACATION_DTO)
+        )
+
+        private val HOLIDAY_RESPONSE = HolidayResponse(
+            listOf(HolidayRequest(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
+            listOf(VACATION_REQUEST)
         )
 
         private val VACATION_DETAILS_DTO = VacationDetailsDTO(23, 23, 3, 20)

@@ -1,30 +1,13 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.api.binnacle.vacation.HolidayResponse
+import com.autentia.tnt.api.binnacle.vacation.VacationController
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
-import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
-import com.autentia.tnt.binnacle.entities.dto.VacationDTO
-import com.autentia.tnt.binnacle.entities.dto.VacationDetailsDTO
-import com.autentia.tnt.binnacle.exception.DateRangeException
-import com.autentia.tnt.binnacle.exception.MaxNextYearRequestVacationException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
-import com.autentia.tnt.binnacle.exception.VacationAcceptedStateException
-import com.autentia.tnt.binnacle.exception.VacationBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.VacationNotFoundException
-import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.exception.VacationRequestEmptyException
-import com.autentia.tnt.binnacle.exception.VacationRequestOverlapsException
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayDetailsUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodCreateUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodDeleteUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodUpdateUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysByChargeYearUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysPeriodDaysUseCase
+import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -66,12 +49,13 @@ internal class VacationControllerTest {
     fun `get the vacations by charge year`() {
         val chargeYear = 2019
         val holidayResponseDTO = HolidayResponseDTO(listOf(), listOf())
+        val holidayResponse = HolidayResponse.from(holidayResponseDTO)
 
         doReturn(holidayResponseDTO).whenever(privateHolidaysByChargeYearUseCase).get(chargeYear)
 
-        val holidaysResponseDTO = vacationController.getPrivateHolidaysByChargeYear(chargeYear)
+        val response = vacationController.getPrivateHolidaysByChargeYear(chargeYear)
 
-        assertEquals(holidayResponseDTO, holidaysResponseDTO)
+        assertEquals(holidayResponse, response)
     }
 
     @Test

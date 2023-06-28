@@ -663,7 +663,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponseDTO'
+                $ref: '#/components/schemas/HolidayResponse'
     put:
       summary: Updates a holiday period.
       operationId: updatePrivateHolidayPeriod$tntconcept_rest
@@ -1161,6 +1161,35 @@ components:
         date:
           type: string
           format: date
+    HolidayRequest:
+      required:
+      - date
+      - description
+      - id
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        description:
+          type: string
+        date:
+          type: string
+          format: date
+    HolidayResponse:
+      required:
+      - holidays
+      - vacations
+      type: object
+      properties:
+        holidays:
+          type: array
+          items:
+            $ref: '#/components/schemas/HolidayRequest'
+        vacations:
+          type: array
+          items:
+            $ref: '#/components/schemas/VacationRequest'
     HolidayResponseDTO:
       required:
       - holidays
@@ -1716,6 +1745,41 @@ components:
         remainingVacations:
           type: integer
           format: int32
+    VacationRequest:
+      required:
+      - chargeYear
+      - days
+      - description
+      - endDate
+      - id
+      - observations
+      - startDate
+      - state
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        observations:
+          type: string
+        description:
+          type: string
+        state:
+          $ref: '#/components/schemas/VacationState'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        days:
+          type: array
+          items:
+            type: string
+            format: date
+        chargeYear:
+          type: string
+          format: date
     VacationState:
       type: string
       enum:

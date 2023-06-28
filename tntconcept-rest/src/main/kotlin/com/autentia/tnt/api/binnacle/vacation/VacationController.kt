@@ -1,32 +1,14 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.vacation
 
+import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDetailsDTO
-import com.autentia.tnt.binnacle.exception.DateRangeException
-import com.autentia.tnt.binnacle.exception.MaxNextYearRequestVacationException
-import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
-import com.autentia.tnt.binnacle.exception.VacationAcceptedStateException
-import com.autentia.tnt.binnacle.exception.VacationBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.exception.VacationRequestEmptyException
-import com.autentia.tnt.binnacle.exception.VacationRequestOverlapsException
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayDetailsUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodCreateUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodDeleteUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodUpdateUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysByChargeYearUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysPeriodDaysUseCase
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Delete
-import io.micronaut.http.annotation.Error
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Put
+import io.micronaut.http.annotation.*
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import java.time.LocalDate
@@ -51,32 +33,32 @@ internal class VacationController(
     private val privateHolidaysPeriodDaysUseCase: PrivateHolidaysPeriodDaysUseCase,
     private val privateHolidayPeriodCreateUseCase: PrivateHolidayPeriodCreateUseCase,
     private val privateHolidayPeriodUpdateUseCase: PrivateHolidayPeriodUpdateUseCase,
-    private val privateHolidayPeriodDeleteUseCase: PrivateHolidayPeriodDeleteUseCase
-    ) {
+    private val privateHolidayPeriodDeleteUseCase: PrivateHolidayPeriodDeleteUseCase,
+) {
 
-        @Get
-        @Operation(summary = "Retrieves holidays within a given charge year.")
-        internal fun getPrivateHolidaysByChargeYear(chargeYear: Int): HolidayResponseDTO =
-            privateHolidaysByChargeYearUseCase.get(chargeYear)
+    @Get
+    @Operation(summary = "Retrieves holidays within a given charge year.")
+    internal fun getPrivateHolidaysByChargeYear(chargeYear: Int): HolidayResponse =
+        HolidayResponse.from(privateHolidaysByChargeYearUseCase.get(chargeYear))
 
-        @Get("/details")
-        @Operation(summary = "Retrieves details for a holiday within a given charge year.")
-        internal fun getPrivateHolidayDetails(chargeYear: Int): VacationDetailsDTO {
-            val vacationsByChargeYear = privateHolidaysByChargeYearUseCase.get(chargeYear).vacations
-            return privateHolidayDetailsUseCase.get(chargeYear, vacationsByChargeYear)
-        }
+    @Get("/details")
+    @Operation(summary = "Retrieves details for a holiday within a given charge year.")
+    internal fun getPrivateHolidayDetails(chargeYear: Int): VacationDetailsDTO {
+        val vacationsByChargeYear = privateHolidaysByChargeYearUseCase.get(chargeYear).vacations
+        return privateHolidayDetailsUseCase.get(chargeYear, vacationsByChargeYear)
+    }
 
     @Deprecated("use Calendar API workable-days instead")
     @Get("/days")
-        @Operation(summary = "Retrieves holidays within a given period.")
-        internal fun getPrivateHolidaysPeriodDays(startDate: LocalDate, endDate: LocalDate): Int =
-            privateHolidaysPeriodDaysUseCase.get(startDate, endDate)
+    @Operation(summary = "Retrieves holidays within a given period.")
+    internal fun getPrivateHolidaysPeriodDays(startDate: LocalDate, endDate: LocalDate): Int =
+        privateHolidaysPeriodDaysUseCase.get(startDate, endDate)
 
-        @Post
-        @Operation(summary = "Creates a holiday period.")
-        internal fun createPrivateHolidayPeriod(
+    @Post
+    @Operation(summary = "Creates a holiday period.")
+    internal fun createPrivateHolidayPeriod(
         @Body @Valid requestVacationDTO: RequestVacationDTO,
-        locale: Locale
+        locale: Locale,
     ): List<CreateVacationResponseDTO> =
         privateHolidayPeriodCreateUseCase.create(requestVacationDTO, locale)
 
@@ -84,7 +66,7 @@ internal class VacationController(
     @Operation(summary = "Updates a holiday period.")
     internal fun updatePrivateHolidayPeriod(
         @Body @Valid dto: RequestVacationDTO,
-        locale: Locale
+        locale: Locale,
     ): List<CreateVacationResponseDTO> =
         privateHolidayPeriodUpdateUseCase.update(dto, locale)
 
@@ -109,7 +91,7 @@ internal class VacationController(
     @Error
     internal fun onVacationAcceptedPastPeriodStateException(
         request: HttpRequest<*>,
-        e: VacationAcceptedPastPeriodStateException
+        e: VacationAcceptedPastPeriodStateException,
     ) = HttpResponse.badRequest(ErrorResponse(VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD, e.message))
 
     @Error
