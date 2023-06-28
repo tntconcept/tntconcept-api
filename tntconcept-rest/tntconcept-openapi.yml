@@ -400,12 +400,12 @@ paths:
       summary: Gets projects with specified filters
       operationId: get
       parameters:
-      - name: projectFilterDTO
+      - name: projectFilterRequest
         in: query
         required: true
         explode: true
         schema:
-          $ref: '#/components/schemas/ProjectFilterDTO'
+          $ref: '#/components/schemas/ProjectFilterRequest'
       responses:
         "200":
           description: get 200 response
@@ -414,7 +414,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectResponseDTO'
+                  $ref: '#/components/schemas/ProjectResponse'
   /api/project-role/latest:
     get:
       summary: Retrieves recent used roles
@@ -470,7 +470,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResponseDTO'
+                $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/block:
     post:
       summary: Blocks a project until given date
@@ -486,7 +486,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BlockProjectRequestDTO'
+              $ref: '#/components/schemas/BlockProjectRequest'
         required: true
       responses:
         "200":
@@ -494,7 +494,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResponseDTO'
+                $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/role:
     get:
       summary: Retrieves a list of project roles from a project ID
@@ -520,7 +520,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectRoleUserDTO'
+                  $ref: '#/components/schemas/ProjectRoleUserResponse'
   /api/project/{projectId}/unblock:
     post:
       summary: Unblocks a project
@@ -538,47 +538,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectResponseDTO'
-  /api/projects/{id}:
-    get:
-      summary: Retrieves a project´s information from its ID
-      operationId: getProjectById_1
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: getProjectById_1 200 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectResponseDTO'
-      deprecated: true
-  /api/projects/{id}/roles:
-    get:
-      summary: Retrieves a list of project roles from a project ID
-      operationId: getProjectRolesByProjectId_2
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int32
-      responses:
-        "200":
-          description: getProjectRolesByProjectId_2 200 response
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ProjectRoleDTO'
-      deprecated: true
+                $ref: '#/components/schemas/ProjectResponse'
   /api/search:
     get:
       operationId: searchBy
@@ -1118,7 +1078,7 @@ components:
       - NA
       - PENDING
       - ACCEPTED
-    BlockProjectRequestDTO:
+    BlockProjectRequest:
       required:
       - blockDate
       type: object
@@ -1344,7 +1304,7 @@ components:
           type: number
         balance:
           type: number
-    ProjectFilterDTO:
+    ProjectFilterRequest:
       required:
       - organizationId
       type: object
@@ -1354,6 +1314,39 @@ components:
           format: int64
         open:
           type: boolean
+          nullable: true
+    ProjectResponse:
+      required:
+      - billable
+      - id
+      - name
+      - open
+      - organizationId
+      - startDate
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        open:
+          type: boolean
+        billable:
+          type: boolean
+        organizationId:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date
+        blockDate:
+          type: string
+          format: date
+          nullable: true
+        blockedByUser:
+          type: integer
+          format: int64
           nullable: true
     ProjectResponseDTO:
       required:
