@@ -632,7 +632,7 @@ paths:
           application/json:
             schema:
               allOf:
-              - $ref: '#/components/schemas/RequestVacationDTO'
+              - $ref: '#/components/schemas/RequestVacation'
               - required:
                 - locale
                 properties:
@@ -647,7 +647,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CreateVacationResponseDTO'
+                  $ref: '#/components/schemas/CreateVacationResponse'
     post:
       summary: Creates a holiday period.
       operationId: createPrivateHolidayPeriod$tntconcept_rest
@@ -656,7 +656,7 @@ paths:
           application/json:
             schema:
               allOf:
-              - $ref: '#/components/schemas/RequestVacationDTO'
+              - $ref: '#/components/schemas/RequestVacation'
               - required:
                 - locale
                 properties:
@@ -671,33 +671,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CreateVacationResponseDTO'
-  /api/vacations/days:
-    get:
-      summary: Retrieves holidays within a given period.
-      operationId: getPrivateHolidaysPeriodDays$tntconcept_rest
-      parameters:
-      - name: startDate
-        in: query
-        required: true
-        schema:
-          type: string
-          format: date
-      - name: endDate
-        in: query
-        required: true
-        schema:
-          type: string
-          format: date
-      responses:
-        "200":
-          description: getPrivateHolidaysPeriodDays$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                type: integer
-                format: int32
-      deprecated: true
+                  $ref: '#/components/schemas/CreateVacationResponse'
   /api/vacations/details:
     get:
       summary: Retrieves details for a holiday within a given charge year.
@@ -715,7 +689,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VacationDetailsDTO'
+                $ref: '#/components/schemas/VacationDetailsResponse'
   /api/vacations/{id}:
     delete:
       summary: Deletes a holiday period by a given ID.
@@ -1086,7 +1060,7 @@ components:
         blockDate:
           type: string
           format: date
-    CreateVacationResponseDTO:
+    CreateVacationResponse:
       required:
       - chargeYear
       - days
@@ -1545,7 +1519,7 @@ components:
         userId:
           type: integer
           format: int64
-    RequestVacationDTO:
+    RequestVacation:
       required:
       - endDate
       - startDate
@@ -1718,7 +1692,7 @@ components:
         chargeYear:
           type: string
           format: date
-    VacationDetailsDTO:
+    VacationDetailsResponse:
       required:
       - acceptedVacations
       - correspondingVacations
@@ -1742,10 +1716,7 @@ components:
       required:
       - chargeYear
       - days
-      - description
       - endDate
-      - id
-      - observations
       - startDate
       - state
       type: object
@@ -1753,10 +1724,13 @@ components:
         id:
           type: integer
           format: int64
+          nullable: true
         observations:
           type: string
+          nullable: true
         description:
           type: string
+          nullable: true
         state:
           $ref: '#/components/schemas/VacationState'
         startDate:

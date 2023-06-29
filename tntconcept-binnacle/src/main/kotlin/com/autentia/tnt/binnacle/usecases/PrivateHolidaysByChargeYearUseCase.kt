@@ -6,31 +6,35 @@ import com.autentia.tnt.binnacle.core.domain.HolidayResponse
 import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
-import com.autentia.tnt.binnacle.services.HolidayService
-import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.VacationService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.Month
 import javax.transaction.Transactional
 
 @Singleton
 class PrivateHolidaysByChargeYearUseCase internal constructor(
-    private val holidayService: HolidayService,
+    private val holidayRepository: HolidayRepository,
     private val vacationService: VacationService,
-    private val userService: UserService,
-    private val holidayResponseConverter: HolidayResponseConverter
+    private val userRepository: UserRepository,
+    private val holidayResponseConverter: HolidayResponseConverter,
 ) {
 
     @Transactional
     @ReadOnly
     fun get(chargeYear: Int): HolidayResponseDTO {
-        val user = userService.getAuthenticatedUser()
+        val user = userRepository.findByAuthenticatedUser()
+            .orElseThrow { IllegalStateException("There isn't authenticated user") }
 
         val userTimeSinceHiringYear = getTimeSinceHiringYear(user.hiringDate.year)
+        val startDateMinHour = userTimeSinceHiringYear.start.atTime(LocalTime.MIN)
+        val endDateMaxHour = userTimeSinceHiringYear.end.atTime(23, 59, 59)
         val holidays: List<Holiday> =
-            holidayService.findAllBetweenDate(userTimeSinceHiringYear.start, userTimeSinceHiringYear.end)
+            holidayRepository.findAllByDateBetween(startDateMinHour, endDateMaxHour)
         val vacations: List<Vacation> = vacationService.getVacationsByChargeYear(chargeYear)
 
         val holidayResponse = HolidayResponse(holidays, vacations)
@@ -44,7 +48,6 @@ class PrivateHolidaysByChargeYearUseCase internal constructor(
 
         return DateInterval.of(startDate, endDate)
     }
-
 
 }
 

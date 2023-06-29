@@ -1,9 +1,6 @@
 package com.autentia.tnt.api.binnacle.vacation
 
 import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
-import com.autentia.tnt.binnacle.entities.dto.VacationDetailsDTO
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
@@ -11,7 +8,6 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.*
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
-import java.time.LocalDate
 import java.util.*
 import javax.validation.Valid
 
@@ -30,7 +26,6 @@ private const val VACATION_REQUEST_EMPTY = "VACATION_REQUEST_EMPTY"
 internal class VacationController(
     private val privateHolidaysByChargeYearUseCase: PrivateHolidaysByChargeYearUseCase,
     private val privateHolidayDetailsUseCase: PrivateHolidayDetailsUseCase,
-    private val privateHolidaysPeriodDaysUseCase: PrivateHolidaysPeriodDaysUseCase,
     private val privateHolidayPeriodCreateUseCase: PrivateHolidayPeriodCreateUseCase,
     private val privateHolidayPeriodUpdateUseCase: PrivateHolidayPeriodUpdateUseCase,
     private val privateHolidayPeriodDeleteUseCase: PrivateHolidayPeriodDeleteUseCase,
@@ -43,32 +38,26 @@ internal class VacationController(
 
     @Get("/details")
     @Operation(summary = "Retrieves details for a holiday within a given charge year.")
-    internal fun getPrivateHolidayDetails(chargeYear: Int): VacationDetailsDTO {
+    internal fun getPrivateHolidayDetails(chargeYear: Int): VacationDetailsResponse {
         val vacationsByChargeYear = privateHolidaysByChargeYearUseCase.get(chargeYear).vacations
-        return privateHolidayDetailsUseCase.get(chargeYear, vacationsByChargeYear)
+        return VacationDetailsResponse.from(privateHolidayDetailsUseCase.get(chargeYear, vacationsByChargeYear))
     }
-
-    @Deprecated("use Calendar API workable-days instead")
-    @Get("/days")
-    @Operation(summary = "Retrieves holidays within a given period.")
-    internal fun getPrivateHolidaysPeriodDays(startDate: LocalDate, endDate: LocalDate): Int =
-        privateHolidaysPeriodDaysUseCase.get(startDate, endDate)
 
     @Post
     @Operation(summary = "Creates a holiday period.")
     internal fun createPrivateHolidayPeriod(
-        @Body @Valid requestVacationDTO: RequestVacationDTO,
+        @Body @Valid requestVacation: RequestVacation,
         locale: Locale,
-    ): List<CreateVacationResponseDTO> =
-        privateHolidayPeriodCreateUseCase.create(requestVacationDTO, locale)
+    ): List<CreateVacationResponse> =
+        privateHolidayPeriodCreateUseCase.create(requestVacation.toDto(), locale).map { CreateVacationResponse.from(it) }
 
     @Put
     @Operation(summary = "Updates a holiday period.")
     internal fun updatePrivateHolidayPeriod(
-        @Body @Valid dto: RequestVacationDTO,
+        @Body @Valid requestVacation: RequestVacation,
         locale: Locale,
-    ): List<CreateVacationResponseDTO> =
-        privateHolidayPeriodUpdateUseCase.update(dto, locale)
+    ): List<CreateVacationResponse> =
+        privateHolidayPeriodUpdateUseCase.update(requestVacation.toDto(), locale).map { CreateVacationResponse.from(it) }
 
     @Delete("/{id}")
     @Operation(summary = "Deletes a holiday period by a given ID.")
