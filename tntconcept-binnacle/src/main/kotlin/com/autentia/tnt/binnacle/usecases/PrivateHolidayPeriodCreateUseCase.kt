@@ -4,24 +4,20 @@ import com.autentia.tnt.binnacle.converters.CreateVacationResponseConverter
 import com.autentia.tnt.binnacle.converters.RequestVacationConverter
 import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
-import com.autentia.tnt.binnacle.exception.DateRangeException
-import com.autentia.tnt.binnacle.exception.VacationBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.exception.VacationRequestEmptyException
-import com.autentia.tnt.binnacle.exception.VacationRequestOverlapsException
-import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.VacationMailService
 import com.autentia.tnt.binnacle.services.VacationService
 import com.autentia.tnt.binnacle.validators.CreateVacationValidation
 import com.autentia.tnt.binnacle.validators.VacationValidator
 import jakarta.inject.Singleton
-import java.util.Locale
+import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
 class PrivateHolidayPeriodCreateUseCase internal constructor(
     private val vacationService: VacationService,
-    private val userService: UserService,
+    private val userRepository: UserRepository,
     private val vacationValidator: VacationValidator,
     private val createVacationResponseConverter: CreateVacationResponseConverter,
     private val requestVacationConverter: RequestVacationConverter,
@@ -32,7 +28,8 @@ class PrivateHolidayPeriodCreateUseCase internal constructor(
     fun create(requestVacationDTO: RequestVacationDTO, locale: Locale): List<CreateVacationResponseDTO> {
         require(requestVacationDTO.id == null) { "Cannot create vacation with id ${requestVacationDTO.id}." }
 
-        val user = userService.getAuthenticatedUser()
+        val user = userRepository.findByAuthenticatedUser()
+            .orElseThrow { IllegalStateException("There isn't authenticated user") }
 
         val requestVacation = requestVacationConverter.toRequestVacation(requestVacationDTO)
 

@@ -4,30 +4,24 @@ import com.autentia.tnt.binnacle.converters.CreateVacationResponseConverter
 import com.autentia.tnt.binnacle.converters.RequestVacationConverter
 import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
-import com.autentia.tnt.binnacle.exception.DateRangeException
-import com.autentia.tnt.binnacle.exception.VacationAcceptedStateException
-import com.autentia.tnt.binnacle.exception.VacationBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.VacationNotFoundException
-import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.exception.VacationRequestEmptyException
-import com.autentia.tnt.binnacle.exception.VacationRequestOverlapsException
-import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.VacationMailService
 import com.autentia.tnt.binnacle.services.VacationService
 import com.autentia.tnt.binnacle.validators.UpdateVacationValidation
 import com.autentia.tnt.binnacle.validators.VacationValidator
 import jakarta.inject.Singleton
-import java.util.Locale
+import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
 class PrivateHolidayPeriodUpdateUseCase internal constructor(
-    private val userService: UserService,
+    private val userRepository: UserRepository,
     private val vacationMailService: VacationMailService,
     private val vacationValidator: VacationValidator,
     private val createVacationResponseConverter: CreateVacationResponseConverter,
     private val requestVacationConverter: RequestVacationConverter,
-    private val vacationService: VacationService
+    private val vacationService: VacationService,
 ) {
 
     @Transactional
@@ -36,7 +30,8 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
 
         val requestVacation = requestVacationConverter.toRequestVacation(requestVacationDTO)
 
-        val user = userService.getAuthenticatedUser()
+        val user = userRepository.findByAuthenticatedUser()
+            .orElseThrow { IllegalStateException("There isn't authenticated user") }
 
         when (val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)) {
             is UpdateVacationValidation.Success -> {
@@ -59,6 +54,7 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
                         requestVacation.startDate,
                         requestVacation.endDate
                     )
+
                     UpdateVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED -> throw VacationAcceptedStateException()
                     UpdateVacationValidation.FailureReason.VACATION_RANGE_CLOSED -> throw VacationRangeClosedException()
                     UpdateVacationValidation.FailureReason.VACATION_NOT_FOUND -> throw VacationNotFoundException(
