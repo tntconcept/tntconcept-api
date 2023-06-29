@@ -15,6 +15,7 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -29,11 +30,12 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
+import java.util.*
 import kotlin.time.Duration
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 internal class UserTimeSummaryUseCaseTest {
-    private val userService = mock<UserService>()
+    private val userRepository = mock<UserRepository>()
     private val holidayService = mock<HolidayService>()
     private val annualWorkSummaryService = mock<AnnualWorkSummaryService>()
     private val activityService = mock<ActivityService>()
@@ -42,20 +44,20 @@ internal class UserTimeSummaryUseCaseTest {
     private val workTimeService = mock<TimeSummaryService>()
 
     private val userWorkTimeUseCase = UserTimeSummaryUseCase(
-        userService,
+        userRepository,
         holidayService,
         annualWorkSummaryService,
         activityService,
         vacationService,
         myVacationsDetailService,
         workTimeService,
-        TimeSummaryConverter()
+        TimeSummaryConverter(),
     )
 
     @Test
     fun `given date should return working time`() {
         val userId = 1L
-        whenever(userService.getAuthenticatedUser()).thenReturn(USER)
+        whenever(userRepository.findByAuthenticatedUser()).thenReturn(Optional.of(USER))
         whenever(annualWorkSummaryService.getAnnualWorkSummary(USER, TODAY_LAST_YEAR.minusYears(1).year)).thenReturn(
             annualWorkSummary
         )
@@ -103,7 +105,7 @@ internal class UserTimeSummaryUseCaseTest {
         val actualWorkingTime = userWorkTimeUseCase.getTimeSummary(TODAY_LAST_YEAR)
 
         //Then
-        verify(userService).getAuthenticatedUser()
+        verify(userRepository).findByAuthenticatedUser()
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), eq(USER))
