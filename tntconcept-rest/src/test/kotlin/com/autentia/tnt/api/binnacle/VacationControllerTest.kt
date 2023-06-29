@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.api.binnacle.vacation.HolidayResponse
-import com.autentia.tnt.api.binnacle.vacation.VacationController
+import com.autentia.tnt.api.binnacle.vacation.*
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
@@ -31,7 +30,6 @@ internal class VacationControllerTest {
 
     private val privateHolidaysByChargeYearUseCase = mock<PrivateHolidaysByChargeYearUseCase>()
     private val privateHolidayDetailsUseCase = mock<PrivateHolidayDetailsUseCase>()
-    private val privateHolidaysPeriodDaysUseCase = mock<PrivateHolidaysPeriodDaysUseCase>()
     private val privateHolidayPeriodCreateUseCase = mock<PrivateHolidayPeriodCreateUseCase>()
     private val privateHolidayPeriodUpdateUseCase = mock<PrivateHolidayPeriodUpdateUseCase>()
     private val privateHolidayPeriodDeleteUseCase = mock<PrivateHolidayPeriodDeleteUseCase>()
@@ -39,7 +37,6 @@ internal class VacationControllerTest {
     private val vacationController = VacationController(
         privateHolidaysByChargeYearUseCase,
         privateHolidayDetailsUseCase,
-        privateHolidaysPeriodDaysUseCase,
         privateHolidayPeriodCreateUseCase,
         privateHolidayPeriodUpdateUseCase,
         privateHolidayPeriodDeleteUseCase
@@ -59,19 +56,6 @@ internal class VacationControllerTest {
     }
 
     @Test
-    fun `get ALL vacations DAYS between date`() {
-
-        val workingDaysBetweenDates = 8
-
-        doReturn(workingDaysBetweenDates).whenever(privateHolidaysPeriodDaysUseCase).get(today, today.plusDays(8))
-
-        val holidaysBetweenDates = vacationController.getPrivateHolidaysPeriodDays(today, today.plusDays(8))
-
-        assertEquals(workingDaysBetweenDates, holidaysBetweenDates)
-
-    }
-
-    @Test
     fun `get user vacation details`() {
         val chargeYear = 2020
         val correspondingVacations = 22
@@ -82,18 +66,20 @@ internal class VacationControllerTest {
 
         doReturn(holidayResponseDTO).whenever(privateHolidaysByChargeYearUseCase).get(chargeYear)
 
-        val response = VacationDetailsDTO(
+        val vacationDetailsDTO = VacationDetailsDTO(
             holidaysAgreement = correspondingVacations,
             correspondingVacations = correspondingVacations,
             acceptedVacations = acceptedVacations,
             remainingVacations = correspondingVacations - acceptedVacations
         )
 
-        doReturn(response).whenever(privateHolidayDetailsUseCase).get(chargeYear, holidayResponseDTO.vacations)
+        val vacationDetailsResponse = VacationDetailsResponse.from(vacationDetailsDTO)
 
-        val vacationDetailsDTO = vacationController.getPrivateHolidayDetails(chargeYear)
+        doReturn(vacationDetailsDTO).whenever(privateHolidayDetailsUseCase).get(chargeYear, holidayResponseDTO.vacations)
 
-        assertEquals(response, vacationDetailsDTO)
+        val response = vacationController.getPrivateHolidayDetails(chargeYear)
+
+        assertEquals(response, vacationDetailsResponse)
         verify(privateHolidaysByChargeYearUseCase, times(1)).get(chargeYear)
 
     }
@@ -105,12 +91,7 @@ internal class VacationControllerTest {
 
             val chargeYear = LocalDate.now().year
 
-            val requestVacationDTO = RequestVacationDTO(
-                id = 1L,
-                startDate = today,
-                endDate = tomorrow,
-                description = "Lorem ipsum..."
-            )
+
             val vacationResponseDTO = CreateVacationResponseDTO(
                 startDate = today,
                 endDate = tomorrow,
@@ -118,103 +99,111 @@ internal class VacationControllerTest {
                 chargeYear = chargeYear
             )
 
+            val requestVacation = RequestVacation(
+                id = 1L,
+                startDate = today,
+                endDate = tomorrow,
+                description = "Lorem ipsum..."
+            )
+            val vacationResponse = listOf(CreateVacationResponse.from(vacationResponseDTO))
+
             doReturn(listOf(vacationResponseDTO)).whenever(privateHolidayPeriodCreateUseCase).create(any(), any())
 
-            val createVacationResponseDTO = vacationController.createPrivateHolidayPeriod(requestVacationDTO, ENGLISH)
+            val createVacationResponse = vacationController.createPrivateHolidayPeriod(requestVacation, ENGLISH)
 
-            assertEquals(listOf(vacationResponseDTO), createVacationResponseDTO)
-            verify(privateHolidayPeriodCreateUseCase, times(1)).create(requestVacationDTO, ENGLISH)
+            assertEquals(vacationResponse, createVacationResponse)
+            verify(privateHolidayPeriodCreateUseCase, times(1)).create(requestVacation.toDto(), ENGLISH)
 
         }
 
         @Test
         fun `FAIL to create when the start date is LATER than end date`() {
 
-            val createVacationRequestDTO = createVacationRequestDTO(startDate = tomorrow, endDate = today)
+            val createVacationRequest = createVacationRequest(startDate = tomorrow, endDate = today)
 
             doThrow(DateRangeException(startDate = tomorrow, endDate = today))
                 .whenever(privateHolidayPeriodCreateUseCase)
-                .create(eq(createVacationRequestDTO(startDate = tomorrow, endDate = today)), any())
+                .create(eq(createVacationRequest(startDate = tomorrow, endDate = today).toDto()), any())
 
             assertThrows<DateRangeException> {
-                vacationController.createPrivateHolidayPeriod(createVacationRequestDTO, ENGLISH)
+                vacationController.createPrivateHolidayPeriod(createVacationRequest, ENGLISH)
             }
-            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequestDTO, ENGLISH)
+            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequest.toDto(), ENGLISH)
         }
 
         @Test
         fun `FAIL when more than 5 days of NEXT year's vacation are requested for the current year`() {
 
-            val createVacationRequestDTO = createVacationRequestDTO(today, today.plusDays(5))
+            val createVacationRequest = createVacationRequest(today, today.plusDays(5))
 
             doThrow(MaxNextYearRequestVacationException("You can't charge more than 5 days of the next year vacations in the current year"))
                 .whenever(privateHolidayPeriodCreateUseCase)
-                .create(eq(createVacationRequestDTO(today, today.plusDays(5))), any())
+                .create(eq(createVacationRequest(today, today.plusDays(5)).toDto()), any())
 
             assertThrows<MaxNextYearRequestVacationException> {
-                vacationController.createPrivateHolidayPeriod(createVacationRequestDTO, ENGLISH)
+                vacationController.createPrivateHolidayPeriod(createVacationRequest, ENGLISH)
             }
-            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequestDTO, ENGLISH)
+            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequest.toDto(), ENGLISH)
         }
 
         @Test
         fun `FAIL to create when the start date closed`() {
 
-            val createVacationRequestDTO = createVacationRequestDTO(today.minusYears(2), tomorrow.minusYears(2))
+            val createVacationRequest = createVacationRequest(today.minusYears(2), tomorrow.minusYears(2))
 
             doThrow(VacationRangeClosedException())
                 .whenever(privateHolidayPeriodCreateUseCase)
-                .create(eq(createVacationRequestDTO(today.minusYears(2), tomorrow.minusYears(2))), any())
+                .create(eq(createVacationRequest(today.minusYears(2), tomorrow.minusYears(2)).toDto()), any())
 
             assertThrows<VacationRangeClosedException> {
-                vacationController.createPrivateHolidayPeriod(createVacationRequestDTO, ENGLISH)
+                vacationController.createPrivateHolidayPeriod(createVacationRequest, ENGLISH)
             }
-            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequestDTO, ENGLISH)
+            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequest.toDto(), ENGLISH)
         }
 
         @Test
         fun `FAIL to create when the start date is before user hiring date`() {
 
-            val createVacationRequestDTO = createVacationRequestDTO(today, tomorrow)
+            val createVacationRequest = createVacationRequest(today, tomorrow)
 
             doThrow(VacationBeforeHiringDateException())
                 .whenever(privateHolidayPeriodCreateUseCase)
-                .create(eq(createVacationRequestDTO(today, tomorrow)), any())
+                .create(eq(createVacationRequest(today, tomorrow).toDto()), any())
 
             assertThrows<VacationBeforeHiringDateException> {
-                vacationController.createPrivateHolidayPeriod(createVacationRequestDTO, ENGLISH)
+                vacationController.createPrivateHolidayPeriod(createVacationRequest, ENGLISH)
             }
-            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequestDTO, ENGLISH)
+            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequest.toDto(), ENGLISH)
         }
 
         @Test
         fun `FAIL to create when vacation request overlap with other vacation`() {
 
-            val createVacationRequestDTO = createVacationRequestDTO(today, tomorrow)
+            val createVacationRequest = createVacationRequest(today, tomorrow)
 
             doThrow(VacationRequestOverlapsException())
                 .whenever(privateHolidayPeriodCreateUseCase)
-                .create(eq(createVacationRequestDTO(today, tomorrow)), any())
+                .create(eq(createVacationRequest(today, tomorrow).toDto()), any())
 
             assertThrows<VacationRequestOverlapsException> {
-                vacationController.createPrivateHolidayPeriod(createVacationRequestDTO, ENGLISH)
+                vacationController.createPrivateHolidayPeriod(createVacationRequest, ENGLISH)
             }
-            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequestDTO, ENGLISH)
+            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequest.toDto(), ENGLISH)
         }
 
         @Test
         fun `FAIL to create when vacation request is empty`() {
 
-            val createVacationRequestDTO = createVacationRequestDTO(today, today)
+            val createVacationRequest = createVacationRequest(today, today)
 
             doThrow(VacationRequestEmptyException())
                 .whenever(privateHolidayPeriodCreateUseCase)
-                .create(eq(createVacationRequestDTO(today, today)), any())
+                .create(eq(createVacationRequest(today, today).toDto()), any())
 
             assertThrows<VacationRequestEmptyException> {
-                vacationController.createPrivateHolidayPeriod(createVacationRequestDTO, ENGLISH)
+                vacationController.createPrivateHolidayPeriod(createVacationRequest, ENGLISH)
             }
-            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequestDTO, ENGLISH)
+            verify(privateHolidayPeriodCreateUseCase, times(1)).create(createVacationRequest.toDto(), ENGLISH)
         }
     }
 
@@ -223,20 +212,26 @@ internal class VacationControllerTest {
         @Test
         fun `update an existing vacation period`() {
 
-            val requestVacationDto = createVacationUpdateDTO(today, tomorrow)
+            val requestVacation = createVacationUpdate(today, tomorrow)
             val createVacationResponseDTO = CreateVacationResponseDTO(
                 startDate = today,
                 endDate = tomorrow,
                 days = 1,
                 chargeYear = chargeThisYear
             )
+            val createVacationResponse = listOf(CreateVacationResponse(
+                startDate = today,
+                endDate = tomorrow,
+                days = 1,
+                chargeYear = chargeThisYear
+            ))
 
             doReturn(listOf(createVacationResponseDTO))
-                .whenever(privateHolidayPeriodUpdateUseCase).update(eq(requestVacationDto), any())
+                .whenever(privateHolidayPeriodUpdateUseCase).update(eq(requestVacation.toDto()), any())
 
-            val updateVacationResponse = vacationController.updatePrivateHolidayPeriod(requestVacationDto, ENGLISH)
+            val updateVacationResponse = vacationController.updatePrivateHolidayPeriod(requestVacation, ENGLISH)
 
-            assertEquals(listOf(createVacationResponseDTO), updateVacationResponse)
+            assertEquals(createVacationResponse, updateVacationResponse)
 
         }
 
@@ -245,11 +240,11 @@ internal class VacationControllerTest {
 
             doThrow(DateRangeException(startDate = tomorrow, endDate = today))
                 .whenever(privateHolidayPeriodUpdateUseCase)
-                .update(eq(createVacationUpdateDTO(startDate = tomorrow, endDate = today)), any())
+                .update(eq(createVacationUpdate(startDate = tomorrow, endDate = today).toDto()), any())
 
             assertThrows<DateRangeException> {
                 vacationController.updatePrivateHolidayPeriod(
-                    createVacationUpdateDTO(startDate = tomorrow, endDate = today),
+                    createVacationUpdate(startDate = tomorrow, endDate = today),
                     ENGLISH
                 )
             }
@@ -260,11 +255,11 @@ internal class VacationControllerTest {
 
             doThrow(UserPermissionException("You don't have permission to access the resource"))
                 .whenever(privateHolidayPeriodUpdateUseCase)
-                .update(eq(createVacationUpdateDTO(today, tomorrow)), any())
+                .update(eq(createVacationUpdate(today, tomorrow).toDto()), any())
 
             assertThrows<UserPermissionException> {
                 vacationController.updatePrivateHolidayPeriod(
-                    createVacationUpdateDTO(today, tomorrow),
+                    createVacationUpdate(today, tomorrow),
                     ENGLISH
                 )
             }
@@ -276,11 +271,11 @@ internal class VacationControllerTest {
 
             doThrow(VacationAcceptedStateException("The vacation period is accepted"))
                 .whenever(privateHolidayPeriodUpdateUseCase)
-                .update(eq(createVacationUpdateDTO(today, tomorrow)), any())
+                .update(eq(createVacationUpdate(today, tomorrow).toDto()), any())
 
             assertThrows<VacationAcceptedStateException> {
                 vacationController.updatePrivateHolidayPeriod(
-                    createVacationUpdateDTO(today, tomorrow),
+                    createVacationUpdate(today, tomorrow),
                     ENGLISH
                 )
             }
@@ -294,11 +289,11 @@ internal class VacationControllerTest {
 
             doThrow(VacationNotFoundException(id))
                 .whenever(privateHolidayPeriodUpdateUseCase)
-                .update(eq(createVacationUpdateDTO(id, today, tomorrow)), any())
+                .update(eq(createVacationUpdate(id, today, tomorrow).toDto()), any())
 
             assertThrows<VacationNotFoundException> {
                 vacationController.updatePrivateHolidayPeriod(
-                    createVacationUpdateDTO(today, tomorrow),
+                    createVacationUpdate(today, tomorrow),
                     ENGLISH
                 )
             }
@@ -309,11 +304,11 @@ internal class VacationControllerTest {
 
             doThrow(VacationRangeClosedException())
                 .whenever(privateHolidayPeriodUpdateUseCase)
-                .update(eq(createVacationUpdateDTO(today.minusYears(2), tomorrow.minusYears(2))), any())
+                .update(eq(createVacationUpdate(today.minusYears(2), tomorrow.minusYears(2)).toDto()), any())
 
             assertThrows<VacationRangeClosedException> {
                 vacationController.updatePrivateHolidayPeriod(
-                    createVacationUpdateDTO(today.minusYears(2), tomorrow.minusYears(2)),
+                    createVacationUpdate(today.minusYears(2), tomorrow.minusYears(2)),
                     ENGLISH
                 )
             }
@@ -325,11 +320,11 @@ internal class VacationControllerTest {
 
             doThrow(VacationBeforeHiringDateException())
                 .whenever(privateHolidayPeriodUpdateUseCase)
-                .update(eq(createVacationUpdateDTO(today, tomorrow)), any())
+                .update(eq(createVacationUpdate(today, tomorrow).toDto()), any())
 
             assertThrows<VacationBeforeHiringDateException> {
                 vacationController.updatePrivateHolidayPeriod(
-                    createVacationUpdateDTO(today, tomorrow),
+                    createVacationUpdate(today, tomorrow),
                     ENGLISH
                 )
             }
@@ -340,11 +335,11 @@ internal class VacationControllerTest {
 
             doThrow(VacationRequestOverlapsException())
                 .whenever(privateHolidayPeriodUpdateUseCase)
-                .update(eq(createVacationUpdateDTO(today, tomorrow)), any())
+                .update(eq(createVacationUpdate(today, tomorrow).toDto()), any())
 
             assertThrows<VacationRequestOverlapsException> {
                 vacationController.updatePrivateHolidayPeriod(
-                    createVacationUpdateDTO(today, tomorrow),
+                    createVacationUpdate(today, tomorrow),
                     ENGLISH
                 )
             }
@@ -356,11 +351,11 @@ internal class VacationControllerTest {
 
             doThrow(VacationRequestEmptyException())
                 .whenever(privateHolidayPeriodUpdateUseCase)
-                .update(eq(createVacationUpdateDTO(today, today)), any())
+                .update(eq(createVacationUpdate(today, today).toDto()), any())
 
             assertThrows<VacationRequestEmptyException> {
                 vacationController.updatePrivateHolidayPeriod(
-                    createVacationUpdateDTO(today, today),
+                    createVacationUpdate(today, today),
                     ENGLISH
                 )
             }

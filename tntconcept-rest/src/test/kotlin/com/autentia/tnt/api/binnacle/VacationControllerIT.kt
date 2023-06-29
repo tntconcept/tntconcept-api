@@ -47,9 +47,6 @@ internal class VacationControllerIT {
     @get:MockBean(PrivateHolidayDetailsUseCase::class)
     internal val privateHolidayDetailsUseCase = mock<PrivateHolidayDetailsUseCase>()
 
-    @get:MockBean(PrivateHolidaysPeriodDaysUseCase::class)
-    internal val privateHolidaysPeriodDaysUseCase = mock<PrivateHolidaysPeriodDaysUseCase>()
-
     @get:MockBean(PrivateHolidayPeriodCreateUseCase::class)
     internal val privateHolidayPeriodCreateUseCase = mock<PrivateHolidayPeriodCreateUseCase>()
 
@@ -97,33 +94,6 @@ internal class VacationControllerIT {
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
                 GET("/api/vacations?chargeYear=$invalidChargeYear")
-            )
-        }
-
-        assertEquals(BAD_REQUEST, ex.status)
-    }
-
-    @Test
-    fun `get vacations days between two dates`() {
-        val startDate = LocalDate.of(2020, 1, 10)
-        val endDate = LocalDate.of(2020, 1, 20)
-        doReturn(3).whenever(privateHolidaysPeriodDaysUseCase).get(startDate, endDate)
-
-        val response = client.exchangeObject<Int>(
-            GET("/api/vacations/days?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}")
-        )
-
-        assertEquals(OK, response.status)
-        assertEquals(3, response.body.get())
-    }
-
-    @Test
-    fun `fail if dates are malformed`() {
-        val malformedDate = "20-01-xxx"
-
-        val ex = assertThrows<HttpClientResponseException> {
-            client.exchangeObject<Any>(
-                GET("/api/vacations/days?startDate=10-01-2020&endDate=$malformedDate")
             )
         }
 
