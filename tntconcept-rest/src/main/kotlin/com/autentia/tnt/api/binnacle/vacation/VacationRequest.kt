@@ -6,9 +6,9 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
 data class VacationRequest(
-    val id: Long,
-    val observations: String,
-    val description: String,
+    var id: Long? = null,
+    var observations: String? = null,
+    var description: String? = null,
     val state: VacationState,
 
     @JsonFormat(pattern = "yyyy-MM-dd")
@@ -24,9 +24,9 @@ data class VacationRequest(
     companion object {
         fun from(vacationDTO: VacationDTO) =
             VacationRequest(
-                vacationDTO.id!!,
-                vacationDTO.observations!!,
-                vacationDTO.description!!,
+                vacationDTO.id,
+                vacationDTO.observations,
+                vacationDTO.description,
                 vacationDTO.state,
                 vacationDTO.startDate,
                 vacationDTO.endDate,
