@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.*
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -17,7 +18,7 @@ import java.time.Month
 @Singleton
 class UserTimeSummaryUseCase internal constructor(
     private val userService: UserService,
-    private val holidayService: HolidayService,
+    private val holidayRepository: HolidayRepository,
     private val annualWorkSummaryService: AnnualWorkSummaryService,
     @param:Named("Internal") private val activityRepository: ActivityRepository,
     private val vacationService: VacationService,
@@ -37,8 +38,7 @@ class UserTimeSummaryUseCase internal constructor(
 
 
         val annualWorkSummary = annualWorkSummaryService.getAnnualWorkSummary(user, startYearDate.year - 1)
-        val holidays: List<Holiday> = holidayService.findAllBetweenDate(startYearDate, endYearDate)
-        val holidaysDates = holidays.map { it.date.toLocalDate() }
+        val holidaysDates = getHolidaysDatesOfPeriod(startYearDate, endYearDate)
 
         val vacationsRequestedThisYear = vacationService.getVacationsBetweenDates(startYearDate, endYearDate, user)
             .filter { it.isRequestedVacation() }
@@ -68,6 +68,16 @@ class UserTimeSummaryUseCase internal constructor(
             activities,
             previousActivities
         )
+    }
+
+    private fun getHolidaysDatesOfPeriod(
+        startYearDate: LocalDate,
+        endYearDate: LocalDate
+    ): List<LocalDate> {
+        val startDateMinHour = startYearDate.atTime(LocalTime.MIN)
+        val endDateMaxHour = endYearDate.atTime(23, 59, 59)
+        val holidays = holidayRepository.findAllByDateBetween(startDateMinHour, endDateMaxHour)
+        return holidays.map { it.date.toLocalDate() }
     }
 
     private fun getUserActivitiesBetweenDates(startDate: LocalDate, endDate: LocalDate, userId: Long): List<com.autentia.tnt.binnacle.core.domain.Activity> {
