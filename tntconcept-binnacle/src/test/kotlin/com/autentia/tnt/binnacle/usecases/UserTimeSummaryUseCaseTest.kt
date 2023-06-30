@@ -16,7 +16,6 @@ import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -31,12 +30,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.Month
-import java.util.*
 import kotlin.time.Duration
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 internal class UserTimeSummaryUseCaseTest {
-    private val userRepository = mock<UserRepository>()
+    private val userService = mock<UserService>()
     private val holidayService = mock<HolidayService>()
     private val annualWorkSummaryService = mock<AnnualWorkSummaryService>()
     private val activityRepository = mock<ActivityRepository>()
@@ -45,7 +43,7 @@ internal class UserTimeSummaryUseCaseTest {
     private val workTimeService = mock<TimeSummaryService>()
 
     private val userWorkTimeUseCase = UserTimeSummaryUseCase(
-        userRepository,
+        userService,
         holidayService,
         annualWorkSummaryService,
         activityRepository,
@@ -58,7 +56,7 @@ internal class UserTimeSummaryUseCaseTest {
     @Test
     fun `given date should return working time`() {
         val userId = 1L
-        whenever(userRepository.findByAuthenticatedUser()).thenReturn(Optional.of(USER))
+        whenever(userService.getAuthenticatedUser()).thenReturn(USER)
         whenever(annualWorkSummaryService.getAnnualWorkSummary(USER, TODAY_LAST_YEAR.minusYears(1).year)).thenReturn(
             annualWorkSummary
         )
@@ -104,7 +102,7 @@ internal class UserTimeSummaryUseCaseTest {
         val actualWorkingTime = userWorkTimeUseCase.getTimeSummary(TODAY_LAST_YEAR)
 
         //Then
-        verify(userRepository).findByAuthenticatedUser()
+        verify(userService).getAuthenticatedUser()
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), eq(USER))

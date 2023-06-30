@@ -7,7 +7,6 @@ import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.*
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -17,18 +16,17 @@ import java.time.Month
 
 @Singleton
 class UserTimeSummaryUseCase internal constructor(
-    private val userRepository: UserRepository,
+    private val userService: UserService,
     private val holidayService: HolidayService,
     private val annualWorkSummaryService: AnnualWorkSummaryService,
     @param:Named("Internal") private val activityRepository: ActivityRepository,
     private val vacationService: VacationService,
     private val myVacationsDetailService: MyVacationsDetailService,
     private val timeSummaryService: TimeSummaryService,
-    private val timeSummaryConverter: TimeSummaryConverter
+    private val timeSummaryConverter: TimeSummaryConverter,
 ) {
     fun getTimeSummary(date: LocalDate): TimeSummaryDTO {
-        val user: User = userRepository.findByAuthenticatedUser()
-            .orElseThrow { IllegalStateException("There isn't authenticated user") }
+        val user: User = userService.getAuthenticatedUser()
         val timeSummary = getTimeSummary(date, user)
         return timeSummaryConverter.toTimeSummaryDTO(timeSummary)
     }
