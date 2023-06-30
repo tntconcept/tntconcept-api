@@ -184,7 +184,6 @@ internal class PrivateHolidayPeriodUpdateUseCaseTest {
         private val REQUEST_VACATION_DTO = createVacationUpdateDTO(TODAY, AFTER_TOMORROW)
         private val vacationAccepted = createVacationUpdateDTO(TODAY, AFTER_TOMORROW)
         private val invalidVacationRange = createVacationUpdateDTO(AFTER_TOMORROW, TODAY)
-        private val notLoggedUserVacation = createVacationUpdateDTO(TODAY, AFTER_TOMORROW)
         private val vacationForRangeClosed = createVacationUpdateDTO(TODAY_TWO_YEARS_AGO, TOMORROW_TWO_YEARS_AGO)
         private val vacationRequestBeforeHiringDate =
             createVacationUpdateDTO(USER.hiringDate.minusDays(3), USER.hiringDate.minusDays(2))
