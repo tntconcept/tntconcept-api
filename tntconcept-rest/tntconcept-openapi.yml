@@ -374,7 +374,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrganizationResponseDTO'
+                  $ref: '#/components/schemas/OrganizationResponse'
   /api/organizations/{id}/projects:
     get:
       summary: Retrieves a list of imputable projects from an organization ID
@@ -394,7 +394,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectResponseDTO'
+                  $ref: '#/components/schemas/ProjectResponse'
   /api/project:
     get:
       summary: Gets projects with specified filters
@@ -1254,6 +1254,17 @@ components:
           type: number
     Object:
       type: object
+    OrganizationResponse:
+      required:
+      - id
+      - name
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
     OrganizationResponseDTO:
       required:
       - id
