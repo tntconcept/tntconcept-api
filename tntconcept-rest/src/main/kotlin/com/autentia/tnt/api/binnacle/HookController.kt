@@ -1,6 +1,5 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
@@ -23,7 +22,6 @@ internal class HookController(
     private val imputableOrganizationsUseCase: ImputableOrganizationsUseCase,
     private val imputableProjectsByOrganizationIdUseCase: ImputableProjectsByOrganizationIdUseCase,
     private val projectRolesByProjectIdUseCase: ProjectRolesByProjectIdUseCase,
-    private val projectResponseConverter: ProjectResponseConverter,
 ) {
     @Post("/activity")
     @Operation(summary = "Creates a new activity.")
@@ -43,8 +41,7 @@ internal class HookController(
     @Operation(summary = "Retrieves a list of imputable projects from an organization ID")
     @Get("/organization/{id}/project")
     fun getOrganizationsProjects(id: Long): List<ProjectResponseDTO> {
-        val projectList = imputableProjectsByOrganizationIdUseCase.get(id)
-        return projectList.map { projectResponseConverter.toProjectResponseDTO(it) }
+        return imputableProjectsByOrganizationIdUseCase.get(id)
     }
 
     @Operation(summary = "Retrieves a list of project roles from a project ID")

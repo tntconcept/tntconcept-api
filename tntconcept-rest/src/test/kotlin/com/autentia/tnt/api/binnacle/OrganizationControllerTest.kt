@@ -1,7 +1,7 @@
 package com.autentia.tnt.api.binnacle
 
-import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
-import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.api.binnacle.organization.OrganizationController
+import com.autentia.tnt.api.binnacle.project.ProjectResponse
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.usecases.ImputableOrganizationsUseCase
@@ -21,7 +21,6 @@ internal class OrganizationControllerTest {
     private val organizationController = OrganizationController(
         imputableOrganizationsUseCase,
         imputableProjectsByOrganizationIdUseCase,
-        ProjectResponseConverter()
     )
 
     @Test
@@ -40,13 +39,13 @@ internal class OrganizationControllerTest {
     @Test
     fun `return all projects by organization`() {
         val organization = createOrganization()
-        val project = Project(1, "Dummy Project", true, true, LocalDate.now(), null, null, organization, listOf())
+        val project = ProjectResponseDTO(1, "Dummy Project", true, true, 1L, startDate = LocalDate.now())
 
         doReturn(listOf(project)).whenever(imputableProjectsByOrganizationIdUseCase).get(organization.id)
 
         val result = organizationController.getOrganizationsProjects(organization.id)
 
-        val expectedProjectDTO = ProjectResponseDTO(1, "Dummy Project", true, true, 1L, startDate = LocalDate.now())
+        val expectedProjectDTO = ProjectResponse(1, "Dummy Project", true, true, 1L, startDate = LocalDate.now())
         assertEquals(listOf(expectedProjectDTO), result)
     }
 
