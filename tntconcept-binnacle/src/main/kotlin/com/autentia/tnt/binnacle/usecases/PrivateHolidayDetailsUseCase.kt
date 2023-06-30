@@ -3,8 +3,8 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDetailsDTO
-import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.MyVacationsDetailService
+import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
@@ -14,7 +14,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class PrivateHolidayDetailsUseCase internal constructor(
-    private val userRepository: UserRepository,
+    private val userService: UserService,
     private val securityService: SecurityService,
     private val myVacationsDetailService: MyVacationsDetailService,
 ) {
@@ -26,7 +26,7 @@ class PrivateHolidayDetailsUseCase internal constructor(
         vacationsByChargeYear: List<VacationDTO>
     ): VacationDetailsDTO {
         val authentication = securityService.checkAuthentication()
-        val user = userRepository.find(authentication.id()) ?: error("User is not found")
+        val user = userService.getById(authentication.id())
 
         val correspondingVacations = myVacationsDetailService.getCorrespondingVacationDaysSinceHiringDate(
             user,

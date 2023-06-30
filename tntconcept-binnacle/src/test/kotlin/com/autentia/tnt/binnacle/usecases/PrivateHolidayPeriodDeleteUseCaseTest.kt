@@ -4,14 +4,11 @@ import com.autentia.tnt.binnacle.exception.BinnacleException
 import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
 import com.autentia.tnt.binnacle.exception.VacationNotFoundException
 import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.VacationService
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.Failure
+import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.*
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.Success
-import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD
-import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND
-import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_RANGE_CLOSED
 import com.autentia.tnt.binnacle.validators.VacationValidator
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -32,7 +29,6 @@ import java.util.*
 internal class PrivateHolidayPeriodDeleteUseCaseTest {
 
     private val vacationService = mock<VacationService>()
-    private val userService = mock<UserService>()
     private val securityService = mock<SecurityService>()
     private val vacationValidator = mock<VacationValidator>()
 

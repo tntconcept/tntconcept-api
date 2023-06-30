@@ -5,7 +5,7 @@ import com.autentia.tnt.binnacle.converters.RequestVacationConverter
 import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import com.autentia.tnt.binnacle.exception.*
-import com.autentia.tnt.binnacle.repositories.UserRepository
+import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.VacationMailService
 import com.autentia.tnt.binnacle.services.VacationService
 import com.autentia.tnt.binnacle.validators.UpdateVacationValidation
@@ -16,7 +16,7 @@ import javax.transaction.Transactional
 
 @Singleton
 class PrivateHolidayPeriodUpdateUseCase internal constructor(
-    private val userRepository: UserRepository,
+    private val userService: UserService,
     private val vacationMailService: VacationMailService,
     private val vacationValidator: VacationValidator,
     private val createVacationResponseConverter: CreateVacationResponseConverter,
@@ -30,8 +30,7 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
 
         val requestVacation = requestVacationConverter.toRequestVacation(requestVacationDTO)
 
-        val user = userRepository.findByAuthenticatedUser()
-            .orElseThrow { IllegalStateException("There isn't authenticated user") }
+        val user = userService.getAuthenticatedUser()
 
         when (val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)) {
             is UpdateVacationValidation.Success -> {

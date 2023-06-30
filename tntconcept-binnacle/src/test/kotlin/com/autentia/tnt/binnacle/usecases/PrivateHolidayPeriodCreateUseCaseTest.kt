@@ -7,7 +7,7 @@ import com.autentia.tnt.binnacle.converters.RequestVacationConverter
 import com.autentia.tnt.binnacle.core.domain.CreateVacationResponse
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import com.autentia.tnt.binnacle.exception.*
-import com.autentia.tnt.binnacle.repositories.UserRepository
+import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.VacationMailService
 import com.autentia.tnt.binnacle.services.VacationService
 import com.autentia.tnt.binnacle.validators.CreateVacationValidation
@@ -31,14 +31,14 @@ import java.util.Locale.ENGLISH
 internal class PrivateHolidayPeriodCreateUseCaseTest {
 
     private val vacationService = mock<VacationService>()
-    private val userRepository = mock<UserRepository>()
+    private val userService = mock<UserService>()
     private val vacationValidator = mock<VacationValidator>()
     private val vacationMailService = mock<VacationMailService>()
 
     private val privateHolidayPeriodCreateUseCase =
         PrivateHolidayPeriodCreateUseCase(
             vacationService,
-            userRepository,
+            userService,
             vacationValidator,
             CreateVacationResponseConverter(),
             RequestVacationConverter(),
@@ -47,7 +47,7 @@ internal class PrivateHolidayPeriodCreateUseCaseTest {
 
     @Test
     fun `create new vacation period sending the email`() {
-        doReturn(Optional.of(USER)).whenever(userRepository).findByAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedUser()
 
         doReturn(Success).whenever(vacationValidator).canCreateVacationPeriod(any(), eq(USER))
 
@@ -67,8 +67,8 @@ internal class PrivateHolidayPeriodCreateUseCaseTest {
     @Test
     fun `FAIL when more than 5 days of NEXT year's vacation are requested for the current year`() {
 
-        doReturn(Optional.of(USER)).whenever(userRepository)
-            .findByAuthenticatedUser()
+        doReturn(USER).whenever(userService)
+            .getAuthenticatedUser()
         doReturn(Success).whenever(vacationValidator).canCreateVacationPeriod(any(), eq(USER))
 
         doThrow(MaxNextYearRequestVacationException("Invalid vacation request for more than 5 days for next year"))
@@ -127,7 +127,7 @@ internal class PrivateHolidayPeriodCreateUseCaseTest {
         vacationDTO: RequestVacationDTO,
         expectedExceptionMessage: String,
     ) {
-        doReturn(Optional.of(USER)).whenever(userRepository).findByAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedUser()
         doReturn(failureReason).whenever(vacationValidator).canCreateVacationPeriod(any(), eq(USER))
 
         val exception = assertThrows<BinnacleException> {

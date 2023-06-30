@@ -9,7 +9,7 @@ import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import com.autentia.tnt.binnacle.exception.*
-import com.autentia.tnt.binnacle.repositories.UserRepository
+import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.VacationMailService
 import com.autentia.tnt.binnacle.services.VacationService
 import com.autentia.tnt.binnacle.validators.UpdateVacationValidation
@@ -39,13 +39,13 @@ import java.util.*
 internal class PrivateHolidayPeriodUpdateUseCaseTest {
 
     private val vacationService = mock<VacationService>()
-    private val userRepository = mock<UserRepository>()
+    private val userService = mock<UserService>()
     private val vacationMailService = mock<VacationMailService>()
     private val vacationValidator = mock<VacationValidator>()
 
     private val privateHolidayPeriodUpdateUseCase =
         PrivateHolidayPeriodUpdateUseCase(
-            userRepository,
+            userService,
             vacationMailService,
             vacationValidator,
             CreateVacationResponseConverter(),
@@ -55,7 +55,7 @@ internal class PrivateHolidayPeriodUpdateUseCaseTest {
 
     @Test
     fun `update an existing vacation period`() {
-        doReturn(Optional.of(USER)).whenever(userRepository).findByAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedUser()
 
         doReturn(Success(vacationToUpdate)).whenever(vacationValidator).canUpdateVacationPeriod(any(), eq(USER))
 
@@ -78,7 +78,7 @@ internal class PrivateHolidayPeriodUpdateUseCaseTest {
 
     @Test
     fun `FAIL when the vacation period to update is not found in the database`() {
-        doReturn(Optional.of(USER)).whenever(userRepository).findByAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedUser()
 
         doReturn(Failure(VACATION_NOT_FOUND)).whenever(vacationValidator).canUpdateVacationPeriod(any(), eq(USER))
 
@@ -143,7 +143,7 @@ internal class PrivateHolidayPeriodUpdateUseCaseTest {
         vacationDTO: RequestVacationDTO,
         expectedExceptionMessage: String,
     ) {
-        doReturn(Optional.of(USER)).whenever(userRepository).findByAuthenticatedUser()
+        doReturn(USER).whenever(userService).getAuthenticatedUser()
         doReturn(failureReason).whenever(vacationValidator).canUpdateVacationPeriod(any(), eq(USER))
 
         val exception = assertThrows<BinnacleException> {

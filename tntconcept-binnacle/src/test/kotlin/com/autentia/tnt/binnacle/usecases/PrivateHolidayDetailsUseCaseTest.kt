@@ -4,8 +4,8 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDetailsDTO
-import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.MyVacationsDetailService
+import com.autentia.tnt.binnacle.services.UserService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,14 +21,14 @@ import java.util.*
 internal class PrivateHolidayDetailsUseCaseTest {
 
     private val myHolidayDetailService = mock<MyVacationsDetailService>()
-    private val userRepository = mock<UserRepository>()
+    private val userService = mock<UserService>()
     private val securityService = mock<SecurityService>()
 
-    private val privateHolidayDetailsUseCase = PrivateHolidayDetailsUseCase(userRepository, securityService, myHolidayDetailService)
+    private val privateHolidayDetailsUseCase = PrivateHolidayDetailsUseCase(userService, securityService, myHolidayDetailService)
     @Test
     fun `get user vacation details`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
-        whenever(userRepository.find(any())).thenReturn(USER)
+        whenever(userService.getById(any())).thenReturn(USER)
 
         doReturn(22).whenever(myHolidayDetailService).getCorrespondingVacationDaysSinceHiringDate(USER, CHARGE_YEAR)
         doReturn(23).whenever(myHolidayDetailService).getCorrespondingVacationDaysSinceHiringDate(USER, YEAR_WHEN_AGREEMENT_CHANGE)
