@@ -15,6 +15,7 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,7 +39,7 @@ internal class UserTimeSummaryUseCaseTest {
     private val userRepository = mock<UserRepository>()
     private val holidayService = mock<HolidayService>()
     private val annualWorkSummaryService = mock<AnnualWorkSummaryService>()
-    private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
     private val vacationService = mock<VacationService>()
     private val myVacationsDetailService = mock<MyVacationsDetailService>()
     private val workTimeService = mock<TimeSummaryService>()
@@ -47,7 +48,7 @@ internal class UserTimeSummaryUseCaseTest {
         userRepository,
         holidayService,
         annualWorkSummaryService,
-        activityService,
+        activityRepository,
         vacationService,
         myVacationsDetailService,
         workTimeService,
@@ -70,11 +71,9 @@ internal class UserTimeSummaryUseCaseTest {
         ).thenReturn(vacations)
         vacations.add(vacation)
         whenever(
-            activityService.getUserActivitiesBetweenDates(
-                DateInterval.of(
-                    FIRST_DAY_LAST_YEAR,
-                    LAST_DAY_LAST_YEAR
-                ),
+            activityRepository.findByUserId(
+                    FIRST_DAY_LAST_YEAR.atTime(LocalTime.MIN),
+                    LAST_DAY_LAST_YEAR.atTime(LocalTime.MAX),
                 userId
             )
         ).thenReturn(listOf(LAST_YEAR_ACTIVITY))
@@ -109,7 +108,7 @@ internal class UserTimeSummaryUseCaseTest {
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
         verify(holidayService).findAllBetweenDate(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), eq(USER))
-        verify(activityService, times(2)).getUserActivitiesBetweenDates(any(), any())
+        verify(activityRepository, times(2)).findByUserId(any(), any(), any())
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)
     }
