@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
@@ -24,7 +23,7 @@ internal class ActivityServiceTest {
 
 
     private val sut = ActivityService(
-        activityRepository, internalActivityRepository
+        activityRepository
     )
 
     @AfterEach
@@ -35,23 +34,6 @@ internal class ActivityServiceTest {
     @BeforeEach
     fun setMocks() {
         whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
-    }
-
-    @Test
-    fun `get activities between start and end date for user`() {
-        val startDate = LocalDate.of(2019, 1, 1)
-        val endDate = LocalDate.of(2019, 1, 31)
-        val userId = 1L
-
-        whenever(
-            internalActivityRepository.findByUserId(
-                startDate.atTime(LocalTime.MIN), endDate.atTime(LocalTime.MAX), userId
-            )
-        ).thenReturn(listOf(activityWithoutEvidenceSaved))
-
-        val actual = sut.getUserActivitiesBetweenDates(DateInterval.of(startDate, endDate), userId)
-
-        assertEquals(listOf(activityWithoutEvidenceSaved), actual)
     }
 
     @Test
