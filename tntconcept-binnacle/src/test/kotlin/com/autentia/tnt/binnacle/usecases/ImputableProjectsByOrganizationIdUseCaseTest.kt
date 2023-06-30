@@ -1,6 +1,8 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -12,14 +14,14 @@ import java.time.LocalDate
 internal class ImputableProjectsByOrganizationIdUseCaseTest {
 
     private val projectRepository = mock<ProjectRepository>()
-    private val imputableProjectsByOrganizationIdUseCase = ImputableProjectsByOrganizationIdUseCase(projectRepository)
+    private val imputableProjectsByOrganizationIdUseCase = ImputableProjectsByOrganizationIdUseCase(projectRepository, ProjectResponseConverter())
 
     @Test
     fun `return all IMPUTABLE projects by organization id`() {
 
         doReturn(PROJECTS).whenever(projectRepository).findAllByOrganizationId(ORGANIZATION_ID)
 
-        assertEquals(PROJECTS.filter { it.open }, imputableProjectsByOrganizationIdUseCase.get(ORGANIZATION_ID))
+        assertEquals(listOf(PROJECT_DTO), imputableProjectsByOrganizationIdUseCase.get(ORGANIZATION_ID))
     }
 
     private companion object {
@@ -76,6 +78,8 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
         )
 
         private val PROJECTS = listOf(projectClosed, projectOpen)
+
+        private val PROJECT_DTO = ProjectResponseDTO(1, "Project is Open", true, false, 1L, startDate = LocalDate.now())
     }
 }
 
