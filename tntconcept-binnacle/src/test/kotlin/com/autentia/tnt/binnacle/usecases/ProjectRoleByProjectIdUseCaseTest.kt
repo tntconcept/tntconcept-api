@@ -24,7 +24,7 @@ import java.util.*
 internal class ProjectRoleByProjectIdUseCaseTest {
 
     private val activityRepository: ActivityRepository = mock()
-    private val activityService = ActivityService(activityRepository, mock())
+    private val activityService = ActivityService(activityRepository)
     private val holidayService = mock<HolidayService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val calendarFactory = CalendarFactory(holidayService)

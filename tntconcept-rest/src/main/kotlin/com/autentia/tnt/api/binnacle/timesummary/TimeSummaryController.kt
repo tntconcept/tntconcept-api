@@ -1,6 +1,5 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.timesummary
 
-import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
 import com.autentia.tnt.binnacle.usecases.UserTimeSummaryUseCase
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -14,7 +13,7 @@ internal class TimeSummaryController(
 
     @Operation(summary = "Retrieves working time from a given date")
     @Get
-    fun getTimeSummary(date: LocalDate): TimeSummaryDTO =
-        userWorkTimeUseCase.getTimeSummary(date)
+    fun getTimeSummary(date: LocalDate): TimeSummaryResponse =
+        TimeSummaryResponse.from(userWorkTimeUseCase.getTimeSummary(date))
 
 }

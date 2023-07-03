@@ -15,6 +15,8 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -34,22 +36,22 @@ import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 internal class UserTimeSummaryUseCaseTest {
     private val userService = mock<UserService>()
-    private val holidayService = mock<HolidayService>()
+    private val holidayRepository = mock<HolidayRepository>()
     private val annualWorkSummaryService = mock<AnnualWorkSummaryService>()
-    private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
     private val vacationService = mock<VacationService>()
     private val myVacationsDetailService = mock<MyVacationsDetailService>()
     private val workTimeService = mock<TimeSummaryService>()
 
     private val userWorkTimeUseCase = UserTimeSummaryUseCase(
         userService,
-        holidayService,
+        holidayRepository,
         annualWorkSummaryService,
-        activityService,
+        activityRepository,
         vacationService,
         myVacationsDetailService,
         workTimeService,
-        TimeSummaryConverter()
+        TimeSummaryConverter(),
     )
 
     @Test
@@ -59,7 +61,12 @@ internal class UserTimeSummaryUseCaseTest {
         whenever(annualWorkSummaryService.getAnnualWorkSummary(USER, TODAY_LAST_YEAR.minusYears(1).year)).thenReturn(
             annualWorkSummary
         )
-        whenever(holidayService.findAllBetweenDate(FIRST_DAY_LAST_YEAR, LAST_DAY_LAST_YEAR)).thenReturn(HOLIDAYS)
+        whenever(
+            holidayRepository.findAllByDateBetween(
+                FIRST_DAY_LAST_YEAR.atTime(LocalTime.MIN),
+                LAST_DAY_LAST_YEAR.atTime(23, 59, 59)
+            )
+        ).thenReturn(HOLIDAYS)
         whenever(
             vacationService.getVacationsBetweenDates(
                 FIRST_DAY_LAST_YEAR,
@@ -68,11 +75,9 @@ internal class UserTimeSummaryUseCaseTest {
         ).thenReturn(vacations)
         vacations.add(vacation)
         whenever(
-            activityService.getUserActivitiesBetweenDates(
-                DateInterval.of(
-                    FIRST_DAY_LAST_YEAR,
-                    LAST_DAY_LAST_YEAR
-                ),
+            activityRepository.findByUserId(
+                    FIRST_DAY_LAST_YEAR.atTime(LocalTime.MIN),
+                    LAST_DAY_LAST_YEAR.atTime(LocalTime.MAX),
                 userId
             )
         ).thenReturn(listOf(LAST_YEAR_ACTIVITY))
@@ -105,9 +110,9 @@ internal class UserTimeSummaryUseCaseTest {
         //Then
         verify(userService).getAuthenticatedUser()
         verify(annualWorkSummaryService).getAnnualWorkSummary(any(), any())
-        verify(holidayService).findAllBetweenDate(any(), any())
+        verify(holidayRepository).findAllByDateBetween(any(), any())
         verify(vacationService).getVacationsBetweenDates(any(), any(), eq(USER))
-        verify(activityService, times(2)).getUserActivitiesBetweenDates(any(), any())
+        verify(activityRepository, times(2)).findByUserId(any(), any(), any())
         verify(workTimeService).getTimeSummaryBalance(any(), any(), any(), any(), any(), any(), any(), any(), any())
         assertEquals(expectedTimeSummaryDTO, actualWorkingTime)
     }

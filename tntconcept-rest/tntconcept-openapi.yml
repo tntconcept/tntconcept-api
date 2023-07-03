@@ -581,7 +581,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeSummaryDTO'
+                $ref: '#/components/schemas/TimeSummaryResponse'
   /api/user:
     get:
       summary: Retrieves the list of active users
@@ -1030,7 +1030,7 @@ components:
           format: date
         worked:
           type: number
-    AnnualBalanceDTO:
+    AnnualBalanceResponse:
       required:
       - balance
       - notRequestedVacations
@@ -1237,7 +1237,7 @@ components:
           type: string
         displayName:
           type: string
-    MonthlyBalanceDTO:
+    MonthlyBalanceResponse:
       required:
       - balance
       - recommended
@@ -1258,10 +1258,10 @@ components:
         roles:
           type: array
           items:
-            $ref: '#/components/schemas/MonthlyRolesDTO'
+            $ref: '#/components/schemas/MonthlyRolesResponse'
         vacations:
-          $ref: '#/components/schemas/VacationsDTO'
-    MonthlyRolesDTO:
+          $ref: '#/components/schemas/VacationsResponse'
+    MonthlyRolesResponse:
       required:
       - hours
       - id
@@ -1296,7 +1296,7 @@ components:
           format: int64
         name:
           type: string
-    PreviousAnnualBalanceDTO:
+    PreviousAnnualBalanceResponse:
       required:
       - balance
       - target
@@ -1587,18 +1587,18 @@ components:
         end:
           type: string
           format: date-time
-    TimeSummaryDTO:
+    TimeSummaryResponse:
       required:
       - months
       - year
       type: object
       properties:
         year:
-          $ref: '#/components/schemas/YearAnnualBalanceDTO'
+          $ref: '#/components/schemas/YearAnnualBalanceResponse'
         months:
           type: array
           items:
-            $ref: '#/components/schemas/MonthlyBalanceDTO'
+            $ref: '#/components/schemas/MonthlyBalanceResponse'
     TimeUnit:
       type: string
       enum:
@@ -1765,7 +1765,7 @@ components:
       - ACCEPT
       - REJECT
       - CANCELLED
-    VacationsDTO:
+    VacationsResponse:
       required:
       - charged
       - enjoyed
@@ -1775,13 +1775,13 @@ components:
           type: number
         enjoyed:
           type: number
-    YearAnnualBalanceDTO:
+    YearAnnualBalanceResponse:
       required:
       - current
       - previous
       type: object
       properties:
         previous:
-          $ref: '#/components/schemas/PreviousAnnualBalanceDTO'
+          $ref: '#/components/schemas/PreviousAnnualBalanceResponse'
         current:
-          $ref: '#/components/schemas/AnnualBalanceDTO'
+          $ref: '#/components/schemas/AnnualBalanceResponse'

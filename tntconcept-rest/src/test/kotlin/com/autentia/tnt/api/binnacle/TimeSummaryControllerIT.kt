@@ -1,5 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.api.binnacle.timesummary.TimeSummaryResponse
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.usecases.UserTimeSummaryUseCase
 import io.micronaut.http.HttpRequest.GET
@@ -56,12 +57,12 @@ internal class TimeSummaryControllerIT {
         )
         doReturn(expectedTimeSummary).whenever(userTimeSummaryUseCase).getTimeSummary(date)
 
-        val response = client.exchangeObject<TimeSummaryDTO>(
+        val response = client.exchangeObject<TimeSummaryResponse>(
             GET("/api/time-summary?date=${date.toJson()}")
         )
 
         assertEquals(HttpStatus.OK.code, response.status.code)
-        assertEquals(expectedTimeSummary, response.body.get())
+        assertEquals(TimeSummaryResponse.from(expectedTimeSummary), response.body.get())
     }
 
     @Test
