@@ -6,29 +6,23 @@ import com.autentia.tnt.binnacle.entities.dto.VacationDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDetailsDTO
 import com.autentia.tnt.binnacle.services.MyVacationsDetailService
 import com.autentia.tnt.binnacle.services.UserService
-import io.micronaut.security.authentication.ClientAuthentication
-import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.Month
-import java.util.*
 
 internal class PrivateHolidayDetailsUseCaseTest {
 
     private val myHolidayDetailService = mock<MyVacationsDetailService>()
     private val userService = mock<UserService>()
-    private val securityService = mock<SecurityService>()
 
-    private val privateHolidayDetailsUseCase = PrivateHolidayDetailsUseCase(userService, securityService, myHolidayDetailService)
+    private val privateHolidayDetailsUseCase = PrivateHolidayDetailsUseCase(userService, myHolidayDetailService)
     @Test
     fun `get user vacation details`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
-        whenever(userService.getById(any())).thenReturn(USER)
+        whenever(userService.getAuthenticatedUser()).thenReturn(USER)
 
         doReturn(22).whenever(myHolidayDetailService).getCorrespondingVacationDaysSinceHiringDate(USER, CHARGE_YEAR)
         doReturn(23).whenever(myHolidayDetailService).getCorrespondingVacationDaysSinceHiringDate(USER, YEAR_WHEN_AGREEMENT_CHANGE)
@@ -53,9 +47,6 @@ internal class PrivateHolidayDetailsUseCaseTest {
 
     private companion object{
         private val USER = createUser(LocalDate.of(2020, Month.JANUARY, 1))
-        private val authenticatedUser = ClientAuthentication(
-            USER.id.toString(), mapOf("roles" to emptyList<String>())
-        )
         private const val YEAR_WHEN_AGREEMENT_CHANGE = 2022
         private const val CHARGE_YEAR = 2020
 

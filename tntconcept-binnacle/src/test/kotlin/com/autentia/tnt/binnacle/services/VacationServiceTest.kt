@@ -23,7 +23,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.any
-import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -385,14 +384,6 @@ internal class VacationServiceTest {
         assertThat(holidays).hasSize(1)
     }
 
-    @Test
-    fun `delete vacation by id`() {
-        doNothing().whenever(vacationRepository).deleteById(ID_DELETE)
-
-        vacationService.deleteVacationPeriod(ID_DELETE, USER.id)
-
-        verify(vacationRepository).deleteById(ID_DELETE)
-    }
 
     // MUST BE a companion object with @JvmStatic, DO NOT REFACTOR
     // https://blog.oio.de/2018/11/13/how-to-use-junit-5-methodsource-parameterized-tests-with-kotlin/

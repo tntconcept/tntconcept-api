@@ -4,17 +4,12 @@ import com.autentia.tnt.binnacle.exception.BinnacleException
 import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
 import com.autentia.tnt.binnacle.exception.VacationNotFoundException
 import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.services.UserService
-import com.autentia.tnt.binnacle.services.VacationService
+import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.Failure
+import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.*
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.Success
-import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_ALREADY_ACCEPTED_FOR_PAST_PERIOD
-import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_NOT_FOUND
-import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.VACATION_RANGE_CLOSED
 import com.autentia.tnt.binnacle.validators.VacationValidator
-import io.micronaut.security.authentication.ClientAuthentication
-import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -31,27 +26,23 @@ import java.util.*
 @TestInstance(Lifecycle.PER_CLASS)
 internal class PrivateHolidayPeriodDeleteUseCaseTest {
 
-    private val vacationService = mock<VacationService>()
-    private val userService = mock<UserService>()
-    private val securityService = mock<SecurityService>()
+    private val vacationRepository = mock<VacationRepository>()
     private val vacationValidator = mock<VacationValidator>()
 
     private val privateHolidayPeriodDeleteUseCase =
-        PrivateHolidayPeriodDeleteUseCase(securityService, vacationValidator, vacationService)
+        PrivateHolidayPeriodDeleteUseCase(vacationValidator, vacationRepository)
 
     @Test
     fun `delete a vacation period`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
         whenever(vacationValidator.canDeleteVacationPeriod(vacationID)).thenReturn(Success)
 
         privateHolidayPeriodDeleteUseCase.delete(vacationID)
 
-        verify(vacationService, times(1)).deleteVacationPeriod(vacationID, userId)
+        verify(vacationRepository, times(1)).deleteById(vacationID)
     }
 
     @Test
     fun `FAIL when the vacation period to delete is not found in the database`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
         whenever(vacationValidator.canDeleteVacationPeriod(vacationID)).thenReturn(Failure(VACATION_NOT_FOUND))
 
         assertThrows<VacationNotFoundException> {
@@ -85,7 +76,6 @@ internal class PrivateHolidayPeriodDeleteUseCaseTest {
         vacationId: Long,
         expectedExceptionMessage: String
     ) {
-        whenever(securityService.authentication).thenReturn(Optional.of(authentication))
         whenever(vacationValidator.canDeleteVacationPeriod(vacationId)).thenReturn(failureReason)
 
         val exception = assertThrows<BinnacleException> {
@@ -96,10 +86,7 @@ internal class PrivateHolidayPeriodDeleteUseCaseTest {
     }
 
     private companion object {
-        private const val userId = 5L
         private const val vacationID = 10L
-        private val authentication =
-            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 
 }
