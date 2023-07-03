@@ -4,6 +4,7 @@ import com.autentia.tnt.api.binnacle.*
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
+import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
@@ -75,7 +76,7 @@ internal class ProjectControllerIT {
     @Test
     fun `return the correct project`() {
         // setup
-        val projectRequestBody = createProjectResponseDTO()
+        val projectRequestBody = PROJECT_RESPONSE_DTO
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)
 
@@ -164,7 +165,7 @@ internal class ProjectControllerIT {
     fun `block project by id`() {
         val projectId = 1L
         val blockProjectRequest = BlockProjectRequest(blockDate = LocalDate.of(2023, 5, 5))
-        val projectResponseDTO = createProjectResponseDTO()
+        val projectResponseDTO = PROJECT_RESPONSE_DTO
         whenever(blockProjectByIdUseCase.blockProject(projectId, blockProjectRequest.blockDate)).thenReturn(
             projectResponseDTO
         )
@@ -179,7 +180,7 @@ internal class ProjectControllerIT {
     @Test
     fun `unblock project by id`() {
         val projectId = 1L
-        val projectResponseDTO = createProjectResponseDTO()
+        val projectResponseDTO = PROJECT_RESPONSE_DTO
         whenever(unblockProjectByIdUseCase.unblockProject(projectId)).thenReturn(projectResponseDTO)
         val response = client.exchangeObject<ProjectResponse>(POST("/api/project/$projectId/unblock", ""))
 
@@ -210,7 +211,7 @@ internal class ProjectControllerIT {
 
     @Test
     fun `return all filtered projects`() {
-        val projectRequestBody = createProjectResponseDTO()
+        val projectRequestBody = PROJECT_RESPONSE_DTO
 
         val projectFilter = ProjectFilterDTO(1, false)
         whenever(projectByFilterUseCase.getProjects(projectFilter)).thenReturn(listOf(projectRequestBody))
@@ -224,6 +225,7 @@ internal class ProjectControllerIT {
     private fun getFailProvider() = arrayOf(
         arrayOf(ProjectNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
     )
+
     private companion object {
 
         private val PROJECT_RESPONSE = ProjectResponse(
@@ -259,6 +261,15 @@ internal class ProjectControllerIT {
             RequireEvidence.NO,
             true,
             4L
+        )
+
+        private val PROJECT_RESPONSE_DTO = ProjectResponseDTO(
+            1L,
+            "Dummy Project",
+            false,
+            false,
+            1L,
+            LocalDate.now(),
         )
     }
 }

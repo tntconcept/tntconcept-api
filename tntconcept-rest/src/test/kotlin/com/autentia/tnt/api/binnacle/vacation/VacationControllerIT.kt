@@ -1,36 +1,18 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.vacation
 
+import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.api.binnacle.exchangeList
+import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.api.binnacle.getBody
+import com.autentia.tnt.api.binnacle.vacation.*
 import com.autentia.tnt.binnacle.entities.VacationState
-import com.autentia.tnt.binnacle.entities.dto.CreateVacationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
-import com.autentia.tnt.binnacle.entities.dto.VacationDTO
-import com.autentia.tnt.binnacle.entities.dto.VacationDetailsDTO
-import com.autentia.tnt.binnacle.exception.DateRangeException
-import com.autentia.tnt.binnacle.exception.MaxNextYearRequestVacationException
-import com.autentia.tnt.binnacle.exception.UserPermissionException
-import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
-import com.autentia.tnt.binnacle.exception.VacationBeforeHiringDateException
-import com.autentia.tnt.binnacle.exception.VacationNotFoundException
-import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.exception.VacationRequestEmptyException
-import com.autentia.tnt.binnacle.exception.VacationRequestOverlapsException
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayDetailsUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodCreateUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodDeleteUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidayPeriodUpdateUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysByChargeYearUseCase
-import com.autentia.tnt.binnacle.usecases.PrivateHolidaysPeriodDaysUseCase
+import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpHeaders.ACCEPT_LANGUAGE
-import io.micronaut.http.HttpRequest.DELETE
-import io.micronaut.http.HttpRequest.GET
-import io.micronaut.http.HttpRequest.POST
-import io.micronaut.http.HttpRequest.PUT
+import io.micronaut.http.HttpRequest.*
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.HttpStatus.BAD_REQUEST
-import io.micronaut.http.HttpStatus.NOT_FOUND
-import io.micronaut.http.HttpStatus.OK
+import io.micronaut.http.HttpStatus.*
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
@@ -46,14 +28,10 @@ import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.doReturn
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit.DAYS
-import java.util.Locale
+import java.util.*
 
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -70,9 +48,6 @@ internal class VacationControllerIT {
 
     @get:MockBean(PrivateHolidayDetailsUseCase::class)
     internal val privateHolidayDetailsUseCase = mock<PrivateHolidayDetailsUseCase>()
-
-    @get:MockBean(PrivateHolidaysPeriodDaysUseCase::class)
-    internal val privateHolidaysPeriodDaysUseCase = mock<PrivateHolidaysPeriodDaysUseCase>()
 
     @get:MockBean(PrivateHolidayPeriodCreateUseCase::class)
     internal val privateHolidayPeriodCreateUseCase = mock<PrivateHolidayPeriodCreateUseCase>()
@@ -92,12 +67,12 @@ internal class VacationControllerIT {
     fun `get the vacations by charge year`() {
         doReturn(HOLIDAY_RESPONSE_DTO).whenever(privateHolidaysByChargeYearUseCase).get(CURRENT_YEAR)
 
-        val response = client.exchangeObject<HolidayResponseDTO>(
+        val response = client.exchangeObject<HolidayResponse>(
             GET("/api/vacations?chargeYear=$CURRENT_YEAR")
         )
 
         assertEquals(OK, response.status())
-        assertEquals(HOLIDAY_RESPONSE_DTO, response.body.get())
+        assertEquals(HOLIDAY_RESPONSE, response.body.get())
     }
 
     @Test
@@ -106,12 +81,12 @@ internal class VacationControllerIT {
         doReturn(VACATION_DETAILS_DTO)
             .whenever(privateHolidayDetailsUseCase).get(CURRENT_YEAR, HOLIDAY_RESPONSE_DTO.vacations)
 
-        val response = client.exchangeObject<VacationDetailsDTO>(
+        val response = client.exchangeObject<VacationDetailsResponse>(
             GET("/api/vacations/details?chargeYear=$CURRENT_YEAR")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(VACATION_DETAILS_DTO, response.body.get())
+        assertEquals(VACATION_DETAILS_RESPONSE, response.body.get())
     }
 
     @Test
@@ -128,43 +103,16 @@ internal class VacationControllerIT {
     }
 
     @Test
-    fun `get vacations days between two dates`() {
-        val startDate = LocalDate.of(2020, 1, 10)
-        val endDate = LocalDate.of(2020, 1, 20)
-        doReturn(3).whenever(privateHolidaysPeriodDaysUseCase).get(startDate, endDate)
-
-        val response = client.exchangeObject<Int>(
-            GET("/api/vacations/days?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}")
-        )
-
-        assertEquals(OK, response.status)
-        assertEquals(3, response.body.get())
-    }
-
-    @Test
-    fun `fail if dates are malformed`() {
-        val malformedDate = "20-01-xxx"
-
-        val ex = assertThrows<HttpClientResponseException> {
-            client.exchangeObject<Any>(
-                GET("/api/vacations/days?startDate=10-01-2020&endDate=$malformedDate")
-            )
-        }
-
-        assertEquals(BAD_REQUEST, ex.status)
-    }
-
-    @Test
     fun `post a new vacation period`() {
         doReturn(listOf(CREATE_VACATION_RESPONSE_DTO))
             .whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
-        val response = client.exchangeList<CreateVacationResponseDTO>(
-            POST("/api/vacations", VACATION_POST_JSON).header(ACCEPT_LANGUAGE, "en")
+        val response = client.exchangeList<CreateVacationResponse>(
+            POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(CREATE_VACATION_RESPONSE_DTO), response.body.get())
+        assertEquals(listOf(CREATE_VACATION_RESPONSE), response.body.get())
     }
 
     private fun postFailProvider() = arrayOf(
@@ -181,13 +129,13 @@ internal class VacationControllerIT {
     fun `fail if try to post a vacation and a exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<ErrorResponse>(
-                POST("/api/vacations", REQUEST_VACATION_DTO).header(ACCEPT_LANGUAGE, "en")
+                POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
             )
         }
 
@@ -202,7 +150,7 @@ internal class VacationControllerIT {
             .whenever(privateHolidayPeriodUpdateUseCase).update(REQUEST_VACATION_DTO, EN_LOCALE)
 
         val response = client.exchangeList<CreateVacationResponseDTO>(
-            PUT("/api/vacations", REQUEST_VACATION_DTO).header(ACCEPT_LANGUAGE, "en")
+            PUT("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
@@ -225,13 +173,13 @@ internal class VacationControllerIT {
     fun `fail if try to put a vacation and a exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                POST("/api/vacations", REQUEST_VACATION_DTO).header(ACCEPT_LANGUAGE, "en")
+                POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
             )
         }
 
@@ -261,13 +209,13 @@ internal class VacationControllerIT {
     fun `fail if try to delete a vacation and a exception is throw`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
-        expectedErrorCode: String
+        expectedErrorCode: String,
     ) {
         doThrow(exception).whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                POST("/api/vacations", REQUEST_VACATION_DTO).header(ACCEPT_LANGUAGE, "en")
+                POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
             )
         }
 
@@ -283,16 +231,17 @@ internal class VacationControllerIT {
 
         private val REQUEST_VACATION_DTO = RequestVacationDTO(null, TODAY, TODAY, "Description")
 
-        private val VACATION_POST_JSON = """
-            {
-                "startDate": "${REQUEST_VACATION_DTO.startDate.toJson()}",
-                "endDate": "${REQUEST_VACATION_DTO.endDate.toJson()}",
-                "description": "${REQUEST_VACATION_DTO.description}"
-            }
-        """.trimIndent()
 
         private val CREATE_VACATION_RESPONSE_DTO =
             CreateVacationResponseDTO(
+                REQUEST_VACATION_DTO.startDate,
+                REQUEST_VACATION_DTO.endDate,
+                DAYS.between(REQUEST_VACATION_DTO.startDate, REQUEST_VACATION_DTO.endDate).toInt(),
+                REQUEST_VACATION_DTO.startDate.year
+            )
+
+        private val CREATE_VACATION_RESPONSE =
+            CreateVacationResponse(
                 REQUEST_VACATION_DTO.startDate,
                 REQUEST_VACATION_DTO.endDate,
                 DAYS.between(REQUEST_VACATION_DTO.startDate, REQUEST_VACATION_DTO.endDate).toInt(),
@@ -309,13 +258,38 @@ internal class VacationControllerIT {
             listOf(CREATE_VACATION_RESPONSE_DTO.startDate),
             CREATE_VACATION_RESPONSE_DTO.startDate
         )
+        val VACATION_RESPONSE = VacationResponse(
+            2,
+            "Observations",
+            "Description",
+            VacationState.PENDING,
+            CREATE_VACATION_RESPONSE_DTO.startDate,
+            CREATE_VACATION_RESPONSE_DTO.endDate,
+            listOf(CREATE_VACATION_RESPONSE_DTO.startDate),
+            CREATE_VACATION_RESPONSE_DTO.startDate
+        )
 
         private val HOLIDAY_RESPONSE_DTO = HolidayResponseDTO(
             listOf(HolidayDTO(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
             listOf(VACATION_DTO)
         )
 
+        private val HOLIDAY_RESPONSE = HolidayResponse(
+            listOf(HolidayDetailsResponse(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
+            listOf(VACATION_RESPONSE)
+        )
+
         private val VACATION_DETAILS_DTO = VacationDetailsDTO(23, 23, 3, 20)
+
+        private val VACATION_DETAILS_RESPONSE = VacationDetailsResponse(23, 23, 3, 20)
+
+        private val CREATE_VACATION_REQUEST =
+            CreateVacationRequest(
+                null,
+                TODAY,
+                TODAY,
+                "Description",
+            )
     }
 
 }
