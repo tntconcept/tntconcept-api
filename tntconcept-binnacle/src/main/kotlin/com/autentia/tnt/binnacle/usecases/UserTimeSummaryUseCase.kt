@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
 import com.autentia.tnt.binnacle.core.domain.TimeSummary
 import com.autentia.tnt.binnacle.core.services.TimeSummaryService
-import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
