@@ -30,10 +30,7 @@ class PrivateHolidaysByChargeYearUseCase internal constructor(
         val user = userService.getAuthenticatedUser()
 
         val userTimeSinceHiringYear = getTimeSinceHiringYear(user.hiringDate.year)
-        val startDateMinHour = userTimeSinceHiringYear.start.atTime(LocalTime.MIN)
-        val endDateMaxHour = userTimeSinceHiringYear.end.atTime(23, 59, 59)
-        val holidays: List<Holiday> =
-            holidayRepository.findAllByDateBetween(startDateMinHour, endDateMaxHour)
+        val holidays: List<Holiday> = getAllByDateBetween(userTimeSinceHiringYear.start, userTimeSinceHiringYear.end)
         val vacations: List<Vacation> = vacationService.getVacationsByChargeYear(chargeYear)
 
         val holidayResponse = HolidayResponse(holidays, vacations)
@@ -46,6 +43,12 @@ class PrivateHolidaysByChargeYearUseCase internal constructor(
         val endDate = LocalDate.of(LocalDate.now().year + 1, Month.DECEMBER, 31)
 
         return DateInterval.of(startDate, endDate)
+    }
+
+    fun getAllByDateBetween(startDate: LocalDate, endDate: LocalDate): List<Holiday> {
+        val startDateMinHour = startDate.atTime(LocalTime.MIN)
+        val endDateMaxHour = endDate.atTime(23, 59, 59)
+        return holidayRepository.findAllByDateBetween(startDateMinHour, endDateMaxHour)
     }
 
 }
