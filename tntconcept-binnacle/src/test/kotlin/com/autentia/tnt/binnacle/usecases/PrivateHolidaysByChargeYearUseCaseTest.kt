@@ -9,7 +9,7 @@ import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
 import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
-import com.autentia.tnt.binnacle.services.HolidayService
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.VacationService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,26 +18,27 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.Month
 
 internal class PrivateHolidaysByChargeYearUseCaseTest {
 
     private val user = createUser()
-    private val holidayService = mock<HolidayService>()
+    private val holidayRepository = mock<HolidayRepository>()
     private val vacationService = mock<VacationService>()
     private val userService = mock<UserService>()
 
     private val holidayConverter = HolidayResponseConverter(VacationConverter(), HolidayConverter())
 
-    private val privateHolidaysByChargeYearUseCase = PrivateHolidaysByChargeYearUseCase(holidayService, vacationService, userService, holidayConverter)
+    private val privateHolidaysByChargeYearUseCase = PrivateHolidaysByChargeYearUseCase(holidayRepository, vacationService, userService, holidayConverter)
 
     @Test
     fun `get the vacations by charge year`() {
-        val startDate = user.hiringDate
-        val endDate = LocalDate.of(LocalDate.now().year + 1, Month.DECEMBER, 31)
+        val startDate = user.hiringDate.atTime(LocalTime.MIN)
+        val endDate = LocalDate.of(LocalDate.now().year + 1, Month.DECEMBER, 31).atTime(23, 59, 59)
 
         doReturn(user).whenever(userService).getAuthenticatedUser()
-        doReturn(HOLIDAYS).whenever(holidayService).findAllBetweenDate(startDate, endDate)
+        doReturn(HOLIDAYS).whenever(holidayRepository).findAllByDateBetween(startDate, endDate)
         doReturn(VACATIONS).whenever(vacationService).getVacationsByChargeYear(CHARGE_YEAR)
 
         assertEquals(HOLIDAY_RESPONSE_DTO, privateHolidaysByChargeYearUseCase.get(CHARGE_YEAR))

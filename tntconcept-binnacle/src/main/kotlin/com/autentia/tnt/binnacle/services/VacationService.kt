@@ -254,8 +254,4 @@ internal class VacationService(
         }
     }
 
-    @Transactional
-    fun deleteVacationPeriod(id: Long, userId: Long) {
-        vacationRepository.deleteById(id)
-    }
 }

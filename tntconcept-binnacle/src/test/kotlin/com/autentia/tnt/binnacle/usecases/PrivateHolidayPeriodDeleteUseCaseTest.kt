@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.exception.BinnacleException
 import com.autentia.tnt.binnacle.exception.VacationAcceptedPastPeriodStateException
 import com.autentia.tnt.binnacle.exception.VacationNotFoundException
 import com.autentia.tnt.binnacle.exception.VacationRangeClosedException
-import com.autentia.tnt.binnacle.services.VacationService
+import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.Failure
 import com.autentia.tnt.binnacle.validators.DeleteVacationValidation.FailureReason.*
@@ -28,12 +28,12 @@ import java.util.*
 @TestInstance(Lifecycle.PER_CLASS)
 internal class PrivateHolidayPeriodDeleteUseCaseTest {
 
-    private val vacationService = mock<VacationService>()
+    private val vacationRepository = mock<VacationRepository>()
     private val securityService = mock<SecurityService>()
     private val vacationValidator = mock<VacationValidator>()
 
     private val privateHolidayPeriodDeleteUseCase =
-        PrivateHolidayPeriodDeleteUseCase(securityService, vacationValidator, vacationService)
+        PrivateHolidayPeriodDeleteUseCase(securityService, vacationValidator, vacationRepository)
 
     @Test
     fun `delete a vacation period`() {
@@ -42,7 +42,7 @@ internal class PrivateHolidayPeriodDeleteUseCaseTest {
 
         privateHolidayPeriodDeleteUseCase.delete(vacationID)
 
-        verify(vacationService, times(1)).deleteVacationPeriod(vacationID, userId)
+        verify(vacationRepository, times(1)).deleteById(vacationID)
     }
 
     @Test
