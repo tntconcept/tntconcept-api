@@ -21,7 +21,7 @@ internal class VacationService(
     private val vacationRepository: VacationRepository,
     private val myVacationsDetailService: MyVacationsDetailService,
     private val vacationConverter: VacationConverter,
-    private val calendarFactory: CalendarFactory
+    private val calendarFactory: CalendarFactory,
 ) {
     @Transactional
     @ReadOnly
@@ -62,9 +62,9 @@ internal class VacationService(
         return if (vacations.isEmpty()) {
             emptyList()
         } else {
-            val start: LocalDate = vacations.map(Vacation::startDate).min()
-            val end: LocalDate = vacations.map(Vacation::endDate).max()
-            val dateInterval = DateInterval.of(start, end)
+            val start: LocalDate? = vacations.minOfOrNull(Vacation::startDate)
+            val end: LocalDate? = vacations.maxOfOrNull(Vacation::endDate)
+            val dateInterval = DateInterval.of(start!!, end!!)
             val calendar = calendarFactory.create(dateInterval)
             getVacationsWithWorkableDays(calendar, vacations)
         }
@@ -158,8 +158,7 @@ internal class VacationService(
         requestVacation: RequestVacation
     ): List<LocalDate> {
         val calendar = calendarFactory.create(DateInterval.of(lastYearFirstDay, nextYearLastDay))
-        var selectedDays = calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate))
-        return selectedDays
+        return calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate))
     }
 
     private fun getVacationsByYear(
@@ -167,9 +166,7 @@ internal class VacationService(
         nextYearLastDay: LocalDate
     ): Map<Int, List<com.autentia.tnt.binnacle.core.domain.Vacation>> {
         val vacations = vacationRepository.findBetweenChargeYears(lastYearFirstDay, nextYearLastDay)
-        val vacationsByYear: Map<Int, List<VacationDomain>> =
-            getVacationsWithWorkableDays(vacations).groupBy { it.chargeYear.year }
-        return vacationsByYear
+        return getVacationsWithWorkableDays(vacations).groupBy { it.chargeYear.year }
     }
 
     @Transactional
