@@ -108,7 +108,7 @@ internal class VacationControllerIT {
             .whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
         val response = client.exchangeList<CreateVacationResponse>(
-            POST("/api/vacations", REQUEST_VACATION).header(ACCEPT_LANGUAGE, "en")
+            POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
@@ -135,7 +135,7 @@ internal class VacationControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<ErrorResponse>(
-                POST("/api/vacations", REQUEST_VACATION).header(ACCEPT_LANGUAGE, "en")
+                POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
             )
         }
 
@@ -150,7 +150,7 @@ internal class VacationControllerIT {
             .whenever(privateHolidayPeriodUpdateUseCase).update(REQUEST_VACATION_DTO, EN_LOCALE)
 
         val response = client.exchangeList<CreateVacationResponseDTO>(
-            PUT("/api/vacations", REQUEST_VACATION).header(ACCEPT_LANGUAGE, "en")
+            PUT("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
@@ -179,7 +179,7 @@ internal class VacationControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                POST("/api/vacations", REQUEST_VACATION).header(ACCEPT_LANGUAGE, "en")
+                POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
             )
         }
 
@@ -215,7 +215,7 @@ internal class VacationControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                POST("/api/vacations", REQUEST_VACATION).header(ACCEPT_LANGUAGE, "en")
+                POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
             )
         }
 
@@ -258,7 +258,7 @@ internal class VacationControllerIT {
             listOf(CREATE_VACATION_RESPONSE_DTO.startDate),
             CREATE_VACATION_RESPONSE_DTO.startDate
         )
-        val VACATION_REQUEST = VacationRequest(
+        val VACATION_RESPONSE = VacationResponse(
             2,
             "Observations",
             "Description",
@@ -275,16 +275,16 @@ internal class VacationControllerIT {
         )
 
         private val HOLIDAY_RESPONSE = HolidayResponse(
-            listOf(HolidayRequest(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
-            listOf(VACATION_REQUEST)
+            listOf(HolidayDetailsResponse(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
+            listOf(VACATION_RESPONSE)
         )
 
         private val VACATION_DETAILS_DTO = VacationDetailsDTO(23, 23, 3, 20)
 
         private val VACATION_DETAILS_RESPONSE = VacationDetailsResponse(23, 23, 3, 20)
 
-        private val REQUEST_VACATION =
-            RequestVacation(
+        private val CREATE_VACATION_REQUEST =
+            CreateVacationRequest(
                 null,
                 TODAY,
                 TODAY,

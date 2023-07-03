@@ -632,7 +632,7 @@ paths:
           application/json:
             schema:
               allOf:
-              - $ref: '#/components/schemas/RequestVacation'
+              - $ref: '#/components/schemas/CreateVacationRequest'
               - required:
                 - locale
                 properties:
@@ -656,7 +656,7 @@ paths:
           application/json:
             schema:
               allOf:
-              - $ref: '#/components/schemas/RequestVacation'
+              - $ref: '#/components/schemas/CreateVacationRequest'
               - required:
                 - locale
                 properties:
@@ -1060,6 +1060,26 @@ components:
         blockDate:
           type: string
           format: date
+    CreateVacationRequest:
+      required:
+      - endDate
+      - startDate
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        description:
+          maxLength: 1024
+          type: string
+          nullable: true
     CreateVacationResponse:
       required:
       - chargeYear
@@ -1095,7 +1115,7 @@ components:
         date:
           type: string
           format: date
-    HolidayRequest:
+    HolidayDetailsResponse:
       required:
       - date
       - description
@@ -1119,11 +1139,11 @@ components:
         holidays:
           type: array
           items:
-            $ref: '#/components/schemas/HolidayRequest'
+            $ref: '#/components/schemas/HolidayDetailsResponse'
         vacations:
           type: array
           items:
-            $ref: '#/components/schemas/VacationRequest'
+            $ref: '#/components/schemas/VacationResponse'
     HolidayResponseDTO:
       required:
       - holidays
@@ -1530,26 +1550,6 @@ components:
         userId:
           type: integer
           format: int64
-    RequestVacation:
-      required:
-      - endDate
-      - startDate
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          nullable: true
-        startDate:
-          type: string
-          format: date
-        endDate:
-          type: string
-          format: date
-        description:
-          maxLength: 1024
-          type: string
-          nullable: true
     RequireEvidence:
       type: string
       enum:
@@ -1723,7 +1723,7 @@ components:
         remainingVacations:
           type: integer
           format: int32
-    VacationRequest:
+    VacationResponse:
       required:
       - chargeYear
       - days

@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 @Introspected
-data class RequestVacation(
+data class CreateVacationRequest(
     val id: Long? = null,
 
     @field:NotNull

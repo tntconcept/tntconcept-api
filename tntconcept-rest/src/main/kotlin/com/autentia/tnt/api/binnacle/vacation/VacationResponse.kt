@@ -5,7 +5,7 @@ import com.autentia.tnt.binnacle.entities.dto.VacationDTO
 import com.fasterxml.jackson.annotation.JsonFormat
 import java.time.LocalDate
 
-data class VacationRequest(
+data class VacationResponse(
     var id: Long? = null,
     var observations: String? = null,
     var description: String? = null,
@@ -23,7 +23,7 @@ data class VacationRequest(
 ) {
     companion object {
         fun from(vacationDTO: VacationDTO) =
-            VacationRequest(
+            VacationResponse(
                 vacationDTO.id,
                 vacationDTO.observations,
                 vacationDTO.description,
