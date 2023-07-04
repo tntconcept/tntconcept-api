@@ -57,6 +57,27 @@ internal class VacationValidatorTest {
     }
 
     @Test
+    fun `should not create due to empty period`() {
+        val startDate = LocalDate.of(2023, 7, 1)
+        val requestVacation = RequestVacation(null, startDate, startDate.plusDays(2), "description")
+        val user = createUser()
+        val holidays = listOf(
+            Holiday(1, "Holiday", startDate.plusDays(2).atStartOfDay())
+        )
+
+        given(
+            holidayService.findAllBetweenDate(
+                requestVacation.startDate,
+                requestVacation.endDate
+            )
+        ).willReturn(holidays)
+
+        val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
+
+        Assertions.assertThat(result).isEqualTo(CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY))
+    }
+
+    @Test
     fun `should not create on closed years`() {
         val requestVacation = RequestVacation(
             null,

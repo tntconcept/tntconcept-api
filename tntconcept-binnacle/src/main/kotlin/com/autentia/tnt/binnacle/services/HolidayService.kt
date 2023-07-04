@@ -11,6 +11,7 @@ import javax.transaction.Transactional
 @Singleton
 @Transactional @ReadOnly
 internal class HolidayService(private val holidayRepository: HolidayRepository) {
+
     fun findAllBetweenDate(startDate: LocalDate, endDate: LocalDate): List<Holiday> {
         val startDateMinHour = startDate.atTime(LocalTime.MIN)
         val endDateMaxHour = endDate.atTime(23, 59, 59)
