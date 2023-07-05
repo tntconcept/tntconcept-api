@@ -1,6 +1,6 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.holiday
 
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
+import com.autentia.tnt.api.binnacle.vacation.HolidayResponse
 import com.autentia.tnt.binnacle.usecases.HolidaysBetweenDateForAuthenticateUserUseCase
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -14,7 +14,7 @@ internal class HolidayController(
 
     @Operation(summary = "Retrieves existing holidays within a period")
     @Get
-    fun getHolidaysBetweenDate(startDate: LocalDate, endDate: LocalDate): HolidayResponseDTO =
-        holidaysBetweenDateForAuthenticateUserUseCase.getHolidays(startDate, endDate)
+    fun getHolidaysBetweenDate(startDate: LocalDate, endDate: LocalDate): HolidayResponse =
+        HolidayResponse.from(holidaysBetweenDateForAuthenticateUserUseCase.getHolidays(startDate, endDate))
 
 }
