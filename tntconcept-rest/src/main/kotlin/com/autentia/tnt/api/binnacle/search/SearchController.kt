@@ -1,6 +1,5 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.search
 
-import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
 import com.autentia.tnt.binnacle.usecases.SearchByRoleIdUseCase
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -12,8 +11,7 @@ internal class SearchController(
 ) {
 
     @Get
-    fun searchBy(roleIds: List<Long>, @QueryValue year: Int?): SearchResponseDTO {
+    fun searchBy(roleIds: List<Long>, @QueryValue year: Int?): SearchResponse =
+        SearchResponse.from(searchUseCase.get(roleIds, year))
 
-        return searchUseCase.getDescriptions(roleIds, year);
-    }
 }

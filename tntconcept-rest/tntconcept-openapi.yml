@@ -563,7 +563,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchResponseDTO'
+                $ref: '#/components/schemas/SearchResponse'
   /api/time-summary:
     get:
       summary: Retrieves working time from a given date
@@ -1470,46 +1470,6 @@ components:
           type: string
         requireEvidence:
           type: boolean
-    ProjectRoleUserDTO:
-      required:
-      - id
-      - maxAllowed
-      - name
-      - organizationId
-      - projectId
-      - remaining
-      - requireApproval
-      - requireEvidence
-      - timeUnit
-      - userId
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        organizationId:
-          type: integer
-          format: int64
-        projectId:
-          type: integer
-          format: int64
-        maxAllowed:
-          type: integer
-          format: int32
-        remaining:
-          type: integer
-          format: int32
-        timeUnit:
-          $ref: '#/components/schemas/TimeUnit'
-        requireEvidence:
-          $ref: '#/components/schemas/RequireEvidence'
-        requireApproval:
-          type: boolean
-        userId:
-          type: integer
-          format: int64
     ProjectRoleUserResponse:
       required:
       - id
@@ -1556,7 +1516,7 @@ components:
       - "NO"
       - ONCE
       - WEEKLY
-    SearchResponseDTO:
+    SearchResponse:
       required:
       - organizations
       - projectRoles
@@ -1566,15 +1526,15 @@ components:
         organizations:
           type: array
           items:
-            $ref: '#/components/schemas/OrganizationResponseDTO'
+            $ref: '#/components/schemas/OrganizationResponse'
         projects:
           type: array
           items:
-            $ref: '#/components/schemas/ProjectResponseDTO'
+            $ref: '#/components/schemas/ProjectResponse'
         projectRoles:
           type: array
           items:
-            $ref: '#/components/schemas/ProjectRoleUserDTO'
+            $ref: '#/components/schemas/ProjectRoleUserResponse'
     TimeIntervalRequest:
       required:
       - end

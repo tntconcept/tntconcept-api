@@ -11,10 +11,6 @@ internal class ProjectRoleService(private val projectRoleRepository: ProjectRole
 
     @Transactional
     @ReadOnly
-    fun getAllByIds(ids: List<Long>) = projectRoleRepository.getAllByIdIn(ids).map { it.toDomain() }
-
-    @Transactional
-    @ReadOnly
     fun getAllByProjectId(projectId: Long) =
         projectRoleRepository.getAllByProjectId(projectId).map(ProjectRole::toDomain)
 
