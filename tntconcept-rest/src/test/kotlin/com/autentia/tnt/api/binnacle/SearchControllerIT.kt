@@ -1,5 +1,6 @@
 package com.autentia.tnt.api.binnacle
 
+import com.autentia.tnt.api.binnacle.search.SearchResponse
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -34,7 +35,6 @@ internal class SearchControllerIT {
 
     private lateinit var client: BlockingHttpClient
 
-
     @get:MockBean(SearchByRoleIdUseCase::class)
     internal val searchUseCase = org.mockito.kotlin.mock<SearchByRoleIdUseCase>()
 
@@ -52,12 +52,12 @@ internal class SearchControllerIT {
                 listOf(TRAINING),
                 listOf(STUDENT)
         )
-        doReturn(roleDescriptions).whenever(searchUseCase).getDescriptions(searchedRoles, YEAR)
+        doReturn(roleDescriptions).whenever(searchUseCase).get(searchedRoles, YEAR)
 
-        val response = client.exchangeObject<SearchResponseDTO>(HttpRequest.GET("/api/search?roleIds=${TRAINING.id}&year=${YEAR}"))
+        val response = client.exchangeObject<SearchResponse>(HttpRequest.GET("/api/search?roleIds=${TRAINING.id}&year=${YEAR}"))
 
         assertEquals(HttpStatus.OK, response.status)
-        assertEquals(roleDescriptions, response.body.get())
+        assertEquals(SearchResponse.from(roleDescriptions), response.body.get())
 
     }
 
@@ -71,12 +71,12 @@ internal class SearchControllerIT {
                 listOf(TRAINING),
                 listOf(STUDENT)
         )
-        doReturn(roleDescriptions).whenever(searchUseCase).getDescriptions(searchedRoles, null)
+        doReturn(roleDescriptions).whenever(searchUseCase).get(searchedRoles, null)
 
-        val response = client.exchangeObject<SearchResponseDTO>(HttpRequest.GET("/api/search?roleIds=${TRAINING.id}"))
+        val response = client.exchangeObject<SearchResponse>(HttpRequest.GET("/api/search?roleIds=${TRAINING.id}"))
 
         assertEquals(HttpStatus.OK, response.status)
-        assertEquals(roleDescriptions, response.body.get())
+        assertEquals(SearchResponse.from(roleDescriptions), response.body.get())
 
 
     }
