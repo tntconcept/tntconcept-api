@@ -9,7 +9,6 @@ import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
 import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
-import com.autentia.tnt.binnacle.services.HolidayService
 import com.autentia.tnt.binnacle.services.VacationService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -23,11 +22,11 @@ import java.time.LocalTime
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 
-internal class HolidaysBetweenDateForAuthenticateUserUseCaseTest {
+internal class UserHolidaysBetweenDatesUseCaseTest {
     private var holidayRepository = mock<HolidayRepository>()
     private var vacationService = mock<VacationService>()
-    private var holidaysBetweenDateForAuthenticateUserUseCase =
-        HolidaysBetweenDateForAuthenticateUserUseCase(
+    private var userHolidaysBetweenDatesUseCase =
+        UserHolidaysBetweenDatesUseCase(
             holidayRepository,
             vacationService,
             HolidayResponseConverter(VacationConverter(), HolidayConverter())
@@ -45,7 +44,7 @@ internal class HolidaysBetweenDateForAuthenticateUserUseCaseTest {
             ))
         ).whenever(vacationService).getVacationsBetweenDates(JANUARY_FIFTH, JANUARY_NINTH)
 
-        assertEquals(HolidayResponseDTO(THREE_KINGS_DAY_DTO, vacationsDTO), holidaysBetweenDateForAuthenticateUserUseCase.getHolidays(
+        assertEquals(HolidayResponseDTO(THREE_KINGS_DAY_DTO, vacationsDTO), userHolidaysBetweenDatesUseCase.getHolidays(
             JANUARY_FIFTH, JANUARY_NINTH
         ))
     }

@@ -12,7 +12,7 @@ import java.time.LocalTime
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 @Singleton
-class HolidaysBetweenDateForAuthenticateUserUseCase internal constructor(
+class UserHolidaysBetweenDatesUseCase internal constructor(
     private val holidayRepository: HolidayRepository,
     private val vacationService: VacationService,
     private val holidayResponseConverter: HolidayResponseConverter

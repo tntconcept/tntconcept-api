@@ -3,13 +3,12 @@ package com.autentia.tnt.api.binnacle.holiday
 import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.api.binnacle.vacation.HolidayDetailsResponse
 import com.autentia.tnt.api.binnacle.vacation.HolidayResponse
-import com.autentia.tnt.api.binnacle.vacation.VacationControllerIT
 import com.autentia.tnt.api.binnacle.vacation.VacationResponse
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
 import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
-import com.autentia.tnt.binnacle.usecases.HolidaysBetweenDateForAuthenticateUserUseCase
+import com.autentia.tnt.binnacle.usecases.UserHolidaysBetweenDatesUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.BlockingHttpClient
@@ -37,8 +36,8 @@ internal class HolidayControllerIT {
 
     private lateinit var client: BlockingHttpClient
 
-    @get:MockBean(HolidaysBetweenDateForAuthenticateUserUseCase::class)
-    internal val holidaysBetweenDateForUserUseCase = mock<HolidaysBetweenDateForAuthenticateUserUseCase>()
+    @get:MockBean(UserHolidaysBetweenDatesUseCase::class)
+    internal val holidaysBetweenDateForUserUseCase = mock<UserHolidaysBetweenDatesUseCase>()
 
 
     @BeforeAll
