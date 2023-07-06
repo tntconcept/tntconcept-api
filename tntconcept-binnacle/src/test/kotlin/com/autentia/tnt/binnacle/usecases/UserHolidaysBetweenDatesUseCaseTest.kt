@@ -8,7 +8,7 @@ import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
 import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
-import com.autentia.tnt.binnacle.services.HolidayService
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.VacationService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -18,18 +18,23 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month.JANUARY
 import org.mockito.kotlin.doReturn
+import java.time.LocalTime
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
 
-internal class HolidaysBetweenDateForAuthenticateUserUseCaseTest {
-    private var holidayService = mock<HolidayService>()
+internal class UserHolidaysBetweenDatesUseCaseTest {
+    private var holidayRepository = mock<HolidayRepository>()
     private var vacationService = mock<VacationService>()
-    private var holidaysBetweenDateForAuthenticateUserUseCase =
-        HolidaysBetweenDateForAuthenticateUserUseCase(holidayService, vacationService, HolidayResponseConverter(VacationConverter(), HolidayConverter()))
+    private var userHolidaysBetweenDatesUseCase =
+        UserHolidaysBetweenDatesUseCase(
+            holidayRepository,
+            vacationService,
+            HolidayResponseConverter(VacationConverter(), HolidayConverter())
+        )
 
     @Test
     fun `return holidays given start date, end date and username`() {
-        doReturn(THREE_KINGS_DAY).whenever(holidayService).findAllBetweenDate(JANUARY_FIFTH, JANUARY_NINTH)
+        doReturn(THREE_KINGS_DAY).whenever(holidayRepository).findAllByDateBetween(JANUARY_FIFTH.atTime(LocalTime.MIN), JANUARY_NINTH.atTime(23, 59, 59))
 
         doReturn(
             listOf(
@@ -39,7 +44,7 @@ internal class HolidaysBetweenDateForAuthenticateUserUseCaseTest {
             ))
         ).whenever(vacationService).getVacationsBetweenDates(JANUARY_FIFTH, JANUARY_NINTH)
 
-        assertEquals(HolidayResponseDTO(THREE_KINGS_DAY_DTO, vacationsDTO), holidaysBetweenDateForAuthenticateUserUseCase.getHolidays(
+        assertEquals(HolidayResponseDTO(THREE_KINGS_DAY_DTO, vacationsDTO), userHolidaysBetweenDatesUseCase.getHolidays(
             JANUARY_FIFTH, JANUARY_NINTH
         ))
     }

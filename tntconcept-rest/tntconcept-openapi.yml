@@ -361,7 +361,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponseDTO'
+                $ref: '#/components/schemas/HolidayResponse'
   /api/organizations:
     get:
       summary: Retrieves a list of all organizations
@@ -1100,21 +1100,6 @@ components:
         chargeYear:
           type: integer
           format: int32
-    HolidayDTO:
-      required:
-      - date
-      - description
-      - id
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        description:
-          type: string
-        date:
-          type: string
-          format: date
     HolidayDetailsResponse:
       required:
       - date
@@ -1144,20 +1129,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VacationResponse'
-    HolidayResponseDTO:
-      required:
-      - holidays
-      - vacations
-      type: object
-      properties:
-        holidays:
-          type: array
-          items:
-            $ref: '#/components/schemas/HolidayDTO'
-        vacations:
-          type: array
-          items:
-            $ref: '#/components/schemas/VacationDTO'
     IntervalResponse:
       required:
       - duration
@@ -1668,41 +1639,6 @@ components:
           type: string
         secret:
           type: string
-    VacationDTO:
-      required:
-      - chargeYear
-      - days
-      - endDate
-      - startDate
-      - state
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          nullable: true
-        observations:
-          type: string
-          nullable: true
-        description:
-          type: string
-          nullable: true
-        state:
-          $ref: '#/components/schemas/VacationState'
-        startDate:
-          type: string
-          format: date
-        endDate:
-          type: string
-          format: date
-        days:
-          type: array
-          items:
-            type: string
-            format: date
-        chargeYear:
-          type: string
-          format: date
     VacationDetailsResponse:
       required:
       - acceptedVacations
