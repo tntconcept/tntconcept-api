@@ -2,18 +2,19 @@ package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.config.createHoliday
 import com.autentia.tnt.binnacle.entities.Holiday
-import com.autentia.tnt.binnacle.services.HolidayService
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalTime
 
 class CalendarTest {
-    
-    private val holidayService: HolidayService = mock<HolidayService>()
-    private val calendarFactory: CalendarFactory = CalendarFactory(holidayService)
+
+    private val holidayRepository = mock<HolidayRepository>()
+    private val calendarFactory: CalendarFactory = CalendarFactory(holidayRepository)
 
     private val date = LocalDate.of(2023, 3, 15)
     private val datePlusOneDay = LocalDate.of(2023, 3, 15).plusDays(1)
@@ -25,14 +26,14 @@ class CalendarTest {
 
     @Test
     fun `workableDays with same start, end and holiday dates`() {
-        doReturn(listOf(holiday)).whenever(holidayService).findAllBetweenDate(date, date)
+        doReturn(listOf(holiday)).whenever(holidayRepository).findAllByDateBetween(date.atTime(LocalTime.MIN), date.atTime(23, 59, 59))
         val calendar = calendarFactory.create(DateInterval.of(date, date))
         assert(calendar.workableDays.isEmpty())
     }
 
     @Test
     fun `workableDays should return one day`() {
-        doReturn(listOf(holiday)).whenever(holidayService).findAllBetweenDate(date, datePlusOneDay)
+        doReturn(listOf(holiday)).whenever(holidayRepository).findAllByDateBetween(date.atTime(LocalTime.MIN), datePlusOneDay.atTime(23, 59, 59))
         val calendar = calendarFactory.create(DateInterval.of(date, datePlusOneDay))
         assertEquals(listOf(datePlusOneDay), calendar.workableDays)
     }
@@ -45,7 +46,8 @@ class CalendarTest {
 
     @Test
     fun `workableDays with a week with weekend and two holidays`() {
-        doReturn(listOf(holiday, holidayPlusOneDay)).whenever(holidayService).findAllBetweenDate(date, datePlusOneWeek)
+        doReturn(listOf(holiday, holidayPlusOneDay)).whenever(holidayRepository).findAllByDateBetween(date.atTime(
+            LocalTime.MIN), datePlusOneWeek.atTime(23, 59, 59))
         val calendar = calendarFactory.create(DateInterval.of(date, datePlusOneWeek))
         assertEquals(4, calendar.workableDays.size)
     }

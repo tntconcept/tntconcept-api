@@ -8,10 +8,10 @@ import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.HolidayService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -25,9 +25,9 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
     private val activityRepository: ActivityRepository = mock()
     private val activityService = ActivityService(activityRepository)
-    private val holidayService = mock<HolidayService>()
+    private val holidayRepository = mock<HolidayRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val calendarFactory = CalendarFactory(holidayService)
+    private val calendarFactory = CalendarFactory(holidayRepository)
     private val securityService = mock<SecurityService>()
     private val activityCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activityCalendarFactory)

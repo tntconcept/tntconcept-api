@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.MonthlyRoles
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -21,8 +22,9 @@ import kotlin.time.toDuration
 
 class ActivityCalendarServiceTest {
 
-    private val holidayService = mock<HolidayService>()
-    private val calendarFactory = CalendarFactory(holidayService)
+    private val holidayRepository = mock<HolidayRepository>()
+
+    private val calendarFactory = CalendarFactory(holidayRepository)
     private val activitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
 
     private val activityCalendarService =

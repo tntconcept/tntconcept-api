@@ -5,8 +5,8 @@ import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.HolidayService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -14,11 +14,13 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalTime
 
 internal class CalendarDaysForProjectRoleUseCaseTest {
 
-    private val holidayService = mock<HolidayService>()
-    private val calendarFactory = CalendarFactory(holidayService)
+    private val holidayRepository = org.mockito.kotlin.mock<HolidayRepository>()
+
+    private val calendarFactory = CalendarFactory(holidayRepository)
     private val projectRoleRepository = mock<ProjectRoleRepository>()
 
     private val useCase = CalendarDaysForProjectRoleUseCase(calendarFactory, projectRoleRepository)
@@ -53,7 +55,7 @@ internal class CalendarDaysForProjectRoleUseCaseTest {
         val roleId = 1L
         val projectRole = createProjectRole(roleId).copy(timeUnit = TimeUnit.DAYS)
 
-        whenever(holidayService.findAllBetweenDate(startDate, endDate)).thenReturn(emptyList())
+        whenever(holidayRepository.findAllByDateBetween(startDate.atTime(LocalTime.MIN), endDate.atTime(23, 59, 59))).thenReturn(emptyList())
         whenever(projectRoleRepository.findById(roleId)).thenReturn(projectRole)
 
         val result = useCase.get(startDate, endDate, roleId)
@@ -68,7 +70,7 @@ internal class CalendarDaysForProjectRoleUseCaseTest {
         val roleId = 1L
         val projectRole = createProjectRole(roleId).copy(timeUnit = TimeUnit.DAYS)
 
-        whenever(holidayService.findAllBetweenDate(startDate, endDate)).thenReturn(
+        whenever(holidayRepository.findAllByDateBetween(startDate.atTime(LocalTime.MIN), endDate.atTime(23, 59, 59))).thenReturn(
             listOf(Holiday(1L, "holiday", startDate.atStartOfDay()))
         )
         whenever(projectRoleRepository.findById(roleId)).thenReturn(projectRole)
@@ -85,7 +87,7 @@ internal class CalendarDaysForProjectRoleUseCaseTest {
         val roleId = 1L
         val projectRole = createProjectRole(roleId).copy(timeUnit = TimeUnit.NATURAL_DAYS)
 
-        whenever(holidayService.findAllBetweenDate(startDate, endDate)).thenReturn(
+        whenever(holidayRepository.findAllByDateBetween(startDate.atTime(LocalTime.MIN), endDate.atTime(23, 59, 59))).thenReturn(
             listOf(Holiday(1L, "holiday", startDate.atStartOfDay()))
         )
         whenever(projectRoleRepository.findById(roleId)).thenReturn(projectRole)
@@ -102,7 +104,7 @@ internal class CalendarDaysForProjectRoleUseCaseTest {
         val roleId = 1L
         val projectRole = createProjectRole(roleId).copy(timeUnit = TimeUnit.MINUTES)
 
-        whenever(holidayService.findAllBetweenDate(startDate, endDate)).thenReturn(
+        whenever(holidayRepository.findAllByDateBetween(startDate.atTime(LocalTime.MIN), endDate.atTime(23, 59, 59))).thenReturn(
             listOf(Holiday(1L, "holiday", startDate.atStartOfDay()))
         )
         whenever(projectRoleRepository.findById(roleId)).thenReturn(projectRole)
