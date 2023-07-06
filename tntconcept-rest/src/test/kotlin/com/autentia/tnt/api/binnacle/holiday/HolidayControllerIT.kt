@@ -47,13 +47,13 @@ internal class HolidayControllerIT {
     }
 
     @Test
-    fun `get the vacations by charge year`() {
+    fun `get the holidays by charge year`() {
         doReturn(HOLIDAY_RESPONSE_DTO).whenever(holidaysBetweenDateForUserUseCase).getHolidays(
             START_DATE, START_DATE.plusDays(3L)
         )
 
         val response = client.exchangeObject<HolidayResponse>(
-            HttpRequest.GET("/api/vacations?chargeYear=${START_DATE.year}")
+            HttpRequest.GET("/api/holidays?startDate=${START_DATE}&endDate=${START_DATE.plusDays(3L)}")
         )
 
         assertEquals(HttpStatus.OK, response.status())
