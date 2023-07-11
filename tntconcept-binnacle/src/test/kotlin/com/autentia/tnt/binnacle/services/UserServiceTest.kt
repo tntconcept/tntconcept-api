@@ -48,26 +48,6 @@ internal class UserServiceTest {
     }
 
     @Test
-    fun `get user by id`() {
-        val user = createUser()
-
-        whenever(userRepositorySecured.find(user.id)).thenReturn(user)
-
-        val result = userService.getById(user.id)
-
-        assertEquals(user, result)
-    }
-
-    @Test
-    fun `get user by id should throw IllegalStateException`() {
-        val user = createUser()
-
-        whenever(userRepositorySecured.find(user.id)).thenReturn(null)
-
-        assertThrows<IllegalStateException> { userService.getById(user.id) }
-    }
-
-    @Test
     fun `fail if there isn't authenticated user fetching the user by username`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
