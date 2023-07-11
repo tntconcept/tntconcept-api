@@ -594,7 +594,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/UserResponseDTO'
+                  $ref: '#/components/schemas/UserResponse'
   /api/user/me:
     get:
       summary: Retrieves the logged user
@@ -605,7 +605,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserInfoResponseDTO'
+                $ref: '#/components/schemas/UserInfoResponse'
   /api/vacations:
     get:
       summary: Retrieves holidays within a given charge year.
@@ -1549,7 +1549,7 @@ components:
         refresh_token:
           minLength: 1
           type: string
-    UserInfoResponseDTO:
+    UserInfoResponse:
       required:
       - hiringDate
       - id
@@ -1569,7 +1569,7 @@ components:
           type: array
           items:
             type: string
-    UserResponseDTO:
+    UserResponse:
       required:
       - id
       - name
