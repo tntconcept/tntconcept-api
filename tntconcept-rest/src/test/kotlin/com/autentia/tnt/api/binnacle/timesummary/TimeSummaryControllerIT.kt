@@ -1,6 +1,7 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.timesummary
 
-import com.autentia.tnt.api.binnacle.timesummary.TimeSummaryResponse
+import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.api.binnacle.toJson
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.usecases.UserTimeSummaryUseCase
 import io.micronaut.http.HttpRequest.GET
