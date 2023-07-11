@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.security.authentication.ClientAuthentication
@@ -27,6 +28,7 @@ internal class ActivityApprovalUseCaseTest {
     private val activityRepository = mock<ActivityRepository>()
     private val securityService = mock<SecurityService>()
     private val userService = mock<UserService>()
+    private val userRepository = mock<UserRepository>()
     private val converter = mock<ActivityResponseConverter>()
     private val approvedActivityMailService = mock<ApprovedActivityMailService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
@@ -34,7 +36,7 @@ internal class ActivityApprovalUseCaseTest {
     private val activityValidator = ActivityValidator(activityService, activityCalendarService, projectService)
 
     private val activityApprovalUseCase: ActivityApprovalUseCase = ActivityApprovalUseCase(
-        activityRepository, securityService, converter, userService, approvedActivityMailService, activityValidator
+        activityRepository, securityService, converter, userRepository, approvedActivityMailService, activityValidator
     )
 
     @Test
@@ -49,6 +51,23 @@ internal class ActivityApprovalUseCaseTest {
     @Test
     fun `should throw Illegal State Exception if user is not admin`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutAdminRole))
+
+        assertThrows<IllegalStateException> {
+            activityApprovalUseCase.approveActivity(activityId, Locale.ENGLISH)
+        }
+    }
+
+
+    @Test
+    fun `should throw Illegal State Exception if user is not found`() {
+        val activityToApprove =
+            createActivity(approvalState = ApprovalState.PENDING).copy(hasEvidences = true)
+        val approvedActivity = activityToApprove.copy(approvalState = ApprovalState.ACCEPTED)
+
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithActivityApprovalRole))
+        whenever(activityRepository.findById(activityId)).thenReturn(activityToApprove)
+        whenever(userRepository.find(activityToApprove.userId)).thenReturn(null)
+        whenever(activityRepository.update(approvedActivity)).thenReturn(approvedActivity)
 
         assertThrows<IllegalStateException> {
             activityApprovalUseCase.approveActivity(activityId, Locale.ENGLISH)
@@ -71,7 +90,7 @@ internal class ActivityApprovalUseCaseTest {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithActivityApprovalRole))
         whenever(activityRepository.findById(activityId)).thenReturn(activityToApprove)
-        whenever(userService.getById(activityToApprove.userId)).thenReturn(user)
+        whenever(userRepository.find(activityToApprove.userId)).thenReturn(user)
         whenever(activityRepository.update(approvedActivity)).thenReturn(approvedActivity)
         whenever(converter.toActivityResponseDTO(approvedActivity.toDomain())).thenReturn(activityResponseDTO)
 
