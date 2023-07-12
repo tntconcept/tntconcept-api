@@ -40,7 +40,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ActivityDateDTO'
+                  $ref: '#/components/schemas/ActivityDateResponse'
     post:
       summary: Creates a new activity.
       operationId: post$tntconcept_rest
@@ -53,7 +53,7 @@ paths:
               type: object
               properties:
                 activityRequest:
-                  $ref: '#/components/schemas/ActivityRequestBodyHookDTO'
+                  $ref: '#/components/schemas/ActivityRequest'
         required: true
       responses:
         "200":
@@ -61,7 +61,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ActivityResponseDTO'
+                $ref: '#/components/schemas/ActivityResponse'
   /api-hook/organization:
     get:
       summary: Retrieves a list of all organizations
@@ -74,7 +74,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/OrganizationResponseDTO'
+                  $ref: '#/components/schemas/OrganizationResponse'
   /api-hook/organization/{id}/project:
     get:
       summary: Retrieves a list of imputable projects from an organization ID
@@ -94,7 +94,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectResponseDTO'
+                  $ref: '#/components/schemas/ProjectResponse'
   /api-hook/project/{id}/role:
     get:
       summary: Retrieves a list of project roles from a project ID
@@ -114,7 +114,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectRoleDTO'
+                  $ref: '#/components/schemas/ProjectRoleResponse'
   /api/activity:
     get:
       tags:
@@ -806,45 +806,7 @@ paths:
                 $ref: '#/components/schemas/Object'
 components:
   schemas:
-    ActivitiesResponseDTO:
-      required:
-      - billable
-      - description
-      - duration
-      - id
-      - organization
-      - project
-      - projectRole
-      - startDate
-      - userId
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        startDate:
-          type: string
-          format: date-time
-        duration:
-          type: integer
-          format: int32
-        description:
-          type: string
-        projectRole:
-          $ref: '#/components/schemas/ProjectRoleResponseDTOOld'
-        userId:
-          type: integer
-          format: int64
-        billable:
-          type: boolean
-        organization:
-          $ref: '#/components/schemas/OrganizationResponseDTO'
-        project:
-          $ref: '#/components/schemas/ProjectResponseDTO'
-        hasImage:
-          type: boolean
-          nullable: true
-    ActivityDateDTO:
+    ActivityDateResponse:
       required:
       - activities
       - date
@@ -860,7 +822,7 @@ components:
         activities:
           type: array
           items:
-            $ref: '#/components/schemas/ActivitiesResponseDTO'
+            $ref: '#/components/schemas/ActivityResponse'
     ActivityFilterRequest:
       type: object
       properties:
@@ -921,42 +883,6 @@ components:
           pattern: "^data:[^,]+;base64,.+$"
           type: string
           nullable: true
-    ActivityRequestBodyHookDTO:
-      required:
-      - billable
-      - description
-      - duration
-      - hasImage
-      - projectRoleId
-      - startDate
-      - userName
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          nullable: true
-        startDate:
-          type: string
-          format: date-time
-        duration:
-          type: integer
-          format: int32
-        description:
-          maxLength: 2048
-          type: string
-        billable:
-          type: boolean
-        projectRoleId:
-          type: integer
-          format: int64
-        hasImage:
-          type: boolean
-        imageFile:
-          type: string
-          nullable: true
-        userName:
-          type: string
     ActivityResponse:
       required:
       - approvalState
@@ -983,37 +909,6 @@ components:
           format: int64
         interval:
           $ref: '#/components/schemas/IntervalResponse'
-        userId:
-          type: integer
-          format: int64
-        approvalState:
-          $ref: '#/components/schemas/ApprovalState'
-    ActivityResponseDTO:
-      required:
-      - approvalState
-      - billable
-      - description
-      - id
-      - interval
-      - projectRoleId
-      - userId
-      type: object
-      properties:
-        billable:
-          type: boolean
-        description:
-          type: string
-        hasEvidences:
-          type: boolean
-          nullable: true
-        id:
-          type: integer
-          format: int64
-        projectRoleId:
-          type: integer
-          format: int64
-        interval:
-          $ref: '#/components/schemas/IntervalResponseDTO'
         userId:
           type: integer
           format: int64
@@ -1148,25 +1043,6 @@ components:
           format: int32
         timeUnit:
           $ref: '#/components/schemas/TimeUnit'
-    IntervalResponseDTO:
-      required:
-      - duration
-      - end
-      - start
-      - timeUnit
-      type: object
-      properties:
-        start:
-          type: string
-          format: date-time
-        end:
-          type: string
-          format: date-time
-        duration:
-          type: integer
-          format: int32
-        timeUnit:
-          $ref: '#/components/schemas/TimeUnit'
     Locale:
       required:
       - country
@@ -1256,17 +1132,6 @@ components:
           format: int64
         name:
           type: string
-    OrganizationResponseDTO:
-      required:
-      - id
-      - name
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
     PreviousAnnualBalanceResponse:
       required:
       - balance
@@ -1324,74 +1189,6 @@ components:
           type: integer
           format: int64
           nullable: true
-    ProjectResponseDTO:
-      required:
-      - billable
-      - id
-      - name
-      - open
-      - organizationId
-      - startDate
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        open:
-          type: boolean
-        billable:
-          type: boolean
-        organizationId:
-          type: integer
-          format: int64
-        startDate:
-          type: string
-          format: date
-        blockDate:
-          type: string
-          format: date
-          nullable: true
-        blockedByUser:
-          type: integer
-          format: int64
-          nullable: true
-    ProjectRoleDTO:
-      required:
-      - id
-      - isWorkingTime
-      - maxAllowed
-      - name
-      - organizationId
-      - projectId
-      - requireApproval
-      - requireEvidence
-      - timeUnit
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        organizationId:
-          type: integer
-          format: int64
-        projectId:
-          type: integer
-          format: int64
-        maxAllowed:
-          type: integer
-          format: int32
-        isWorkingTime:
-          type: boolean
-        timeUnit:
-          $ref: '#/components/schemas/TimeUnit'
-        requireEvidence:
-          $ref: '#/components/schemas/RequireEvidence'
-        requireApproval:
-          type: boolean
     ProjectRoleResponse:
       required:
       - id
@@ -1426,20 +1223,6 @@ components:
         requireEvidence:
           $ref: '#/components/schemas/RequireEvidence'
         requireApproval:
-          type: boolean
-    ProjectRoleResponseDTOOld:
-      required:
-      - id
-      - name
-      - requireEvidence
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-        requireEvidence:
           type: boolean
     ProjectRoleUserResponse:
       required:
