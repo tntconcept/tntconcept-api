@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.services.HolidayService
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -14,8 +14,9 @@ class ActivityTest {
     private val dateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25)
     private val dateTimePlusOneHour = dateTime.plusHours(1L)
 
-    private val holidayService = mock<HolidayService>()
-    private val calendarFactory = CalendarFactory(holidayService)
+    private val holidayRepository = mock<HolidayRepository>()
+
+    private val calendarFactory = CalendarFactory(holidayRepository)
     private val calendar = calendarFactory.create(DateInterval.ofYear(2023))
 
     @Test

@@ -1,4 +1,4 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.calendar
 
 import com.autentia.tnt.binnacle.usecases.CalendarDaysForProjectRoleUseCase
 import com.autentia.tnt.binnacle.usecases.CalendarWorkableDaysUseCase

@@ -1,5 +1,12 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.hook
 
+import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.api.binnacle.ErrorResponseMaxHoursLimit
+import com.autentia.tnt.api.binnacle.ErrorValues
+import com.autentia.tnt.api.binnacle.activity.ActivityResponse
+import com.autentia.tnt.api.binnacle.organization.OrganizationResponse
+import com.autentia.tnt.api.binnacle.project.ProjectResponse
+import com.autentia.tnt.api.binnacle.projectrole.ProjectRoleResponse
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
@@ -25,29 +32,29 @@ internal class HookController(
 ) {
     @Post("/activity")
     @Operation(summary = "Creates a new activity.")
-    internal fun post(@Valid activityRequest: ActivityRequestBodyHookDTO): ActivityResponseDTO =
-        activityCreationUseCase.createActivity(activityRequest)
+    internal fun post(@Valid activityRequest: ActivityRequest): ActivityResponse =
+        ActivityResponse.from(activityCreationUseCase.createActivity(activityRequest.toDto()))
 
     @Get("/activity")
     @Operation(summary = "Gets activities between two dates.")
-    internal fun get(startDate: LocalDate, endDate: LocalDate, user: String): List<ActivityDateDTO> =
-        activitiesBetweenDateUseCase.getActivities(startDate, endDate, user)
+    internal fun get(startDate: LocalDate, endDate: LocalDate, user: String): List<ActivityDateResponse> =
+        activitiesBetweenDateUseCase.getActivities(startDate, endDate, user).map { ActivityDateResponse.from(it) }
 
     @Operation(summary = "Retrieves a list of all organizations")
     @Get("/organization")
-    fun getAllOrganizations(): List<OrganizationResponseDTO> =
-        imputableOrganizationsUseCase.get()
+    fun getAllOrganizations(): List<OrganizationResponse> =
+        imputableOrganizationsUseCase.get().map { OrganizationResponse.from(it) }
 
     @Operation(summary = "Retrieves a list of imputable projects from an organization ID")
     @Get("/organization/{id}/project")
-    fun getOrganizationsProjects(id: Long): List<ProjectResponseDTO> {
-        return imputableProjectsByOrganizationIdUseCase.get(id)
+    fun getOrganizationsProjects(id: Long): List<ProjectResponse> {
+        return imputableProjectsByOrganizationIdUseCase.get(id).map { ProjectResponse.from(it) }
     }
 
     @Operation(summary = "Retrieves a list of project roles from a project ID")
     @Get("/project/{id}/role")
-    fun getProjectRolesByProjectId(id: Int): List<ProjectRoleDTO> {
-        return projectRolesByProjectIdUseCase.get(id)
+    fun getProjectRolesByProjectId(id: Int): List<ProjectRoleResponse> {
+        return projectRolesByProjectIdUseCase.get(id).map { ProjectRoleResponse.from(it) }
     }
 
     @Error

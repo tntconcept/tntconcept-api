@@ -1,4 +1,4 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.user
 
 import com.autentia.tnt.binnacle.entities.dto.UserInfoResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
@@ -18,12 +18,13 @@ internal class UserController(
 ) {
     @Operation(summary = "Retrieves the list of active users")
     @Get
-    internal fun get(): List<UserResponseDTO> = usersRetrievalUseCase.getAllActiveUsers()
+    internal fun get(): List<UserResponse> =
+        usersRetrievalUseCase.getAllActiveUsers().map { UserResponse.from(it) }
 
     @Operation(summary = "Retrieves the logged user")
     @Get("/me")
-    internal fun getUser(): UserInfoResponseDTO =
-        findUserInfoUseCase.find()
+    internal fun getUser(): UserInfoResponse =
+        UserInfoResponse.from(findUserInfoUseCase.find())
 
     @Error
     internal fun onIllegalStateException(request: HttpRequest<*>, e: IllegalStateException) =

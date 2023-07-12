@@ -8,9 +8,9 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.HolidayService
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -27,8 +27,8 @@ internal class SearchByRoleIdUseCaseTest {
 
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityRepository = mock<ActivityRepository>()
-    private val holidayService = mock<HolidayService>()
-    private val calendarFactory = CalendarFactory(holidayService)
+    private val holidayRepository = mock<HolidayRepository>()
+    private val calendarFactory = CalendarFactory(holidayRepository)
     private val activitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
     private val activityCalendarService = ActivityCalendarService(calendarFactory, activitiesCalendarFactory)
     private val projectResponseConverter = ProjectResponseConverter()

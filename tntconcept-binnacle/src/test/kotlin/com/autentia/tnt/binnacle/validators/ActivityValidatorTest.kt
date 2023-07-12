@@ -7,13 +7,13 @@ import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
@@ -22,7 +22,7 @@ import java.util.*
 
 @TestInstance(PER_CLASS)
 internal class ActivityValidatorTest {
-    private val holidayService = mock<HolidayService>()
+    private val holidayRepository = mock<HolidayRepository>()
     private val activityService = mock<ActivityService>()
     private val projectRoleService = mock<ProjectRoleService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
@@ -33,13 +33,13 @@ internal class ActivityValidatorTest {
             activityCalendarService,
             projectService
         )
-    private val calendarFactory: CalendarFactory = CalendarFactory(holidayService)
+    private val calendarFactory: CalendarFactory = CalendarFactory(holidayRepository)
 
     @AfterEach
     fun resetMocks() {
         reset(
             projectRoleService,
-            holidayService,
+            holidayRepository,
             activityService,
             activityCalendarService,
             projectService

@@ -1,6 +1,6 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.search
 
-import com.autentia.tnt.api.binnacle.search.SearchResponse
+import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
@@ -54,7 +54,7 @@ internal class SearchControllerIT {
         )
         doReturn(roleDescriptions).whenever(searchUseCase).get(searchedRoles, YEAR)
 
-        val response = client.exchangeObject<SearchResponse>(HttpRequest.GET("/api/search?roleIds=${TRAINING.id}&year=${YEAR}"))
+        val response = client.exchangeObject<SearchResponse>(HttpRequest.GET("/api/search?roleIds=${TRAINING.id}&year=$YEAR"))
 
         assertEquals(HttpStatus.OK, response.status)
         assertEquals(SearchResponse.from(roleDescriptions), response.body.get())

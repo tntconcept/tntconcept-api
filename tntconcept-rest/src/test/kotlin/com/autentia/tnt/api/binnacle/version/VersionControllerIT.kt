@@ -1,5 +1,6 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.version
 
+import com.autentia.tnt.api.binnacle.exchangeObject
 import io.micronaut.context.annotation.Property
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus

@@ -1,5 +1,6 @@
-package com.autentia.tnt.api.binnacle
+package com.autentia.tnt.api.binnacle.user
 
+import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.binnacle.entities.Role
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
@@ -69,22 +70,22 @@ internal class UserControllerIT {
 
         val request = HttpRequest.GET<Any>("/api/user/me")
 
-        val response = client.exchange(request, UserInfoResponseDTO::class.java)
+        val response = client.exchange(request, UserInfoResponse::class.java)
 
         assertEquals(200, response.status.code)
-        assertEquals(userInfoResponseDTO, response.body.get())
+        assertEquals(UserInfoResponse.from(userInfoResponseDTO), response.body.get())
     }
 
     @Test
     fun `get all active users`() {
         whenever(usersRetrievalUseCase.getAllActiveUsers()).thenReturn(listOf(USER_RESPONSE_DTO))
 
-        val response = client.exchangeList<UserResponseDTO>(
+        val response = client.exchangeList<UserResponse>(
             HttpRequest.GET("/api/user"),
         )
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(USER_RESPONSE_DTO), response.body.get())
+        assertEquals(listOf(UserResponse.from(USER_RESPONSE_DTO)), response.body.get())
     }
 
     private companion object {

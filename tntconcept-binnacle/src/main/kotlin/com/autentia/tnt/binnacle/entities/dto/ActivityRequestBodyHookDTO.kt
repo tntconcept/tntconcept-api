@@ -15,5 +15,5 @@ data class ActivityRequestBodyHookDTO(
     val projectRoleId: Long,
     val hasImage: Boolean,
     val imageFile: String? = null,
-    val userName: String
+    val userName: String,
 )
