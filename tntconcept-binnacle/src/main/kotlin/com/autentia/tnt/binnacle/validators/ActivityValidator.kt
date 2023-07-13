@@ -257,6 +257,12 @@ internal class ActivityValidator(
         }
     }
 
+    fun checkActivityIsBeforeProjectCreationDate(activity: Activity, project: Project) {
+        when {
+            activity.timeInterval.start.toLocalDate() < project.startDate -> throw ActivityBeforeProjectCreationDate()
+        }
+    }
+
     private companion object {
         private const val DECIMAL_HOUR = 60.0
     }
