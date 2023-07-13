@@ -132,12 +132,8 @@ internal class ActivityCreationUseCaseTest {
 
     }
 
-    @ParameterizedTest
-    @MethodSource("exceptionProviderProject")
-    fun `create activity before project creation date throws an exception`(
-            testDescription: String,
-            activityRequest: ActivityRequestDTO,
-    ) {
+    @Test
+    fun `create activity before project creation date throws an exception`() {
 
         val activityEntity = createActivity(userId = user.id)
         val activityDomain = activityEntity.toDomain();
@@ -148,7 +144,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
 
         assertThrows<ActivityBeforeProjectCreationDate> {
-            activityCreationUseCase.createActivity(activityRequest, Locale.ENGLISH)
+            activityCreationUseCase.createActivity(ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE, Locale.ENGLISH)
         }
 
     }
