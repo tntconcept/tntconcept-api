@@ -10,6 +10,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
+import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDate
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -54,6 +55,7 @@ internal class ActivityCreationUseCaseTest {
 
     private val activityCreationUseCase = ActivityCreationUseCase(
         projectRoleRepository,
+        projectService,
         activityRepository,
         activityEvidenceService,
         activityCalendarService,
@@ -102,6 +104,13 @@ internal class ActivityCreationUseCaseTest {
         )
     )
 
+    private fun exceptionProviderProject() = arrayOf(
+            arrayOf(
+                    "ActivityBeforeProjectCreationDateException",
+                    ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE
+            )
+    )
+
     @ParameterizedTest
     @MethodSource("exceptionProvider")
     fun `create activity with incomplete evidence information throws an exception`(
@@ -122,6 +131,28 @@ internal class ActivityCreationUseCaseTest {
         }
 
     }
+
+    @ParameterizedTest
+    @MethodSource("exceptionProviderProject")
+    fun `create activity before project creation date throws an exception`(
+            testDescription: String,
+            activityRequest: ActivityRequestDTO,
+    ) {
+
+        val activityEntity = createActivity(userId = user.id)
+        val activityDomain = activityEntity.toDomain();
+
+
+        whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
+        whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
+        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+
+        assertThrows<ActivityBeforeProjectCreationDate> {
+            activityCreationUseCase.createActivity(activityRequest, Locale.ENGLISH)
+        }
+
+    }
+
 
     @Test
     fun `created activity with no approval required and with no evidence`() {
@@ -316,6 +347,17 @@ internal class ActivityCreationUseCaseTest {
             PROJECT_ROLE_NO_APPROVAL.id,
             false,
             EVIDENCE,
+        )
+
+        private val ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE = ActivityRequestDTO(
+                null,
+                TIME_NOW.minusDays(3),
+                TIME_NOW.plusMinutes(75L).minusDays(3),
+                "New activity wit",
+                false,
+                PROJECT_ROLE_NO_APPROVAL.id,
+                true,
+                EVIDENCE
         )
 
         private val ACTIVITY_WITH_EVIDENCE_DTO = ActivityRequestDTO(
