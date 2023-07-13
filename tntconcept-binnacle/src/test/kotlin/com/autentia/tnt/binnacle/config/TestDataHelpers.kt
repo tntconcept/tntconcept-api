@@ -119,6 +119,7 @@ internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
     RequireEvidence.WEEKLY,
     createProject(),
     0,
+    0,
     true,
     false,
     TimeUnit.MINUTES
@@ -129,6 +130,7 @@ internal fun createProjectRole(id: Long = 1L, project: Project): ProjectRole = P
     "Dummy Project role",
     RequireEvidence.WEEKLY,
     project,
+    0,
     0,
     true,
     false,

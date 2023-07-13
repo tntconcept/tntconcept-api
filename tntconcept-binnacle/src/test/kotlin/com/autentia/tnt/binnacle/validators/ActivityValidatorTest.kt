@@ -231,7 +231,8 @@ internal class ActivityValidatorTest {
                         start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
                         end = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(23, 59, 59),
                         duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
-                        projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS).copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                        projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS)
+                            .copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
                 ),
                 createProjectRoleWithLimit(
@@ -242,7 +243,8 @@ internal class ActivityValidatorTest {
                     start = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(LocalTime.MIN),
                     end = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(23, 59, 59),
                     duration = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
-                    projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS).copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                    projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS)
+                        .copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
                 0.0,
                 firstDayOfYear,
@@ -255,7 +257,8 @@ internal class ActivityValidatorTest {
                         start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
                         end = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(23, 59, 59),
                         duration = (DAYS - 1) * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
-                        projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS).copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                        projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                            .copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
                 ),
                 createProjectRoleWithLimit(
@@ -266,7 +269,8 @@ internal class ActivityValidatorTest {
                     start = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(LocalTime.MIN),
                     end = LocalDate.of(2023, 6, 21).plusDays(3L).atTime(23, 59, 59),
                     duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
-                    projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS).copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                    projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                        .copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
                 0.0,
                 firstDayOfYear,
@@ -1034,7 +1038,11 @@ internal class ActivityValidatorTest {
             "blocked",
             RequireEvidence.NO,
             blockedPastProject,
-            0, true, false, TimeUnit.MINUTES
+            0,
+            0,
+            true,
+            false,
+            TimeUnit.MINUTES
         )
 
         private val projectRoleWithNonBlockedProject = ProjectRole(
@@ -1042,11 +1050,25 @@ internal class ActivityValidatorTest {
             "blocked",
             RequireEvidence.NO,
             nonBlockedProject,
-            0, true, false, TimeUnit.MINUTES
+            0,
+            0,
+            true,
+            false,
+            TimeUnit.MINUTES
         )
 
         private val projectRole =
-            ProjectRole(1, "vac", RequireEvidence.NO, vacationProject, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(
+                1,
+                "vac",
+                RequireEvidence.NO,
+                vacationProject,
+                0,
+                0,
+                true,
+                false,
+                TimeUnit.MINUTES
+            )
         private val closedProject =
             Project(
                 CLOSED_ID,
@@ -1072,9 +1094,25 @@ internal class ActivityValidatorTest {
                 emptyList()
             )
         private val blockedProjectRole =
-            ProjectRole(4, "Architect", RequireEvidence.NO, blockedProject, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(4,
+                "Architect",
+                RequireEvidence.NO,
+                blockedProject,
+                0,
+                0,
+                true,
+                false,
+                TimeUnit.MINUTES)
         private val closedProjectRole =
-            ProjectRole(CLOSED_ID, "Architect", RequireEvidence.NO, closedProject, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(CLOSED_ID,
+                "Architect",
+                RequireEvidence.NO,
+                closedProject,
+                0,
+                0,
+                true,
+                false,
+                TimeUnit.MINUTES)
 
         private val projectRoleLimited =
             ProjectRole(
@@ -1083,6 +1121,7 @@ internal class ActivityValidatorTest {
                 RequireEvidence.NO,
                 vacationProject,
                 (MINUTES_IN_HOUR * 8),
+                0,
                 false,
                 false,
                 TimeUnit.MINUTES
@@ -1093,7 +1132,11 @@ internal class ActivityValidatorTest {
             "blocked",
             RequireEvidence.NO,
             blockedProject,
-            0, true, false, TimeUnit.MINUTES
+            0,
+            0,
+            true,
+            false,
+            TimeUnit.MINUTES
         )
 
 
@@ -1340,6 +1383,7 @@ internal class ActivityValidatorTest {
             requireEvidence,
             project,
             maxAllowed,
+            0,
             true,
             false,
             timeUnit

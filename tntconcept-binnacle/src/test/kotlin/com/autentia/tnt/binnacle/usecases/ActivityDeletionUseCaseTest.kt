@@ -57,7 +57,7 @@ internal class ActivityDeletionUseCaseTest {
         val PROJECT_ROLE =
             ProjectRole(
                 10L, "Dummy Project role", RequireEvidence.NO,
-                PROJECT, 0, true, false, TimeUnit.MINUTES
+                PROJECT, 0, 0, true, false, TimeUnit.MINUTES
             )
         private val TODAY = LocalDateTime.now()
 

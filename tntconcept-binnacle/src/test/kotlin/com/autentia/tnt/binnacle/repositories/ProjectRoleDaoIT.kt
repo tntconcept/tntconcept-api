@@ -4,8 +4,7 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -74,6 +73,15 @@ internal class ProjectRoleDaoIT {
 
         assertThat(result).isNotEmpty()
         assertThat(result.map { it.id }).containsExactlyInAnyOrderElementsOf(expectedIdentifiers)
+    }
+
+    @Test
+    fun `should get project role by id with maxAllowed fields`() {
+        val result = projectRoleDao.findById(7L)
+
+        assertFalse(result.isEmpty)
+        assertEquals(4800, result.get().maxAllowed)
+        assertEquals(960, result.get().maxAllowedByActivity)
     }
 
 }

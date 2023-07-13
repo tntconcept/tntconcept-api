@@ -37,6 +37,8 @@ data class ProjectRole(
 
     val maxAllowed: Int,
 
+    val maxAllowedByActivity: Int,
+
     val isWorkingTime: Boolean,
 
     val isApprovalRequired: Boolean,
@@ -63,6 +65,7 @@ data class ProjectRole(
             projectRole.requireEvidence,
             project,
             projectRole.maxAllowed,
+            0,
             projectRole.isWorkingTime,
             projectRole.isApprovalRequired,
             projectRole.timeUnit

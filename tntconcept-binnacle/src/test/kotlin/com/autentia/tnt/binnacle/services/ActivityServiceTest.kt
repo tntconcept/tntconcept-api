@@ -105,7 +105,7 @@ internal class ActivityServiceTest {
         private val project =
             Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
         private val projectRole =
-            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, 0, true, false, TimeUnit.MINUTES)
 
         private const val notFoundActivityId = 1L
 

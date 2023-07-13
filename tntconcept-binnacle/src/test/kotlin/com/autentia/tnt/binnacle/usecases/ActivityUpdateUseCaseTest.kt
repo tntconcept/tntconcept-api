@@ -240,7 +240,7 @@ internal class ActivityUpdateUseCaseTest {
         private val evidenceDomain = evidence.toDomain()
 
         private val PROJECT_ROLE =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
         private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
             10L,
             "Dummy Project role",

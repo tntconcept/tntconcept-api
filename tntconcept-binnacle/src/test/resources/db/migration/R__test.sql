@@ -39,16 +39,16 @@ VALUES (6, 3, '2023-04-24', null, 1, 'Seize distributed niches', '', null, null,
 
 -- Project role with weekly evidence
 INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId,
-                         departmentId, insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime,
+                         departmentId, insertDate, updateDate, maxAllowed, maxAllowedByActivity, timeUnit, isWorkingTime,
                          isApprovalRequired)
-VALUES (6, 6, 'Project 6 weekly', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0,
+VALUES (6, 6, 'Project 6 weekly', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0, 0,
         'MINUTES', 1, 0);
 
 -- Project role with evidence once
 INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId,
-                         departmentId, insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime,
+                         departmentId, insertDate, updateDate, maxAllowed, maxAllowedByActivity, timeUnit, isWorkingTime,
                          isApprovalRequired)
-VALUES (7, 6, 'Project 6 once', 0.00, 0, 'ONCE', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0,
+VALUES (7, 6, 'Project 6 once', 0.00, 0, 'ONCE', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 4800, 960,
         'DAYS', 1, 0);
 
 -- Project id = 7
@@ -59,20 +59,20 @@ VALUES (7, 3, '2023-04-24', null, 1, 'Envisioneer one-to-one e-services', '', nu
 
 -- Project weekly
 INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId, departmentId,
-                         insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
-VALUES (8, 7, 'Project 7 weekly', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0,
+                         insertDate, updateDate, maxAllowed, maxAllowedByActivity, timeUnit, isWorkingTime, isApprovalRequired)
+VALUES (8, 7, 'Project 7 weekly', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0, 0,
         'MINUTES', 1, 0);
 
 -- Project once
 INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId, departmentId,
-                         insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
-VALUES (9, 7, 'Project 7 once', 0.00, 0, 'ONCE', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0, 'MINUTES',
+                         insertDate, updateDate, maxAllowed, maxAllowedByActivity, timeUnit, isWorkingTime, isApprovalRequired)
+VALUES (9, 7, 'Project 7 once', 0.00, 0, 'ONCE', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0, 0, 'MINUTES',
         1, 0);
 
 -- Project none
 INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId, departmentId,
-                         insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
-VALUES (10, 7, 'Project 7 none', 0.00, 0, 'NO', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0, 'MINUTES',
+                         insertDate, updateDate, maxAllowed, maxAllowedByActivity, timeUnit, isWorkingTime, isApprovalRequired)
+VALUES (10, 7, 'Project 7 none', 0.00, 0, 'NO', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20', 0, 0, 'MINUTES',
         1, 0);
 
 
@@ -84,14 +84,14 @@ VALUES (8, 3, '2023-04-24', null, 1, 'Project with roles for testing', '', null,
         '2023-04-24 06:33:16', '2023-04-24 06:33:21');
 
 INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId, departmentId,
-                         insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
+                         insertDate, updateDate, maxAllowed, maxAllowedByActivity, timeUnit, isWorkingTime, isApprovalRequired)
 VALUES (11, 8, 'Project no working time', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20',
-        0, 'MINUTES', 0, 0);
+        0, 0, 'MINUTES', 0, 0);
 
 INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId, departmentId,
-                         insertDate, updateDate, maxAllowed, timeUnit, isWorkingTime, isApprovalRequired)
+                         insertDate, updateDate, maxAllowed, maxAllowedByActivity, timeUnit, isWorkingTime, isApprovalRequired)
 VALUES (12, 8, 'Project no working time 2', 0.00, 0, 'WEEKLY', null, null, '2023-04-24 06:33:16', '2023-04-24 06:33:20',
-        0, 'MINUTES', 0, 0);
+        0, 0, 'MINUTES', 0, 0);
 
 
 -- Closed Project for testing purposes

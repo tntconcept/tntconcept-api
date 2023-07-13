@@ -270,16 +270,16 @@ internal class ActivityCreationUseCaseTest {
             listOf()
         )
         private val PROJECT_ROLE_NO_APPROVAL =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
 
         private val PROJECT_ROLE_APPROVAL =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.MINUTES)
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, true, TimeUnit.MINUTES)
 
         private val NATURAL_DAYS_PROJECT_ROLE =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.NATURAL_DAYS)
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, true, TimeUnit.NATURAL_DAYS)
 
         private val WORKABLE_DAYS_PROJECT_ROLE =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, true, TimeUnit.DAYS)
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, true, TimeUnit.DAYS)
 
 
 
