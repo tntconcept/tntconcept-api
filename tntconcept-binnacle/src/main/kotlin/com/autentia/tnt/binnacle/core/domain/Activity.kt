@@ -19,7 +19,7 @@ data class Activity private constructor(
     val hasEvidences: Boolean,
     var approvalState: ApprovalState,
     var evidence: Evidence?,
-) : ActivityTimeInterval(timeInterval, projectRole.timeUnit) {
+) : ActivityTimeInterval(timeInterval, projectRole.getTimeUnit()) {
     fun getStart() = timeInterval.start
 
     fun getEnd() = timeInterval.end
@@ -34,7 +34,7 @@ data class Activity private constructor(
         }
     }
 
-    fun isMoreThanOneDay() = projectRole.timeUnit === TimeUnit.DAYS || timeInterval.getDuration().toDays().toInt() > 0
+    fun isMoreThanOneDay() = projectRole.getTimeUnit() === TimeUnit.DAYS || timeInterval.getDuration().toDays().toInt() > 0
 
     fun activityCanBeApproved() =
         RequireEvidence.isRequired(projectRole.requireEvidence) && approvalState === ApprovalState.PENDING && hasEvidences
@@ -59,8 +59,8 @@ data class Activity private constructor(
         ) = Activity(
             id,
             TimeInterval.of(
-                getDateAtTimeIfNecessary(timeInterval.start, projectRole.timeUnit, LocalTime.MIN),
-                getDateAtTimeIfNecessary(timeInterval.end, projectRole.timeUnit, LocalTime.of(23, 59, 59))
+                getDateAtTimeIfNecessary(timeInterval.start, projectRole.getTimeUnit(), LocalTime.MIN),
+                getDateAtTimeIfNecessary(timeInterval.end, projectRole.getTimeUnit(), LocalTime.of(23, 59, 59))
             ),
             duration,
             description,

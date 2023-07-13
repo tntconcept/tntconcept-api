@@ -13,33 +13,38 @@ data class ProjectRole(
     val name: String,
     val requireEvidence: RequireEvidence,
     val project: Project,
-    val maxAllowed: Int,
-    val timeUnit: TimeUnit,
     val isWorkingTime: Boolean,
-    val isApprovalRequired: Boolean
+    val isApprovalRequired: Boolean,
+    val timeInfo: TimeInfo,
 ) {
     fun getRemainingInUnits(calendar: Calendar, activities: List<Activity>): Int {
         val remaining = getRemaining(calendar, activities)
-        if (timeUnit === TimeUnit.DAYS || timeUnit === TimeUnit.NATURAL_DAYS) {
+        if (timeInfo.timeUnit === TimeUnit.DAYS || timeInfo.timeUnit === TimeUnit.NATURAL_DAYS) {
             return fromMinutesToDays(remaining)
         }
         return remaining
     }
 
-    fun getMaxAllowedInUnits(): Int {
-        if (timeUnit === TimeUnit.DAYS || timeUnit === TimeUnit.NATURAL_DAYS) {
-            return fromMinutesToDays(maxAllowed)
+    fun getMaxTimeAllowedByYear() = timeInfo.maxTimeAllowedByYear
+
+    fun getMaxTimeAllowedByActivity() = timeInfo.maxTimeAllowedByYear
+
+    fun getTimeUnit() = timeInfo.timeUnit
+
+    fun getMaxTimeAllowedByYearInUnits(): Int {
+        if (timeInfo.timeUnit === TimeUnit.DAYS || timeInfo.timeUnit === TimeUnit.NATURAL_DAYS) {
+            return fromMinutesToDays(timeInfo.maxTimeAllowedByYear)
         }
-        return maxAllowed
+        return timeInfo.maxTimeAllowedByYear
     }
 
     fun getApprovalState() = if (isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
 
     private fun getRemaining(calendar: Calendar, activities: List<Activity>) =
-        if (maxAllowed == 0) {
+        if (timeInfo.maxTimeAllowedByYear == 0) {
             0
         } else {
-            maxAllowed - activities.sumOf { activity -> activity.getDuration(calendar) }
+            timeInfo.maxTimeAllowedByYear - activities.sumOf { activity -> activity.getDuration(calendar) }
         }
 
     private fun fromMinutesToDays(minutes: Int) = minutes / (MINUTES_IN_HOUR * HOURS_BY_DAY)

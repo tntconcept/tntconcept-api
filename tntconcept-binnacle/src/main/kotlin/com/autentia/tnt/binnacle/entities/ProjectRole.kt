@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.entities
 
+import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.*
 
@@ -52,10 +53,9 @@ data class ProjectRole(
             name,
             requireEvidence,
             project.toDomain(),
-            maxTimeAllowedByYear,
-            timeUnit,
             isWorkingTime,
-            isApprovalRequired
+            isApprovalRequired,
+            TimeInfo(maxTimeAllowedByYear, maxTimeAllowedByActivity, timeUnit)
         )
 
     companion object {
@@ -64,11 +64,11 @@ data class ProjectRole(
             projectRole.name,
             projectRole.requireEvidence,
             project,
-            projectRole.maxAllowed,
-            0,
+            projectRole.getMaxTimeAllowedByYear(),
+            projectRole.getMaxTimeAllowedByActivity(),
             projectRole.isWorkingTime,
             projectRole.isApprovalRequired,
-            projectRole.timeUnit
+            projectRole.getTimeUnit()
         )
     }
 }

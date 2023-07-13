@@ -27,9 +27,9 @@ class ProjectRoleResponseConverter {
         name = projectRole.name,
         organizationId = projectRole.project.organization.id,
         projectId = projectRole.project.id,
-        maxAllowed = projectRole.maxAllowed,
+        maxAllowed = projectRole.getMaxTimeAllowedByYear(),
         isWorkingTime = projectRole.isWorkingTime,
-        timeUnit = projectRole.timeUnit,
+        timeUnit = projectRole.getTimeUnit(),
         requireEvidence = projectRole.requireEvidence,
         requireApproval = projectRole.isApprovalRequired
     )

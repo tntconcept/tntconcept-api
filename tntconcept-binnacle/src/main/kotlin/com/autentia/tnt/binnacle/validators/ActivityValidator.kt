@@ -51,7 +51,7 @@ internal class ActivityValidator(
                 activityToCreateStartYear,
                 totalRegisteredDurationForThisRoleStartYear
             ) -> throw MaxHoursPerRoleException(
-                activityToCreate.projectRole.maxAllowed / DECIMAL_HOUR,
+                activityToCreate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
                 getRemaining(
                     activityToCreate,
                     totalRegisteredDurationForThisRoleStartYear
@@ -65,7 +65,7 @@ internal class ActivityValidator(
                 activityToCreateEndYear,
                 totalRegisteredDurationForThisRoleEndYear
             ) -> throw MaxHoursPerRoleException(
-                activityToCreate.projectRole.maxAllowed / DECIMAL_HOUR,
+                activityToCreate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
                 getRemaining(
                     activityToCreate,
                     totalRegisteredDurationForThisRoleEndYear
@@ -122,7 +122,7 @@ internal class ActivityValidator(
         activityToUpdate: Activity,
         totalRegisteredDurationForThisRole: Int,
     ): Double {
-        return (activityToUpdate.projectRole.maxAllowed - totalRegisteredDurationForThisRole.toDouble()) / DECIMAL_HOUR
+        return (activityToUpdate.projectRole.getMaxTimeAllowedByYear() - totalRegisteredDurationForThisRole.toDouble()) / DECIMAL_HOUR
     }
 
     private fun isExceedingMaxHoursForRole(
@@ -131,14 +131,14 @@ internal class ActivityValidator(
         year: Int,
         totalRegisteredDurationForThisRole: Int,
     ): Boolean {
-        if (activityToUpdate.projectRole.maxAllowed > 0) {
+        if (activityToUpdate.projectRole.getMaxTimeAllowedByYear() > 0) {
             val totalRegisteredDurationForThisRoleAfterSave = getTotalRegisteredDurationForThisRoleAfterSave(
                 currentActivity,
                 activityToUpdate,
                 year,
                 totalRegisteredDurationForThisRole
             )
-            return totalRegisteredDurationForThisRoleAfterSave > activityToUpdate.projectRole.maxAllowed
+            return totalRegisteredDurationForThisRoleAfterSave > activityToUpdate.projectRole.getMaxTimeAllowedByYear()
         }
         return false
     }
@@ -191,7 +191,7 @@ internal class ActivityValidator(
                 activityToUpdateStartYear,
                 totalRegisteredDurationForThisRoleStartYear
             ) -> throw MaxHoursPerRoleException(
-                activityToUpdate.projectRole.maxAllowed / DECIMAL_HOUR,
+                activityToUpdate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
                 getRemaining(
                     activityToUpdate,
                     totalRegisteredDurationForThisRoleStartYear
@@ -205,7 +205,7 @@ internal class ActivityValidator(
                 activityToUpdateEndYear,
                 totalRegisteredDurationForThisRoleEndYear
             ) -> throw MaxHoursPerRoleException(
-                activityToUpdate.projectRole.maxAllowed / DECIMAL_HOUR,
+                activityToUpdate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
                 getRemaining(
                     activityToUpdate,
                     totalRegisteredDurationForThisRoleEndYear

@@ -14,9 +14,9 @@ class ProjectRoleConverter {
             projectRole.name,
             projectRole.project.organization.id,
             projectRole.project.id,
-            projectRole.getMaxAllowedInUnits(),
+            projectRole.getMaxTimeAllowedByYearInUnits(),
             remaining,
-            projectRole.timeUnit,
+            projectRole.getTimeUnit(),
             projectRole.requireEvidence,
             projectRole.isApprovalRequired,
             userId

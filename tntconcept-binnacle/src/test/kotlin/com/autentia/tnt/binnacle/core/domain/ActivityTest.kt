@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
+import com.autentia.tnt.binnacle.config.createProjectRoleTimeInfo
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
@@ -66,7 +67,7 @@ class ActivityTest {
                 ),
                 60,
                 "Description",
-                createDomainProjectRole().copy(timeUnit = TimeUnit.DAYS),
+                createDomainProjectRole().copy(timeInfo = createProjectRoleTimeInfo(timeUnit = TimeUnit.DAYS)),
                 1L,
                 true,
                 null,
@@ -133,7 +134,7 @@ class ActivityTest {
                 ),
                 480,
                 "Description",
-                createDomainProjectRole().copy(timeUnit = TimeUnit.DAYS),
+                createDomainProjectRole().copy(timeInfo = createProjectRoleTimeInfo(timeUnit = TimeUnit.DAYS)),
                 1L,
                 true,
                 null,
