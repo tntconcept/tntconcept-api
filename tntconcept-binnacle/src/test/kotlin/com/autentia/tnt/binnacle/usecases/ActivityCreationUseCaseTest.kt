@@ -104,13 +104,6 @@ internal class ActivityCreationUseCaseTest {
         )
     )
 
-    private fun exceptionProviderProject() = arrayOf(
-            arrayOf(
-                    "ActivityBeforeProjectCreationDateException",
-                    ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE
-            )
-    )
-
     @ParameterizedTest
     @MethodSource("exceptionProvider")
     fun `create activity with incomplete evidence information throws an exception`(
