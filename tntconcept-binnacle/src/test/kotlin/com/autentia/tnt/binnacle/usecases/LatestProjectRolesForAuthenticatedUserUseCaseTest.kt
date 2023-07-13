@@ -194,9 +194,9 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         private val BEGINNING_OF_THE_YEAR = LocalDate.of(TODAY.year, 1, 1)
         private val START_DATE = TODAY.minusDays(1)
         private val END_DATE = TODAY.minusDays(4)
-        private val projectRole1 = createProjectRole().copy(name = "Role ID 1").copy(maxAllowed = 120)
+        private val projectRole1 = createProjectRole().copy(name = "Role ID 1").copy(maxTimeAllowedByYear = 120)
         private val projectRole2 = createProjectRole(id = 2).copy(name = "Role ID 2")
-        private val projectRole3 = createProjectRole(id = 3).copy(maxAllowed = 960).copy(name = "Role ID 3").copy(timeUnit = TimeUnit.NATURAL_DAYS)
+        private val projectRole3 = createProjectRole(id = 3).copy(maxTimeAllowedByYear = 960).copy(name = "Role ID 3").copy(timeUnit = TimeUnit.NATURAL_DAYS)
         private val authentication =
             ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("admin")))
 

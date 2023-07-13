@@ -35,9 +35,9 @@ data class ProjectRole(
     @JsonIgnore
     val project: Project,
 
-    val maxAllowed: Int,
+    val maxTimeAllowedByYear: Int,
 
-    val maxAllowedByActivity: Int,
+    val maxTimeAllowedByActivity: Int,
 
     val isWorkingTime: Boolean,
 
@@ -52,7 +52,7 @@ data class ProjectRole(
             name,
             requireEvidence,
             project.toDomain(),
-            maxAllowed,
+            maxTimeAllowedByYear,
             timeUnit,
             isWorkingTime,
             isApprovalRequired

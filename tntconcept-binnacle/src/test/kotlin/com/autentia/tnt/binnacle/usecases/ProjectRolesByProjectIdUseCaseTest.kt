@@ -33,7 +33,7 @@ internal class ProjectRolesByProjectIdUseCaseTest {
                     "Dummy Role",
                     ORGANIZATION.id,
                     PROJECT_ID,
-                    PROJECT_ROLE.maxAllowed,
+                    PROJECT_ROLE.maxTimeAllowedByYear,
                     PROJECT_ROLE.isWorkingTime,
                     PROJECT_ROLE.timeUnit,
                     PROJECT_ROLE.requireEvidence,

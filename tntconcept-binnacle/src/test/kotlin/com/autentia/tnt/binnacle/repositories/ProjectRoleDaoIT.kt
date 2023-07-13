@@ -80,8 +80,8 @@ internal class ProjectRoleDaoIT {
         val result = projectRoleDao.findById(7L)
 
         assertFalse(result.isEmpty)
-        assertEquals(4800, result.get().maxAllowed)
-        assertEquals(960, result.get().maxAllowedByActivity)
+        assertEquals(4800, result.get().maxTimeAllowedByYear)
+        assertEquals(960, result.get().maxTimeAllowedByActivity)
     }
 
 }

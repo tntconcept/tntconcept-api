@@ -232,7 +232,7 @@ internal class ActivityValidatorTest {
                         end = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(23, 59, 59),
                         duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
                         projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS)
-                            .copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                            .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
                 ),
                 createProjectRoleWithLimit(
@@ -244,7 +244,7 @@ internal class ActivityValidatorTest {
                     end = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(23, 59, 59),
                     duration = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
                     projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS)
-                        .copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                        .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
                 0.0,
                 firstDayOfYear,
@@ -258,7 +258,7 @@ internal class ActivityValidatorTest {
                         end = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(23, 59, 59),
                         duration = (DAYS - 1) * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
                         projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS)
-                            .copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                            .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
                 ),
                 createProjectRoleWithLimit(
@@ -270,7 +270,7 @@ internal class ActivityValidatorTest {
                     end = LocalDate.of(2023, 6, 21).plusDays(3L).atTime(23, 59, 59),
                     duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
                     projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS)
-                        .copy(maxAllowed = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                        .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
                 0.0,
                 firstDayOfYear,
@@ -333,7 +333,7 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForCreation(activity, user)
             }
 
-            assertEquals(projectRoleLimited.maxAllowed / DECIMAL_HOUR, exception.maxAllowedHours)
+            assertEquals(projectRoleLimited.maxTimeAllowedByYear / DECIMAL_HOUR, exception.maxAllowedHours)
             assertEquals(expectedRemainingHours, exception.remainingHours)
         }
 
@@ -393,7 +393,7 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForCreation(activity, user)
             }
 
-            assertEquals(projectRole.maxAllowed / DECIMAL_HOUR, exception.maxAllowedHours)
+            assertEquals(projectRole.maxTimeAllowedByYear / DECIMAL_HOUR, exception.maxAllowedHours)
             assertEquals(0.0, exception.remainingHours)
             assertEquals(2023, exception.year)
         }
@@ -709,7 +709,7 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
             }
 
-            assertEquals(projectRoleLimited.maxAllowed / DECIMAL_HOUR, exception.maxAllowedHours)
+            assertEquals(projectRoleLimited.maxTimeAllowedByYear / DECIMAL_HOUR, exception.maxAllowedHours)
             assertEquals(expectedRemainingHours, exception.remainingHours)
         }
 
@@ -782,7 +782,7 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForUpdate(activityToValidate, currentActivity, user)
             }
 
-            assertEquals(projectRole.maxAllowed / DECIMAL_HOUR, exception.maxAllowedHours)
+            assertEquals(projectRole.maxTimeAllowedByYear / DECIMAL_HOUR, exception.maxAllowedHours)
             assertEquals(0.0, exception.remainingHours)
             assertEquals(2023, exception.year)
         }
@@ -1152,8 +1152,8 @@ internal class ActivityValidatorTest {
             id = 1L,
             start = LocalDateTime.of(LocalDate.now(), LocalTime.now()),
             end = LocalDateTime.of(LocalDate.now(), LocalTime.now())
-                .plusMinutes(projectRoleLimited.maxAllowed.toLong()),
-            duration = projectRoleLimited.maxAllowed,
+                .plusMinutes(projectRoleLimited.maxTimeAllowedByYear.toLong()),
+            duration = projectRoleLimited.maxTimeAllowedByYear,
             projectRole = projectRoleLimited
         )
 
@@ -1161,30 +1161,30 @@ internal class ActivityValidatorTest {
             id = 1L,
             start = LocalDateTime.of(LocalDate.now().minusYears(1L), LocalTime.now()),
             end = LocalDateTime.of(LocalDate.now().minusYears(1L), LocalTime.now())
-                .plusMinutes((projectRoleLimited.maxAllowed - 120).toLong()),
-            duration = projectRoleLimited.maxAllowed - 120,
+                .plusMinutes((projectRoleLimited.maxTimeAllowedByYear - 120).toLong()),
+            duration = projectRoleLimited.maxTimeAllowedByYear - 120,
             projectRole = projectRoleLimited
         )
 
         private val activityReachedLimitTimeOnly = createActivity(
             start = yesterdayDateTime,
-            end = yesterdayDateTime.plusMinutes(projectRoleLimited.maxAllowed.toLong()),
-            duration = projectRoleLimited.maxAllowed,
+            end = yesterdayDateTime.plusMinutes(projectRoleLimited.maxTimeAllowedByYear.toLong()),
+            duration = projectRoleLimited.maxTimeAllowedByYear,
             projectRole = projectRoleLimited
         )
 
         private val activityReachedLimitTimeOnlyAYearAgo = createActivity(
             start = yesterdayDateTime.minusYears(1L),
-            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimited.maxAllowed.toLong()),
-            duration = projectRoleLimited.maxAllowed,
+            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimited.maxTimeAllowedByYear.toLong()),
+            duration = projectRoleLimited.maxTimeAllowedByYear,
             projectRole = projectRoleLimited
         )
 
         private val activityForLimitedProjectRoleAYearAgo = createActivity(
             id = 1L,
             start = yesterdayDateTime.minusYears(1L),
-            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimited.maxAllowed - 120L),
-            duration = projectRoleLimited.maxAllowed - 120,
+            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimited.maxTimeAllowedByYear - 120L),
+            duration = projectRoleLimited.maxTimeAllowedByYear - 120,
             projectRole = projectRoleLimited
         )
 
@@ -1197,8 +1197,8 @@ internal class ActivityValidatorTest {
 
         private val activityReachedLimitTodayTimeOnly = createActivity(
             start = todayDateTime,
-            end = todayDateTime.plusMinutes(projectRoleLimited.maxAllowed.toLong()),
-            duration = projectRoleLimited.maxAllowed,
+            end = todayDateTime.plusMinutes(projectRoleLimited.maxTimeAllowedByYear.toLong()),
+            duration = projectRoleLimited.maxTimeAllowedByYear,
             projectRole = projectRoleLimited
         )
 
