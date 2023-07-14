@@ -29,7 +29,7 @@ class ProjectRoleTest {
     fun `test GetRemainingInUnits in days with maxAllowed`() {
         val dateTime = LocalDateTime.of(2023, 4, 13, 0, 0, 0)
         val dateTimePlusOneDay = LocalDateTime.of(2023, 4, 13, 23, 59, 59)
-        val projectRole = createDomainProjectRole().copy(timeInfo = TimeInfo(960, 0 , TimeUnit.DAYS))
+        val projectRole = createDomainProjectRole().copy(timeInfo = TimeInfo(MaxTimeAllowed(960, 0) , TimeUnit.DAYS))
         assertEquals(
             1,
             projectRole

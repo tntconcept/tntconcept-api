@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.entities
 
+import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.*
@@ -55,7 +56,7 @@ data class ProjectRole(
             project.toDomain(),
             isWorkingTime,
             isApprovalRequired,
-            TimeInfo(maxTimeAllowedByYear, maxTimeAllowedByActivity, timeUnit)
+            TimeInfo(MaxTimeAllowed(maxTimeAllowedByYear, maxTimeAllowedByActivity), timeUnit)
         )
 
     companion object {

@@ -2,11 +2,13 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.Evidence
-import com.autentia.tnt.binnacle.core.domain.TimeInfo
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.Organization
+import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.*
@@ -360,14 +362,14 @@ internal class ActivityValidatorTest {
                 createDomainActivity(
                     start = LocalDateTime.of(2022, 12, 31, 0, 0, 0),
                     end = LocalDateTime.of(2022, 12, 31, 23, 59, 59),
-                    projectRole = projectRole.toDomain().copy(timeInfo = TimeInfo(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity, TimeUnit.DAYS))
+                    projectRole = projectRole.toDomain().copy(timeInfo = TimeInfo(MaxTimeAllowed(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity), TimeUnit.DAYS))
                 )
             )
             val activities2023 = listOf(
                 createDomainActivity(
                     start = LocalDateTime.of(2023, 1, 1, 8, 0, 0),
                     end = LocalDateTime.of(2023, 1, 1, 16, 0, 0),
-                    projectRole = projectRole.toDomain().copy(timeInfo = TimeInfo(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity, TimeUnit.MINUTES))
+                    projectRole = projectRole.toDomain().copy(timeInfo = TimeInfo(MaxTimeAllowed(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity), TimeUnit.MINUTES))
                 )
             )
 
@@ -745,7 +747,7 @@ internal class ActivityValidatorTest {
                 createDomainActivity(
                     start = LocalDateTime.of(2022, 12, 31, 0, 0, 0),
                     end = LocalDateTime.of(2022, 12, 31, 23, 59, 59),
-                    projectRole = projectRole.toDomain().copy(timeInfo = TimeInfo(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity, TimeUnit.DAYS))
+                    projectRole = projectRole.toDomain().copy(timeInfo = TimeInfo(MaxTimeAllowed(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity), TimeUnit.DAYS))
                 )
             )
             val activities2023 = listOf(

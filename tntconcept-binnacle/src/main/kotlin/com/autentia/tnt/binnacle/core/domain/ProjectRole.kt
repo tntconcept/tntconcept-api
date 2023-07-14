@@ -25,26 +25,26 @@ data class ProjectRole(
         return remaining
     }
 
-    fun getMaxTimeAllowedByYear() = timeInfo.maxTimeAllowedByYear
+    fun getMaxTimeAllowedByYear() = timeInfo.getMaxTimeAllowedByYear()
 
-    fun getMaxTimeAllowedByActivity() = timeInfo.maxTimeAllowedByYear
+    fun getMaxTimeAllowedByActivity() = timeInfo.getMaxTimeAllowedByActivity()
 
     fun getTimeUnit() = timeInfo.timeUnit
 
     fun getMaxTimeAllowedByYearInUnits(): Int {
         if (timeInfo.timeUnit === TimeUnit.DAYS || timeInfo.timeUnit === TimeUnit.NATURAL_DAYS) {
-            return fromMinutesToDays(timeInfo.maxTimeAllowedByYear)
+            return fromMinutesToDays(timeInfo.getMaxTimeAllowedByYear())
         }
-        return timeInfo.maxTimeAllowedByYear
+        return timeInfo.getMaxTimeAllowedByYear()
     }
 
     fun getApprovalState() = if (isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
 
     private fun getRemaining(calendar: Calendar, activities: List<Activity>) =
-        if (timeInfo.maxTimeAllowedByYear == 0) {
+        if (timeInfo.getMaxTimeAllowedByYear() == 0) {
             0
         } else {
-            timeInfo.maxTimeAllowedByYear - activities.sumOf { activity -> activity.getDuration(calendar) }
+            timeInfo.getMaxTimeAllowedByYear() - activities.sumOf { activity -> activity.getDuration(calendar) }
         }
 
     private fun fromMinutesToDays(minutes: Int) = minutes / (MINUTES_IN_HOUR * HOURS_BY_DAY)

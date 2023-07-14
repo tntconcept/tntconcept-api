@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.config
 
+import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
@@ -119,7 +120,7 @@ internal fun createProjectRoleTimeInfo(
     maxTimeAllowedByActivity: Int = 0,
     timeUnit: TimeUnit = TimeUnit.MINUTES
 ) =
-    TimeInfo(maxTimeAllowedByYear, maxTimeAllowedByActivity, timeUnit)
+    TimeInfo(MaxTimeAllowed(maxTimeAllowedByYear, maxTimeAllowedByActivity), timeUnit)
 
 internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
     id,
