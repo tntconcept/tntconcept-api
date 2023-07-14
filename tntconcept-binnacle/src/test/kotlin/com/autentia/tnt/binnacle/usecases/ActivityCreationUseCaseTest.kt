@@ -10,7 +10,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDate
+import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -135,7 +135,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
 
-        assertThrows<ActivityBeforeProjectCreationDate> {
+        assertThrows<ActivityBeforeProjectCreationDateException> {
             activityCreationUseCase.createActivity(ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE, Locale.ENGLISH)
         }
 

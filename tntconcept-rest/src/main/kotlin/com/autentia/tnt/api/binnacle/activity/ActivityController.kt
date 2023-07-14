@@ -123,7 +123,7 @@ internal class ActivityController(
             .body(ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", e.message))
 
     @Error
-    internal fun onActivityBeforeProjectCreationDate(request: HttpRequest<*>, e: ActivityBeforeProjectCreationDate) =
+    internal fun onActivityBeforeProjectCreationDate(request: HttpRequest<*>, e: ActivityBeforeProjectCreationDateException) =
             HttpResponse.badRequest(ErrorResponse("ACTIVITY_BEFORE_PROJECT_CREATION_DATE", e.message))
 
 }
