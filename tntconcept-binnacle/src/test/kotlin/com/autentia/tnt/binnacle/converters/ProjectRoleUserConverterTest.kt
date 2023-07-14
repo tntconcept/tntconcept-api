@@ -1,9 +1,14 @@
 package com.autentia.tnt.binnacle.converters
 
+import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
+import com.autentia.tnt.binnacle.core.domain.RemainingTimeInfo
+import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -45,9 +50,7 @@ internal class ProjectRoleUserConverterTest {
         assertEquals(projectRoleUser.name, projectRoleUserDTO.name)
         assertEquals(projectRoleUser.organizationId, projectRoleUserDTO.organizationId)
         assertEquals(projectRoleUser.projectId, projectRoleUserDTO.projectId)
-        assertEquals(projectRoleUser.maxAllowed, projectRoleUserDTO.maxAllowed)
-        assertEquals(projectRoleUser.remaining, projectRoleUserDTO.remaining)
-        assertEquals(projectRoleUser.timeUnit, projectRoleUserDTO.timeUnit)
+        assertEquals(RemainingTimeInfoDTO.from(projectRoleUser.timeInfo), projectRoleUserDTO.timeInfo)
         assertEquals(projectRoleUser.requireEvidence, projectRoleUserDTO.requireEvidence)
         assertEquals(projectRoleUser.requireApproval, projectRoleUserDTO.requireApproval)
         assertEquals(projectRoleUser.userId, projectRoleUserDTO.userId)
@@ -62,7 +65,15 @@ internal class ProjectRoleUserConverterTest {
         )
 
         val projectRoleUserDTO =
-            ProjectRoleUserDTO(1, "Project role", 2, 3, 250, 100, TimeUnit.MINUTES, RequireEvidence.NO, false, 4L)
+            ProjectRoleUserDTO(1,
+                "Project role",
+                2,
+                3,
+                RequireEvidence.NO,
+                false,
+                4L,
+                RemainingTimeInfoDTO(MaxTimeAllowedDTO(250, 0), TimeUnit.MINUTES, 100)
+                )
 
         val projectRoleResponseDTOList =
             projectRoleUserList.map { projectRoleResponseConverter.toProjectRoleUserDTO(it) }
@@ -75,7 +86,12 @@ internal class ProjectRoleUserConverterTest {
     private companion object {
         val project = Project(1, "Dummy project", false, false, LocalDate.now(), null, null, Organization(2, "Organzation", listOf()), listOf())
         val role = ProjectRole(1, "First Role", RequireEvidence.NO, project, 0, 0, true, false, TimeUnit.MINUTES)
+        val timeInfo =TimeInfo(MaxTimeAllowed(250, 0), TimeUnit.MINUTES)
+
         val projectRoleUser =
-            ProjectRoleUser(1, "Project role", 2L, 3L, 250, 100, TimeUnit.MINUTES, RequireEvidence.NO, false, 4L)
+            ProjectRoleUser(
+                1, "Project role", 2L, 3L, RequireEvidence.NO, false, 4L, RemainingTimeInfo.of(
+                    timeInfo, 100)
+            )
     }
 }

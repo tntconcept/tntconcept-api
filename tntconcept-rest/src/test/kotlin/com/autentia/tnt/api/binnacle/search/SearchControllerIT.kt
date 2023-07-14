@@ -3,10 +3,7 @@ package com.autentia.tnt.api.binnacle.search
 import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.usecases.SearchByRoleIdUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -93,12 +90,10 @@ internal class SearchControllerIT {
                 "Alumno en formación",
                 AUTENTIA.id,
                 TRAINING.id,
-                1440,
-                60,
-                TimeUnit.MINUTES,
                 RequireEvidence.WEEKLY,
                 false,
-                1L
+                1L,
+                RemainingTimeInfoDTO(MaxTimeAllowedDTO(1440, 0), TimeUnit.MINUTES, 60)
         )
     }
 

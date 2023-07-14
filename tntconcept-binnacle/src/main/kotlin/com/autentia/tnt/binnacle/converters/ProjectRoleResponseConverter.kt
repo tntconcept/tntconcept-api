@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
 import jakarta.inject.Singleton
 
 
@@ -35,15 +36,13 @@ class ProjectRoleResponseConverter {
     )
 
     fun toProjectRoleUserDTO(projectRole: ProjectRoleUser): ProjectRoleUserDTO = ProjectRoleUserDTO(
-        id = projectRole.id,
-        name = projectRole.name,
-        organizationId = projectRole.organizationId,
-        projectId = projectRole.projectId,
-        maxAllowed = projectRole.maxAllowed,
-        remaining = projectRole.remaining,
-        timeUnit = projectRole.timeUnit,
-        requireEvidence = projectRole.requireEvidence,
-        requireApproval = projectRole.requireApproval,
-        userId = projectRole.userId
+        projectRole.id,
+        projectRole.name,
+        projectRole.organizationId,
+        projectRole.projectId,
+        projectRole.requireEvidence,
+        projectRole.requireApproval,
+        projectRole.userId,
+        RemainingTimeInfoDTO.from(projectRole.timeInfo)
     )
 }

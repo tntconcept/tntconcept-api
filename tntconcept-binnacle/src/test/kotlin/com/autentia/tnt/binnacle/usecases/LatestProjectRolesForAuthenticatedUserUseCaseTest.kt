@@ -10,7 +10,9 @@ import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -200,38 +202,17 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         private val authentication =
             ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("admin")))
 
-        private fun buildProjectRoleRecent(id: Long, date: LocalDate, projectOpen: Boolean = true) =
-            ProjectRolesRecent(
-                id = id,
-                date = date.atTime(LocalTime.MIDNIGHT),
-                name = "Role ID $id",
-                projectBillable = false,
-                projectOpen = projectOpen,
-                projectName = "Project Name of role $id",
-                organizationName = "Org Name of role $id",
-                requireEvidence = RequireEvidence.WEEKLY
-            )
-
-        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxAllowed: Int, timeUnit: TimeUnit? = TimeUnit.MINUTES): ProjectRoleUserDTO =
+        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxTimeAllowedByYear: Int, timeUnit: TimeUnit? = TimeUnit.MINUTES): ProjectRoleUserDTO =
             ProjectRoleUserDTO(
-                id = id,
-                name = "Role ID $id",
-                projectId = 1L,
-                organizationId = 1L,
-                maxAllowed = maxAllowed,
-                remaining = remaining,
-                timeUnit = timeUnit!!,
-                requireEvidence = RequireEvidence.WEEKLY,
-                requireApproval = false,
-                userId = 1L
+                id,
+                "Role ID $id",
+                1L,
+                1L,
+                RequireEvidence.WEEKLY,
+                false,
+                1L,
+                RemainingTimeInfoDTO(MaxTimeAllowedDTO(maxTimeAllowedByYear, 0), timeUnit!!, remaining)
             )
-
-        private val PROJECT_ROLES_RECENT = listOf(
-            buildProjectRoleRecent(1L, START_DATE),
-            buildProjectRoleRecent(2L, START_DATE.minusDays(2)),
-            buildProjectRoleRecent(5L, START_DATE.minusDays(3), false),
-            buildProjectRoleRecent(1L, END_DATE),
-        )
 
         private fun oneMonthTimeIntervalFromCurrentYear(): TimeInterval {
             val now = LocalDate.now()

@@ -6,7 +6,9 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -119,16 +121,14 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
     private fun buildProjectRoleUserDTO(id: Long, maxAllowed: Int = 0, remaining: Int = 0): ProjectRoleUserDTO =
         ProjectRoleUserDTO(
-            id = id,
-            name = "Role ID $id",
-            projectId = 1L,
-            organizationId = 1L,
-            maxAllowed = maxAllowed,
-            remaining = remaining,
-            timeUnit = TimeUnit.MINUTES,
-            requireEvidence = RequireEvidence.WEEKLY,
-            requireApproval = false,
-            userId = USER_ID
+            id,
+            "Role ID $id",
+            1L,
+            1L,
+            RequireEvidence.WEEKLY,
+            false,
+            USER_ID,
+            RemainingTimeInfoDTO(MaxTimeAllowedDTO(maxAllowed, 0), TimeUnit.MINUTES, remaining)
         )
 
     private companion object {
@@ -136,7 +136,8 @@ internal class ProjectRoleByProjectIdUseCaseTest {
         private const val PROJECT_ID = 1L
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
-        private val PROJECT = Project(1L, "Dummy project", true, false, LocalDate.now(), null, null, ORGANIZATION, listOf())
+        private val PROJECT =
+            Project(1L, "Dummy project", true, false, LocalDate.now(), null, null, ORGANIZATION, listOf())
 
         private val authentication =
             ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("admin")))

@@ -31,13 +31,6 @@ data class ProjectRole(
 
     fun getTimeUnit() = timeInfo.timeUnit
 
-    fun getMaxTimeAllowedByYearInUnits(): Int {
-        if (timeInfo.timeUnit === TimeUnit.DAYS || timeInfo.timeUnit === TimeUnit.NATURAL_DAYS) {
-            return fromMinutesToDays(timeInfo.getMaxTimeAllowedByYear())
-        }
-        return timeInfo.getMaxTimeAllowedByYear()
-    }
-
     fun getApprovalState() = if (isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
 
     private fun getRemaining(calendar: Calendar, activities: List<Activity>) =

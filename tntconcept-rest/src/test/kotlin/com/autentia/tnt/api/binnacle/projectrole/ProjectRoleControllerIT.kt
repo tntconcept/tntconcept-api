@@ -6,8 +6,10 @@ import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.api.binnacle.getBody
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
@@ -109,12 +111,10 @@ internal class ProjectRoleControllerIT {
             "desarrollador",
             1L,
             1L,
-            10,
-            0,
-            TimeUnit.MINUTES,
             RequireEvidence.WEEKLY,
             true,
-            1L
+            1L,
+            RemainingTimeInfoDTO(MaxTimeAllowedDTO(10, 0), TimeUnit.MINUTES, 0)
         )
 
         doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(null)
@@ -134,12 +134,10 @@ internal class ProjectRoleControllerIT {
             "desarrollador",
             1L,
             1L,
-            10,
-            0,
-            TimeUnit.MINUTES,
             RequireEvidence.WEEKLY,
             true,
-            1L
+            1L,
+            RemainingTimeInfoDTO(MaxTimeAllowedDTO(10, 0), TimeUnit.MINUTES, 0)
         )
 
         doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(year)
