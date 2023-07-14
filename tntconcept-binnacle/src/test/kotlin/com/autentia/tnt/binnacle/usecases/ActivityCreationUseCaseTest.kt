@@ -14,6 +14,7 @@ import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDate
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -36,7 +37,7 @@ internal class ActivityCreationUseCaseTest {
 
     private val user = createDomainUser()
 
-    private val projectService = mock<ProjectService>()
+    private val projectRepository = mock<ProjectRepository>()
     private val activityService = mock<ActivityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityRepository = mock<ActivityRepository>();
@@ -48,14 +49,13 @@ internal class ActivityCreationUseCaseTest {
         ActivityValidator(
             activityService,
             activityCalendarService,
-            projectService)
+            projectRepository)
 
     private val pendingApproveActivityMailService = mock<PendingApproveActivityMailService>()
 
 
     private val activityCreationUseCase = ActivityCreationUseCase(
         projectRoleRepository,
-        projectService,
         activityRepository,
         activityEvidenceService,
         activityCalendarService,
@@ -71,7 +71,6 @@ internal class ActivityCreationUseCaseTest {
     @AfterEach
     fun resetMocks() {
         reset(
-            projectService,
             activityService,
             projectRoleRepository,
             activityRepository,
@@ -117,7 +116,7 @@ internal class ActivityCreationUseCaseTest {
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
-        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
 
         assertThrows<NoEvidenceInActivityException> {
             activityCreationUseCase.createActivity(activityRequest, Locale.ENGLISH)
@@ -134,7 +133,7 @@ internal class ActivityCreationUseCaseTest {
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
-        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
 
         assertThrows<ActivityBeforeProjectCreationDate> {
             activityCreationUseCase.createActivity(ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE, Locale.ENGLISH)
@@ -151,7 +150,7 @@ internal class ActivityCreationUseCaseTest {
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
-        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity);
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
@@ -179,7 +178,7 @@ internal class ActivityCreationUseCaseTest {
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
-        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(projectRoleRepository.findById(any())).thenReturn(
             ProjectRole.of(
                 activityDomain.projectRole,
@@ -203,7 +202,7 @@ internal class ActivityCreationUseCaseTest {
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
-        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(projectRoleRepository.findById(any())).thenReturn(
             ProjectRole.of(
                 activityDomain.projectRole,
@@ -225,7 +224,7 @@ internal class ActivityCreationUseCaseTest {
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
-        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity);
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
@@ -251,7 +250,7 @@ internal class ActivityCreationUseCaseTest {
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_APPROVAL.id)).thenReturn(PROJECT_ROLE_APPROVAL)
-        whenever(projectService.findById(activityEntity.projectRole.project.id)).thenReturn(activityDomain.projectRole.project)
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity);
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
