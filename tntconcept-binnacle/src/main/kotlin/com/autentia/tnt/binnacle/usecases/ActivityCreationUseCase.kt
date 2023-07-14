@@ -24,7 +24,6 @@ import javax.validation.Valid
 @Validated
 class ActivityCreationUseCase internal constructor(
         private val projectRoleRepository: ProjectRoleRepository,
-        private val projectService: ProjectService,
         private val activityRepository: ActivityRepository,
         private val activityEvidenceService: ActivityEvidenceService,
         private val activityCalendarService: ActivityCalendarService,
@@ -42,9 +41,6 @@ class ActivityCreationUseCase internal constructor(
         val projectRole = projectRoleRepository.findById(activityRequestBody.projectRoleId)
             ?: throw ProjectRoleNotFoundException(activityRequestBody.projectRoleId)
 
-        val project = projectService.findById(projectRole.project.id)
-
-
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
             ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
         )
@@ -52,7 +48,6 @@ class ActivityCreationUseCase internal constructor(
         val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole.toDomain(), user)
 
         activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
-        activityValidator.checkActivityIsBeforeProjectCreationDate(activityToCreate, project)
 
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
 
