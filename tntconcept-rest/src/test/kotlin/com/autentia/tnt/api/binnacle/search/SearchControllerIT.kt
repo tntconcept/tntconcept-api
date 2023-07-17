@@ -93,7 +93,7 @@ internal class SearchControllerIT {
                 RequireEvidence.WEEKLY,
                 false,
                 1L,
-                RemainingTimeInfoDTO(MaxTimeAllowedDTO(1440, 0), TimeUnit.MINUTES, 60)
+                TimeInfoDTO(MaxTimeAllowedDTO(1440, 0), TimeUnit.MINUTES, 60)
         )
     }
 

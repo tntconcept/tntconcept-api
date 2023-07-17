@@ -10,7 +10,7 @@ data class ProjectRoleUserDTO(
     val requireEvidence: RequireEvidence,
     val requireApproval: Boolean,
     val userId: Long,
-    val timeInfo: RemainingTimeInfoDTO,
+    val timeInfo: TimeInfoDTO,
 )
 
 

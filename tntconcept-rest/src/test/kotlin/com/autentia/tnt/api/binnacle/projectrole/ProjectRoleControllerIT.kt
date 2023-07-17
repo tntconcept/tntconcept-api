@@ -4,12 +4,13 @@ import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.api.binnacle.getBody
+import com.autentia.tnt.api.binnacle.project.ProjectResponse
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.usecases.LatestProjectRolesForAuthenticatedUserUseCase
 import com.autentia.tnt.binnacle.usecases.ProjectRoleByIdUseCase
@@ -33,6 +34,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 
 @MicronautTest
 @TestInstance(PER_CLASS)
@@ -106,30 +108,35 @@ internal class ProjectRoleControllerIT {
     @Test
     fun `get the recent project roles without year parameter`() {
 
-        val projectRoleUserDTO = ProjectRoleUserDTO(
-            1L,
-            "desarrollador",
-            1L,
-            1L,
-            RequireEvidence.WEEKLY,
-            true,
-            1L,
-            RemainingTimeInfoDTO(MaxTimeAllowedDTO(10, 0), TimeUnit.MINUTES, 0)
-        )
-
-        doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(null)
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(null)
 
         val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project-role/latest"))
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(ProjectRoleUserResponse.from(projectRoleUserDTO)), response.body.get())
+        assertEquals(listOf(PROJECT_ROLE_USER_RESPONSE), response.body.get())
 
     }
 
     @Test
     fun `get the recent project roles with year parameter`() {
         val year = 2022
-        val projectRoleUserDTO = ProjectRoleUserDTO(
+
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(year)
+
+        val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project-role/latest?year=${year}"))
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(PROJECT_ROLE_USER_RESPONSE), response.body.get())
+
+    }
+
+    private fun getFailProvider() = arrayOf(
+        arrayOf(ProjectRoleNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
+    )
+
+    private companion object {
+
+        private val PROJECT_ROLE_USER_DTO = ProjectRoleUserDTO(
             1L,
             "desarrollador",
             1L,
@@ -137,20 +144,27 @@ internal class ProjectRoleControllerIT {
             RequireEvidence.WEEKLY,
             true,
             1L,
-            RemainingTimeInfoDTO(MaxTimeAllowedDTO(10, 0), TimeUnit.MINUTES, 0)
+            TimeInfoDTO(MaxTimeAllowedDTO(10, 0), TimeUnit.MINUTES, 0)
         )
 
-        doReturn(listOf(projectRoleUserDTO)).whenever(latestProjectRolesForAuthenticatedUserUseCase).get(year)
+        private val MAX_TIME_ALLOWED_RESPONSE = MaxTimeAllowedResponse(
+            10, 0
+        )
 
-        val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project-role/latest?year=${year}"))
+        private val REMAINING_TIME_INFO_RESPONSE = TimeInfoResponse(
+            MAX_TIME_ALLOWED_RESPONSE, TimeUnit.MINUTES, 0
+        )
 
-        assertEquals(OK, response.status)
-        assertEquals(listOf(ProjectRoleUserResponse.from(projectRoleUserDTO)), response.body.get())
-
+        private val PROJECT_ROLE_USER_RESPONSE = ProjectRoleUserResponse(
+            1L,
+            "desarrollador",
+            1L,
+            1L,
+            REMAINING_TIME_INFO_RESPONSE,
+            RequireEvidence.WEEKLY,
+            true,
+            1L
+        )
     }
-
-    private fun getFailProvider() = arrayOf(
-        arrayOf(ProjectRoleNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
-    )
 
 }

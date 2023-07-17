@@ -241,7 +241,7 @@ internal class ActivityUpdateUseCaseTest {
 
         private val PROJECT_ROLE =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
-        private val TIME_INFO_DTO = RemainingTimeInfoDTO(
+        private val TIME_INFO_DTO = TimeInfoDTO(
             MaxTimeAllowedDTO(PROJECT_ROLE.maxTimeAllowedByYear, PROJECT_ROLE.maxTimeAllowedByActivity),
             PROJECT_ROLE.timeUnit,
             0

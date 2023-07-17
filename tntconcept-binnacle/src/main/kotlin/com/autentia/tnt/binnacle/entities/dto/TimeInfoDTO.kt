@@ -4,14 +4,14 @@ import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.RemainingTimeInfo
 import com.autentia.tnt.binnacle.entities.TimeUnit
 
-data class RemainingTimeInfoDTO(
+data class TimeInfoDTO(
     val maxTimeAllowed: MaxTimeAllowedDTO,
     val timeUnit: TimeUnit,
     val userRemainingTime: Int,
 ){
     companion object {
         fun from(remainingTimeInfo: RemainingTimeInfo) =
-            RemainingTimeInfoDTO(
+            TimeInfoDTO(
                 MaxTimeAllowedDTO.from(remainingTimeInfo.maxTimeAllowed),
                 remainingTimeInfo.timeUnit,
                 remainingTimeInfo.userRemainingTime,

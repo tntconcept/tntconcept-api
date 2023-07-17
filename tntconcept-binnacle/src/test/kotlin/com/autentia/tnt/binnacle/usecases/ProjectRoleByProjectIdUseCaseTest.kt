@@ -8,7 +8,7 @@ import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -128,7 +128,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
             RequireEvidence.WEEKLY,
             false,
             USER_ID,
-            RemainingTimeInfoDTO(MaxTimeAllowedDTO(maxAllowed, 0), TimeUnit.MINUTES, remaining)
+            TimeInfoDTO(MaxTimeAllowedDTO(maxAllowed, 0), TimeUnit.MINUTES, remaining)
         )
 
     private companion object {

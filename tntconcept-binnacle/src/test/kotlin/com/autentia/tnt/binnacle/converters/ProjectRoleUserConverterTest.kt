@@ -8,7 +8,7 @@ import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -50,7 +50,7 @@ internal class ProjectRoleUserConverterTest {
         assertEquals(projectRoleUser.name, projectRoleUserDTO.name)
         assertEquals(projectRoleUser.organizationId, projectRoleUserDTO.organizationId)
         assertEquals(projectRoleUser.projectId, projectRoleUserDTO.projectId)
-        assertEquals(RemainingTimeInfoDTO.from(projectRoleUser.timeInfo), projectRoleUserDTO.timeInfo)
+        assertEquals(TimeInfoDTO.from(projectRoleUser.timeInfo), projectRoleUserDTO.timeInfo)
         assertEquals(projectRoleUser.requireEvidence, projectRoleUserDTO.requireEvidence)
         assertEquals(projectRoleUser.requireApproval, projectRoleUserDTO.requireApproval)
         assertEquals(projectRoleUser.userId, projectRoleUserDTO.userId)
@@ -72,7 +72,7 @@ internal class ProjectRoleUserConverterTest {
                 RequireEvidence.NO,
                 false,
                 4L,
-                RemainingTimeInfoDTO(MaxTimeAllowedDTO(250, 0), TimeUnit.MINUTES, 100)
+                TimeInfoDTO(MaxTimeAllowedDTO(250, 0), TimeUnit.MINUTES, 100)
                 )
 
         val projectRoleResponseDTOList =

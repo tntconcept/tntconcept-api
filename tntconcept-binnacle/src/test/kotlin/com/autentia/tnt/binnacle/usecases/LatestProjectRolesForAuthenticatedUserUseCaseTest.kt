@@ -6,13 +6,12 @@ import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.ProjectRolesRecent
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -211,7 +210,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
                 RequireEvidence.WEEKLY,
                 false,
                 1L,
-                RemainingTimeInfoDTO(MaxTimeAllowedDTO(maxTimeAllowedByYear, 0), timeUnit!!, remaining)
+                TimeInfoDTO(MaxTimeAllowedDTO(maxTimeAllowedByYear, 0), timeUnit!!, remaining)
             )
 
         private fun oneMonthTimeIntervalFromCurrentYear(): TimeInterval {

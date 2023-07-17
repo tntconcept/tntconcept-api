@@ -1,6 +1,7 @@
 package com.autentia.tnt.api.binnacle.project
 
 import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.api.binnacle.projectrole.ProjectRoleUserResponse
 import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.usecases.*

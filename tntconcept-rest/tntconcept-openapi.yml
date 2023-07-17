@@ -1084,6 +1084,18 @@ components:
           type: string
         displayName:
           type: string
+    MaxTimeAllowedResponse:
+      required:
+      - byActivity
+      - byYear
+      type: object
+      properties:
+        byYear:
+          type: integer
+          format: int32
+        byActivity:
+          type: integer
+          format: int32
     MonthlyBalanceResponse:
       required:
       - balance
@@ -1227,14 +1239,12 @@ components:
     ProjectRoleUserResponse:
       required:
       - id
-      - maxAllowed
       - name
       - organizationId
       - projectId
-      - remaining
       - requireApproval
       - requireEvidence
-      - timeUnit
+      - timeInfo
       - userId
       type: object
       properties:
@@ -1249,14 +1259,8 @@ components:
         projectId:
           type: integer
           format: int64
-        maxAllowed:
-          type: integer
-          format: int32
-        remaining:
-          type: integer
-          format: int32
-        timeUnit:
-          $ref: '#/components/schemas/TimeUnit'
+        timeInfo:
+          $ref: '#/components/schemas/TimeInfoResponse'
         requireEvidence:
           $ref: '#/components/schemas/RequireEvidence'
         requireApproval:
@@ -1289,6 +1293,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectRoleUserResponse'
+    TimeInfoResponse:
+      required:
+      - maxTimeAllowed
+      - timeUnit
+      - userRemainingTime
+      type: object
+      properties:
+        maxTimeAllowed:
+          $ref: '#/components/schemas/MaxTimeAllowedResponse'
+        timeUnit:
+          $ref: '#/components/schemas/TimeUnit'
+        userRemainingTime:
+          type: integer
+          format: int32
     TimeIntervalRequest:
       required:
       - end

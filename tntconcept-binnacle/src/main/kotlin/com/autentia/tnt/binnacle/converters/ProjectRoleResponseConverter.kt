@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.entities.dto.RemainingTimeInfoDTO
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import jakarta.inject.Singleton
 
 
@@ -43,6 +43,6 @@ class ProjectRoleResponseConverter {
         projectRole.requireEvidence,
         projectRole.requireApproval,
         projectRole.userId,
-        RemainingTimeInfoDTO.from(projectRole.timeInfo)
+        TimeInfoDTO.from(projectRole.timeInfo)
     )
 }
