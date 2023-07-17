@@ -2,12 +2,14 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
+import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
+import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,12 +28,12 @@ internal class ActivityValidatorTest {
     private val activityService = mock<ActivityService>()
     private val projectRoleService = mock<ProjectRoleService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
-    private val projectService = mock<ProjectService>()
+    private val projectRepository = mock<ProjectRepository>()
     private val activityValidator =
         ActivityValidator(
             activityService,
             activityCalendarService,
-            projectService
+            projectRepository
         )
     private val calendarFactory: CalendarFactory = CalendarFactory(holidayRepository)
 
@@ -42,7 +44,7 @@ internal class ActivityValidatorTest {
             holidayRepository,
             activityService,
             activityCalendarService,
-            projectService
+            projectRepository
         )
     }
 
@@ -51,7 +53,7 @@ internal class ActivityValidatorTest {
     inner class CheckActivityIsValidForCreation {
         @Test
         fun `do nothing when activity is valid`() {
-            whenever(projectService.findById(projectRole.project.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(projectRole.project.id)).thenReturn(Optional.of(vacationProject))
 
             activityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
         }
@@ -92,6 +94,13 @@ internal class ActivityValidatorTest {
                 user,
                 ActivityPeriodNotValidException()
             ),
+            arrayOf(
+                "ActivityBeforeProjectCreationDateException",
+                newActivityBeforeProjectCreationDate,
+                projectRoleWithNonBlockedProject,
+                user,
+                ActivityBeforeProjectCreationDateException()
+            ),
         )
 
         @ParameterizedTest
@@ -103,7 +112,7 @@ internal class ActivityValidatorTest {
             user: com.autentia.tnt.binnacle.core.domain.User,
             expectedException: BinnacleException,
         ) {
-            whenever(projectService.findById(projectRole.project.id)).thenReturn(projectRole.project.toDomain())
+            whenever(projectRepository.findById(projectRole.project.id)).thenReturn(Optional.of(projectRole.project))
 
 
             val exception = assertThrows<BinnacleException> {
@@ -115,21 +124,21 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `do nothing when activity started last year`() {
-            whenever(projectService.findById(projectRole.project.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(projectRole.project.id)).thenReturn(Optional.of(vacationProject))
 
             activityValidator.checkActivityIsValidForCreation(newActivityLastYear, user)
         }
 
         @Test
         fun `do nothing when activity started after block project`() {
-            whenever(projectService.findById(blockedProjectRole.project.id)).thenReturn(blockedProject.toDomain())
+            whenever(projectRepository.findById(blockedProjectRole.project.id)).thenReturn(Optional.of(blockedProject))
 
             activityValidator.checkActivityIsValidForCreation(newActivityAfterBlockedProject, user)
         }
 
         @Test
         fun `throw ActivityForBlockedProjectException when activity started the same day as a project is blocked`() {
-            whenever(projectService.findById(blockedProjectRole.project.id)).thenReturn(blockedProject.toDomain())
+            whenever(projectRepository.findById(blockedProjectRole.project.id)).thenReturn(Optional.of(blockedProject))
 
             val exception = assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForCreation(newActivitySameDayBlockedProject, user)
@@ -177,7 +186,7 @@ internal class ActivityValidatorTest {
                     ).toDomain()
                 )
             )
-            whenever(projectService.findById(projectRole.project.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(projectRole.project.id)).thenReturn(Optional.of(vacationProject))
 
             assertThrows<OverlapsAnotherTimeException> {
                 activityValidator.checkActivityIsValidForCreation(newActivity, user)
@@ -315,7 +324,7 @@ internal class ActivityValidatorTest {
             val timeInterval = TimeInterval.of(firstDay, lastDay)
             val calendar = calendarFactory.create(timeInterval.getDateInterval())
 
-            whenever(projectService.findById(projectRole.project.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(projectRole.project.id)).thenReturn(Optional.of(vacationProject))
             whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
@@ -366,7 +375,7 @@ internal class ActivityValidatorTest {
                 )
             )
 
-            whenever(projectService.findById(Companion.projectRole.project.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(Companion.projectRole.project.id)).thenReturn(Optional.of(vacationProject))
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
                     timeInterval2022,
@@ -400,14 +409,14 @@ internal class ActivityValidatorTest {
     inner class CheckActivityIsValidForUpdate {
         @Test
         fun `do nothing when activity is valid`() {
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
             activityValidator.checkActivityIsValidForUpdate(validActivityToUpdate, validActivityToUpdate, user)
         }
 
         @Test
         fun `throw ActivityPeriodInvalidException when TimeInterval is longer than a day for a Minutes TimeUnit project role`() {
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
             assertThrows<ActivityPeriodNotValidException> {
                 activityValidator.checkActivityIsValidForUpdate(
@@ -424,6 +433,9 @@ internal class ActivityValidatorTest {
                 createDomainActivity().copy(hasEvidences = true, evidence = null)
             val secondIncoherentActivity =
                 createDomainActivity().copy(hasEvidences = false, evidence = Evidence("", ""))
+
+            whenever(projectRepository.findById(firstIncoherentActivity.projectRole.project.id)).thenReturn(Optional.of(createProject()))
+            whenever(projectRepository.findById(secondIncoherentActivity.projectRole.project.id)).thenReturn(Optional.of(createProject()))
 
             assertThrows<NoEvidenceInActivityException> {
                 activityValidator.checkActivityIsValidForUpdate(firstIncoherentActivity, firstIncoherentActivity, user)
@@ -456,8 +468,8 @@ internal class ActivityValidatorTest {
                 false,
                 approvalState = ApprovalState.NA
             )
-            whenever(projectService.findById(nonBlockedProject.id)).thenReturn(nonBlockedProject.toDomain())
-            whenever(projectService.findById(blockedProject.id)).thenReturn(blockedProject.toDomain())
+            whenever(projectRepository.findById(nonBlockedProject.id)).thenReturn(Optional.of(nonBlockedProject))
+            whenever(projectRepository.findById(blockedProject.id)).thenReturn(Optional.of(blockedProject))
 
             val exception = assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
@@ -485,7 +497,7 @@ internal class ActivityValidatorTest {
                 false,
                 approvalState = ApprovalState.NA
             )
-            whenever(projectService.findById(blockedPastProject.id)).thenReturn(blockedPastProject.toDomain())
+            whenever(projectRepository.findById(blockedPastProject.id)).thenReturn(Optional.of(blockedPastProject))
 
             activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
         }
@@ -509,8 +521,8 @@ internal class ActivityValidatorTest {
                 false,
                 approvalState = ApprovalState.NA
             )
-            whenever(projectService.findById(nonBlockedProject.id)).thenReturn(nonBlockedProject.toDomain())
-            whenever(projectService.findById(blockedProject.id)).thenReturn(blockedProject.toDomain())
+            whenever(projectRepository.findById(nonBlockedProject.id)).thenReturn(Optional.of(nonBlockedProject))
+            whenever(projectRepository.findById(blockedProject.id)).thenReturn(Optional.of(blockedProject))
 
             val exception = assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
@@ -527,7 +539,7 @@ internal class ActivityValidatorTest {
                 60,
                 closedProjectRole.toDomain()
             )
-            whenever(projectService.findById(closedProject.id)).thenReturn(closedProject.toDomain())
+            whenever(projectRepository.findById(closedProject.id)).thenReturn(Optional.of(closedProject))
 
             assertThrows<ProjectClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
@@ -536,14 +548,14 @@ internal class ActivityValidatorTest {
 
         @Test
         fun `do nothing when updated activity started last year`() {
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
             activityValidator.checkActivityIsValidForUpdate(activityLastYear, activityLastYear, user)
         }
 
         @Test
         fun `throw ActivityPeriodClosedException when updated activity started more than one year ago`() {
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
             assertThrows<ActivityPeriodClosedException> {
                 activityValidator.checkActivityIsValidForUpdate(
@@ -585,7 +597,7 @@ internal class ActivityValidatorTest {
                     ).toDomain()
                 )
             )
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
             assertThrows<OverlapsAnotherTimeException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
@@ -615,6 +627,8 @@ internal class ActivityValidatorTest {
         @Test
         fun `throw IllegalArgumentException when the activity to delete is already approved`() {
             val approvedActivity = validActivityToUpdate.copy(approvalState = ApprovalState.ACCEPTED)
+            whenever(projectRepository.findById(approvedActivity.projectRole.project.id)).thenReturn(Optional.of(createProject()))
+
             assertThrows<IllegalArgumentException> {
                 activityValidator.checkActivityIsValidForDeletion(approvedActivity)
             }
@@ -699,7 +713,7 @@ internal class ActivityValidatorTest {
             whenever(
                 activityService.getActivitiesByProjectRoleIds(yearTimeInterval, listOf(projectRoleLimited.id), user.id)
             ).thenReturn(activitiesInTheYear)
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
             val exception = assertThrows<MaxHoursPerRoleException> {
                 activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
@@ -751,7 +765,7 @@ internal class ActivityValidatorTest {
                 )
             )
 
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
                     timeInterval2022,
@@ -817,7 +831,7 @@ internal class ActivityValidatorTest {
             )
 
 
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
             activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
         }
@@ -844,7 +858,7 @@ internal class ActivityValidatorTest {
                 projectRole.toDomain()
             )
 
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
             assertThrows<ActivityBeforeHiringDateException> {
                 activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, userHiredLastYear)
@@ -871,7 +885,7 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            whenever(projectService.findById(vacationProject.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject))
 
             activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
         }
@@ -891,7 +905,7 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            whenever(projectService.findById(vacationProject.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject))
 
             activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
         }
@@ -911,7 +925,7 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            whenever(projectService.findById(vacationProject.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject))
 
             assertThrows<ActivityPeriodClosedException> {
                 activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
@@ -933,7 +947,7 @@ internal class ActivityValidatorTest {
                 approvalState = ApprovalState.NA
             )
 
-            whenever(projectService.findById(blockedProject.id)).thenReturn(blockedProject.toDomain())
+            whenever(projectRepository.findById(blockedProject.id)).thenReturn(Optional.of(blockedProject))
 
             val exception = assertThrows<ProjectBlockedException> {
                 activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
@@ -1022,7 +1036,7 @@ internal class ActivityValidatorTest {
                 "Vacaciones",
                 true,
                 true,
-                LocalDate.now(),
+                LocalDate.now().minusYears(5),
                 null,
                 null,
                 Organization(1, "Organization", emptyList()),
@@ -1281,6 +1295,13 @@ internal class ActivityValidatorTest {
             LocalDateTime.of(2022, Month.MARCH, 26, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong()),
             481,
             projectRole.toDomain()
+        ).copy(id = null)
+
+        private val newActivityBeforeProjectCreationDate = createDomainActivity(
+                LocalDateTime.of(2023, Month.MARCH, 25, 10, 0, 0),
+                LocalDateTime.of(2023, Month.MARCH, 25, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong()),
+                MINUTES_IN_HOUR,
+                projectRole.toDomain()
         ).copy(id = null)
 
         private val activityWithAcceptedApprovalState =

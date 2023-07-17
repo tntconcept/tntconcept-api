@@ -9,10 +9,10 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
-import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.validation.Validated
 import jakarta.inject.Singleton
@@ -23,15 +23,15 @@ import javax.validation.Valid
 @Singleton
 @Validated
 class ActivityCreationUseCase internal constructor(
-    private val projectRoleRepository: ProjectRoleRepository,
-    private val activityRepository: ActivityRepository,
-    private val activityEvidenceService: ActivityEvidenceService,
-    private val activityCalendarService: ActivityCalendarService,
-    private val userService: UserService,
-    private val activityValidator: ActivityValidator,
-    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
-    private val activityResponseConverter: ActivityResponseConverter,
-    private val pendingApproveActivityMailService: PendingApproveActivityMailService,
+        private val projectRoleRepository: ProjectRoleRepository,
+        private val activityRepository: ActivityRepository,
+        private val activityEvidenceService: ActivityEvidenceService,
+        private val activityCalendarService: ActivityCalendarService,
+        private val userService: UserService,
+        private val activityValidator: ActivityValidator,
+        private val activityRequestBodyConverter: ActivityRequestBodyConverter,
+        private val activityResponseConverter: ActivityResponseConverter,
+        private val pendingApproveActivityMailService: PendingApproveActivityMailService,
 ) {
 
     @Transactional
