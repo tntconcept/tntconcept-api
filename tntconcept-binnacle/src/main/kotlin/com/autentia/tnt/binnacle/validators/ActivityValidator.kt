@@ -42,7 +42,6 @@ internal class ActivityValidator(
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
-
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
             isExceedingMaxTimePerActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
                 activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity,
@@ -79,9 +78,14 @@ internal class ActivityValidator(
         }
     }
 
-    private fun isExceedingMaxTimePerActivity(activityToCreate: Activity) =
-        activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity > 0 &&
-        activityToCreate.duration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
+    private fun isExceedingMaxTimePerActivity(activityToCreate: Activity): Boolean {
+        val activityInterval = TimeInterval.of(activityToCreate.getStart(), activityToCreate.getEnd())
+        val calendar = activityCalendarService.createCalendar(activityInterval.getDateInterval())
+
+        val activityDuration = activityToCreate.getDuration(calendar);
+        return activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity > 0 &&
+                activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
+    }
 
     private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
         return activity.hasEvidences && activity.evidence == null
