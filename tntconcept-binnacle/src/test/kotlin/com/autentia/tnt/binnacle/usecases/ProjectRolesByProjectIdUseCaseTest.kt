@@ -6,7 +6,9 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -33,9 +35,8 @@ internal class ProjectRolesByProjectIdUseCaseTest {
                     "Dummy Role",
                     ORGANIZATION.id,
                     PROJECT_ID,
-                    PROJECT_ROLE.maxTimeAllowedByYear,
+                    TimeInfoDTO(MaxTimeAllowedDTO(PROJECT_ROLE.maxTimeAllowedByYear, PROJECT_ROLE.maxTimeAllowedByActivity),PROJECT_ROLE.timeUnit),
                     PROJECT_ROLE.isWorkingTime,
-                    PROJECT_ROLE.timeUnit,
                     PROJECT_ROLE.requireEvidence,
                     PROJECT_ROLE.isApprovalRequired
                 )

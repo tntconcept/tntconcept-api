@@ -34,10 +34,11 @@ internal class ProjectRoleUserConverterTest {
         )
 
         val projectRoleResponseDTOList = projectRoleList.map { projectRoleResponseConverter.toProjectRoleDTO(it) }
+        val timeInfoDto = TimeInfoDTO(MaxTimeAllowedDTO(0,0), TimeUnit.MINUTES)
 
         val expectedProjectRoleDTOLists = listOf(
-            ProjectRoleDTO(1, "First Role", 2, 1, 0, true, TimeUnit.MINUTES, RequireEvidence.NO, false),
-            ProjectRoleDTO(2, "Second Role", 2, 1, 0, true, TimeUnit.MINUTES, RequireEvidence.WEEKLY, false)
+            ProjectRoleDTO(1, "First Role", 2, 1, timeInfoDto, true, RequireEvidence.NO, false),
+            ProjectRoleDTO(2, "Second Role", 2, 1, timeInfoDto, true, RequireEvidence.WEEKLY, false)
         )
         assertEquals(expectedProjectRoleDTOLists, projectRoleResponseDTOList)
     }

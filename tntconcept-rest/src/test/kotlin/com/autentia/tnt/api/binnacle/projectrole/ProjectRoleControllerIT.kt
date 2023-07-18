@@ -68,9 +68,8 @@ internal class ProjectRoleControllerIT {
             "Asistente",
             1L,
             1L,
-            10,
+            TimeInfoDTO(MaxTimeAllowedDTO(10,0), TimeUnit.MINUTES),
             true,
-            TimeUnit.MINUTES,
             RequireEvidence.WEEKLY,
             true
         )

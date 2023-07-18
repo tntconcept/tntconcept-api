@@ -1205,13 +1205,12 @@ components:
       required:
       - id
       - isWorkingTime
-      - maxAllowed
       - name
       - organizationId
       - projectId
       - requireApproval
       - requireEvidence
-      - timeUnit
+      - timeInfo
       type: object
       properties:
         id:
@@ -1225,13 +1224,10 @@ components:
         projectId:
           type: integer
           format: int64
-        maxAllowed:
-          type: integer
-          format: int32
+        timeInfo:
+          $ref: '#/components/schemas/TimeInfoResponse'
         isWorkingTime:
           type: boolean
-        timeUnit:
-          $ref: '#/components/schemas/TimeUnit'
         requireEvidence:
           $ref: '#/components/schemas/RequireEvidence'
         requireApproval:
@@ -1297,7 +1293,6 @@ components:
       required:
       - maxTimeAllowed
       - timeUnit
-      - userRemainingTime
       type: object
       properties:
         maxTimeAllowed:
@@ -1307,6 +1302,7 @@ components:
         userRemainingTime:
           type: integer
           format: int32
+          nullable: true
     TimeIntervalRequest:
       required:
       - end

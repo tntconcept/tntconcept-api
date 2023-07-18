@@ -7,7 +7,7 @@ import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 data class TimeInfoResponse (
     val maxTimeAllowed: MaxTimeAllowedResponse,
     val timeUnit: TimeUnit,
-    val userRemainingTime: Int,
+    val userRemainingTime: Int?=0,
     ) {
     companion object {
         fun from(timeInfoDTO: TimeInfoDTO) =
