@@ -959,6 +959,65 @@ internal class ActivityValidatorTest {
             }
         }
 
+        @Test
+        fun `throw MaxTimePerActivityException if user reaches max time limit for activity`() {
+
+            val currentActivity = createActivity(
+                id = 1L,
+                start = todayDateTime,
+                end = todayDateTime.plusHours(2L),
+                duration = (MINUTES_IN_HOUR * 2),
+                projectRole = projectRoleLimitedByActivity
+            )
+
+            val updatedActivity = createActivity(
+                id = 1L,
+                start = todayDateTime,
+                end = todayDateTime.plusHours(4L),
+                duration = (MINUTES_IN_HOUR * 4),
+                projectRole = projectRoleLimitedByActivity
+            )
+
+            val timeInterval = TimeInterval.of(updatedActivity.getStart(), updatedActivity.getEnd())
+            val calendar = calendarFactory.create(timeInterval.getDateInterval())
+
+            whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
+            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+
+            val exception = assertThrows<MaxTimePerActivityRoleException> {
+                activityValidator.checkActivityIsValidForUpdate(updatedActivity, currentActivity, user)
+            }
+
+            assertEquals(projectRoleLimitedByActivity.maxTimeAllowedByActivity, exception.maxAllowedTime)
+        }
+
+        @Test
+        fun `do nothing when activity is updated without reach limit per activity`() {
+
+            val currentActivity = createActivity(
+                id = 1L,
+                start = todayDateTime,
+                end = todayDateTime.plusHours(2L),
+                duration = (MINUTES_IN_HOUR * 2),
+                projectRole = projectRoleLimitedByActivity
+            )
+
+            val updatedActivity = createActivity(
+                id = 1L,
+                start = todayDateTime,
+                end = todayDateTime.plusHours(1L),
+                duration = (MINUTES_IN_HOUR * 1),
+                projectRole = projectRoleLimitedByActivity
+            )
+
+            val timeInterval = TimeInterval.of(updatedActivity.getStart(), updatedActivity.getEnd())
+            val calendar = calendarFactory.create(timeInterval.getDateInterval())
+
+            whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
+            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+
+            activityValidator.checkActivityIsValidForUpdate(updatedActivity, currentActivity, user)
+        }
     }
 
     @Nested

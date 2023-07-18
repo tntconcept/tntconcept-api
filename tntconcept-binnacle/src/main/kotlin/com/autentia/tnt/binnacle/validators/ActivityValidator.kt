@@ -202,6 +202,11 @@ internal class ActivityValidator(
 
             activityToUpdate.isMoreThanOneDay() && activityToUpdate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
 
+            isExceedingMaxTimePerActivity(activityToUpdate) -> throw MaxTimePerActivityRoleException(
+                activityToUpdate.projectRole.timeInfo.maxTimeAllowed.byActivity,
+                activityToUpdate.projectRole.timeInfo.timeUnit
+            )
+
             isExceedingMaxHoursForRole(
                 currentActivity,
                 activityToUpdate,
