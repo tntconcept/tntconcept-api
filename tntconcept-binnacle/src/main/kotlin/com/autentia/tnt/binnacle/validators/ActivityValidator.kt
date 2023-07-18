@@ -82,7 +82,7 @@ internal class ActivityValidator(
         val activityInterval = TimeInterval.of(activityToCreate.getStart(), activityToCreate.getEnd())
         val calendar = activityCalendarService.createCalendar(activityInterval.getDateInterval())
 
-        val activityDuration = activityToCreate.getDuration(calendar);
+        val activityDuration = activityToCreate.getDuration(calendar)
         return activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity > 0 &&
                 activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
     }
