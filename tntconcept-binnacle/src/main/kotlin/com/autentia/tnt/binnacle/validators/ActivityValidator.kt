@@ -42,6 +42,7 @@ internal class ActivityValidator(
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
+
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
             isExceedingMaxTimePerActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
                 activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity,
@@ -53,12 +54,13 @@ internal class ActivityValidator(
                 activityToCreate,
                 activityToCreateStartYear,
                 totalRegisteredDurationForThisRoleStartYear
-            ) -> throw MaxHoursPerRoleException(
+            ) -> throw MaxTimePerRoleException(
                 activityToCreate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
                 getRemaining(
                     activityToCreate,
                     totalRegisteredDurationForThisRoleStartYear
                 ),
+                activityToCreate.timeUnit,
                 activityToCreateStartYear
             )
 
@@ -67,24 +69,27 @@ internal class ActivityValidator(
                 activityToCreate,
                 activityToCreateEndYear,
                 totalRegisteredDurationForThisRoleEndYear
-            ) -> throw MaxHoursPerRoleException(
+            ) -> throw MaxTimePerRoleException(
                 activityToCreate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
                 getRemaining(
                     activityToCreate,
                     totalRegisteredDurationForThisRoleEndYear
                 ),
+                activityToCreate.timeUnit,
                 activityToCreateEndYear
             )
         }
     }
 
     private fun isExceedingMaxTimePerActivity(activityToCreate: Activity): Boolean {
+        if (activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity == 0)
+            return false
+
         val activityInterval = TimeInterval.of(activityToCreate.getStart(), activityToCreate.getEnd())
         val calendar = activityCalendarService.createCalendar(activityInterval.getDateInterval())
 
         val activityDuration = activityToCreate.getDuration(calendar)
-        return activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity > 0 &&
-                activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
+        return activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
     }
 
     private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
@@ -202,12 +207,13 @@ internal class ActivityValidator(
                 activityToUpdate,
                 activityToUpdateStartYear,
                 totalRegisteredDurationForThisRoleStartYear
-            ) -> throw MaxHoursPerRoleException(
+            ) -> throw MaxTimePerRoleException(
                 activityToUpdate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
                 getRemaining(
                     activityToUpdate,
                     totalRegisteredDurationForThisRoleStartYear
                 ),
+                activityToUpdate.timeUnit,
                 activityToUpdateStartYear
             )
 
@@ -216,12 +222,13 @@ internal class ActivityValidator(
                 activityToUpdate,
                 activityToUpdateEndYear,
                 totalRegisteredDurationForThisRoleEndYear
-            ) -> throw MaxHoursPerRoleException(
+            ) -> throw MaxTimePerRoleException(
                 activityToUpdate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
                 getRemaining(
                     activityToUpdate,
                     totalRegisteredDurationForThisRoleEndYear
                 ),
+                activityToUpdate.timeUnit,
                 activityToUpdateEndYear
             )
         }
