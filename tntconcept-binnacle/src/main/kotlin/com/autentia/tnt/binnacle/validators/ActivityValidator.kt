@@ -44,6 +44,10 @@ internal class ActivityValidator(
                 throw ActivityBeforeHiringDateException()
 
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
+            isExceedingMaxTimePerActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
+                activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity,
+                activityToCreate.projectRole.timeInfo.timeUnit
+            )
 
             isExceedingMaxHoursForRole(
                 emptyActivity,
@@ -74,6 +78,10 @@ internal class ActivityValidator(
             )
         }
     }
+
+    private fun isExceedingMaxTimePerActivity(activityToCreate: Activity) =
+        activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity > 0 &&
+        activityToCreate.duration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
 
     private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
         return activity.hasEvidences && activity.evidence == null

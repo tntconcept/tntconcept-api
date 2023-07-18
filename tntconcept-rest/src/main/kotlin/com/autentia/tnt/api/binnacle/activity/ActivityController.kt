@@ -92,6 +92,12 @@ internal class ActivityController(
         )
 
     @Error
+    internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxTimePerActivityRoleException) =
+            HttpResponse.badRequest(
+                ErrorResponse("MAX_REGISTRABLE_HOURS_PER_ACTIVITY_LIMIT_EXCEEDED", e.message)
+            )
+
+    @Error
     internal fun onProjectClosedException(request: HttpRequest<*>, e: ProjectClosedException) =
         HttpResponse.badRequest(ErrorResponse("CLOSED_PROJECT", e.message))
 

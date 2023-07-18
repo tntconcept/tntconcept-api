@@ -191,7 +191,10 @@ internal class ActivityValidatorTest {
             arrayOf(
                 "reached limit no remaining hours the year before",
                 listOf(activityReachedLimitTimeOnlyAYearAgo),
-                createProjectRoleWithLimit(maxAllowed = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)),
+                createProjectRoleWithLimit(
+                    maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByActivity = 0
+                ),
                 createActivity(
                     start = todayDateTime.minusYears(1L),
                     end = todayDateTime.minusYears(1L).plusMinutes(MINUTES_IN_HOUR * 9L),
@@ -204,7 +207,10 @@ internal class ActivityValidatorTest {
             arrayOf(
                 "reached limit no remaining hours",
                 listOf(activityReachedLimitTimeOnly),
-                createProjectRoleWithLimit(maxAllowed = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)),
+                createProjectRoleWithLimit(
+                    maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByActivity = 0
+                ),
                 createActivity(
                     start = todayDateTime,
                     end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
@@ -217,7 +223,10 @@ internal class ActivityValidatorTest {
             arrayOf(
                 "reached limit no remaining hours current day",
                 listOf(activityReachedLimitTodayTimeOnly),
-                createProjectRoleWithLimit(maxAllowed = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)),
+                createProjectRoleWithLimit(
+                    maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByActivity = 0
+                ),
                 createActivity(
                     start = todayDateTime,
                     end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
@@ -234,19 +243,20 @@ internal class ActivityValidatorTest {
                         start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
                         end = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(23, 59, 59),
                         duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
-                        projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS)
+                        projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
                             .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
                 ),
                 createProjectRoleWithLimit(
-                    maxAllowed = (DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByYear = (DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByActivity = 0,
                     timeUnit = TimeUnit.DAYS
                 ),
                 createActivity(
                     start = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(LocalTime.MIN),
                     end = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(23, 59, 59),
                     duration = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
-                    projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.DAYS)
+                    projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
                         .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
                 0.0,
@@ -260,19 +270,20 @@ internal class ActivityValidatorTest {
                         start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
                         end = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(23, 59, 59),
                         duration = (DAYS - 1) * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
-                        projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                        projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.NATURAL_DAYS)
                             .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
                 ),
                 createProjectRoleWithLimit(
-                    maxAllowed = (DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByYear = (DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByActivity = 0,
                     timeUnit = TimeUnit.NATURAL_DAYS
                 ),
                 createActivity(
                     start = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(LocalTime.MIN),
                     end = LocalDate.of(2023, 6, 21).plusDays(3L).atTime(23, 59, 59),
                     duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
-                    projectRole = projectRoleLimited.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                    projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.NATURAL_DAYS)
                         .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
                 0.0,
@@ -282,12 +293,15 @@ internal class ActivityValidatorTest {
             arrayOf(
                 "reached limit no remaining hours half hour",
                 listOf(activityReachedHalfHourTimeOnly),
-                createProjectRoleWithLimit(maxAllowed = 90),
+                createProjectRoleWithLimit(maxTimeAllowedByYear = 90, maxTimeAllowedByActivity = 0),
                 createActivity(
                     start = todayDateTime,
                     end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
                     duration = (MINUTES_IN_HOUR * 9),
-                    projectRole = createProjectRoleWithLimit(maxAllowed = 90)
+                    projectRole = createProjectRoleWithLimit(
+                        maxTimeAllowedByYear = 90,
+                        maxTimeAllowedByActivity = 0
+                    )
                 ).copy(id = null),
                 0.5,
                 firstDayOfYear,
@@ -296,7 +310,10 @@ internal class ActivityValidatorTest {
             arrayOf(
                 "not reached limit remaining hours left",
                 listOf(activityNotReachedLimitTimeOnly),
-                createProjectRoleWithLimit(maxAllowed = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)),
+                createProjectRoleWithLimit(
+                    maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByActivity = 0
+                ),
                 createActivity(
                     start = todayDateTime,
                     end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 10L),
@@ -344,7 +361,12 @@ internal class ActivityValidatorTest {
         fun `throw MaxHoursPerRoleException if user reaches max hours for a role 2`() {
             val maxAllowed = 480
 
-            val projectRole = createProjectRoleWithLimit(1L, maxAllowed = maxAllowed, timeUnit = TimeUnit.MINUTES)
+            val projectRole = createProjectRoleWithLimit(
+                1L,
+                maxTimeAllowedByYear = maxAllowed,
+                maxTimeAllowedByActivity = 0,
+                timeUnit = TimeUnit.MINUTES
+            )
 
             val activity = createDomainActivity(
                 start = LocalDateTime.of(2023, 1, 20, 0, 0, 0),
@@ -400,6 +422,55 @@ internal class ActivityValidatorTest {
             assertEquals(0.0, exception.remainingHours)
             assertEquals(2023, exception.year)
         }
+
+        private fun maxHoursActivityRoleLimitProviderCreate() = arrayOf(
+            arrayOf(
+                "reached limit no remaining hours the year before",
+                listOf(activityReachedLimitByActivity),
+                createProjectRoleWithLimit(maxTimeAllowedByYear = 0, maxTimeAllowedByActivity = 120),
+                createActivity(
+                    start = todayDateTime,
+                    end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 3L),
+                    duration = (MINUTES_IN_HOUR * 3),
+                    projectRole = projectRoleLimitedByActivity
+                ).copy(id = null),
+                0.0,
+                firstDayOfYear,
+                lastDayOfYear
+            )
+        )
+
+        @ParameterizedTest
+        @MethodSource("maxHoursActivityRoleLimitProviderCreate")
+        fun `throw MaxHoursPerActivityRoleException if user reaches max hours for activity`(
+            testDescription: String,
+            activitiesInTheYear: List<com.autentia.tnt.binnacle.core.domain.Activity>,
+            projectRoleLimited: ProjectRole,
+            activity: com.autentia.tnt.binnacle.core.domain.Activity,
+            expectedRemainingHours: Double,
+            firstDay: LocalDateTime,
+            lastDay: LocalDateTime,
+        ) {
+            val timeInterval = TimeInterval.of(firstDay, lastDay)
+            val calendar = calendarFactory.create(timeInterval.getDateInterval())
+
+            whenever(projectService.findById(projectRole.project.id)).thenReturn(vacationProject.toDomain())
+            whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
+            whenever(
+                activityService.getActivitiesByProjectRoleIds(
+                    timeInterval,
+                    listOf(activity.projectRole.id),
+                    user.id
+                )
+            ).thenReturn(activitiesInTheYear)
+
+            val exception = assertThrows<MaxTimePerActivityRoleException> {
+                activityValidator.checkActivityIsValidForCreation(activity, user)
+            }
+
+            assertEquals(projectRoleLimited.maxTimeAllowedByActivity, exception.maxAllowedTime)
+        }
+
     }
 
     @TestInstance(PER_CLASS)
@@ -636,7 +707,7 @@ internal class ActivityValidatorTest {
                     start = todayDateTime.minusYears(1L),
                     end = todayDateTime.minusYears(1L).plusMinutes((MINUTES_IN_HOUR * 9).toLong()),
                     duration = MINUTES_IN_HOUR * 9,
-                    projectRole = projectRoleLimited.toDomain()
+                    projectRole = projectRoleLimitedByYear.toDomain()
                 ).copy(id = activityAYearAgoUpdated.id),
                 0.0,
                 firstDayOfYear.minusYears(1L),
@@ -650,7 +721,7 @@ internal class ActivityValidatorTest {
                     start = todayDateTime.minusYears(1L),
                     end = todayDateTime.minusYears(1L).plusMinutes((MINUTES_IN_HOUR * 10).toLong()),
                     duration = MINUTES_IN_HOUR * 10,
-                    projectRole = projectRoleLimited.toDomain()
+                    projectRole = projectRoleLimitedByYear.toDomain()
                 ).copy(id = activityNotReachedLimitUpdate.id),
                 2.0,
                 firstDayOfYear.minusYears(1L),
@@ -664,7 +735,7 @@ internal class ActivityValidatorTest {
                     start = todayDateTime,
                     end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
                     duration = MINUTES_IN_HOUR * 9,
-                    projectRole = projectRoleLimited.toDomain()
+                    projectRole = projectRoleLimitedByYear.toDomain()
                 ).copy(id = activityReachedLimitUpdate.id),
                 0.0,
                 firstDayOfYear,
@@ -678,7 +749,7 @@ internal class ActivityValidatorTest {
                     start = todayDateTime,
                     end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 10L),
                     duration = MINUTES_IN_HOUR * 10,
-                    projectRole = projectRoleLimited.toDomain()
+                    projectRole = projectRoleLimitedByYear.toDomain()
                 ).copy(id = activityNotReachedLimitUpdate.id),
                 3.0,
                 firstDayOfYear,
@@ -704,7 +775,7 @@ internal class ActivityValidatorTest {
 
             whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
             whenever(
-                activityService.getActivitiesByProjectRoleIds(yearTimeInterval, listOf(projectRoleLimited.id), user.id)
+                activityService.getActivitiesByProjectRoleIds(yearTimeInterval, listOf(projectRoleLimitedByYear.id), user.id)
             ).thenReturn(activitiesInTheYear)
             whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
 
@@ -712,7 +783,7 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
             }
 
-            assertEquals(projectRoleLimited.maxTimeAllowedByYear / DECIMAL_HOUR, exception.maxAllowedHours)
+            assertEquals(projectRoleLimitedByYear.maxTimeAllowedByYear / DECIMAL_HOUR, exception.maxAllowedHours)
             assertEquals(expectedRemainingHours, exception.remainingHours)
         }
 
@@ -720,7 +791,12 @@ internal class ActivityValidatorTest {
         fun `throw MaxHoursPerRoleException if user reaches max hours for a role`() {
             val maxAllowed = 480
 
-            val projectRole = createProjectRoleWithLimit(1L, maxAllowed = maxAllowed, timeUnit = TimeUnit.MINUTES)
+            val projectRole = createProjectRoleWithLimit(
+                1L,
+                maxTimeAllowedByYear = maxAllowed,
+                maxTimeAllowedByActivity = 0,
+                timeUnit = TimeUnit.MINUTES
+            )
 
             val activityToValidate = createDomainActivity(
                 start = LocalDateTime.of(2023, 1, 20, 0, 0, 0),
@@ -735,7 +811,7 @@ internal class ActivityValidatorTest {
                     start = activityToValidate.getStart(),
                     end = activityToValidate.getEnd(),
                     duration = 480,
-                    projectRole = projectRoleLimited
+                    projectRole = projectRoleLimitedByYear
                 )
 
             val timeInterval2022 = TimeInterval.ofYear(2022)
@@ -1117,7 +1193,7 @@ internal class ActivityValidatorTest {
                 false,
                 TimeUnit.MINUTES)
 
-        private val projectRoleLimited =
+        private val projectRoleLimitedByYear =
             ProjectRole(
                 3,
                 "vac",
@@ -1125,6 +1201,19 @@ internal class ActivityValidatorTest {
                 vacationProject,
                 (MINUTES_IN_HOUR * 8),
                 0,
+                false,
+                false,
+                TimeUnit.MINUTES
+            )
+
+        private val projectRoleLimitedByActivity =
+            ProjectRole(
+                3,
+                "vac",
+                RequireEvidence.NO,
+                vacationProject,
+                0,
+                (MINUTES_IN_HOUR * 2),
                 false,
                 false,
                 TimeUnit.MINUTES
@@ -1148,75 +1237,82 @@ internal class ActivityValidatorTest {
             start = LocalDateTime.of(LocalDate.now(), LocalTime.now()),
             end = LocalDateTime.of(LocalDate.now(), LocalTime.now()).plusMinutes(MINUTES_IN_HOUR * 5L),
             duration = MINUTES_IN_HOUR * 5,
-            projectRole = projectRoleLimited
+            projectRole = projectRoleLimitedByYear
         )
 
         private val activityReachedLimitUpdate = createActivity(
             id = 1L,
             start = LocalDateTime.of(LocalDate.now(), LocalTime.now()),
             end = LocalDateTime.of(LocalDate.now(), LocalTime.now())
-                .plusMinutes(projectRoleLimited.maxTimeAllowedByYear.toLong()),
-            duration = projectRoleLimited.maxTimeAllowedByYear,
-            projectRole = projectRoleLimited
+                .plusMinutes(projectRoleLimitedByYear.maxTimeAllowedByYear.toLong()),
+            duration = projectRoleLimitedByYear.maxTimeAllowedByYear,
+            projectRole = projectRoleLimitedByYear
         )
 
         private val activityAYearAgoUpdated = createActivity(
             id = 1L,
             start = LocalDateTime.of(LocalDate.now().minusYears(1L), LocalTime.now()),
             end = LocalDateTime.of(LocalDate.now().minusYears(1L), LocalTime.now())
-                .plusMinutes((projectRoleLimited.maxTimeAllowedByYear - 120).toLong()),
-            duration = projectRoleLimited.maxTimeAllowedByYear - 120,
-            projectRole = projectRoleLimited
+                .plusMinutes((projectRoleLimitedByYear.maxTimeAllowedByYear - 120).toLong()),
+            duration = projectRoleLimitedByYear.maxTimeAllowedByYear - 120,
+            projectRole = projectRoleLimitedByYear
         )
 
         private val activityReachedLimitTimeOnly = createActivity(
             start = yesterdayDateTime,
-            end = yesterdayDateTime.plusMinutes(projectRoleLimited.maxTimeAllowedByYear.toLong()),
-            duration = projectRoleLimited.maxTimeAllowedByYear,
-            projectRole = projectRoleLimited
+            end = yesterdayDateTime.plusMinutes(projectRoleLimitedByYear.maxTimeAllowedByYear.toLong()),
+            duration = projectRoleLimitedByYear.maxTimeAllowedByYear,
+            projectRole = projectRoleLimitedByYear
         )
 
         private val activityReachedLimitTimeOnlyAYearAgo = createActivity(
             start = yesterdayDateTime.minusYears(1L),
-            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimited.maxTimeAllowedByYear.toLong()),
-            duration = projectRoleLimited.maxTimeAllowedByYear,
-            projectRole = projectRoleLimited
+            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimitedByYear.maxTimeAllowedByYear.toLong()),
+            duration = projectRoleLimitedByYear.maxTimeAllowedByYear,
+            projectRole = projectRoleLimitedByYear
         )
 
         private val activityForLimitedProjectRoleAYearAgo = createActivity(
             id = 1L,
             start = yesterdayDateTime.minusYears(1L),
-            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimited.maxTimeAllowedByYear - 120L),
-            duration = projectRoleLimited.maxTimeAllowedByYear - 120,
-            projectRole = projectRoleLimited
+            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimitedByYear.maxTimeAllowedByYear - 120L),
+            duration = projectRoleLimitedByYear.maxTimeAllowedByYear - 120,
+            projectRole = projectRoleLimitedByYear
         )
 
         private val otherActivityForLimitedProjectRoleAYearAgo = createActivity(
             start = yesterdayDateTime.minusYears(1L),
             end = yesterdayDateTime.minusYears(1L).plusMinutes(120),
             duration = 120,
-            projectRole = projectRoleLimited.toDomain(),
+            projectRole = projectRoleLimitedByYear.toDomain(),
         )
 
         private val activityReachedLimitTodayTimeOnly = createActivity(
             start = todayDateTime,
-            end = todayDateTime.plusMinutes(projectRoleLimited.maxTimeAllowedByYear.toLong()),
-            duration = projectRoleLimited.maxTimeAllowedByYear,
-            projectRole = projectRoleLimited
+            end = todayDateTime.plusMinutes(projectRoleLimitedByYear.maxTimeAllowedByYear.toLong()),
+            duration = projectRoleLimitedByYear.maxTimeAllowedByYear,
+            projectRole = projectRoleLimitedByYear
         )
 
         private val activityReachedHalfHourTimeOnly = createActivity(
             start = todayDateTime,
             end = todayDateTime.plusMinutes(MINUTES_IN_HOUR.toLong()),
             duration = MINUTES_IN_HOUR,
-            projectRole = projectRoleLimited
+            projectRole = projectRoleLimitedByYear
         )
 
         private val activityNotReachedLimitTimeOnly = createActivity(
             start = todayDateTime,
             end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 5L),
             duration = MINUTES_IN_HOUR * 5,
-            projectRole = projectRoleLimited.toDomain()
+            projectRole = projectRoleLimitedByYear.toDomain()
+        )
+
+        private val activityReachedLimitByActivity = createActivity(
+            start = todayDateTime,
+            end = todayDateTime.plusMinutes(30L),
+            duration = 30,
+            projectRole = projectRoleLimitedByActivity
         )
 
         private val newActivityInMarch = com.autentia.tnt.binnacle.core.domain.Activity.of(
@@ -1342,7 +1438,7 @@ internal class ActivityValidatorTest {
             end: LocalDateTime,
             duration: Int,
             description: String = "",
-            projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = projectRoleLimited.toDomain(),
+            projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = projectRoleLimitedByYear.toDomain(),
             billable: Boolean = false,
             hasEvidences: Boolean = false,
         ) = createDomainActivity(start, end, duration, projectRole).copy(
@@ -1371,22 +1467,23 @@ internal class ActivityValidatorTest {
         private val organization = Organization(1, "Organization", listOf())
 
         fun createProjectRoleWithLimit(
-            id: Long = projectRoleLimited.id,
+            id: Long = projectRoleLimitedByYear.id,
             name: String = "Role with limit",
             requireEvidence: RequireEvidence = RequireEvidence.NO,
             project: Project = Project(
                 1, "Project", true, false, LocalDate.now(), null, null,
                 organization, listOf()
             ),
-            maxAllowed: Int,
+            maxTimeAllowedByYear: Int,
+            maxTimeAllowedByActivity: Int,
             timeUnit: TimeUnit = TimeUnit.MINUTES,
         ) = ProjectRole(
             id,
             name,
             requireEvidence,
             project,
-            maxAllowed,
-            0,
+            maxTimeAllowedByYear,
+            maxTimeAllowedByActivity,
             true,
             false,
             timeUnit
