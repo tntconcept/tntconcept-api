@@ -58,7 +58,7 @@ internal class ActivityValidator(
                 totalRegisteredDurationForThisRoleStartYear
             ) -> throw MaxTimePerRoleException(
                 activityToCreate.projectRole.getMaxTimeAllowedByYearInTimeUnits(),
-                getRemaining(
+                getRemainingByTimeUnit(
                     activityToCreate,
                     totalRegisteredDurationForThisRoleStartYear
                 ),
@@ -73,7 +73,7 @@ internal class ActivityValidator(
                 totalRegisteredDurationForThisRoleEndYear
             ) -> throw MaxTimePerRoleException(
                 activityToCreate.projectRole.getMaxTimeAllowedByYearInTimeUnits(),
-                getRemaining(
+                getRemainingByTimeUnit(
                     activityToCreate,
                     totalRegisteredDurationForThisRoleEndYear
                 ),
@@ -137,11 +137,16 @@ internal class ActivityValidator(
         return totalRegisteredDurationForThisRoleAfterDiscount + activityToUpdateDuration
     }
 
-    private fun getRemaining(
+    private fun getRemainingByTimeUnit(
         activityToUpdate: Activity,
         totalRegisteredDurationForThisRole: Int,
     ): Double {
-        return (activityToUpdate.projectRole.getMaxTimeAllowedByYear() - totalRegisteredDurationForThisRole.toDouble()) / DECIMAL_HOUR
+        var remaining = (activityToUpdate.projectRole.getMaxTimeAllowedByYear() - totalRegisteredDurationForThisRole.toDouble())
+        return when (activityToUpdate.timeUnit)  {
+            TimeUnit.DAYS -> remaining / (60 * 8)
+            TimeUnit.NATURAL_DAYS -> remaining / (60 * 8)
+            TimeUnit.MINUTES -> remaining
+        }
     }
 
     private fun isExceedingMaxHoursForRole(
@@ -218,7 +223,7 @@ internal class ActivityValidator(
                 totalRegisteredDurationForThisRoleStartYear
             ) -> throw MaxTimePerRoleException(
                 activityToUpdate.projectRole.getMaxTimeAllowedByYearInTimeUnits(),
-                getRemaining(
+                getRemainingByTimeUnit(
                     activityToUpdate,
                     totalRegisteredDurationForThisRoleStartYear
                 ),
@@ -233,7 +238,7 @@ internal class ActivityValidator(
                 totalRegisteredDurationForThisRoleEndYear
             ) -> throw MaxTimePerRoleException(
                 activityToUpdate.projectRole.getMaxTimeAllowedByYearInTimeUnits(),
-                getRemaining(
+                getRemainingByTimeUnit(
                     activityToUpdate,
                     totalRegisteredDurationForThisRoleEndYear
                 ),
