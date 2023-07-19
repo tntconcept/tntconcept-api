@@ -1,11 +1,12 @@
 package com.autentia.tnt.api.binnacle.project
 
 import com.autentia.tnt.api.binnacle.*
+import com.autentia.tnt.api.binnacle.projectrole.MaxTimeAllowedResponse
+import com.autentia.tnt.api.binnacle.projectrole.ProjectRoleUserResponse
+import com.autentia.tnt.api.binnacle.projectrole.TimeInfoResponse
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
@@ -237,14 +238,20 @@ internal class ProjectControllerIT {
             startDate = LocalDate.now(),
         )
 
+        private val MAX_TIME_ALLOWED_RESPONSE = MaxTimeAllowedResponse(
+            960, 0
+        )
+
+        private val REMAINING_TIME_INFO_RESPONSE = TimeInfoResponse(
+            MAX_TIME_ALLOWED_RESPONSE, TimeUnit.MINUTES, 480
+        )
+
         private val PROJECT_ROLE_USER_RESPONSE = ProjectRoleUserResponse(
             1L,
             "Vacaciones",
             2L,
             3L,
-            960,
-            480,
-            TimeUnit.MINUTES,
+            REMAINING_TIME_INFO_RESPONSE,
             RequireEvidence.NO,
             true,
             4L
@@ -255,12 +262,10 @@ internal class ProjectControllerIT {
             "Vacaciones",
             2L,
             3L,
-            960,
-            480,
-            TimeUnit.MINUTES,
             RequireEvidence.NO,
             true,
-            4L
+            4L,
+            TimeInfoDTO(MaxTimeAllowedDTO(960,0), TimeUnit.MINUTES, 480)
         )
 
         private val PROJECT_RESPONSE_DTO = ProjectResponseDTO(

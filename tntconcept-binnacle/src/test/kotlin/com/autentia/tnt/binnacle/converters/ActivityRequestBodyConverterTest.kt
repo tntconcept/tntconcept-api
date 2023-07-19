@@ -47,7 +47,7 @@ internal class ActivityRequestBodyConverterTest {
         val DUMMY_PROJECT = Project(1L, "Dummy Project", open = true, billable = false, LocalDate.now(), null, null, projectRoles = listOf(), organization = DUMMY_ORGANIZATION)
 
         val DUMMY_PROJECT_ROLE =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, DUMMY_PROJECT, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, DUMMY_PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
 
         val ACTIVITY = Activity(
             1L,

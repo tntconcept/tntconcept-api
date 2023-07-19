@@ -1,5 +1,7 @@
 package com.autentia.tnt.binnacle.config
 
+import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
+import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -24,11 +26,11 @@ internal fun createUser(hiringDate: LocalDate, id: Long = 1L, name: String = "Jo
     agreementYearDuration = null,
     agreement = WorkingAgreement(
         1L, setOf(
-        WorkingAgreementTerms(1, LocalDate.of(1970, 1, 1), 20, 105900),
-        WorkingAgreementTerms(2, LocalDate.of(2020, 1, 1), 19, 105900),
-        WorkingAgreementTerms(3, LocalDate.of(2020, 6, 1), 22, 105900),
-        WorkingAgreementTerms(4, LocalDate.of(2022, 7, 1), 23, 105900)
-    )
+            WorkingAgreementTerms(1, LocalDate.of(1970, 1, 1), 20, 105900),
+            WorkingAgreementTerms(2, LocalDate.of(2020, 1, 1), 19, 105900),
+            WorkingAgreementTerms(3, LocalDate.of(2020, 6, 1), 22, 105900),
+            WorkingAgreementTerms(4, LocalDate.of(2022, 7, 1), 23, 105900)
+        )
     ),
     active = true
 )
@@ -113,11 +115,19 @@ internal fun createBlockedProject(id: Long = 1L) = Project(
     organization = createOrganization()
 )
 
+internal fun createProjectRoleTimeInfo(
+    maxTimeAllowedByYear: Int = 0,
+    maxTimeAllowedByActivity: Int = 0,
+    timeUnit: TimeUnit = TimeUnit.MINUTES
+) =
+    TimeInfo(MaxTimeAllowed(maxTimeAllowedByYear, maxTimeAllowedByActivity), timeUnit)
+
 internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
     id,
     "Dummy Project role",
     RequireEvidence.WEEKLY,
     createProject(),
+    0,
     0,
     true,
     false,
@@ -129,6 +139,7 @@ internal fun createProjectRole(id: Long = 1L, project: Project): ProjectRole = P
     "Dummy Project role",
     RequireEvidence.WEEKLY,
     project,
+    0,
     0,
     true,
     false,

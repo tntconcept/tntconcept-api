@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
+import com.autentia.tnt.binnacle.core.domain.RemainingTimeInfo
 import jakarta.inject.Singleton
 
 
@@ -14,12 +15,10 @@ class ProjectRoleConverter {
             projectRole.name,
             projectRole.project.organization.id,
             projectRole.project.id,
-            projectRole.getMaxAllowedInUnits(),
-            remaining,
-            projectRole.timeUnit,
             projectRole.requireEvidence,
             projectRole.isApprovalRequired,
-            userId
+            userId,
+            RemainingTimeInfo.of(projectRole.timeInfo, remaining)
         )
 
 }

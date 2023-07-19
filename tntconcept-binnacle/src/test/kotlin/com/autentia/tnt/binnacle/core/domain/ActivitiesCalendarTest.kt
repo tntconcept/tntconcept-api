@@ -23,7 +23,7 @@ class ActivitiesCalendarTest {
     private val dateTimePlusTwoDays = dateTimePlusOneHour.plusDays(2)
 
     private val projectRoleInMinutes = createDomainProjectRole()
-    private val projectRoleInDays = projectRoleInMinutes.copy(timeUnit = TimeUnit.DAYS)
+    private val projectRoleInDays = projectRoleInMinutes.copy(timeInfo = TimeInfo(MaxTimeAllowed(projectRoleInMinutes.getMaxTimeAllowedByYear(), projectRoleInMinutes.getMaxTimeAllowedByActivity()), TimeUnit.DAYS))
     private val activityInMinutes = Activity.of(
         1L,
         TimeInterval.of(dateTime, dateTimePlusOneHour),

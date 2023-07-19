@@ -2,8 +2,10 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.entities.ProjectRole
+import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import jakarta.inject.Singleton
 
 
@@ -15,9 +17,10 @@ class ProjectRoleResponseConverter {
         name = projectRole.name,
         organizationId = projectRole.project.organization.id,
         projectId = projectRole.project.id,
-        maxAllowed = projectRole.maxAllowed,
+        timeInfo = TimeInfoDTO(
+            MaxTimeAllowedDTO(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity),
+                    projectRole.timeUnit),
         isWorkingTime = projectRole.isWorkingTime,
-        timeUnit = projectRole.timeUnit,
         requireEvidence = projectRole.requireEvidence,
         requireApproval = projectRole.isApprovalRequired
     )
@@ -27,23 +30,22 @@ class ProjectRoleResponseConverter {
         name = projectRole.name,
         organizationId = projectRole.project.organization.id,
         projectId = projectRole.project.id,
-        maxAllowed = projectRole.maxAllowed,
+        timeInfo = TimeInfoDTO(
+            MaxTimeAllowedDTO(projectRole.getMaxTimeAllowedByYear(), projectRole.getMaxTimeAllowedByActivity()),
+            projectRole.getTimeUnit()),
         isWorkingTime = projectRole.isWorkingTime,
-        timeUnit = projectRole.timeUnit,
         requireEvidence = projectRole.requireEvidence,
         requireApproval = projectRole.isApprovalRequired
     )
 
     fun toProjectRoleUserDTO(projectRole: ProjectRoleUser): ProjectRoleUserDTO = ProjectRoleUserDTO(
-        id = projectRole.id,
-        name = projectRole.name,
-        organizationId = projectRole.organizationId,
-        projectId = projectRole.projectId,
-        maxAllowed = projectRole.maxAllowed,
-        remaining = projectRole.remaining,
-        timeUnit = projectRole.timeUnit,
-        requireEvidence = projectRole.requireEvidence,
-        requireApproval = projectRole.requireApproval,
-        userId = projectRole.userId
+        projectRole.id,
+        projectRole.name,
+        projectRole.organizationId,
+        projectRole.projectId,
+        projectRole.requireEvidence,
+        projectRole.requireApproval,
+        projectRole.userId,
+        TimeInfoDTO.from(projectRole.timeInfo)
     )
 }

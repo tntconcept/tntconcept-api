@@ -1,7 +1,7 @@
 package com.autentia.tnt.api.binnacle.hook
 
 import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.api.binnacle.ErrorResponseMaxHoursLimit
+import com.autentia.tnt.api.binnacle.ErrorResponseMaxTimeLimit
 import com.autentia.tnt.api.binnacle.ErrorValues
 import com.autentia.tnt.api.binnacle.activity.ActivityResponse
 import com.autentia.tnt.api.binnacle.organization.OrganizationResponse
@@ -62,12 +62,12 @@ internal class HookController(
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
 
     @Error
-    internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxHoursPerRoleException) =
+    internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxTimePerRoleException) =
         HttpResponse.badRequest(
-            ErrorResponseMaxHoursLimit(
+            ErrorResponseMaxTimeLimit(
                 "MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",
                 e.message,
-                ErrorValues(e.maxAllowedHours, e.remainingHours, e.year)
+                ErrorValues(e.maxAllowedTime, e.remainingTime, e.timeUnit, e.year)
             )
         )
 

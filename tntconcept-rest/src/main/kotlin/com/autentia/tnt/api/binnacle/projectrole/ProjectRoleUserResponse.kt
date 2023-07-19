@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle.projectrole
 
 import com.autentia.tnt.binnacle.entities.RequireEvidence
-import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 
 data class ProjectRoleUserResponse(
@@ -9,12 +8,10 @@ data class ProjectRoleUserResponse(
     val name: String,
     val organizationId: Long,
     val projectId: Long,
-    val maxAllowed: Int,
-    val remaining: Int,
-    val timeUnit: TimeUnit,
+    val timeInfo: TimeInfoResponse,
     val requireEvidence: RequireEvidence,
     val requireApproval: Boolean,
-    val userId: Long,
+    val userId: Long
 ) {
     companion object {
         fun from(projectRoleUserDTO: ProjectRoleUserDTO) =
@@ -23,9 +20,7 @@ data class ProjectRoleUserResponse(
                 projectRoleUserDTO.name,
                 projectRoleUserDTO.organizationId,
                 projectRoleUserDTO.projectId,
-                projectRoleUserDTO.maxAllowed,
-                projectRoleUserDTO.remaining,
-                projectRoleUserDTO.timeUnit,
+                TimeInfoResponse.from(projectRoleUserDTO.timeInfo),
                 projectRoleUserDTO.requireEvidence,
                 projectRoleUserDTO.requireApproval,
                 projectRoleUserDTO.userId,
