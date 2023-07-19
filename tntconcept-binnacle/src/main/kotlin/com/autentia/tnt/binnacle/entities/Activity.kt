@@ -60,6 +60,9 @@ data class Activity(
 
     @Enumerated(EnumType.STRING)
     var approvalState: ApprovalState,
+
+    var approvedByUserId: Long? = null,
+    var approvalDate: LocalDateTime? = null
 ) {
     fun getTimeInterval() = TimeInterval.of(start, end)
 
@@ -77,6 +80,8 @@ data class Activity(
             toLocalDateTime(insertDate),
             hasEvidences,
             approvalState,
+            approvedByUserId,
+            approvalDate,
             null
         )
 
@@ -97,7 +102,9 @@ data class Activity(
                 activity.departmentId,
                 toDate(activity.insertDate),
                 activity.hasEvidences,
-                activity.approvalState
+                activity.approvalState,
+                activity.approvedByUserId,
+                activity.approvalDate
             )
 
         fun of(
@@ -113,6 +120,8 @@ data class Activity(
             insertDate: Date?,
             hasEvidences: Boolean,
             approvalState: ApprovalState,
+            approvedByUser: Long?,
+            approvalDate: LocalDateTime?
         ) =
             Activity(
                 id,
@@ -126,12 +135,14 @@ data class Activity(
                 departmentId,
                 insertDate,
                 hasEvidences,
-                approvalState
+                approvalState,
+                approvedByUser,
+                approvalDate
             )
 
         fun emptyActivity(projectRole: ProjectRole): Activity = Activity(
             0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
-            false, 0, null, false, ApprovalState.NA
+            false, 0, null, false, ApprovalState.NA, null, null
         )
     }
 }

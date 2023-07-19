@@ -1,8 +1,10 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
+import com.autentia.tnt.binnacle.core.domain.Approval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalResponseDTO
 import jakarta.inject.Singleton
 
 @Singleton
@@ -18,7 +20,11 @@ class ActivityResponseConverter(
         projectRoleId = activity.projectRole.id,
         interval = activityIntervalResponseConverter.toIntervalResponseDTO(activity),
         userId = activity.userId,
-        approvalState = activity.approvalState
+        approval = ApprovalResponseDTO(
+            activity.approvalState,
+            activity.approvedByUserId,
+            activity.approvalDate
+        )
     )
 
     fun mapActivityToActivityResponse(activity: Activity) = ActivityResponse(
@@ -33,7 +39,11 @@ class ActivityResponseConverter(
         projectRole = activity.projectRole,
         duration = activity.duration,
         hasEvidences = activity.hasEvidences,
-        approvalState = activity.approvalState
+        approval = Approval(
+            activity.approvalState,
+            activity.approvedByUserId,
+            activity.approvalDate
+        )
     )
 
     fun toActivityResponseDTO(activityResponse: ActivityResponse) =
@@ -45,6 +55,10 @@ class ActivityResponseConverter(
             activityResponse.projectRole.id,
             activityIntervalResponseConverter.mapActivityResponseToIntervalResponseDTO(activityResponse),
             activityResponse.userId,
-            activityResponse.approvalState
+            ApprovalResponseDTO(
+                activityResponse.approval.approvalState,
+                activityResponse.approval.approvedByUserId,
+                activityResponse.approval.approvalDate
+            )
         )
 }

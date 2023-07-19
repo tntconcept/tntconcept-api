@@ -50,6 +50,8 @@ class ActivityTest {
                 LocalDateTime.now(),
                 false,
                 ApprovalState.NA,
+                null,
+                null,
                 null
             ).getDurationByCountingDays(0)
         )
@@ -74,6 +76,8 @@ class ActivityTest {
                 LocalDateTime.now(),
                 false,
                 ApprovalState.NA,
+                null,
+                null,
                 null
             ).getDurationByCountingDays(1)
         )
@@ -95,6 +99,8 @@ class ActivityTest {
                 LocalDateTime.now(),
                 false,
                 ApprovalState.NA,
+                null,
+                null,
                 null
             ).getDurationByCountingDays(1)
         )
@@ -117,6 +123,8 @@ class ActivityTest {
                 LocalDateTime.now(),
                 false,
                 ApprovalState.NA,
+                null,
+                null,
                 null
             ).getDurationByCountingWorkableDays(calendar)
         )
@@ -141,6 +149,8 @@ class ActivityTest {
                 LocalDateTime.now(),
                 false,
                 ApprovalState.NA,
+                null,
+                null,
                 null
             ).getDurationByCountingWorkableDays(calendar)
         )
@@ -163,6 +173,8 @@ class ActivityTest {
                 LocalDateTime.now(),
                 false,
                 ApprovalState.NA,
+                null,
+                null,
                 null
             ).getDurationByCountingWorkableDays(calendar)
         )

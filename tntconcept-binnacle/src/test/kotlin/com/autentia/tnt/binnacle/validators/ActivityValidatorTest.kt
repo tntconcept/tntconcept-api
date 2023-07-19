@@ -158,6 +158,8 @@ internal class ActivityValidatorTest {
                 LocalDateTime.now(),
                 false,
                 ApprovalState.NA,
+                null,
+                null,
                 null
             )
 
@@ -1417,6 +1419,8 @@ internal class ActivityValidatorTest {
             null,
             false,
             ApprovalState.NA,
+            null,
+            null,
             null
         )
 

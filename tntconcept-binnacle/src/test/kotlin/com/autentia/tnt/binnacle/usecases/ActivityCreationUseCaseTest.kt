@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
@@ -16,6 +17,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -146,7 +148,9 @@ internal class ActivityCreationUseCaseTest {
             Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
-        assertEquals(expectedResponseDTO, activityCreated)
+        Assertions.assertThat(activityCreated)
+            .usingRecursiveComparison()
+            .isEqualTo(expectedResponseDTO)
     }
 
     @Test
@@ -170,7 +174,10 @@ internal class ActivityCreationUseCaseTest {
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, start = start, end = end, duration = 3, timeUnit = TimeUnit.NATURAL_DAYS)
-        assertEquals(expectedResponseDTO, result)
+
+        Assertions.assertThat(result)
+            .usingRecursiveComparison()
+            .isEqualTo(expectedResponseDTO)
     }
 
     @Test
@@ -194,7 +201,10 @@ internal class ActivityCreationUseCaseTest {
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, start = start, end = end, duration = 2, timeUnit = TimeUnit.DAYS)
-        assertEquals(expectedResponseDTO, result)
+
+        Assertions.assertThat(result)
+            .usingRecursiveComparison()
+            .isEqualTo(expectedResponseDTO)
     }
 
     @Test
@@ -220,7 +230,10 @@ internal class ActivityCreationUseCaseTest {
             Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
-        assertEquals(expectedResponseDTO, activityCreated)
+
+        Assertions.assertThat(activityCreated)
+            .usingRecursiveComparison()
+            .isEqualTo(expectedResponseDTO)
     }
 
     @Test
@@ -246,8 +259,10 @@ internal class ActivityCreationUseCaseTest {
             Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
-        assertEquals(expectedResponseDTO, activityCreated)
 
+        Assertions.assertThat(activityCreated)
+            .usingRecursiveComparison()
+            .isEqualTo(expectedResponseDTO)
     }
 
 
@@ -396,7 +411,7 @@ internal class ActivityCreationUseCaseTest {
                 projectRoleId,
                 IntervalResponseDTO(start, end, duration, timeUnit),
                 userId,
-                approvalState
+                ApprovalResponseDTO(approvalState,null,null)
             )
 
     }

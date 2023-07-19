@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import java.time.LocalDate
@@ -197,6 +198,8 @@ internal fun createDomainActivity(
         null,
         false,
         ApprovalState.NA,
+        null,
+        null,
         null
     )
 
@@ -223,5 +226,5 @@ internal fun createActivityResponseDTO(
     projectRoleId = 1L,
     interval = IntervalResponseDTO(start, end, 45, TimeUnit.MINUTES),
     userId = 1L,
-    approvalState = approvalState
+    approval = ApprovalResponseDTO(approvalState)
 )

@@ -73,6 +73,8 @@ internal class ActivityDeletionUseCaseTest {
             LocalDateTime.now(),
             false,
             ApprovalState.NA,
+            null,
+            null,
             null
         )
 
