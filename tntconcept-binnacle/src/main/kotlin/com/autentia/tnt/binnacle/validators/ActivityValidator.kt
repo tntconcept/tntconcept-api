@@ -1,15 +1,15 @@
 package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.Activity
-import com.autentia.tnt.binnacle.core.domain.Project
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.domain.User
+import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.ProjectService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
@@ -19,13 +19,13 @@ import javax.transaction.Transactional
 internal class ActivityValidator(
     private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
-    private val projectService: ProjectService,
+    private val projectRepository: ProjectRepository,
 ) {
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForCreation(activityToCreate: Activity, user: User) {
         require(activityToCreate.id == null) { "Cannot create a new activity with id ${activityToCreate.id}." }
-        val project = projectService.findById(activityToCreate.projectRole.project.id)
+        val project = projectRepository.findById(activityToCreate.projectRole.project.id).orElseThrow { ProjectNotFoundException(activityToCreate.projectRole.project.id) }
         val emptyActivity = Activity.emptyActivity(activityToCreate.projectRole, user)
         val activityToCreateStartYear = activityToCreate.getYearOfStart()
         val activityToCreateEndYear = activityToCreate.timeInterval.end.year
@@ -39,6 +39,7 @@ internal class ActivityValidator(
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
+            isBeforeProjectCreationDate(activityToCreate, project) -> throw ActivityBeforeProjectCreationDateException()
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
@@ -180,8 +181,8 @@ internal class ActivityValidator(
     ) {
         require(activityToUpdate.id != null) { "Cannot update an activity without id." }
         require(currentActivity.approvalState != ApprovalState.ACCEPTED) { "Cannot update an activity already approved." }
-        val projectToUpdate = projectService.findById(activityToUpdate.projectRole.project.id)
-        val currentProject = projectService.findById(currentActivity.projectRole.project.id)
+        val projectToUpdate = projectRepository.findById(activityToUpdate.projectRole.project.id).orElseThrow { ProjectNotFoundException(activityToUpdate.projectRole.project.id) }
+        val currentProject = projectRepository.findById(currentActivity.projectRole.project.id).orElseThrow { ProjectNotFoundException(currentActivity.projectRole.project.id) }
         val activityToUpdateStartYear = activityToUpdate.getYearOfStart()
         val activityToUpdateEndYear = activityToUpdate.timeInterval.end.year
         val totalRegisteredDurationForThisRoleStartYear =
@@ -251,7 +252,7 @@ internal class ActivityValidator(
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(activity: Activity) {
-        val project = projectService.findById(activity.projectRole.project.id)
+        val project = projectRepository.findById(activity.projectRole.project.id).orElseThrow { ProjectNotFoundException(activity.projectRole.project.id) }
         require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
         when {
             isProjectBlocked(project, activity) -> throw ProjectBlockedException(project.blockDate!!)
@@ -267,9 +268,9 @@ internal class ActivityValidator(
         if (project.blockDate == null) {
             return false
         }
-        return project.blockDate.isAfter(
+        return project.blockDate!!.isAfter(
             activity.getStart().toLocalDate()
-        ) || project.blockDate.isEqual(activity.getStart().toLocalDate())
+        ) || project.blockDate!!.isEqual(activity.getStart().toLocalDate())
     }
 
     private fun isOverlappingAnotherActivityTime(
@@ -288,6 +289,10 @@ internal class ActivityValidator(
             activity.approvalState == ApprovalState.ACCEPTED || activity.approvalState == ApprovalState.NA -> throw InvalidActivityApprovalStateException()
             !activity.hasEvidences -> throw NoEvidenceInActivityException(activity.id!!)
         }
+    }
+
+    fun isBeforeProjectCreationDate(activity: Activity, project: Project) : Boolean{
+        return activity.timeInterval.start.toLocalDate() < project.startDate
     }
 
     private companion object {
