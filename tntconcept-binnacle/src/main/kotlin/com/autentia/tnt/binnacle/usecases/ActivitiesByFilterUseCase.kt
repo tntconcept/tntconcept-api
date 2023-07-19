@@ -46,7 +46,7 @@ class ActivitiesByFilterUseCase internal constructor(
         if (activityFilter.approvalState !== null) {
             predicate = if (activityFilter.approvalState != ApprovalStateActivityFilter.ALL){
                 PredicateBuilder.and(predicate, approvalState(ApprovalState.valueOf(activityFilter.approvalState.name)))
-            } else {git a
+            } else {
                 PredicateBuilder.and(predicate, PredicateBuilder.or(approvalState((ApprovalState.PENDING)), (approvalState((ApprovalState.ACCEPTED)))))
             }
         }
