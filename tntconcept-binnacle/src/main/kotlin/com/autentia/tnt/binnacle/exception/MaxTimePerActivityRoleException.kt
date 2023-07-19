@@ -7,6 +7,7 @@ class MaxTimePerActivityRoleException(
     val remainingTime: Int,
     val timeUnit: TimeUnit,
     val year: Int,
+
 ) : BinnacleException(
     "Reached max registrable duration limit by activity. Max allowed time: $maxAllowedTime $timeUnit"
 )

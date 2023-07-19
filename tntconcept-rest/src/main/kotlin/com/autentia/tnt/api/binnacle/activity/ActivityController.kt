@@ -82,21 +82,21 @@ internal class ActivityController(
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
 
     @Error
-    internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxTimePerRoleException) =
+    internal fun onReachedMaxImputableTimeForRole(request: HttpRequest<*>, e: MaxTimePerRoleException) =
         HttpResponse.badRequest(
             ErrorResponseMaxTimeLimit(
-                "MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",
+                "MAX_REGISTRABLE_TIME_LIMIT_EXCEEDED",
                 e.message,
                 ErrorValues(e.maxAllowedTime, e.remainingTime, e.timeUnit, e.year)
             )
         )
 
     @Error
-    internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxTimePerActivityRoleException) =
+    internal fun onReachedMaxImputableTimeForActivity(request: HttpRequest<*>, e: MaxTimePerActivityRoleException) =
         HttpResponse.badRequest(
-            ErrorResponseMaxTimeLimit("MAX_REGISTRABLE_HOURS_PER_ACTIVITY_LIMIT_EXCEEDED",
+            ErrorResponseMaxTimeLimit("MAX_REGISTRABLE_TIME_PER_ACTIVITY_LIMIT_EXCEEDED",
                 e.message,
-                ErrorValues(e.maxAllowedTime.toDouble(), 0.0, e.timeUnit, 0))
+                ErrorValues(e.maxAllowedTime.toDouble(), e.remainingTime.toDouble(), e.timeUnit, e.year))
         )
 
     @Error
