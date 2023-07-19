@@ -45,8 +45,8 @@ internal class ActivityValidator(
 
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
             isExceedingMaxTimePerActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
-                activityToCreate.projectRole.timeInfo.getMaxTimeAllowedByActivityInUnits(),
-                activityToCreate.projectRole.timeInfo.getMaxTimeAllowedByActivityInUnits(),
+                activityToCreate.projectRole.getMaxTimeAllowedByActivityInTimeUnits(),
+                activityToCreate.projectRole.getMaxTimeAllowedByActivityInTimeUnits(),
                 activityToCreate.projectRole.timeInfo.timeUnit,
                 activityToCreateStartYear
             )
