@@ -33,6 +33,7 @@ class ActivityDeletionUseCase internal constructor(
         if (activityToDelete.hasEvidences) {
             activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
         }
+        
         activityRepository.deleteById(id)
     }
 }
