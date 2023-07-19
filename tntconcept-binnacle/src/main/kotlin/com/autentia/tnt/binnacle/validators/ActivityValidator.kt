@@ -45,8 +45,10 @@ internal class ActivityValidator(
 
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
             isExceedingMaxTimePerActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
-                activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity,
-                activityToCreate.projectRole.timeInfo.timeUnit
+                activityToCreate.projectRole.timeInfo.getMaxTimeAllowedByActivityInUnits(),
+                activityToCreate.projectRole.timeInfo.getMaxTimeAllowedByActivityInUnits(),
+                activityToCreate.projectRole.timeInfo.timeUnit,
+                activityToCreateStartYear
             )
 
             isExceedingMaxHoursForRole(
@@ -55,7 +57,7 @@ internal class ActivityValidator(
                 activityToCreateStartYear,
                 totalRegisteredDurationForThisRoleStartYear
             ) -> throw MaxTimePerRoleException(
-                activityToCreate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
+                activityToCreate.projectRole.getMaxTimeAllowedByYearInTimeUnits(),
                 getRemaining(
                     activityToCreate,
                     totalRegisteredDurationForThisRoleStartYear
@@ -70,7 +72,7 @@ internal class ActivityValidator(
                 activityToCreateEndYear,
                 totalRegisteredDurationForThisRoleEndYear
             ) -> throw MaxTimePerRoleException(
-                activityToCreate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
+                activityToCreate.projectRole.getMaxTimeAllowedByYearInTimeUnits(),
                 getRemaining(
                     activityToCreate,
                     totalRegisteredDurationForThisRoleEndYear
@@ -203,9 +205,11 @@ internal class ActivityValidator(
             activityToUpdate.isMoreThanOneDay() && activityToUpdate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
 
             isExceedingMaxTimePerActivity(activityToUpdate) -> throw MaxTimePerActivityRoleException(
-                activityToUpdate.projectRole.timeInfo.maxTimeAllowed.byActivity,
-                activityToUpdate.projectRole.timeInfo.timeUnit
-            )
+                activityToUpdate.projectRole.timeInfo.getMaxTimeAllowedByActivityInUnits(),
+                activityToUpdate.projectRole.timeInfo.getMaxTimeAllowedByActivityInUnits(),
+                activityToUpdate.projectRole.timeInfo.timeUnit,
+                activityToUpdateStartYear,
+                )
 
             isExceedingMaxHoursForRole(
                 currentActivity,
@@ -213,7 +217,7 @@ internal class ActivityValidator(
                 activityToUpdateStartYear,
                 totalRegisteredDurationForThisRoleStartYear
             ) -> throw MaxTimePerRoleException(
-                activityToUpdate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
+                activityToUpdate.projectRole.getMaxTimeAllowedByYearInTimeUnits(),
                 getRemaining(
                     activityToUpdate,
                     totalRegisteredDurationForThisRoleStartYear
@@ -228,7 +232,7 @@ internal class ActivityValidator(
                 activityToUpdateEndYear,
                 totalRegisteredDurationForThisRoleEndYear
             ) -> throw MaxTimePerRoleException(
-                activityToUpdate.projectRole.getMaxTimeAllowedByYear() / DECIMAL_HOUR,
+                activityToUpdate.projectRole.getMaxTimeAllowedByYearInTimeUnits(),
                 getRemaining(
                     activityToUpdate,
                     totalRegisteredDurationForThisRoleEndYear

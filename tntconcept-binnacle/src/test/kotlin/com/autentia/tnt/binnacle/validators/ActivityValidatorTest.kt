@@ -187,9 +187,9 @@ internal class ActivityValidatorTest {
             }
         }
 
-        private fun maxHoursRoleLimitProviderCreate() = arrayOf(
+        private fun maxTimeRoleLimitProviderCreate() = arrayOf(
             arrayOf(
-                "reached limit no remaining hours the year before",
+                "reached limit no remaining time the year before",
                 listOf(activityReachedLimitTimeOnlyAYearAgo),
                 createProjectRoleWithLimit(
                     maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
@@ -205,7 +205,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear.minusYears(1L)
             ),
             arrayOf(
-                "reached limit no remaining hours",
+                "reached limit no remaining time",
                 listOf(activityReachedLimitTimeOnly),
                 createProjectRoleWithLimit(
                     maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
@@ -221,7 +221,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "reached limit no remaining hours current day",
+                "reached limit no remaining time current day",
                 listOf(activityReachedLimitTodayTimeOnly),
                 createProjectRoleWithLimit(
                     maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
@@ -237,7 +237,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "reached limit no remaining hours for projectRole with days configuration",
+                "reached limit no remaining time for projectRole with days configuration",
                 listOf(
                     createActivity(
                         start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
@@ -264,7 +264,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "reached limit no remaining hours for projectRole with natural days configuration",
+                "reached limit no remaining time for projectRole with natural days configuration",
                 listOf(
                     createActivity(
                         start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
@@ -291,7 +291,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "reached limit no remaining hours half hour",
+                "reached limit no remaining time half hour",
                 listOf(activityReachedHalfHourTimeOnly),
                 createProjectRoleWithLimit(maxTimeAllowedByYear = 90, maxTimeAllowedByActivity = 0),
                 createActivity(
@@ -308,7 +308,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "not reached limit remaining hours left",
+                "not reached limit remaining time left",
                 listOf(activityNotReachedLimitTimeOnly),
                 createProjectRoleWithLimit(
                     maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
@@ -326,8 +326,8 @@ internal class ActivityValidatorTest {
         )
 
         @ParameterizedTest
-        @MethodSource("maxHoursRoleLimitProviderCreate")
-        fun `throw MaxHoursPerRoleException if user reaches max hours for a role`(
+        @MethodSource("maxTimeRoleLimitProviderCreate")
+        fun `throw MaxTimePerRoleException if user reaches max time for a role`(
             testDescription: String,
             activitiesInTheYear: List<com.autentia.tnt.binnacle.core.domain.Activity>,
             projectRoleLimited: ProjectRole,
@@ -353,12 +353,12 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForCreation(activity, user)
             }
 
-            assertEquals(projectRoleLimited.maxTimeAllowedByYear / DECIMAL_HOUR, exception.maxAllowedTime)
+            assertEquals(projectRoleLimited.toDomain().getMaxTimeAllowedByYearInTimeUnits() , exception.maxAllowedTime)
             assertEquals(expectedRemainingHours, exception.remainingTime)
         }
 
         @Test
-        fun `throw MaxHoursPerRoleException if user reaches max hours for a role 2`() {
+        fun `throw MaxTimePerRoleException if user reaches max time for a role 2`() {
             val maxAllowed = 480
 
             val projectRole = createProjectRoleWithLimit(
@@ -437,9 +437,9 @@ internal class ActivityValidatorTest {
             assertEquals(2023, exception.year)
         }
 
-        private fun maxHoursActivityRoleLimitProviderCreate() = arrayOf(
+        private fun maxTimeActivityRoleLimitProviderCreate() = arrayOf(
             arrayOf(
-                "reached limit no remaining hours the year before",
+                "reached limit no remaining time the year before",
                 listOf(activityReachedLimitByActivity),
                 createProjectRoleWithLimit(maxTimeAllowedByYear = 0, maxTimeAllowedByActivity = 120),
                 createActivity(
@@ -455,8 +455,8 @@ internal class ActivityValidatorTest {
         )
 
         @ParameterizedTest
-        @MethodSource("maxHoursActivityRoleLimitProviderCreate")
-        fun `throw MaxHoursPerActivityRoleException if user reaches max hours for activity`(
+        @MethodSource("maxTimeActivityRoleLimitProviderCreate")
+        fun `throw MaxTimePerActivityRoleException if user reaches max time for activity`(
             testDescription: String,
             activitiesInTheYear: List<com.autentia.tnt.binnacle.core.domain.Activity>,
             projectRoleLimited: ProjectRole,
@@ -712,9 +712,9 @@ internal class ActivityValidatorTest {
             }
         }
 
-        private fun maxHoursRoleLimitProviderUpdate() = arrayOf(
+        private fun maxTimeRoleLimitProviderUpdate() = arrayOf(
             arrayOf(
-                "reached limit no remaining hours for activity related to the year before",
+                "reached limit no remaining time for activity related to the year before",
                 listOf(activityForLimitedProjectRoleAYearAgo, otherActivityForLimitedProjectRoleAYearAgo),
                 activityAYearAgoUpdated,
                 createDomainActivity(
@@ -772,8 +772,8 @@ internal class ActivityValidatorTest {
         )
 
         @ParameterizedTest
-        @MethodSource("maxHoursRoleLimitProviderUpdate")
-        fun `throw MaxHoursPerRoleException if user reaches max hours for a role`(
+        @MethodSource("maxTimeRoleLimitProviderUpdate")
+        fun `throw MaxTimePerRoleException if user reaches max time for a role`(
             testDescription: String,
             activitiesInTheYear: List<com.autentia.tnt.binnacle.core.domain.Activity>,
             currentActivity: com.autentia.tnt.binnacle.core.domain.Activity,
@@ -806,7 +806,7 @@ internal class ActivityValidatorTest {
         }
 
         @Test
-        fun `throw MaxHoursPerRoleException if user reaches max hours for a role`() {
+        fun `throw MaxTimePerRoleException if user reaches max time for a role`() {
             val maxAllowed = 480
 
             val projectRole = createProjectRoleWithLimit(
