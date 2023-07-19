@@ -8,23 +8,24 @@ import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.ApprovedActivityMailService
+import com.autentia.tnt.binnacle.services.DateService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import com.autentia.tnt.security.application.checkActivityApprovalRole
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
-import java.time.LocalDateTime
 import java.util.*
 import javax.transaction.Transactional
 
 @Singleton
 class ActivityApprovalUseCase internal constructor(
-    private val activityRepository: ActivityRepository,
-    private val securityService: SecurityService,
-    private val activityResponseConverter: ActivityResponseConverter,
-    private val userRepository: UserRepository,
-    private val approvedActivityMailService: ApprovedActivityMailService,
-    private val activityValidator: ActivityValidator,
+        private val activityRepository: ActivityRepository,
+        private val securityService: SecurityService,
+        private val activityResponseConverter: ActivityResponseConverter,
+        private val userRepository: UserRepository,
+        private val approvedActivityMailService: ApprovedActivityMailService,
+        private val activityValidator: ActivityValidator,
+        private val dateService: DateService,
 ) {
     @Transactional(rollbackOn = [Exception::class])
     fun approveActivity(id: Long, locale: Locale): ActivityResponseDTO {
@@ -47,7 +48,7 @@ class ActivityApprovalUseCase internal constructor(
     private fun updateActivityState(activityToApprove: Activity, approvedByUserId: Long): com.autentia.tnt.binnacle.core.domain.Activity {
         activityToApprove.approvalState = ApprovalState.ACCEPTED
         activityToApprove.approvedByUserId = approvedByUserId
-        activityToApprove.approvalDate = LocalDateTime.now()
+        activityToApprove.approvalDate = dateService.getDateNow()
         return activityRepository.update(activityToApprove).toDomain()
     }
 
