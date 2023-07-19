@@ -49,7 +49,8 @@ internal class ActivitiesByFilterUseCaseTest {
         val activityFilterDTO = ActivityFilterDTO(
             approvalState = ApprovalStateActivityFilter.ALL,
         )
-            val compositedSpecification =
+
+        val compositedSpecification =
             PredicateBuilder.or(
                 ActivityApprovalStateSpecification(ApprovalState.PENDING),
                 ActivityApprovalStateSpecification(ApprovalState.ACCEPTED)
