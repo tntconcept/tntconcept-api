@@ -28,23 +28,23 @@ internal class ActivityRepositorySecuredTest {
     private val internalActivityRepository = mock<InternalActivityRepository>()
 
     private var activityRepositorySecured =
-        ActivityRepositorySecured(internalActivityRepository, securityService)
+            ActivityRepositorySecured(internalActivityRepository, securityService)
 
     @Test
     fun `find all with user id filter`() {
         val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA
-            )
+                Activity(
+                        id = 1L,
+                        start = today.atTime(10, 0, 0),
+                        end = today.atTime(12, 0, 0),
+                        duration = 120,
+                        description = "Test activity",
+                        projectRole = projectRole,
+                        userId = userId,
+                        billable = false,
+                        hasEvidences = false,
+                        approvalState = ApprovalState.NA
+                )
         )
         val activitySpecification = PredicateBuilder.and(ActivityPredicates.ALL, ActivityPredicates.userId(userId))
 
@@ -59,18 +59,18 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `find all without user id filter if there is activity-approval role privileges`() {
         val activities = listOf(
-            Activity(
-                id = 2L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA
-            )
+                Activity(
+                        id = 2L,
+                        start = today.atTime(10, 0, 0),
+                        end = today.atTime(12, 0, 0),
+                        duration = 120,
+                        description = "Test activity",
+                        projectRole = projectRole,
+                        userId = userId,
+                        billable = false,
+                        hasEvidences = false,
+                        approvalState = ApprovalState.NA
+                )
         )
         val activitySpecification = ActivityPredicates.ALL
 
@@ -87,16 +87,16 @@ internal class ActivityRepositorySecuredTest {
         val activityId = 1L
 
         val activity = Activity(
-            id = activityId,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA
+                id = activityId,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA
         )
         whenever(internalActivityRepository.findByIdAndUserId(activityId, userId)).thenReturn(activity)
         whenever(securityService.authentication).thenReturn(Optional.empty())
@@ -108,16 +108,16 @@ internal class ActivityRepositorySecuredTest {
     fun `find activity by id for user with activity-approval role privilege`() {
         val activityId = 1L
         val activity = Activity(
-            id = activityId,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = 2L,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
+                id = activityId,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = 2L,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
         )
         whenever(internalActivityRepository.findById(activityId)).thenReturn(activity)
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
@@ -161,13 +161,13 @@ internal class ActivityRepositorySecuredTest {
     fun `test findOfLatestProjects should return only user activities`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         val userActivity = createActivity()
 
         whenever(securityService.authentication).doReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.findOfLatestProjects(startDate, endDate, userActivity.userId)).doReturn(
-            listOf(userActivity)
+                listOf(userActivity)
         )
 
         assertEquals(listOf(userActivity), activityRepositorySecured.findOfLatestProjects(startDate, endDate, userId))
@@ -188,10 +188,10 @@ internal class ActivityRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findByProjectRoleIds(
-                LocalDateTime.now(),
-                LocalDateTime.now(),
-                listOf(1L),
-                adminUserId
+                    LocalDateTime.now(),
+                    LocalDateTime.now(),
+                    listOf(1L),
+                    adminUserId
             )
         }
     }
@@ -200,25 +200,25 @@ internal class ActivityRepositorySecuredTest {
     fun `test findByProjectRoleIds should return only user activities if user logged is not admin`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         val userActivity = createActivity()
         val projectRoleIds = listOf(1L)
         whenever(securityService.authentication).doReturn(Optional.of(emptyRolesAuth))
         whenever(
-            internalActivityRepository.findByProjectRoleIds(
-                startDate,
-                endDate,
-                projectRoleIds,
-                userActivity.userId
-            )
+                internalActivityRepository.findByProjectRoleIds(
+                        startDate,
+                        endDate,
+                        projectRoleIds,
+                        userActivity.userId
+                )
         ).doReturn(
-            listOf(userActivity)
+                listOf(userActivity)
         )
 
         assertEquals(
-            listOf(userActivity),
-            activityRepositorySecured.findByProjectRoleIds(startDate, endDate, projectRoleIds, userId)
+                listOf(userActivity),
+                activityRepositorySecured.findByProjectRoleIds(startDate, endDate, projectRoleIds, userId)
         )
     }
 
@@ -244,13 +244,13 @@ internal class ActivityRepositorySecuredTest {
     fun `test findByProjectId should return only user activities`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         val userActivity = createActivity()
 
         whenever(securityService.authentication).doReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.findByProjectId(startDate, endDate, 1L, userActivity.userId)).doReturn(
-            listOf(userActivity)
+                listOf(userActivity)
         )
 
         assertEquals(listOf(userActivity), activityRepositorySecured.findByProjectId(startDate, endDate, 1L, userId))
@@ -260,7 +260,7 @@ internal class ActivityRepositorySecuredTest {
     fun `find worked minutes should retrieve authenticated user worked minutes`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         val workedTime = listOf(ActivityTimeOnly(startDate, 60, projectRole.id))
 
@@ -268,7 +268,7 @@ internal class ActivityRepositorySecuredTest {
         whenever(internalActivityRepository.findWorkedMinutes(startDate, endDate, userId)).thenReturn(workedTime)
 
         val result: List<ActivityTimeOnly> = activityRepositorySecured.findWorkedMinutes(
-            startDate, endDate, userId
+                startDate, endDate, userId
         )
 
         assertEquals(workedTime, result)
@@ -278,13 +278,13 @@ internal class ActivityRepositorySecuredTest {
     fun `find worked minutes should throw IllegalStateException if there is not logged user`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findWorkedMinutes(
-                startDate, endDate, userId
+                    startDate, endDate, userId
             )
         }
     }
@@ -293,13 +293,13 @@ internal class ActivityRepositorySecuredTest {
     fun `find worked minutes should throw IllegalArgumentException if user id differs from logged user and is not admin`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findWorkedMinutes(
-                startDate, endDate, adminUserId
+                    startDate, endDate, adminUserId
             )
         }
     }
@@ -308,28 +308,28 @@ internal class ActivityRepositorySecuredTest {
     fun `find activities between dates should retrieve other user activities if logged user has activity-approval privilege`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
+                Activity(
+                        id = 1L,
+                        start = today.atTime(10, 0, 0),
+                        end = today.atTime(12, 0, 0),
+                        duration = 120,
+                        description = "Test activity",
+                        projectRole = projectRole,
+                        userId = userId,
+                        billable = false,
+                        hasEvidences = false,
+                        approvalState = ApprovalState.NA,
+                )
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
         whenever(internalActivityRepository.findByUserId(startDate, endDate, userId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.findByUserId(
-            startDate, endDate, userId
+                startDate, endDate, userId
         )
 
         assertEquals(activities, result)
@@ -339,14 +339,14 @@ internal class ActivityRepositorySecuredTest {
     fun `find activities between dates should not retrieve other user activities if logged user is not admin`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findByUserId(
-                startDate, endDate, adminUserId
+                    startDate, endDate, adminUserId
             )
         }
     }
@@ -355,21 +355,21 @@ internal class ActivityRepositorySecuredTest {
     fun `find activities between dates should retrieve logged user activities if user is not admin`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
+                Activity(
+                        id = 1L,
+                        start = today.atTime(10, 0, 0),
+                        end = today.atTime(12, 0, 0),
+                        duration = 120,
+                        description = "Test activity",
+                        projectRole = projectRole,
+                        userId = userId,
+                        billable = false,
+                        hasEvidences = false,
+                        approvalState = ApprovalState.NA,
+                )
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -377,7 +377,7 @@ internal class ActivityRepositorySecuredTest {
 
 
         val result = activityRepositorySecured.findByUserId(
-            startDate, endDate, userId
+                startDate, endDate, userId
         )
         assertEquals(activities, result)
     }
@@ -394,16 +394,16 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `save activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
         val activity = Activity(
-            id = 1L,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
 
@@ -415,27 +415,27 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `save activity should call internal to save activity`() {
         val activity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
         )
         val expectedActivity = Activity(
-            id = 1L,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(internalActivityRepository.save(activity)).thenReturn(expectedActivity)
@@ -457,16 +457,16 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `update activity should throw IllegalArgumentException if activity does not belong to the authenticated user`() {
         val activity = Activity(
-            id = 1L,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
 
@@ -478,16 +478,16 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `update activity should throw IllegalArgumentException if activity does not exist`() {
         val activity = Activity(
-            id = 1L,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(null)
@@ -500,16 +500,16 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `update activity should call internal`() {
         val activity = Activity(
-            id = 1L,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Updated test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Updated test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(activity)
@@ -523,16 +523,16 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `update activity should throw IllegalArgumentException when id doesn't exist`() {
         val activity = Activity(
-            id = 1L,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Updated test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Updated test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(null)
@@ -572,29 +572,6 @@ internal class ActivityRepositorySecuredTest {
     @Test
     fun `delete activity should call internal`() {
         val activity = Activity(
-            id = 1L,
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
-        )
-        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
-        whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(activity)
-
-        activityRepositorySecured.deleteById(1L)
-
-        verify(internalActivityRepository).deleteById(1L)
-    }
-
-    @Test
-    fun `find by project role and user id should return activities`() {
-        val activities = listOf(
-            Activity(
                 id = 1L,
                 start = today.atTime(10, 0, 0),
                 end = today.atTime(12, 0, 0),
@@ -605,17 +582,62 @@ internal class ActivityRepositorySecuredTest {
                 billable = false,
                 hasEvidences = false,
                 approvalState = ApprovalState.NA,
-            )
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
+        whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(activity)
+
+        activityRepositorySecured.deleteById(1L)
+
+        verify(internalActivityRepository).deleteById(1L)
+    }
+
+    @Test
+    fun `delete activity should call internal when user can access to all activities`() {
+        val activity = Activity(
+                id = 1L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = 234L,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.ACCEPTED,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
+        whenever(activity.id?.let { internalActivityRepository.findById(it) }).thenReturn(activity)
+
+        activityRepositorySecured.deleteById(1L)
+
+        verify(internalActivityRepository).deleteById(1L)
+    }
+
+    @Test
+    fun `find by project role and user id should return activities`() {
+        val activities = listOf(
+                Activity(
+                        id = 1L,
+                        start = today.atTime(10, 0, 0),
+                        end = today.atTime(12, 0, 0),
+                        duration = 120,
+                        description = "Test activity",
+                        projectRole = projectRole,
+                        userId = userId,
+                        billable = false,
+                        hasEvidences = false,
+                        approvalState = ApprovalState.NA,
+                )
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
         whenever(internalActivityRepository.findByProjectRoleIdAndUserId(projectRole.id, adminUserId)).thenReturn(
-            activities
+                activities
         )
 
         val result: List<Activity> = activityRepositorySecured.findByProjectRoleIdAndUserId(
-            projectRole.id,
-            adminUserId
+                projectRole.id,
+                adminUserId
         )
 
         assertEquals(activities, result)
@@ -627,8 +649,8 @@ internal class ActivityRepositorySecuredTest {
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findByProjectRoleIdAndUserId(
-                projectRole.id,
-                userId
+                    projectRole.id,
+                    userId
             )
         }
     }
@@ -639,8 +661,8 @@ internal class ActivityRepositorySecuredTest {
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findByProjectRoleIdAndUserId(
-                projectRole.id,
-                adminUserId
+                    projectRole.id,
+                    adminUserId
             )
         }
     }
@@ -649,28 +671,28 @@ internal class ActivityRepositorySecuredTest {
     fun `find overlapped should return activities`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         val activities = listOf(
-            Activity(
-                id = 1L,
-                start = today.atTime(10, 0, 0),
-                end = today.atTime(12, 0, 0),
-                duration = 120,
-                description = "Test activity",
-                projectRole = projectRole,
-                userId = userId,
-                billable = false,
-                hasEvidences = false,
-                approvalState = ApprovalState.NA,
-            )
+                Activity(
+                        id = 1L,
+                        start = today.atTime(10, 0, 0),
+                        end = today.atTime(12, 0, 0),
+                        duration = 120,
+                        description = "Test activity",
+                        projectRole = projectRole,
+                        userId = userId,
+                        billable = false,
+                        hasEvidences = false,
+                        approvalState = ApprovalState.NA,
+                )
         )
 
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
         whenever(internalActivityRepository.findOverlapped(startDate, endDate, adminUserId)).thenReturn(activities)
 
         val result: List<Activity> = activityRepositorySecured.findOverlapped(
-            startDate, endDate, adminUserId
+                startDate, endDate, adminUserId
         )
 
         assertEquals(activities, result)
@@ -680,13 +702,13 @@ internal class ActivityRepositorySecuredTest {
     fun `find overlapped should throw IllegalStateException`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
         assertThrows<IllegalStateException> {
             activityRepositorySecured.findOverlapped(
-                startDate, endDate, userId
+                    startDate, endDate, userId
             )
         }
     }
@@ -695,13 +717,13 @@ internal class ActivityRepositorySecuredTest {
     fun `find overlapped should throw IllegalArgumentException if user id differs from logged user and is not admin`() {
         val startDate = today.atTime(LocalTime.MIN)
         val endDate = today.plusDays(30L).atTime(
-            LocalTime.MAX
+                LocalTime.MAX
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
 
         assertThrows<IllegalArgumentException> {
             activityRepositorySecured.findOverlapped(
-                startDate, endDate, adminUserId
+                    startDate, endDate, adminUserId
             )
         }
     }
@@ -712,9 +734,9 @@ internal class ActivityRepositorySecuredTest {
         private val today = LocalDate.now()
         private val projectRole = createProjectRole()
         private val activityApprovalAuth =
-            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("activity-approval")))
+                ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("activity-approval")))
         private val emptyRolesAuth =
-            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
+                ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
 
     }
 }
