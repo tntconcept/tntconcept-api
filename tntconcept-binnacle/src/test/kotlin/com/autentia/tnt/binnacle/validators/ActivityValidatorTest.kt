@@ -2,8 +2,8 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
-import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.config.createProject
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.Organization
@@ -362,7 +362,7 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForCreation(activity, user)
             }
 
-            assertEquals(projectRoleLimited.toDomain().getMaxTimeAllowedByYearInTimeUnits() , exception.maxAllowedTime)
+            assertEquals(projectRoleLimited.toDomain().getMaxTimeAllowedByYearInTimeUnits(), exception.maxAllowedTime)
             assertEquals(expectedRemainingHours, exception.remainingTime)
         }
 
@@ -418,7 +418,11 @@ internal class ActivityValidatorTest {
                 )
             )
 
-            whenever(projectRepository.findById(Companion.projectRole.project.id)).thenReturn(Optional.of(vacationProject))
+            whenever(projectRepository.findById(Companion.projectRole.project.id)).thenReturn(
+                Optional.of(
+                    vacationProject
+                )
+            )
             whenever(
                 activityService.getActivitiesByProjectRoleIds(
                     timeInterval2022,
@@ -441,10 +445,11 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForCreation(activity, user)
             }
 
-            assertEquals(projectRole.maxTimeAllowedByYear.toDouble() , exception.maxAllowedTime)
+            assertEquals(projectRole.maxTimeAllowedByYear.toDouble(), exception.maxAllowedTime)
             assertEquals(0.0, exception.remainingTime)
             assertEquals(2023, exception.year)
         }
+
         @Test
         fun `throw MaxTimePerActivityRoleException if user reaches max time for activity`() {
 
@@ -457,9 +462,10 @@ internal class ActivityValidatorTest {
                 projectRole = projectRoleLimited
             )
 
-            val calendar = calendarFactory.create(TimeInterval.of(activity.getStart(), activity.getEnd()).getDateInterval())
+            val calendar =
+                calendarFactory.create(TimeInterval.of(activity.getStart(), activity.getEnd()).getDateInterval())
 
-            whenever(projectService.findById(projectRole.project.id)).thenReturn(vacationProject.toDomain())
+            whenever(projectRepository.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject))
             whenever(activityCalendarService.createCalendar(any())).thenReturn(calendar)
 
             val exception = assertThrows<MaxTimePerActivityRoleException> {
@@ -501,8 +507,16 @@ internal class ActivityValidatorTest {
             val secondIncoherentActivity =
                 createDomainActivity().copy(hasEvidences = false, evidence = Evidence("", ""))
 
-            whenever(projectRepository.findById(firstIncoherentActivity.projectRole.project.id)).thenReturn(Optional.of(createProject()))
-            whenever(projectRepository.findById(secondIncoherentActivity.projectRole.project.id)).thenReturn(Optional.of(createProject()))
+            whenever(projectRepository.findById(firstIncoherentActivity.projectRole.project.id)).thenReturn(
+                Optional.of(
+                    createProject()
+                )
+            )
+            whenever(projectRepository.findById(secondIncoherentActivity.projectRole.project.id)).thenReturn(
+                Optional.of(
+                    createProject()
+                )
+            )
 
             assertThrows<NoEvidenceInActivityException> {
                 activityValidator.checkActivityIsValidForUpdate(firstIncoherentActivity, firstIncoherentActivity, user)
@@ -694,7 +708,11 @@ internal class ActivityValidatorTest {
         @Test
         fun `throw IllegalArgumentException when the activity to delete is already approved`() {
             val approvedActivity = validActivityToUpdate.copy(approvalState = ApprovalState.ACCEPTED)
-            whenever(projectRepository.findById(approvedActivity.projectRole.project.id)).thenReturn(Optional.of(createProject()))
+            whenever(projectRepository.findById(approvedActivity.projectRole.project.id)).thenReturn(
+                Optional.of(
+                    createProject()
+                )
+            )
 
             assertThrows<IllegalArgumentException> {
                 activityValidator.checkActivityIsValidForDeletion(approvedActivity)
@@ -971,7 +989,7 @@ internal class ActivityValidatorTest {
             val calendar = calendarFactory.create(timeInterval.getDateInterval())
 
             whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject))
 
             val exception = assertThrows<MaxTimePerActivityRoleException> {
                 activityValidator.checkActivityIsValidForUpdate(updatedActivity, currentActivity, user)
@@ -1003,7 +1021,7 @@ internal class ActivityValidatorTest {
             val calendar = calendarFactory.create(timeInterval.getDateInterval())
 
             whenever(activityCalendarService.createCalendar(timeInterval.getDateInterval())).thenReturn(calendar)
-            whenever(projectService.findById(1L)).thenReturn(nonBlockedProject.toDomain())
+            whenever(projectRepository.findById(vacationProject.id)).thenReturn(Optional.of(vacationProject))
 
             activityValidator.checkActivityIsValidForUpdate(updatedActivity, currentActivity, user)
         }
@@ -1136,7 +1154,6 @@ internal class ActivityValidatorTest {
 
         private const val MINUTES_IN_HOUR = 60
         private const val DAYS = 2
-        private const val DECIMAL_HOUR = 60.0
         private const val CLOSED_ID = 2L
         private const val WORKABLE_HOURS_BY_DAY = 8
 
@@ -1384,13 +1401,6 @@ internal class ActivityValidatorTest {
             projectRole = projectRoleLimitedByYear.toDomain()
         )
 
-        private val activityReachedLimitByActivity = createActivity(
-            start = todayDateTime,
-            end = todayDateTime.plusMinutes(30L),
-            duration = 30,
-            projectRole = projectRoleLimitedByActivity
-        )
-
         private val newActivityInMarch = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null,
             TimeInterval.of(
@@ -1502,10 +1512,10 @@ internal class ActivityValidatorTest {
         ).copy(id = null)
 
         private val newActivityBeforeProjectCreationDate = createDomainActivity(
-                LocalDateTime.of(2023, Month.MARCH, 25, 10, 0, 0),
-                LocalDateTime.of(2023, Month.MARCH, 25, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong()),
-                MINUTES_IN_HOUR,
-                projectRole.toDomain()
+            LocalDateTime.of(2023, Month.MARCH, 25, 10, 0, 0),
+            LocalDateTime.of(2023, Month.MARCH, 25, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            MINUTES_IN_HOUR,
+            projectRole.toDomain()
         ).copy(id = null)
 
         private val activityWithAcceptedApprovalState =
