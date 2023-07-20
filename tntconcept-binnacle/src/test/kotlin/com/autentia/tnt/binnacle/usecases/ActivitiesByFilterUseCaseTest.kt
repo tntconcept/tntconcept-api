@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalStateActivityFilter
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.predicates.*
 import io.micronaut.security.authentication.ClientAuthentication
@@ -32,11 +33,28 @@ internal class ActivitiesByFilterUseCaseTest {
     }
 
     @Test
-    fun `get activities by approval state`() {
+    fun `get pending activities by approval state`() {
         val activityFilterDTO = ActivityFilterDTO(
-            approvalState = ApprovalState.PENDING,
+            approvalState = ApprovalStateActivityFilter.PENDING,
         )
-        val compositedSpecification = ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!)
+        val compositedSpecification = ActivityApprovalStateSpecification(ApprovalState.valueOf(activityFilterDTO.approvalState!!.name))
+
+        activitiesByFilterUseCase.getActivities(activityFilterDTO)
+
+        verify(activityRepository).findAll(compositedSpecification)
+    }
+
+    @Test
+    fun `get all activities by approval state`() {
+        val activityFilterDTO = ActivityFilterDTO(
+            approvalState = ApprovalStateActivityFilter.ALL,
+        )
+
+        val compositedSpecification =
+            PredicateBuilder.or(
+                ActivityApprovalStateSpecification(ApprovalState.PENDING),
+                ActivityApprovalStateSpecification(ApprovalState.ACCEPTED)
+        )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
@@ -46,11 +64,11 @@ internal class ActivitiesByFilterUseCaseTest {
     @Test
     fun `get activities by approval state and role id`() {
         val activityFilterDTO = ActivityFilterDTO(
-            approvalState = ApprovalState.PENDING,
+            approvalState = ApprovalStateActivityFilter.PENDING,
             roleId = 1L
         )
         val compositedSpecification = PredicateBuilder.and(
-            ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
+            ActivityApprovalStateSpecification(ApprovalState.valueOf(activityFilterDTO.approvalState!!.name)),
             ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
         )
 

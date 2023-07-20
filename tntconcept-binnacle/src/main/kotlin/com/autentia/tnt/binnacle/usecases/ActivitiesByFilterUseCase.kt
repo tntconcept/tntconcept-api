@@ -2,8 +2,10 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalStateActivityFilter
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.approvalState
@@ -42,7 +44,11 @@ class ActivitiesByFilterUseCase internal constructor(
         var predicate: Specification<Activity> = ActivityPredicates.ALL
 
         if (activityFilter.approvalState !== null) {
-            predicate = PredicateBuilder.and(predicate, approvalState(activityFilter.approvalState))
+            predicate = if (activityFilter.approvalState != ApprovalStateActivityFilter.ALL){
+                PredicateBuilder.and(predicate, approvalState(ApprovalState.valueOf(activityFilter.approvalState.name)))
+            } else {
+                PredicateBuilder.and(predicate, PredicateBuilder.or(approvalState((ApprovalState.PENDING)), (approvalState((ApprovalState.ACCEPTED)))))
+            }
         }
 
         if (activityFilter.endDate !== null) {
