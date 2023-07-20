@@ -72,7 +72,7 @@ internal class ActivityEvidenceRetrievalUseCaseTest {
         private val project =
             Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
         private val projectRole =
-            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, 0, true, false, TimeUnit.MINUTES)
 
         private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
             1L, TimeInterval.of(

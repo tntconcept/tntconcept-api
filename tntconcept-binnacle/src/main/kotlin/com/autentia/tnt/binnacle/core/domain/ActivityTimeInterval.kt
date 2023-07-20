@@ -18,7 +18,9 @@ open class ActivityTimeInterval protected constructor(open val timeInterval: Tim
 
         fun getDateAtTimeIfNecessary(
             date: LocalDateTime, timeUnit: TimeUnit, localTime: LocalTime
-        ): LocalDateTime = if (timeUnit === TimeUnit.DAYS) date.toLocalDate().atTime(localTime) else date
+        ): LocalDateTime = if (isIntervalOfDays(timeUnit)) date.toLocalDate().atTime(localTime) else date
+
+        private fun isIntervalOfDays(timeUnit: TimeUnit) = timeUnit === TimeUnit.DAYS || timeUnit === TimeUnit.NATURAL_DAYS
     }
 
     fun isOneDay() = timeInterval.isOneDay()

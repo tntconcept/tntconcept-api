@@ -9,9 +9,8 @@ data class ProjectRoleResponse(
     val name: String,
     val organizationId: Long,
     val projectId: Long,
-    val maxAllowed: Int,
+    val timeInfo: TimeInfoResponse,
     val isWorkingTime: Boolean,
-    val timeUnit: TimeUnit,
     val requireEvidence: RequireEvidence,
     val requireApproval: Boolean,
 ) {
@@ -22,9 +21,8 @@ data class ProjectRoleResponse(
                 projectRoleDTO.name,
                 projectRoleDTO.organizationId,
                 projectRoleDTO.projectId,
-                projectRoleDTO.maxAllowed,
+                TimeInfoResponse.from(projectRoleDTO.timeInfo),
                 projectRoleDTO.isWorkingTime,
-                projectRoleDTO.timeUnit,
                 projectRoleDTO.requireEvidence,
                 projectRoleDTO.requireApproval,
             )

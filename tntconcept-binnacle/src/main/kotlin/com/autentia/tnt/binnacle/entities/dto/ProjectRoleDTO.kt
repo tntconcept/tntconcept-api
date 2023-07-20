@@ -8,9 +8,8 @@ data class ProjectRoleDTO (
     val name: String,
     val organizationId: Long,
     val projectId: Long,
-    val maxAllowed: Int,
+    val timeInfo:TimeInfoDTO,
     val isWorkingTime: Boolean,
-    val timeUnit: TimeUnit,
     val requireEvidence: RequireEvidence,
     val requireApproval: Boolean
 )

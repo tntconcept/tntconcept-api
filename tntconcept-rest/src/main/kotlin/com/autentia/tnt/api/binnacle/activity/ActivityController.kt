@@ -2,7 +2,7 @@ package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.api.OpenApiTag.Companion.ACTIVITY
 import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.api.binnacle.ErrorResponseMaxHoursLimit
+import com.autentia.tnt.api.binnacle.ErrorResponseMaxTimeLimit
 import com.autentia.tnt.api.binnacle.ErrorValues
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.usecases.*
@@ -82,13 +82,21 @@ internal class ActivityController(
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
 
     @Error
-    internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxHoursPerRoleException) =
+    internal fun onReachedMaxImputableTimeForRole(request: HttpRequest<*>, e: MaxTimePerRoleException) =
         HttpResponse.badRequest(
-            ErrorResponseMaxHoursLimit(
-                "MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",
+            ErrorResponseMaxTimeLimit(
+                "MAX_REGISTRABLE_TIME_LIMIT_EXCEEDED",
                 e.message,
-                ErrorValues(e.maxAllowedHours, e.remainingHours, e.year)
+                ErrorValues(e.maxAllowedTime, e.remainingTime, e.timeUnit, e.year)
             )
+        )
+
+    @Error
+    internal fun onReachedMaxImputableTimeForActivity(request: HttpRequest<*>, e: MaxTimePerActivityRoleException) =
+        HttpResponse.badRequest(
+            ErrorResponseMaxTimeLimit("MAX_REGISTRABLE_TIME_PER_ACTIVITY_LIMIT_EXCEEDED",
+                e.message,
+                ErrorValues(e.maxAllowedTime.toDouble(), e.remainingTime.toDouble(), e.timeUnit, e.year))
         )
 
     @Error

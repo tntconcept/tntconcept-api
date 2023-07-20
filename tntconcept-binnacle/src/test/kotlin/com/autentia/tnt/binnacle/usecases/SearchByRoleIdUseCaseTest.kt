@@ -198,7 +198,7 @@ internal class SearchByRoleIdUseCaseTest {
         private val INTERNAL_TRAINING =
             com.autentia.tnt.binnacle.entities.Project(1, "Internal training", true, true, LocalDate.now(), null, null, AUTENTIA, listOf())
         private val INTERNAL_STUDENT =
-            com.autentia.tnt.binnacle.entities.ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 1440, false , true, TimeUnit.MINUTES)
+            com.autentia.tnt.binnacle.entities.ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 1440, 0, false , true, TimeUnit.MINUTES)
         private val INTERNAL_TEACHER =
             com.autentia.tnt.binnacle.entities.ProjectRole(
                 2,
@@ -206,6 +206,7 @@ internal class SearchByRoleIdUseCaseTest {
                 RequireEvidence.WEEKLY,
                 INTERNAL_TRAINING,
                 2880,
+                0,
                 false,
                 true,
                 TimeUnit.MINUTES
@@ -221,6 +222,7 @@ internal class SearchByRoleIdUseCaseTest {
                 RequireEvidence.WEEKLY,
                 EXTERNAL_TRAINING,
                 0,
+                0,
                 false,
                 true,
                 TimeUnit.MINUTES
@@ -231,6 +233,7 @@ internal class SearchByRoleIdUseCaseTest {
                 "External teacher",
                 RequireEvidence.WEEKLY,
                 EXTERNAL_TRAINING,
+                0,
                 0,
                 false,
                 true,

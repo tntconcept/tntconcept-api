@@ -13,33 +13,45 @@ data class ProjectRole(
     val name: String,
     val requireEvidence: RequireEvidence,
     val project: Project,
-    val maxAllowed: Int,
-    val timeUnit: TimeUnit,
     val isWorkingTime: Boolean,
-    val isApprovalRequired: Boolean
+    val isApprovalRequired: Boolean,
+    val timeInfo: TimeInfo,
 ) {
     fun getRemainingInUnits(calendar: Calendar, activities: List<Activity>): Int {
         val remaining = getRemaining(calendar, activities)
-        if (timeUnit === TimeUnit.DAYS || timeUnit === TimeUnit.NATURAL_DAYS) {
+        if (timeInfo.timeUnit === TimeUnit.DAYS || timeInfo.timeUnit === TimeUnit.NATURAL_DAYS) {
             return fromMinutesToDays(remaining)
         }
         return remaining
     }
 
-    fun getMaxAllowedInUnits(): Int {
-        if (timeUnit === TimeUnit.DAYS || timeUnit === TimeUnit.NATURAL_DAYS) {
-            return fromMinutesToDays(maxAllowed)
-        }
-        return maxAllowed
-    }
+    fun getMaxTimeAllowedByYear() = timeInfo.getMaxTimeAllowedByYear()
 
+    fun getMaxTimeAllowedByActivity() = timeInfo.getMaxTimeAllowedByActivity()
+
+    fun getTimeUnit() = timeInfo.timeUnit
+
+    fun getMaxTimeAllowedByYearInTimeUnits(): Double {
+        return when (timeInfo.timeUnit) {
+            TimeUnit.DAYS -> timeInfo.maxTimeAllowed.byYear / 60.0 / 8.0
+            TimeUnit.NATURAL_DAYS -> timeInfo.maxTimeAllowed.byYear / 60.0 / 8.0
+            TimeUnit.MINUTES -> timeInfo.maxTimeAllowed.byYear.toDouble()
+        }
+    }
+    fun getMaxTimeAllowedByActivityInTimeUnits(): Int {
+        return when (timeInfo.timeUnit) {
+            TimeUnit.DAYS -> timeInfo.maxTimeAllowed.byActivity / 60 / 8
+            TimeUnit.NATURAL_DAYS -> timeInfo.maxTimeAllowed.byActivity / 60 / 8
+            TimeUnit.MINUTES -> timeInfo.maxTimeAllowed.byActivity
+        }
+    }
     fun getApprovalState() = if (isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
 
     private fun getRemaining(calendar: Calendar, activities: List<Activity>) =
-        if (maxAllowed == 0) {
+        if (timeInfo.getMaxTimeAllowedByYear() == 0) {
             0
         } else {
-            maxAllowed - activities.sumOf { activity -> activity.getDuration(calendar) }
+            timeInfo.getMaxTimeAllowedByYear() - activities.sumOf { activity -> activity.getDuration(calendar) }
         }
 
     private fun fromMinutesToDays(minutes: Int) = minutes / (MINUTES_IN_HOUR * HOURS_BY_DAY)

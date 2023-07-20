@@ -66,6 +66,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 listOf(),
             ),
             0,
+            0,
             true,
             false,
             TimeUnit.MINUTES

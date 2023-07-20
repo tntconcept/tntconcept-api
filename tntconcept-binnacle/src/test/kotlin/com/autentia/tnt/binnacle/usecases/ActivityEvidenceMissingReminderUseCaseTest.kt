@@ -400,7 +400,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.WEEKLY,
             project = projectA,
             isApprovalRequired = true,
-            maxAllowed = 2,
+            maxTimeAllowedByYear = 2,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -411,7 +411,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.WEEKLY,
             project = projectA,
             isApprovalRequired = true,
-            maxAllowed = 2,
+            maxTimeAllowedByYear = 2,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -422,7 +422,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.ONCE,
             project = projectA,
             isApprovalRequired = true,
-            maxAllowed = 10,
+            maxTimeAllowedByYear = 10,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -433,7 +433,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.WEEKLY,
             project = projectB,
             isApprovalRequired = true,
-            maxAllowed = 2,
+            maxTimeAllowedByYear = 2,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -443,7 +443,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.WEEKLY,
             project = projectC,
             isApprovalRequired = true,
-            maxAllowed = 2,
+            maxTimeAllowedByYear = 2,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )

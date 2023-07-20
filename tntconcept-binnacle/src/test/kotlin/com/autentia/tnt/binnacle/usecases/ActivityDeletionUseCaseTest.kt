@@ -39,6 +39,7 @@ internal class ActivityDeletionUseCaseTest {
     @Test
     fun `call the repository to delete the activity`() {
         whenever(activityRepository.findById(1L)).thenReturn(entityActivity)
+
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
@@ -56,21 +57,21 @@ internal class ActivityDeletionUseCaseTest {
     private companion object {
         val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
         val PROJECT = Project(
-                1L,
-                "Dummy Project",
-                open = true,
-                billable = false,
-                LocalDate.now(),
-                null,
-                null,
-                projectRoles = listOf(),
-                organization = ORGANIZATION
+            1L,
+            "Dummy Project",
+            open = true,
+            billable = false,
+            LocalDate.now(),
+            null,
+            null,
+            projectRoles = listOf(),
+            organization = ORGANIZATION
         )
         val PROJECT_ROLE =
-                ProjectRole(
-                        10L, "Dummy Project role", RequireEvidence.NO,
-                        PROJECT, 0, true, false, TimeUnit.MINUTES
-                )
+            ProjectRole(
+                10L, "Dummy Project role", RequireEvidence.NO,
+                PROJECT, 0, 0, true, false, TimeUnit.MINUTES
+            )
         private val TODAY = LocalDateTime.now()
 
         private val activity = com.autentia.tnt.binnacle.core.domain.Activity.of(

@@ -2,7 +2,7 @@ package com.autentia.tnt.api.binnacle.search
 
 import com.autentia.tnt.api.binnacle.organization.OrganizationResponse
 import com.autentia.tnt.api.binnacle.project.ProjectResponse
-import com.autentia.tnt.api.binnacle.project.ProjectRoleUserResponse
+import com.autentia.tnt.api.binnacle.projectrole.ProjectRoleUserResponse
 import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
 
 data class SearchResponse(

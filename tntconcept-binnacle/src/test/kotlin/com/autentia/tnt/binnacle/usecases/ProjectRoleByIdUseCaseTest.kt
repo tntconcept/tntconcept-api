@@ -2,10 +2,11 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.ProjectRoleService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -30,9 +31,8 @@ internal class ProjectRoleByIdUseCaseTest {
                 projectRole.name,
                 projectRole.project.organization.id,
                 projectRole.project.id,
-                projectRole.maxAllowed,
+                TimeInfoDTO(MaxTimeAllowedDTO(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity), projectRole.timeUnit),
                 projectRole.isWorkingTime,
-                projectRole.timeUnit,
                 projectRole.requireEvidence,
                 projectRole.isApprovalRequired
             ), projectRoleByIdUseCase.get(id)

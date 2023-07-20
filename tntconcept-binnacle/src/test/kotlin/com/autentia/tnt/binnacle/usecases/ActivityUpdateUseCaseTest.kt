@@ -240,18 +240,21 @@ internal class ActivityUpdateUseCaseTest {
         private val evidenceDomain = evidence.toDomain()
 
         private val PROJECT_ROLE =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, true, false, TimeUnit.MINUTES)
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
+        private val TIME_INFO_DTO = TimeInfoDTO(
+            MaxTimeAllowedDTO(PROJECT_ROLE.maxTimeAllowedByYear, PROJECT_ROLE.maxTimeAllowedByActivity),
+            PROJECT_ROLE.timeUnit,
+            0
+        )
         private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
             10L,
             "Dummy Project role",
             PROJECT_ROLE.project.organization.id,
             PROJECT_ROLE.project.id,
-            PROJECT_ROLE.maxAllowed,
-            PROJECT_ROLE.maxAllowed,
-            PROJECT_ROLE.timeUnit,
             PROJECT_ROLE.requireEvidence,
             PROJECT_ROLE.isApprovalRequired,
-            USER.id
+            USER.id,
+            TIME_INFO_DTO,
         )
         private val NEW_ACTIVITY_DTO = ActivityRequestDTO(
             1L,

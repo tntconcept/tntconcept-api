@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
+import com.autentia.tnt.binnacle.config.createProjectRoleTimeInfo
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.DateInterval
@@ -38,7 +39,7 @@ class ActivityCalendarServiceTest {
 
     private val date = dateTime.toLocalDate()
     private val datePlusTwoDays = dateTimePlusTwoDays.toLocalDate()
-    private val projectRoleInMinutes = createDomainProjectRole().copy(maxAllowed = 480)
+    private val projectRoleInMinutes = createDomainProjectRole().copy(timeInfo = createProjectRoleTimeInfo(maxTimeAllowedByYear = 480))
     private val activityInMinutes =
         createDomainActivity().copy(projectRole = projectRoleInMinutes)
     private val activityWithDecimals =
@@ -53,7 +54,7 @@ class ActivityCalendarServiceTest {
                 LocalDateTime.of(2023, 4, 3, 0, 0, 0),
                 LocalDateTime.of(2023, 4, 4, 23, 59, 59)
             ),
-            projectRole = createDomainProjectRole().copy(id = 2L, timeUnit = TimeUnit.DAYS, maxAllowed = 1440)
+            projectRole = createDomainProjectRole().copy(id = 2L, timeInfo = createProjectRoleTimeInfo(maxTimeAllowedByYear = 1440, timeUnit = TimeUnit.DAYS))
         )
     private val activities = listOf(activityInMinutes, activityWithDecimals, activityInDays)
 
@@ -165,7 +166,7 @@ class ActivityCalendarServiceTest {
 
         assertEquals(
             0, activityCalendarService.getRemainingOfProjectRoleForUser(
-                projectRoleInMinutes.copy(maxAllowed = 0),
+                projectRoleInMinutes.copy(timeInfo = createProjectRoleTimeInfo(0, projectRoleInMinutes.getMaxTimeAllowedByActivity(), projectRoleInMinutes.getTimeUnit())),
                 emptyList(),
                 DateInterval.ofYear(2023),
                 1L
