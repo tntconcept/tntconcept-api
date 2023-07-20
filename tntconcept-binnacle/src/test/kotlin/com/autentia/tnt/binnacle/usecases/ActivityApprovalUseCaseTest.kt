@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -32,8 +33,8 @@ internal class ActivityApprovalUseCaseTest {
     private val converter = mock<ActivityResponseConverter>()
     private val approvedActivityMailService = mock<ApprovedActivityMailService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
-    private val projectService = mock<ProjectService>()
-    private val activityValidator = ActivityValidator(activityService, activityCalendarService, projectService)
+    private val projectRepository = mock<ProjectRepository>()
+    private val activityValidator = ActivityValidator(activityService, activityCalendarService, projectRepository)
 
     private val activityApprovalUseCase: ActivityApprovalUseCase = ActivityApprovalUseCase(
         activityRepository, securityService, converter, userRepository, approvedActivityMailService, activityValidator
