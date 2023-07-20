@@ -8,7 +8,7 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ApprovalResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
@@ -19,7 +19,6 @@ import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -411,7 +410,7 @@ internal class ActivityCreationUseCaseTest {
                 projectRoleId,
                 IntervalResponseDTO(start, end, duration, timeUnit),
                 userId,
-                ApprovalResponseDTO(approvalState,null,null)
+                ApprovalDTO(approvalState,null,null)
             )
 
     }

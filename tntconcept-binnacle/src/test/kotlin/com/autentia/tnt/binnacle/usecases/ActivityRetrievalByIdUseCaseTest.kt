@@ -5,12 +5,11 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ApprovalResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
@@ -103,7 +102,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 TimeUnit.MINUTES
             ),
             1L,
-            ApprovalResponseDTO(ApprovalState.NA)
+            ApprovalDTO(ApprovalState.NA)
         )
     }
 }

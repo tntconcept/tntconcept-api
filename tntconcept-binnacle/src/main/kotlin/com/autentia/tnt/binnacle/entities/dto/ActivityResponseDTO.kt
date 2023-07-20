@@ -8,5 +8,5 @@ data class ActivityResponseDTO(
         val projectRoleId: Long,
         val interval: IntervalResponseDTO,
         val userId: Long,
-        val approval: ApprovalResponseDTO
+        val approval: ApprovalDTO
 )

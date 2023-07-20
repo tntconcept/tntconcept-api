@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.domain.Approval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ApprovalResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import jakarta.inject.Singleton
 
 @Singleton
@@ -20,7 +20,7 @@ class ActivityResponseConverter(
         projectRoleId = activity.projectRole.id,
         interval = activityIntervalResponseConverter.toIntervalResponseDTO(activity),
         userId = activity.userId,
-        approval = ApprovalResponseDTO(
+        approval = ApprovalDTO(
             activity.approvalState,
             activity.approvedByUserId,
             activity.approvalDate
@@ -55,7 +55,7 @@ class ActivityResponseConverter(
             activityResponse.projectRole.id,
             activityIntervalResponseConverter.mapActivityResponseToIntervalResponseDTO(activityResponse),
             activityResponse.userId,
-            ApprovalResponseDTO(
+            ApprovalDTO(
                 activityResponse.approval.approvalState,
                 activityResponse.approval.approvedByUserId,
                 activityResponse.approval.approvalDate

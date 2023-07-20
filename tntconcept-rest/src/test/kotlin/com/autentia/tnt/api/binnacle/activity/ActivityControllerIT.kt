@@ -477,7 +477,7 @@ internal class ActivityControllerIT {
                 ACTIVITY_REQUEST_BODY_DTO.interval.start, ACTIVITY_REQUEST_BODY_DTO.interval.end, 240, TimeUnit.MINUTES
             ),
             42,
-            ApprovalResponseDTO(ApprovalState.ACCEPTED)
+            ApprovalDTO(ApprovalState.ACCEPTED)
         )
         private val ACTIVITY_RESPONSE = ActivityResponse.from(ACTIVITY_RESPONSE_DTO)
 

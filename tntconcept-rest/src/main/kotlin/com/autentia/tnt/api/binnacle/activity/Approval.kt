@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import java.time.LocalDateTime
 
 data class Approval(
-        val approvalState: ApprovalState,
+        val state: ApprovalState,
         val approvedByUserId: Long? = null,
         val approvalDate: LocalDateTime? = null
 )
