@@ -5,10 +5,11 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
@@ -38,7 +39,9 @@ internal class ActivityRetrievalByIdUseCaseTest {
 
         val actual = activityRetrievalByIdUseCase.getActivityById(activityToRetrieveFromRepository.id!!)
 
-        assertEquals(activityResponseDTO, actual)
+        assertThat(actual)
+            .usingRecursiveComparison()
+            .isEqualTo(activityResponseDTO)
     }
 
     @Test
@@ -73,10 +76,21 @@ internal class ActivityRetrievalByIdUseCaseTest {
         )
 
         private val ACTIVITY = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            1L, TimeInterval.of(
+            1L,
+            TimeInterval.of(
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-        ), 60, "Dummy description", PROJECT_ROLE.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA, null
+        ),
+            60,
+            "Dummy description",
+            PROJECT_ROLE.toDomain(),
+            1L,
+            false,
+            1L,
+            null,
+            false,
+            ApprovalState.NA,
+            null
         )
 
         private const val notFoundActivityId = 1L
@@ -99,7 +113,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 TimeUnit.MINUTES
             ),
             1L,
-            ApprovalState.NA
+            ApprovalDTO(ApprovalState.NA)
         )
     }
 }

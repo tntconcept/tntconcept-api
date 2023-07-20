@@ -11,6 +11,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.predicates.*
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -95,7 +96,10 @@ internal class ActivitiesByFilterUseCaseTest {
         val expectedActivity = activityResponseConverter.toActivityResponseDTO(activity.toDomain())
 
         verify(activityRepository).findAll(compositedSpecification)
-        assertThat(activities).containsExactly(expectedActivity)
+
+        assertThat(activities[0])
+            .usingRecursiveComparison()
+            .isEqualTo(expectedActivity)
     }
 
     @Test

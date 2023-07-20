@@ -36,6 +36,8 @@ class ActivitiesCalendarTest {
         LocalDateTime.now(),
         false,
         ApprovalState.NA,
+        null,
+        null,
         null
     )
     private val activityInDays =

@@ -885,7 +885,7 @@ components:
           nullable: true
     ActivityResponse:
       required:
-      - approvalState
+      - approval
       - billable
       - description
       - id
@@ -912,8 +912,8 @@ components:
         userId:
           type: integer
           format: int64
-        approvalState:
-          $ref: '#/components/schemas/ApprovalState'
+        approval:
+          $ref: '#/components/schemas/Approval'
     ActivitySummaryResponse:
       required:
       - date
@@ -941,6 +941,21 @@ components:
           type: number
         balance:
           type: number
+    Approval:
+      required:
+      - state
+      type: object
+      properties:
+        state:
+          $ref: '#/components/schemas/ApprovalState'
+        approvedByUserId:
+          type: integer
+          format: int64
+          nullable: true
+        approvalDate:
+          type: string
+          format: date-time
+          nullable: true
     ApprovalState:
       type: string
       enum:

@@ -16,7 +16,7 @@ import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.BDDMockito.willDoNothing
@@ -128,7 +128,9 @@ internal class ActivityUpdateUseCaseTest {
 
         doReturn(currentTodayActivity).whenever(activityRepository).update(any())
 
-        assertEquals(todayActivityResponseDTO, activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH))
+        Assertions.assertThat(todayActivityResponseDTO)
+            .usingRecursiveComparison()
+            .isEqualTo(activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH))
     }
 
     @Test
@@ -290,7 +292,7 @@ internal class ActivityUpdateUseCaseTest {
             PROJECT_ROLE_RESPONSE_DTO.id,
             IntervalResponseDTO(TODAY, TODAY.plusMinutes(75L), 75, PROJECT_ROLE.timeUnit),
             USER.id,
-            approvalState = ApprovalState.NA
+            approval = ApprovalDTO(ApprovalState.NA)
         )
         private val activityToUpdate = com.autentia.tnt.binnacle.core.domain.Activity.of(
             1L,
@@ -304,6 +306,8 @@ internal class ActivityUpdateUseCaseTest {
             LocalDateTime.now(),
             false,
             ApprovalState.NA,
+            null,
+            null,
             null
         )
 

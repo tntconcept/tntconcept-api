@@ -1,6 +1,5 @@
 package com.autentia.tnt.api.binnacle.activity
 
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 
 data class ActivityResponse(
@@ -11,7 +10,7 @@ data class ActivityResponse(
     val projectRoleId: Long,
     val interval: IntervalResponse,
     val userId: Long,
-    val approvalState: ApprovalState
+    val approval: Approval
 ) {
     companion object {
         fun from(activityResponseDTO: ActivityResponseDTO) =
@@ -23,7 +22,11 @@ data class ActivityResponse(
                 activityResponseDTO.projectRoleId,
                 IntervalResponse.from(activityResponseDTO.interval),
                 activityResponseDTO.userId,
-                activityResponseDTO.approvalState
+                Approval(
+                    activityResponseDTO.approval.state,
+                    activityResponseDTO.approval.approvedByUserId,
+                    activityResponseDTO.approval.approvalDate
+                )
             )
     }
 }

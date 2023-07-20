@@ -19,6 +19,8 @@ data class Activity private constructor(
     val hasEvidences: Boolean,
     var approvalState: ApprovalState,
     var evidence: Evidence?,
+    val approvedByUserId: Long? = null,
+    val approvalDate: LocalDateTime? = null,
 ) : ActivityTimeInterval(timeInterval, projectRole.getTimeUnit()) {
     fun getStart() = timeInterval.start
 
@@ -56,6 +58,8 @@ data class Activity private constructor(
             hasEvidences: Boolean,
             approvalState: ApprovalState,
             evidence: Evidence?,
+            approvedByUserId: Long? = null,
+            approvalDate: LocalDateTime? = null,
         ) = Activity(
             id,
             TimeInterval.of(
@@ -71,7 +75,9 @@ data class Activity private constructor(
             insertDate,
             hasEvidences,
             approvalState,
-            evidence
+            evidence,
+            approvedByUserId,
+            approvalDate
         )
 
         fun emptyActivity(projectRole: ProjectRole, user: User) = Activity(
@@ -86,6 +92,8 @@ data class Activity private constructor(
             LocalDateTime.MIN,
             false,
             ApprovalState.NA,
+            null,
+            null,
             null
         )
     }
