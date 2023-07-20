@@ -6,22 +6,35 @@ import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.doThrow
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
+import io.micronaut.security.authentication.ClientAuthentication
+import io.micronaut.security.utils.SecurityService
+import org.junit.jupiter.api.*
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ActivityDeletionUseCaseTest {
 
     private val activityRepository = mock<ActivityRepository>()
     private val activityValidator = mock<ActivityValidator>()
     private val activityEvidenceService = mock<ActivityEvidenceService>()
+    private val securityService = mock<SecurityService>()
 
-    private val useCase = ActivityDeletionUseCase(activityRepository, activityValidator, activityEvidenceService)
+    private val useCase = ActivityDeletionUseCase(activityRepository, activityValidator,
+            activityEvidenceService, securityService)
+
+    @AfterEach
+    fun resetMocks() {
+        reset(activityRepository, activityValidator, activityEvidenceService)
+    }
+
+    @BeforeAll
+    fun setAuthMock() {
+        val authenticatedUser = ClientAuthentication("id", mapOf("roles" to listOf("user")))
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+    }
 
     @Test
     fun `call the repository to delete the activity`() {
@@ -62,18 +75,18 @@ internal class ActivityDeletionUseCaseTest {
         private val TODAY = LocalDateTime.now()
 
         private val activity = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            1L,
-            TimeInterval.of(TODAY, TODAY.plusMinutes(75L)),
-            75,
-            "New activity",
-            PROJECT_ROLE.toDomain(),
-            1L,
-            false,
-            null,
-            LocalDateTime.now(),
-            false,
-            ApprovalState.NA,
-            null
+                1L,
+                TimeInterval.of(TODAY, TODAY.plusMinutes(75L)),
+                75,
+                "New activity",
+                PROJECT_ROLE.toDomain(),
+                1L,
+                false,
+                null,
+                LocalDateTime.now(),
+                false,
+                ApprovalState.NA,
+                null
         )
 
         private val entityActivity = Activity.of(activity, PROJECT_ROLE)
