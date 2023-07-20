@@ -943,10 +943,10 @@ components:
           type: number
     Approval:
       required:
-      - approvalState
+      - state
       type: object
       properties:
-        approvalState:
+        state:
           $ref: '#/components/schemas/ApprovalState'
         approvedByUserId:
           type: integer
