@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.api.binnacle.*
-import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
@@ -94,8 +93,8 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `get all activities by approvalState`() {
-        val approvalState = ApprovalState.PENDING
+    fun `get all perding activities by approvalState`() {
+        val approvalState = ApprovalStateActivityFilter.PENDING
         val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
         val activities = listOf(ACTIVITY_RESPONSE)
 
@@ -111,10 +110,11 @@ internal class ActivityControllerIT {
         assertEquals(activities, response.body.get())
     }
 
+
     @Test
     fun `get activities by filter`() {
         val startDate = LocalDate.of(2018, JANUARY, 1)
-        val approvalState = ApprovalState.PENDING
+        val approvalState = ApprovalStateActivityFilter.PENDING
         val endDate = LocalDate.of(2018, JANUARY, 31)
         val organizationId = 1L
         val projectId = 1L
@@ -123,7 +123,7 @@ internal class ActivityControllerIT {
         val activitiesFilter = ActivityFilterDTO(
             startDate,
             endDate,
-            ApprovalState.PENDING,
+            ApprovalStateActivityFilter.PENDING,
             organizationId,
             projectId,
             roleId,

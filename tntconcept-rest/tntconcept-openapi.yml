@@ -837,7 +837,7 @@ components:
         approvalState:
           nullable: true
           allOf:
-          - $ref: '#/components/schemas/ApprovalState'
+          - $ref: '#/components/schemas/ApprovalStateActivityFilter'
         organizationId:
           type: integer
           format: int64
@@ -962,6 +962,13 @@ components:
       - NA
       - PENDING
       - ACCEPTED
+    ApprovalStateActivityFilter:
+      type: string
+      enum:
+      - NA
+      - PENDING
+      - ACCEPTED
+      - ALL
     BlockProjectRequest:
       required:
       - blockDate
