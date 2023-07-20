@@ -82,19 +82,21 @@ internal class ActivityController(
         HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
 
     @Error
-    internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxTimePerRoleException) =
+    internal fun onReachedMaxImputableTimeForRole(request: HttpRequest<*>, e: MaxTimePerRoleException) =
         HttpResponse.badRequest(
             ErrorResponseMaxTimeLimit(
-                "MAX_REGISTRABLE_HOURS_LIMIT_EXCEEDED",
+                "MAX_REGISTRABLE_TIME_LIMIT_EXCEEDED",
                 e.message,
                 ErrorValues(e.maxAllowedTime, e.remainingTime, e.timeUnit, e.year)
             )
         )
 
     @Error
-    internal fun onReachedMaxImputableHoursForRole(request: HttpRequest<*>, e: MaxTimePerActivityRoleException) =
+    internal fun onReachedMaxImputableTimeForActivity(request: HttpRequest<*>, e: MaxTimePerActivityRoleException) =
         HttpResponse.badRequest(
-            ErrorResponse("MAX_REGISTRABLE_HOURS_PER_ACTIVITY_LIMIT_EXCEEDED", e.message)
+            ErrorResponseMaxTimeLimit("MAX_REGISTRABLE_TIME_PER_ACTIVITY_LIMIT_EXCEEDED",
+                e.message,
+                ErrorValues(e.maxAllowedTime.toDouble(), e.remainingTime.toDouble(), e.timeUnit, e.year))
         )
 
     @Error
@@ -127,4 +129,9 @@ internal class ActivityController(
     internal fun onActivityAlreadyApproved(request: HttpRequest<*>, e: InvalidActivityApprovalStateException) =
         HttpResponse.status<HttpStatus>(HttpStatus.CONFLICT)
             .body(ErrorResponse("INVALID_ACTIVITY_APPROVAL_STATE", e.message))
+
+    @Error
+    internal fun onActivityBeforeProjectCreationDate(request: HttpRequest<*>, e: ActivityBeforeProjectCreationDateException) =
+            HttpResponse.badRequest(ErrorResponse("ACTIVITY_BEFORE_PROJECT_CREATION_DATE", e.message))
+
 }

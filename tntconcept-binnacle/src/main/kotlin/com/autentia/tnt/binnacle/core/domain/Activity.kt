@@ -20,7 +20,7 @@ data class Activity private constructor(
     var approvalState: ApprovalState,
     val approvedByUserId: Long? = null,
     val approvalDate: LocalDateTime? = null,
-    var evidence: Evidence?
+    var evidence: Evidence?,
 ) : ActivityTimeInterval(timeInterval, projectRole.getTimeUnit()) {
     fun getStart() = timeInterval.start
 
