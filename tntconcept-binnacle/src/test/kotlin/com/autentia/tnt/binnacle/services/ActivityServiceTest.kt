@@ -110,17 +110,39 @@ internal class ActivityServiceTest {
         private const val notFoundActivityId = 1L
 
         private val activityWithoutEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            null, TimeInterval.of(
+            null,
+            TimeInterval.of(
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-        ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, false, ApprovalState.NA, null, null, null
+        ),
+            60,
+            "Dummy description",
+            projectRole.toDomain(),
+            1L,
+            false,
+            1L,
+            null,
+            false,
+            ApprovalState.NA,
+            null
         )
 
         private val activityWithoutEvidenceAttached = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            null, TimeInterval.of(
+            null,
+            TimeInterval.of(
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-        ), 60, "Dummy description", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA, null, null, null
+        ),
+            60,
+            "Dummy description",
+            projectRole.toDomain(),
+            1L,
+            false,
+            1L,
+            null,
+            true,
+            ApprovalState.NA,
+            null
         )
 
         private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(

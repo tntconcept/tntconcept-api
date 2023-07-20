@@ -82,10 +82,21 @@ internal class ActivityEvidenceRetrievalUseCaseTest {
         )
 
         private val activityWithoutEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            1L, TimeInterval.of(
+            1L,
+            TimeInterval.of(
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, TODAY, false, ApprovalState.NA, null, null, null
+        ),
+            120,
+            "Description...",
+            projectRole.toDomain(),
+            1L,
+            false,
+            1L,
+            TODAY,
+            false,
+            ApprovalState.NA,
+            null
         )
 
         private val activityWithEvidenceEntity = Activity.of(

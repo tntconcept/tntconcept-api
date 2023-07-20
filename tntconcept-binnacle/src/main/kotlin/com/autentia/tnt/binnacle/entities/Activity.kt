@@ -80,9 +80,9 @@ data class Activity(
             toLocalDateTime(insertDate),
             hasEvidences,
             approvalState,
+            null,
             approvedByUserId,
-            approvalDate,
-            null
+            approvalDate
         )
 
     companion object {

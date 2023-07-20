@@ -32,8 +32,6 @@ class ActivityRequestBodyConverter() {
             insertDate,
             activityRequestBody.hasEvidences,
             projectRole.getApprovalState(),
-            null,
-            null,
             activityRequestBody.evidence?.toDomain()
         )
 
