@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import io.micronaut.data.jpa.repository.criteria.Specification
 import java.time.LocalDateTime
 

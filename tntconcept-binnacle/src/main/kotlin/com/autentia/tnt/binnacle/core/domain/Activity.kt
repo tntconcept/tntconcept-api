@@ -3,6 +3,8 @@ package com.autentia.tnt.binnacle.core.domain
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
+import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
+import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import java.time.LocalDateTime
 import java.time.LocalTime
 
@@ -42,6 +44,13 @@ data class Activity private constructor(
         RequireEvidence.isRequired(projectRole.requireEvidence) && approvalState === ApprovalState.PENDING && hasEvidences
 
     fun isWorkingTimeActivity() = projectRole.isWorkingTime
+
+    fun checkActivityIsValidForApproval() {
+        when {
+            approvalState == ApprovalState.ACCEPTED || approvalState == ApprovalState.NA -> throw InvalidActivityApprovalStateException()
+            !hasEvidences -> throw NoEvidenceInActivityException(id!!)
+        }
+    }
 
     companion object {
 
