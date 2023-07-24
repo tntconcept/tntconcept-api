@@ -956,6 +956,9 @@ components:
           type: string
           format: date-time
           nullable: true
+        canBeApproved:
+          type: boolean
+          nullable: false
     ApprovalState:
       type: string
       enum:
