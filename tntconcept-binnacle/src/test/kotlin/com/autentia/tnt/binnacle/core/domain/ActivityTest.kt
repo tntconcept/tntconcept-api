@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.config.createProjectRoleTimeInfo
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
@@ -190,6 +191,7 @@ class ActivityTest {
     inner class CheckActivityIsValidForApproval {
         @Test
         fun `throw InvalidActivityApprovalStateException when activity approval state is accepted`() {
+            val activityWithAcceptedApprovalState = createDomainActivity().copy(approvalState = ApprovalState.ACCEPTED)
             assertThrows<InvalidActivityApprovalStateException> {
                 activityWithAcceptedApprovalState.checkActivityIsValidForApproval()
             }
@@ -197,6 +199,8 @@ class ActivityTest {
 
         @Test
         fun `throw InvalidActivityApprovalStateException when activity approval state is not applicable`() {
+            val activityWithNotApplicableApprovalState = createDomainActivity().copy(approvalState = ApprovalState.NA)
+
             assertThrows<InvalidActivityApprovalStateException> {
                 activityWithNotApplicableApprovalState.checkActivityIsValidForApproval()
             }
@@ -204,21 +208,38 @@ class ActivityTest {
 
         @Test
         fun `throw NoEvidenceInActivityException when activity has no evidences`() {
+            val activityWithoutRequiredEvidence = `get activity without evidence and evidence is required by role`()
             assertThrows<NoEvidenceInActivityException> {
-                activityWithoutEvidence.checkActivityIsValidForApproval()
+                activityWithoutRequiredEvidence.checkActivityIsValidForApproval()
             }
         }
 
+        private fun `get activity without evidence and evidence is required by role`() =
+                createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = false,
+                        projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.ONCE))
+
         @Test
         fun `no exception is thrown when activity is valid for approval`() {
-            assertDoesNotThrow { activityValidForApproval.checkActivityIsValidForApproval() }
+
+            var activity = `get activity without evidence with status pending and role not requiring evidence`()
+            assertDoesNotThrow { activity.checkActivityIsValidForApproval() }
+
+            activity = `get activity with evidence with status pending and role not requiring evidence`()
+            assertDoesNotThrow { activity.checkActivityIsValidForApproval() }
+
+            activity = `get activity with evidence with status pending and role requiring evidence`()
+            assertDoesNotThrow { activity.checkActivityIsValidForApproval() }
         }
+
+        private fun `get activity with evidence with status pending and role requiring evidence`() =
+                createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = true, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.ONCE))
+
+        private fun `get activity with evidence with status pending and role not requiring evidence`() =
+                createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = true, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.NO))
+
+        private fun `get activity without evidence with status pending and role not requiring evidence`() =
+                createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = false, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.NO))
+
     }
 
-    private companion object {
-        private val activityWithAcceptedApprovalState = createDomainActivity().copy(approvalState = ApprovalState.ACCEPTED)
-        private val activityWithNotApplicableApprovalState = createDomainActivity().copy(approvalState = ApprovalState.NA)
-        private val activityWithoutEvidence = createDomainActivity().copy(approvalState = ApprovalState.PENDING)
-        private val activityValidForApproval = createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = true)
-    }
 }
