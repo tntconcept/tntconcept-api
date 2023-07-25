@@ -943,11 +943,14 @@ components:
           type: number
     Approval:
       required:
+      - canBeApproved
       - state
       type: object
       properties:
         state:
           $ref: '#/components/schemas/ApprovalState'
+        canBeApproved:
+          type: boolean
         approvedByUserId:
           type: integer
           format: int64

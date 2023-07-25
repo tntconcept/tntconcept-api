@@ -24,7 +24,6 @@ class ActivityApprovalUseCase internal constructor(
         private val activityResponseConverter: ActivityResponseConverter,
         private val userRepository: UserRepository,
         private val approvedActivityMailService: ApprovedActivityMailService,
-        private val activityValidator: ActivityValidator,
         private val dateService: DateService,
 ) {
     @Transactional(rollbackOn = [Exception::class])
@@ -33,7 +32,7 @@ class ActivityApprovalUseCase internal constructor(
         val userId = authentication.id()
 
         val activityToApprove = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
-        activityValidator.checkActivityIsValidForApproval(activityToApprove.toDomain())
+        activityToApprove.toDomain().checkActivityIsValidForApproval()
 
         val activity = updateActivityState(activityToApprove, userId)
 
@@ -51,5 +50,4 @@ class ActivityApprovalUseCase internal constructor(
         activityToApprove.approvalDate = dateService.getDateNow()
         return activityRepository.update(activityToApprove).toDomain()
     }
-
 }
