@@ -55,7 +55,7 @@ class ActivityCreationUseCase internal constructor(
             activityEvidenceService.storeActivityEvidence(savedActivity.id!!, activityToCreate.evidence!!, savedActivity.insertDate!!)
         }
 
-        if (savedActivity.projectRole.isApprovalRequired) {
+        if (savedActivity.toDomain().canBeApprovedWithEvidence()) {
             pendingApproveActivityMailService.sendApprovalActivityMail(savedActivity.toDomain(), user.username, locale)
         }
 
