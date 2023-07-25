@@ -6,6 +6,8 @@ import com.autentia.tnt.binnacle.entities.RequireEvidence
 import io.micronaut.context.MessageSource
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @Singleton
@@ -23,6 +25,7 @@ internal class ActivityEvidenceMissingMailService(
         projectName: String,
         roleName: String,
         roleRequireEvidence: RequireEvidence,
+        date: LocalDateTime,
         toUserEmail: String,
         locale: Locale
     ) {
@@ -45,7 +48,8 @@ internal class ActivityEvidenceMissingMailService(
             organizationName,
             projectName,
             roleName,
-            roleRequireEvidence
+            roleRequireEvidence,
+            date
         )
 
         mailService.send(appProperties.mail.from, listOf(toUserEmail), mail.subject, mail.body)
@@ -66,13 +70,14 @@ internal class ActivityEvidenceMissingMailBuilder(private val messageSource: Mes
         organizationName: String,
         projectName: String,
         projectRoleName: String,
-        requireEvidence: RequireEvidence
+        requireEvidence: RequireEvidence,
+        date: LocalDateTime
     ): Mail {
         val subject =
             messageSource.getMessage(subjectKey, locale, organizationName, projectName, projectRoleName).orElse(null)
                 ?: error("Cannot find message $subjectKey")
 
-        val frequency = this.getFrequencyTextByLocale(locale, requireEvidence)
+        val frequency = this.getFrequencyTextByLocale(locale, requireEvidence, date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 
         val body = messageSource.getMessage(bodyKey, locale, frequency, projectName, projectRoleName).orElse(null)
             ?: error("Cannot find message $bodyKey")
@@ -80,7 +85,7 @@ internal class ActivityEvidenceMissingMailBuilder(private val messageSource: Mes
         return Mail(subject, body)
     }
 
-    private fun getFrequencyTextByLocale(locale: Locale, requireEvidence: RequireEvidence): String {
+    private fun getFrequencyTextByLocale(locale: Locale, requireEvidence: RequireEvidence, date: String): String {
         val property = when (requireEvidence) {
             RequireEvidence.WEEKLY -> "weekly"
             RequireEvidence.ONCE -> "once"
@@ -89,6 +94,8 @@ internal class ActivityEvidenceMissingMailBuilder(private val messageSource: Mes
 
         val key = "mail.request.evidenceActivity.frequency.$property"
 
-        return messageSource.getMessage(key, locale).orElse(null) ?: error("Cannot find frequency message $key")
+        val message = if (requireEvidence == RequireEvidence.ONCE) messageSource.getMessage(key, locale, date) else messageSource.getMessage(key, locale)
+
+        return message.orElse(null) ?: error("Cannot find frequency message $key")
     }
 }
