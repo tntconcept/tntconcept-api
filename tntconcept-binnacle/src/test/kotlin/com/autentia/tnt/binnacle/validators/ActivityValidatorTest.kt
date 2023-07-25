@@ -86,6 +86,51 @@ internal class ActivityValidatorTest {
         }
 
         @Test
+        fun `do nothing when activity is created with not reached limit by year`() {
+            val projectRole = createProjectRoleWithLimit(
+                1L,
+                maxTimeAllowedByYear = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY * 4,
+                maxTimeAllowedByActivity = 0,
+                timeUnit = TimeUnit.NATURAL_DAYS
+            )
+
+            val activities = listOf(
+                Activity.of(
+                    createDomainActivity(
+                        start = LocalDateTime.of(2023, 5, 15, 0, 0, 0),
+                        end = LocalDateTime.of(2023, 5, 16, 23, 59, 59),
+                        duration = 960,
+                    ),
+                    projectRole
+                )
+            )
+
+            val activityToCreate = createDomainActivity(
+                start = LocalDateTime.of(2023, 12, 31, 0, 0, 0),
+                end = LocalDateTime.of(2024, 1, 1, 23, 59, 59),
+                duration = 960,
+                projectRole.toDomain()
+            ).copy(id = null)
+
+            val timeInterval = TimeInterval.ofYear(2023)
+
+            doReturn(Optional.of(vacationProject))
+                .whenever(projectRepository)
+                .findById(Companion.projectRole.project.id)
+
+            doReturn(activities)
+                .whenever(activityRepository)
+                .findByProjectRoleIds(
+                    timeInterval.start,
+                    timeInterval.end,
+                    listOf(projectRole.id),
+                    user.id
+                )
+
+            activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
+        }
+
+        @Test
         fun `throw OverlapsAnotherTimeException when there is already an activity of that user at the same time`() {
 
             doReturn(Optional.of(nonBlockedProject))
