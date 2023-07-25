@@ -197,6 +197,7 @@ internal class ActivityUpdateUseCaseTest {
     fun `test email is sent, requireEvidence is true, approval state is pending and hasEvidences is true`() {
 
         val activity = todayActivity.copy(
+            id = NEW_ACTIVITY_DTO.id,
             approvalState = ApprovalState.PENDING,
             projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY),
             hasEvidences = true,
@@ -207,15 +208,15 @@ internal class ActivityUpdateUseCaseTest {
         doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
 
         doReturn(currentActivity).whenever(activityRepository).findById(activity.id!!)
-        doReturn(currentActivity).whenever(activityRepository).update(any())
+        val activityUpdated = currentActivity.copy(hasEvidences = false, description = NEW_ACTIVITY_DTO.description)
+        doReturn(activityUpdated).            whenever(activityRepository).update(any())
 
-        doReturn(PROJECT_ROLE).whenever(projectRoleRepository)
-            .findById(projectRole.id)
+        doReturn(PROJECT_ROLE).whenever(projectRoleRepository).findById(projectRole.id)
 
         activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
 
         verify(activityEvidenceMailService, times(1)).sendActivityEvidenceMail(
-            currentActivity.toDomain(),
+                activityUpdated.toDomain(),
             USER.username,
             Locale.ENGLISH
         )

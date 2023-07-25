@@ -4,16 +4,18 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
-import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -30,7 +32,8 @@ class ActivityUpdateUseCase internal constructor(
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
     private val activityEvidenceMailService: ActivityEvidenceMailService,
-    private val activityEvidenceService: ActivityEvidenceService,
+    private val activityEvidenceService: ActivityEvidenceService
+ //   private val pendingApproveActivityMailService: PendingApproveActivityMailService
 ) {
     @Transactional
     @ReadOnly
@@ -81,9 +84,13 @@ class ActivityUpdateUseCase internal constructor(
             )
         }
 
-        if (updatedActivity.canBeApprovedWithEvidence()) {
+        if (updatedActivity.isEvidenceMissing()) {
             activityEvidenceMailService.sendActivityEvidenceMail(updatedActivity, user.username, locale)
         }
+
+       /* if (updatedActivity.canBeApprovedWithEvidence()){
+            pendingApproveActivityMailService.sendApprovalActivityMail(updatedActivity, user.username, locale)
+        }*/
 
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
