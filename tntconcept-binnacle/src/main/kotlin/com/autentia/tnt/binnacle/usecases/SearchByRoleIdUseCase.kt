@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.SearchConverter
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
@@ -13,6 +14,7 @@ import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Singleton
 class SearchByRoleIdUseCase internal constructor(
@@ -33,16 +35,64 @@ class SearchByRoleIdUseCase internal constructor(
         val projectRoleIds = roleIds.distinct()
 
         val timeInterval = getTimeInterval(year)
+
         val projectRoles = projectRoleRepository.getAllByIdIn(projectRoleIds).map { it.toDomain() }
-        val activities = activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds, userId)
-            .map(Activity::toDomain)
+        val activities =
+            activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds, userId)
+                .map(Activity::toDomain)
 
         val projectRoleUsers = projectRoles.map { projectRole ->
             val remainingOfProjectRole = activityCalendarService.getRemainingOfProjectRoleForUser(
-                projectRole, activities, timeInterval.getDateInterval(), userId
+                projectRole,
+                activities,
+                getDateIntervalDependingOfActivitiesWithChangeOfYear(timeInterval, activities),
+                userId
             )
             projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRole, userId)
         }
         return searchConverter.toResponseDTO(projectRoles, projectRoleUsers)
+    }
+
+    private fun getDateIntervalDependingOfActivitiesWithChangeOfYear(
+        timeInterval: TimeInterval?,
+        activities: List<com.autentia.tnt.binnacle.core.domain.Activity>,
+    ): DateInterval {
+
+        val actualYear = LocalDate.now().year
+
+        var maxYearLocalDateTime = TimeInterval.ofYear(actualYear).end
+
+        if (activities.size > 0) {
+            maxYearLocalDateTime = activities.maxOf { it.getEnd() }
+        }
+
+
+        val timeIntervalStart = timeInterval?.start ?: TimeInterval.ofYear(actualYear).start
+        val timeIntervalEnd = timeInterval?.end ?: TimeInterval.ofYear(actualYear).end
+
+        var projectRolesDateIntervalToGetRemaining =
+            timeInterval?.getDateInterval() ?: TimeInterval.ofYear(actualYear).getDateInterval()
+
+        if (maxYearLocalDateTime.year > timeIntervalEnd.year)
+            projectRolesDateIntervalToGetRemaining = TimeInterval.of(
+                LocalDateTime.of(
+                    timeIntervalStart.year,
+                    timeIntervalStart.month,
+                    timeIntervalStart.dayOfMonth,
+                    0,
+                    0,
+                    0
+                ),
+                LocalDateTime.of(
+                    maxYearLocalDateTime.year,
+                    maxYearLocalDateTime.month,
+                    maxYearLocalDateTime.dayOfMonth,
+                    23,
+                    59,
+                    59
+                )
+            ).getDateInterval()
+
+        return projectRolesDateIntervalToGetRemaining
     }
 }

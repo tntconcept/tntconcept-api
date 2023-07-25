@@ -52,7 +52,7 @@ internal class SearchByRoleIdUseCaseTest {
     )
 
     @Test
-    fun `return empty list when roleid is not found for current year`() {
+    fun `return empty list when roleId is not found for current year`() {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
 
@@ -75,8 +75,8 @@ internal class SearchByRoleIdUseCaseTest {
         whenever(projectRoleRepository.getAllByIdIn(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
         whenever(
             activityRepository.findByProjectRoleIds(
-                TimeInterval.ofYear( LocalDate.now().year).start,
-                TimeInterval.ofYear( LocalDate.now().year).end,
+                TimeInterval.ofYear(LocalDate.now().year).start,
+                TimeInterval.ofYear(LocalDate.now().year).end,
                 rolesForSearch,
                 authenticatedUser.id()
             )
@@ -106,12 +106,12 @@ internal class SearchByRoleIdUseCaseTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
         whenever(projectRoleRepository.getAllByIdIn(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
         whenever(
-                activityRepository.findByProjectRoleIds(
-                        TimeInterval.ofYear(2023).start,
-                        TimeInterval.ofYear(2023).end,
-                        rolesForSearch,
-                        authenticatedUser.id()
-                )
+            activityRepository.findByProjectRoleIds(
+                TimeInterval.ofYear(2023).start,
+                TimeInterval.ofYear(2023).end,
+                rolesForSearch,
+                authenticatedUser.id()
+            )
         ).thenReturn(listOf(activity))
         val roles = searchByRoleIdUseCase.get(rolesForSearch, 2023)
 
@@ -122,9 +122,9 @@ internal class SearchByRoleIdUseCaseTest {
         assertEquals(organizationResponseConverter.toOrganizationResponseDTO(AUTENTIA), roles.organizations[0])
         assertEquals(projectResponseConverter.toProjectResponseDTO(INTERNAL_TRAINING), roles.projects[0])
         assertEquals(
-                projectRoleResponseConverter.toProjectRoleUserDTO(
-                        projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT.toDomain(), 1380, 1L)
-                ), roles.projectRoles[0]
+            projectRoleResponseConverter.toProjectRoleUserDTO(
+                projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT.toDomain(), 1380, 1L)
+            ), roles.projectRoles[0]
         )
     }
 
@@ -196,9 +196,29 @@ internal class SearchByRoleIdUseCaseTest {
 
         private val AUTENTIA = com.autentia.tnt.binnacle.entities.Organization(1L, "Autentia", listOf())
         private val INTERNAL_TRAINING =
-            com.autentia.tnt.binnacle.entities.Project(1, "Internal training", true, true, LocalDate.now(), null, null, AUTENTIA, listOf())
+            com.autentia.tnt.binnacle.entities.Project(
+                1,
+                "Internal training",
+                true,
+                true,
+                LocalDate.now(),
+                null,
+                null,
+                AUTENTIA,
+                listOf()
+            )
         private val INTERNAL_STUDENT =
-            com.autentia.tnt.binnacle.entities.ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 1440, 0, false , true, TimeUnit.MINUTES)
+            com.autentia.tnt.binnacle.entities.ProjectRole(
+                1,
+                "Student",
+                RequireEvidence.WEEKLY,
+                INTERNAL_TRAINING,
+                1440,
+                0,
+                false,
+                true,
+                TimeUnit.MINUTES
+            )
         private val INTERNAL_TEACHER =
             com.autentia.tnt.binnacle.entities.ProjectRole(
                 2,
@@ -214,7 +234,17 @@ internal class SearchByRoleIdUseCaseTest {
 
         private val OTHER_COMPANY = com.autentia.tnt.binnacle.entities.Organization(2L, "Other S.A.", listOf())
         private val EXTERNAL_TRAINING =
-            com.autentia.tnt.binnacle.entities.Project(2, "External training", true, true, LocalDate.now(), null, null, OTHER_COMPANY, listOf())
+            com.autentia.tnt.binnacle.entities.Project(
+                2,
+                "External training",
+                true,
+                true,
+                LocalDate.now(),
+                null,
+                null,
+                OTHER_COMPANY,
+                listOf()
+            )
         private val EXTERNAL_STUDENT =
             com.autentia.tnt.binnacle.entities.ProjectRole(
                 3,
