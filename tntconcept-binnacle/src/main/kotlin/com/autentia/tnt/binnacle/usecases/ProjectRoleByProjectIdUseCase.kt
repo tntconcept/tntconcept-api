@@ -2,8 +2,10 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.core.domain.DateInterval.Companion.getDateIntervalForRemainingCalculation
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -22,7 +24,7 @@ class ProjectRoleByProjectIdUseCase internal constructor(
     private val securityService: SecurityService,
     private val projectRoleRepository: ProjectRoleRepository,
     private val projectRoleResponseConverter: ProjectRoleResponseConverter,
-    private val projectRoleConverter: ProjectRoleConverter
+    private val projectRoleConverter: ProjectRoleConverter,
 ) {
 
     fun get(projectId: Long, year: Int?): List<ProjectRoleUserDTO> {
@@ -46,7 +48,7 @@ class ProjectRoleByProjectIdUseCase internal constructor(
     private fun buildProjectRoleWithUserRemaining(
         projectRolesOfProject: List<com.autentia.tnt.binnacle.core.domain.ProjectRole>,
         timeInterval: TimeInterval,
-        userId: Long
+        userId: Long,
     ): MutableList<ProjectRoleUser> {
         val projectRolesUser = mutableListOf<ProjectRoleUser>()
 
@@ -57,10 +59,11 @@ class ProjectRoleByProjectIdUseCase internal constructor(
             val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                 projectRole,
                 timeIntervalProjectRoleActivities,
-                timeInterval.getDateInterval(),
+                getDateIntervalForRemainingCalculation(timeInterval, projectRoleActivities.map(Activity::toDomain)),
                 userId
             )
-            val projectRoleUser = projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
+            val projectRoleUser =
+                projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
             projectRolesUser.add(projectRoleUser)
         }
         return projectRolesUser
