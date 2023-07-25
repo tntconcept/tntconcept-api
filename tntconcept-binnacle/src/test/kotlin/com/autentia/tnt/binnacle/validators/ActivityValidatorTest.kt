@@ -45,7 +45,6 @@ internal class ActivityValidatorTest {
             projectRepository
         )
 
-    @TestInstance(PER_CLASS)
     @Nested
     inner class CheckActivityIsValidForCreation {
 
@@ -486,7 +485,6 @@ internal class ActivityValidatorTest {
         }
     }
 
-    @TestInstance(PER_CLASS)
     @Nested
     inner class CheckActivityIsValidForUpdate {
         @Test
@@ -1607,6 +1605,5 @@ internal class ActivityValidatorTest {
                 59,
                 59
             )
-
     }
 }
