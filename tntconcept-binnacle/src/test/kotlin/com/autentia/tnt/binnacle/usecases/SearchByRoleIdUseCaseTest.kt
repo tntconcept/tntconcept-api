@@ -20,6 +20,7 @@ import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
@@ -196,67 +197,106 @@ internal class SearchByRoleIdUseCaseTest {
         })
     }
 
-    @Test
-    fun `get activities taking both years when exist activities with change of year`() {
+    @Nested
+    inner class SearchRemainingCalculation {
 
-        val projectRole = ProjectRole(
-            1L,
-            "My Project role",
-            RequireEvidence.NO,
-            INTERNAL_TRAINING,
-            1920,
-            0,
-            true,
-            false,
-            TimeUnit.NATURAL_DAYS
-        )
+        @Test
+        fun `is correct when exist activities with change of year`() {
 
-        val activities = listOf(
-            /*        Activity.of(
-                        createDomainActivity(
-                            start = LocalDateTime.of(2023, 1, 15, 0, 0, 0),
-                            end = LocalDateTime.of(2023, 1, 15, 23, 59, 59),
-                            duration = 960,
-                            projectRole = projectRole.toDomain()
-                        ), projectRole
-                    ),*/
-            Activity.of(
-                createDomainActivity(
-                    start = LocalDateTime.of(2023, 12, 31, 0, 0, 0),
-                    end = LocalDateTime.of(2024, 1, 1, 23, 59, 59),
-                    duration = 960,
-                    projectRole = projectRole.toDomain()
-                ), projectRole
-            )
-        )
+            val expectedRemainingDays = 1
 
-        val projectRoleList = listOf(projectRole)
-        val timeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
-        val roleIds = listOf(1L)
-
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
-
-        doReturn(projectRoleList)
-            .whenever(projectRoleRepository)
-            .getAllByIdIn(
-                roleIds
+            val activities = listOf(
+                Activity.of(
+                    createDomainActivity(
+                        start = LocalDateTime.of(2023, 1, 15, 0, 0, 0),
+                        end = LocalDateTime.of(2023, 1, 15, 23, 59, 59),
+                        duration = 960,
+                        projectRole = projectRoleLimitedInDays.toDomain()
+                    ), projectRoleLimitedInDays
+                ),
+                Activity.of(
+                    createDomainActivity(
+                        start = LocalDateTime.of(2023, 12, 31, 0, 0, 0),
+                        end = LocalDateTime.of(2024, 1, 1, 23, 59, 59),
+                        duration = 960,
+                        projectRole = projectRoleLimitedInDays.toDomain()
+                    ), projectRoleLimitedInDays
+                )
             )
 
-        doReturn(activities)
-            .whenever(activityRepository)
-            .findByProjectRoleIds(
-                timeInterval.start,
-                timeInterval.end,
-                roleIds,
-                createUser().id
+            val projectRoleList = listOf(projectRoleLimitedInDays)
+            val timeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
+            val roleIds = listOf(1L)
+
+            whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
+            doReturn(projectRoleList)
+                .whenever(projectRoleRepository)
+                .getAllByIdIn(
+                    roleIds
+                )
+
+            doReturn(activities)
+                .whenever(activityRepository)
+                .findByProjectRoleIds(
+                    timeInterval.start,
+                    timeInterval.end,
+                    roleIds,
+                    createUser().id
+                )
+
+            val obtainedRoleWithoutYearParameter = searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
+            val obtainedRoleWithYearParameter = searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+
+            assertEquals(expectedRemainingDays, obtainedRoleWithoutYearParameter.timeInfo.userRemainingTime)
+            assertEquals(expectedRemainingDays, obtainedRoleWithYearParameter.timeInfo.userRemainingTime)
+        }
+
+        @Test
+        fun `is correct when exist activities in the same year`() {
+
+            val expectedRemainingTime = 135
+
+            val activities = listOf(
+                Activity.of(
+                    createDomainActivity(
+                        start = LocalDateTime.of(2023, 1, 15, 9, 0, 0),
+                        end = LocalDateTime.of(2023, 1, 15, 9, 45, 0),
+                        duration = 45,
+                        projectRole = projectRoleLimited.toDomain()
+                    ), projectRoleLimited
+                )
             )
 
-        val obtainedRole = searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
-        val obtainedRoleWithYear = searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+            val projectRoleList = listOf(projectRoleLimited)
+            val timeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
+            val roleIds = listOf(1L)
 
-        assertEquals(2, obtainedRole.timeInfo.userRemainingTime)
-        assertEquals(2, obtainedRoleWithYear.timeInfo.userRemainingTime)
+            whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
+            doReturn(projectRoleList)
+                .whenever(projectRoleRepository)
+                .getAllByIdIn(
+                    roleIds
+                )
+
+            doReturn(activities)
+                .whenever(activityRepository)
+                .findByProjectRoleIds(
+                    timeInterval.start,
+                    timeInterval.end,
+                    roleIds,
+                    createUser().id
+                )
+
+            val obtainedRoleWithoutYearParameter = searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
+            val obtainedRoleWithYearParameter = searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+
+            assertEquals(expectedRemainingTime, obtainedRoleWithoutYearParameter.timeInfo.userRemainingTime)
+            assertEquals(expectedRemainingTime, obtainedRoleWithYearParameter.timeInfo.userRemainingTime)
+        }
     }
+
 
     private companion object {
         private val UNKONW_ROLE_ID = -1L
@@ -336,6 +376,33 @@ internal class SearchByRoleIdUseCaseTest {
                 true,
                 TimeUnit.MINUTES
             )
+
+        private val projectRoleLimitedInDays =
+            ProjectRole(
+                1L,
+                "My Project role",
+                RequireEvidence.NO,
+                INTERNAL_TRAINING,
+                1920,
+                0,
+                true,
+                false,
+                TimeUnit.NATURAL_DAYS
+            )
+
+        private val projectRoleLimited =
+            ProjectRole(
+                1L,
+                "My Project role",
+                RequireEvidence.NO,
+                INTERNAL_TRAINING,
+                180,
+                0,
+                true,
+                false,
+                TimeUnit.MINUTES
+            )
+
         private val authenticatedUser =
             ClientAuthentication(
                 "1",

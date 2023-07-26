@@ -18,9 +18,11 @@ import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalTime
 import java.util.*
 
 internal class ProjectRoleByProjectIdUseCaseTest {
@@ -82,6 +84,28 @@ internal class ProjectRoleByProjectIdUseCaseTest {
                 isApprovalRequired = false,
                 isWorkingTime = true
             ),
+            ProjectRole(
+                id = 4L,
+                name = "Role ID 4",
+                project = PROJECT,
+                maxTimeAllowedByYear = 1920,
+                maxTimeAllowedByActivity = 0,
+                timeUnit = TimeUnit.NATURAL_DAYS,
+                requireEvidence = RequireEvidence.WEEKLY,
+                isApprovalRequired = false,
+                isWorkingTime = true
+            ),
+            ProjectRole(
+                id = 5L,
+                name = "Role ID 5",
+                project = PROJECT,
+                maxTimeAllowedByYear = 2400,
+                maxTimeAllowedByActivity = 0,
+                timeUnit = TimeUnit.DAYS,
+                requireEvidence = RequireEvidence.WEEKLY,
+                isApprovalRequired = false,
+                isWorkingTime = true
+            ),
         )
         val activity = createActivity(projectRoles[0])
         val otherActivity = createActivity(projectRoles[1])
@@ -104,22 +128,68 @@ internal class ProjectRoleByProjectIdUseCaseTest {
             otherActivity
         )
 
+        val activitiesProjectRole4 = listOf(
+            activity.copy(
+                start = LocalDate.of(2023, 12, 30).atTime(LocalTime.MIN),
+                end = LocalDate.of(2024, 1, 1).atTime(LocalTime.MAX),
+                duration = 1920,
+                projectRole = projectRoles[3]
+            )
+        )
+
+        val activitiesProjectRole5 = listOf(
+            activity.copy(
+                start = LocalDate.of(2023, 12, 29).atTime(LocalTime.MIN),
+                end = LocalDate.of(2024, 1, 2).atTime(LocalTime.MAX),
+                duration = 1440,
+                projectRole = projectRoles[4]
+            )
+        )
+
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
-        whenever(projectRoleRepository.getAllByProjectId(PROJECT_ID)).thenReturn(projectRoles)
-        whenever(activityRepository.findByProjectRoleIdAndUserId(1L, userId)).thenReturn(activitiesProjectRole1)
-        whenever(activityRepository.findByProjectRoleIdAndUserId(2L, userId)).thenReturn(activitiesProjectRole2)
-        whenever(activityRepository.findByProjectRoleIdAndUserId(3L, userId)).thenReturn(emptyList())
+
+        doReturn(projectRoles)
+            .whenever(projectRoleRepository)
+            .getAllByProjectId(PROJECT_ID)
+
+        doReturn(activitiesProjectRole1)
+            .whenever(activityRepository)
+            .findByProjectRoleIdAndUserId(1L, userId)
+
+        doReturn(activitiesProjectRole2)
+            .whenever(activityRepository)
+            .findByProjectRoleIdAndUserId(2L, userId)
+
+        doReturn(emptyList<Activity>())
+            .whenever(activityRepository)
+            .findByProjectRoleIdAndUserId(3L, userId)
+
+        doReturn(activitiesProjectRole4)
+            .whenever(activityRepository)
+            .findByProjectRoleIdAndUserId(4L, userId)
+
+        doReturn(activitiesProjectRole5)
+            .whenever(activityRepository)
+            .findByProjectRoleIdAndUserId(5L, userId)
 
 
         val expectedProjectRoles = listOf(
-            buildProjectRoleUserDTO(1L, 120, 50),
-            buildProjectRoleUserDTO(2L, 90, 30),
-            buildProjectRoleUserDTO(3L, 0, 0),
+            buildProjectRoleUserDTO(1L, 120, 50, TimeUnit.MINUTES),
+            buildProjectRoleUserDTO(2L, 90, 30, TimeUnit.MINUTES),
+            buildProjectRoleUserDTO(3L, 0, 0, TimeUnit.MINUTES),
+            buildProjectRoleUserDTO(4L, 4, 1, TimeUnit.NATURAL_DAYS),
+            buildProjectRoleUserDTO(5L, 5, 2, TimeUnit.DAYS),
         )
+
         assertEquals(expectedProjectRoles, projectRoleByProjectIdUseCase.get(PROJECT_ID, year))
     }
 
-    private fun buildProjectRoleUserDTO(id: Long, maxAllowed: Int = 0, remaining: Int = 0): ProjectRoleUserDTO =
+    private fun buildProjectRoleUserDTO(
+        id: Long,
+        maxAllowed: Int = 0,
+        remaining: Int = 0,
+        timeUnit: TimeUnit,
+    ): ProjectRoleUserDTO =
         ProjectRoleUserDTO(
             id,
             "Role ID $id",
@@ -128,7 +198,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
             RequireEvidence.WEEKLY,
             false,
             USER_ID,
-            TimeInfoDTO(MaxTimeAllowedDTO(maxAllowed, 0), TimeUnit.MINUTES, remaining)
+            TimeInfoDTO(MaxTimeAllowedDTO(maxAllowed, 0), timeUnit, remaining)
         )
 
     private companion object {
