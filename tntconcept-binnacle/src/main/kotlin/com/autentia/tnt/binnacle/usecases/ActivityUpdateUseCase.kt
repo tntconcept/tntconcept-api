@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
@@ -24,42 +23,34 @@ import javax.transaction.Transactional
 
 @Singleton
 class ActivityUpdateUseCase internal constructor(
-    private val activityRepository: ActivityRepository,
-    private val activityCalendarService: ActivityCalendarService,
-    private val projectRoleRepository: ProjectRoleRepository,
-    private val userService: UserService,
-    private val activityValidator: ActivityValidator,
-    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
-    private val activityResponseConverter: ActivityResponseConverter,
-    private val activityEvidenceMailService: ActivityEvidenceMailService,
-    private val activityEvidenceService: ActivityEvidenceService,
-    private val pendingApproveActivityMailService: PendingApproveActivityMailService
+        private val activityRepository: ActivityRepository,
+        private val activityCalendarService: ActivityCalendarService,
+        private val projectRoleRepository: ProjectRoleRepository,
+        private val userService: UserService,
+        private val activityValidator: ActivityValidator,
+        private val activityRequestBodyConverter: ActivityRequestBodyConverter,
+        private val activityResponseConverter: ActivityResponseConverter,
+        private val activityEvidenceMailService: ActivityEvidenceMailService,
+        private val activityEvidenceService: ActivityEvidenceService,
+        private val pendingApproveActivityMailService: PendingApproveActivityMailService
 ) {
     @Transactional
     @ReadOnly
     fun updateActivity(activityRequest: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
         val user = userService.getAuthenticatedDomainUser()
-        val projectRoleEntity =
-            projectRoleRepository.findById(activityRequest.projectRoleId)
-                ?: throw ProjectRoleNotFoundException(
-                    activityRequest.projectRoleId
-                )
+        val projectRoleEntity = this.getProjectRoleEntity(activityRequest.projectRoleId)
         val projectRole = projectRoleEntity.toDomain()
+        val currentActivity = this.getActivity(activityRequest.id!!)
+
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            ActivityTimeInterval.of(activityRequest.interval.toDomain(), projectRoleEntity.timeUnit)
-        )
-
-        val currentActivityEntity =
-            activityRepository.findById(activityRequest.id!!) ?: throw ActivityNotFoundException(activityRequest.id)
-
-        val currentActivity = currentActivityEntity.toDomain()
+                ActivityTimeInterval.of(activityRequest.interval.toDomain(), projectRole.getTimeUnit()))
 
         val activityToUpdate = activityRequestBodyConverter.toActivity(
-            activityRequest,
-            duration,
-            currentActivity.insertDate,
-            projectRole,
-            user
+                activityRequest,
+                duration,
+                currentActivity.insertDate,
+                projectRole,
+                user
         )
 
         activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
@@ -70,27 +61,33 @@ class ActivityUpdateUseCase internal constructor(
 
         if (activityToUpdate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(
-                updatedActivityEntity.id!!,
-                activityToUpdate.evidence!!,
-                updatedActivityEntity.insertDate!!
+                    updatedActivityEntity.id!!,
+                    activityToUpdate.evidence!!,
+                    updatedActivityEntity.insertDate!!
             )
         }
 
-        if (!activityToUpdate.hasEvidences && currentActivityEntity.hasEvidences) {
+        if (!activityToUpdate.hasEvidences && currentActivity.hasEvidences) {
             activityEvidenceService.deleteActivityEvidence(
-                updatedActivityEntity.id!!,
-                updatedActivityEntity.insertDate!!
+                    updatedActivityEntity.id!!,
+                    updatedActivityEntity.insertDate!!
             )
         }
 
-        if (updatedActivity.isEvidenceAttached()) {
+        if (updatedActivity.mustEvidenceBeAttached()) {
             activityEvidenceMailService.sendActivityEvidenceMail(updatedActivity, user.username, locale)
         }
 
-        if (updatedActivity.canBeApprovedWithEvidence()){
+        if (updatedActivity.canBeApprovedWithEvidence()) {
             pendingApproveActivityMailService.sendApprovalActivityMail(updatedActivity, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
+
+    private fun getProjectRoleEntity(projectRoleId: Long) =
+            projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)
+
+    private fun getActivity(activityId: Long) =
+            Optional.ofNullable(activityRepository.findById(activityId)).orElseThrow { ActivityNotFoundException(activityId) }.toDomain()
 }

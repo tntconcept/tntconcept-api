@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.ApprovalState.NA
 import com.autentia.tnt.binnacle.entities.ApprovalState.PENDING
@@ -28,7 +27,6 @@ import org.mockito.kotlin.*
 import java.lang.IllegalArgumentException
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.*
 
 @TestInstance(PER_CLASS)
@@ -471,8 +469,6 @@ internal class ActivityUpdateUseCaseTest {
         val role = PROJECT_ROLE
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
         whenever(activityRepository.findById(any())).thenReturn(null)
-        val duration = 60
-        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
         // Act, Assert
         assertThatThrownBy { sut.updateActivity(SOME_ACTIVITY_REQUEST, LOCALE) }.isInstanceOf(ActivityNotFoundException::class.java)
@@ -480,9 +476,8 @@ internal class ActivityUpdateUseCaseTest {
         // Verify
         verify(projectRoleRepository).findById(SOME_ACTIVITY_REQUEST.projectRoleId)
         verify(activityRepository).findById(SOME_ACTIVITY_REQUEST.id!!)
-        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
-        verifyNoInteractions(activityValidator, activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
-        verifyNoMoreInteractions(projectRoleRepository, activityRepository, activityCalendarService)
+        verifyNoInteractions(activityValidator, activityEvidenceService, activityCalendarService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoMoreInteractions(projectRoleRepository, activityRepository)
     }
 
     private fun `get activity updated with request`(existingActivity: Activity, request: ActivityRequestDTO, duration: Int): Activity =
