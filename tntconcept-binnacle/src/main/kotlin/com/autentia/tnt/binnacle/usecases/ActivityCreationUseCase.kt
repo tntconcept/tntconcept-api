@@ -37,12 +37,10 @@ class ActivityCreationUseCase internal constructor(
     @Transactional
     fun createActivity(@Valid activityRequestBody: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
         val user = userService.getAuthenticatedDomainUser()
-
-        val projectRole = projectRoleRepository.findById(activityRequestBody.projectRoleId)
-            ?: throw ProjectRoleNotFoundException(activityRequestBody.projectRoleId)
+        val projectRole = this.getProjectRole(activityRequestBody.projectRoleId)
 
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
+                ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
         )
 
         val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole.toDomain(), user)
@@ -57,10 +55,13 @@ class ActivityCreationUseCase internal constructor(
 
         val savedActivityDomain = savedActivity.toDomain()
 
-        if (savedActivityDomain.canBeApprovedWithEvidence()) {
+        if (savedActivityDomain.canBeApproved()) {
             pendingApproveActivityMailService.sendApprovalActivityMail(savedActivityDomain, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
     }
+
+    private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)
+            ?: throw ProjectRoleNotFoundException(projectRoleId)
 }

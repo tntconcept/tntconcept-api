@@ -74,11 +74,11 @@ class ActivityUpdateUseCase internal constructor(
             )
         }
 
-        if (updatedActivity.mustEvidenceBeAttached()) {
+        if (updatedActivity.isEvidenceRequiredAndAttached()) {
             activityEvidenceMailService.sendActivityEvidenceMail(updatedActivity, user.username, locale)
         }
 
-        if (updatedActivity.canBeApprovedWithEvidence()) {
+        if (updatedActivity.canBeApproved()) {
             pendingApproveActivityMailService.sendApprovalActivityMail(updatedActivity, user.username, locale)
         }
 
