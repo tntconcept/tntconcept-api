@@ -1,30 +1,37 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createDomainActivity
-import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.ApprovalState.NA
+import com.autentia.tnt.binnacle.entities.ApprovalState.PENDING
+import com.autentia.tnt.binnacle.entities.RequireEvidence.*
 import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
+import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
-import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
-import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.mockito.BDDMockito.willDoNothing
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.mockito.kotlin.*
+import java.lang.IllegalArgumentException
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
+@TestInstance(PER_CLASS)
 internal class ActivityUpdateUseCaseTest {
 
     private val activityRepository = mock<ActivityRepository>()
@@ -34,287 +41,576 @@ internal class ActivityUpdateUseCaseTest {
     private val userService = mock<UserService>()
     private val activityEvidenceMailService = mock<ActivityEvidenceMailService>()
     private val activityEvidenceService = mock<ActivityEvidenceService>()
+    private val pendingApproveActivityMailService = mock<PendingApproveActivityMailService>()
 
-    private val activityUpdateUseCase = ActivityUpdateUseCase(
-        activityRepository,
-        activityCalendarService,
-        projectRoleRepository,
-        userService,
-        activityValidator,
-        ActivityRequestBodyConverter(),
-        ActivityResponseConverter(
-            ActivityIntervalResponseConverter()
-        ),
-        activityEvidenceMailService,
-        activityEvidenceService
+    private val sut = ActivityUpdateUseCase(
+            activityRepository,
+            activityCalendarService,
+            projectRoleRepository,
+            userService,
+            activityValidator,
+            ActivityRequestBodyConverter(),
+            ActivityResponseConverter(
+                    ActivityIntervalResponseConverter()
+            ),
+            activityEvidenceMailService,
+            activityEvidenceService,
+            pendingApproveActivityMailService
     )
 
-    private val projectRole = createDomainProjectRole().copy(id = 10L)
-
-    @Test
-    fun `update activity and update the stored image`() {
-        val activityId = NEW_ACTIVITY_DTO_WITH_EVIDENCES.id!!
-
-        val oldActivityInsertDate = Date()
-        val oldActivity = Activity(
-            id = activityId,
-            start = activityToUpdate.getStart(),
-            duration = 120,
-            end = activityToUpdate.getStart().plusHours(2L),
-            description = "Test activity",
-            projectRole = PROJECT_ROLE,
-            userId = USER.id,
-            billable = false,
-            hasEvidences = true,
-            approvalState = ApprovalState.NA,
-            insertDate = oldActivityInsertDate,
-        )
-
+    @BeforeEach
+    fun `set auth user`() {
         doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
-        whenever(projectRoleRepository.findById(10L)).thenReturn(PROJECT_ROLE)
-        whenever(activityRepository.findById(activityId)).thenReturn(oldActivity)
-        willDoNothing().given(activityEvidenceService)
-            .storeActivityEvidence(activityId, evidenceDomain, oldActivityInsertDate)
-        whenever(activityRepository.update(any())).thenReturn(oldActivity)
+    }
 
-        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO_WITH_EVIDENCES, Locale.ENGLISH)
+    @BeforeEach
+    fun `check that activity is valid`() {
+        doNothing().whenever(activityValidator).checkActivityIsValidForUpdate(any(), any(), any())
+    }
 
-        verify(activityEvidenceService).storeActivityEvidence(
-            activityId, evidenceDomain, oldActivityInsertDate
-        )
+    @AfterEach
+    fun `reset mocks`() {
+        reset(activityRepository, activityValidator, activityEvidenceService, activityEvidenceMailService,
+                userService, pendingApproveActivityMailService, projectRoleRepository, activityCalendarService)
     }
 
     @Test
-    fun `update activity should delete the stored image`() {
-        val activityId = NEW_ACTIVITY_DTO.id!!
+    fun `should update an existing activity with no evidence in a role that does not require evidence nor approval`() {
+        // Arrange
+        val role = `get role that does not require evidence nor approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val oldActivityInsertDate = Date()
-        val oldActivity = Activity(
-            id = activityId,
-            start = activityToUpdate.getStart(),
-            duration = 120,
-            end = activityToUpdate.getStart().plusHours(2L),
-            description = "Test activity",
-            projectRole = PROJECT_ROLE,
-            userId = USER.id,
-            billable = false,
-            hasEvidences = true,
-            approvalState = ApprovalState.NA,
-            insertDate = oldActivityInsertDate,
-        )
+        val existingActivity = `get existing activity with no evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
-        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
-        whenever(projectRoleRepository.findById(10L)).thenReturn(PROJECT_ROLE)
-        whenever(activityRepository.findById(activityId)).thenReturn(oldActivity)
-        willDoNothing().given(activityEvidenceService)
-            .storeActivityEvidence(activityToUpdate.id!!, evidence.toDomain(), oldActivityInsertDate)
-        whenever(activityRepository.update(any())).thenReturn(oldActivity)
-        whenever(activityEvidenceService.deleteActivityEvidence(activityId, oldActivityInsertDate)).thenReturn(
-            true
-        )
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
+        val request = `get activity update request with no evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
-        verify(activityEvidenceService).deleteActivityEvidence(activityId, oldActivityInsertDate)
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(NA)
+
+        // Verify
+        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
     }
 
     @Test
-    fun `return updated activity for the authenticated user when it is valid`() {
-        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+    fun `should update an existing activity with no evidence in a role that requires evidence`() {
+        // Arrange
+        val role = `get role that requires evidence`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        doReturn(PROJECT_ROLE).whenever(projectRoleRepository).findById(projectRole.id)
+        val existingActivity = `get existing activity with no evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
-        doReturn(currentTodayActivity).whenever(activityRepository).findById(todayActivity.id!!)
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        doReturn(currentTodayActivity).whenever(activityRepository).update(any())
+        val request = `get activity update request with no evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
-        Assertions.assertThat(todayActivityResponseDTO)
-            .usingRecursiveComparison()
-            .isEqualTo(activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH))
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(NA)
+
+        // Verify
+        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
     }
 
     @Test
-    fun `rethrow any exception from the validator`() {
-        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+    fun `should update an existing activity with no evidence in a role that requires approval`() {
+        // Arrange
+        val role = `get role that requires approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        doAnswer { throw Exception() }.whenever(activityValidator)
-            .checkActivityIsValidForUpdate(activityToUpdate, activityToUpdate, USER)
+        val existingActivity = `get existing pending activity with no evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
-        assertThrows<Exception> { activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH) }
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with no evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+
+        doNothing().whenever(pendingApproveActivityMailService)
+                .sendApprovalActivityMail(updatedActivity.toDomain(), USER.username, LOCALE)
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(PENDING)
+
+        // Verify
+        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService)
+        verify(pendingApproveActivityMailService).sendApprovalActivityMail(updatedActivity.toDomain(), USER.username, LOCALE)
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
     }
 
     @Test
-    fun `test email is not sent, only project role requireEvidence is true `() {
+    fun `should update an existing activity with no evidence in a role that requires evidence and approval`() {
+        // Arrange
+        val role = `get role that requires evidence and approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val activity = todayActivity.copy(
-            approvalState = ApprovalState.ACCEPTED,
-            projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY)
-        )
+        val existingActivity = `get existing pending activity with no evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
-        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        doReturn(PROJECT_ROLE).whenever(projectRoleRepository)
-            .findById(projectRole.id)
+        val request = `get activity update request with no evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
-        doReturn(currentTodayActivity).whenever(activityRepository).findById(activity.id!!)
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
 
-        doReturn(currentTodayActivity).whenever(activityRepository).update(any())
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(PENDING)
 
-        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO.copy(hasEvidences = false), Locale.ENGLISH)
-
-        verify(activityEvidenceMailService, times(0)).sendActivityEvidenceMail(
-            activity,
-            USER.username,
-            Locale.ENGLISH
-        )
+        // Verify
+        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
     }
 
     @Test
-    fun `test email is not sent, only requireEvidence is true and approval state is pending `() {
+    fun `should update an existing activity with new evidence in a role that does not require evidence nor approval`() {
+        // Arrange
+        val role = `get role that does not require evidence nor approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val activity = todayActivity.copy(
-            approvalState = ApprovalState.PENDING,
-            projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY)
-        )
-        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+        val existingActivity = `get existing activity with no evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
-        doReturn(PROJECT_ROLE).whenever(projectRoleRepository)
-            .findById(projectRole.id)
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        doReturn(currentTodayActivity).whenever(activityRepository).findById(activity.id!!)
-        doReturn(currentTodayActivity).whenever(activityRepository).update(any())
+        val request = `get activity update request with evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+        doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
 
-        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
 
-        verify(activityEvidenceMailService, times(0)).sendActivityEvidenceMail(
-            activity,
-            USER.username,
-            Locale.ENGLISH
-        )
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(NA)
+
+        // Verify
+        verifyNoInteractions(activityEvidenceMailService, pendingApproveActivityMailService)
+        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+    }
+
+
+    @Test
+    fun `should update an existing activity with new evidence in a role that requires evidence`() {
+        // Arrange
+        val role = `get role that requires evidence`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingActivity = `get existing activity with no evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+        doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+        doNothing().whenever(activityEvidenceMailService).sendActivityEvidenceMail(updatedActivity.toDomain(), USER.username, LOCALE)
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(NA)
+
+        // Verify
+        verifyNoInteractions(pendingApproveActivityMailService)
+        verify(activityEvidenceMailService).sendActivityEvidenceMail(updatedActivity.toDomain(), USER.username, LOCALE)
+        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
     }
 
     @Test
-    fun `test email is sent, requireEvidence is true, approval state is pending and hasEvidences is true`() {
+    fun `should update an existing activity with new evidence in a role that requires evidence and approval`() {
+        // Arrange
+        val role = `get role that requires evidence and approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val activity = todayActivity.copy(
-            id = NEW_ACTIVITY_DTO.id,
-            approvalState = ApprovalState.PENDING,
-            projectRole = todayActivity.projectRole.copy(requireEvidence = RequireEvidence.WEEKLY),
-            hasEvidences = true,
-            insertDate = LocalDateTime.now()
-        )
+        val existingActivity = `get existing pending activity with no evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
-        val currentActivity = Activity.of(activity, PROJECT_ROLE.copy(requireEvidence = RequireEvidence.WEEKLY))
-        doReturn(USER).whenever(userService).getAuthenticatedDomainUser()
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        doReturn(currentActivity).whenever(activityRepository).findById(activity.id!!)
-        val activityUpdated = currentActivity.copy(hasEvidences = false, description = NEW_ACTIVITY_DTO.description)
-        doReturn(activityUpdated).            whenever(activityRepository).update(any())
+        val request = `get activity update request with evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+        doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+        doNothing().whenever(activityEvidenceMailService).sendActivityEvidenceMail(updatedActivity.toDomain(), USER.username, LOCALE)
+        doNothing().whenever(pendingApproveActivityMailService).sendApprovalActivityMail(updatedActivity.toDomain(), USER.username, LOCALE)
 
-        doReturn(PROJECT_ROLE).whenever(projectRoleRepository).findById(projectRole.id)
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
 
-        activityUpdateUseCase.updateActivity(NEW_ACTIVITY_DTO, Locale.ENGLISH)
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(PENDING)
 
-        verify(activityEvidenceMailService, times(1)).sendActivityEvidenceMail(
-                activityUpdated.toDomain(),
-            USER.username,
-            Locale.ENGLISH
-        )
+        // Verify
+        verify(pendingApproveActivityMailService).sendApprovalActivityMail(updatedActivity.toDomain(), USER.username, LOCALE)
+        verify(activityEvidenceMailService).sendActivityEvidenceMail(updatedActivity.toDomain(), USER.username, LOCALE)
+        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+    }
+
+    @Test
+    fun `should update an existing activity with evidence and remove the evidence in a role that does not require evidence nor approval`() {
+        // Arrange
+        val role = `get role that does not require evidence nor approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingActivity = `get existing activity with evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with no evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+        doReturn(true).whenever(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(NA)
+
+        // Verify
+        verifyNoInteractions(pendingApproveActivityMailService, activityEvidenceMailService)
+        verify(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+    }
+
+    @Test
+    fun `should update an existing activity with evidence and remove the evidence in a role that requires evidence`() {
+        // Arrange
+        val role = `get role that requires evidence`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingActivity = `get existing activity with evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with no evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+        doReturn(true).whenever(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(NA)
+
+        // Verify
+        verifyNoInteractions(pendingApproveActivityMailService, activityEvidenceMailService)
+        verify(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+    }
+
+    @Test
+    fun `should update an existing activity with evidence and remove the evidence in a role that requires evidence and approval`() {
+        // Arrange
+        val role = `get role that requires evidence and approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingActivity = `get existing pending activity with evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with no evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+        doReturn(true).whenever(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(PENDING)
+
+        // Verify
+        verifyNoInteractions(pendingApproveActivityMailService, activityEvidenceMailService)
+        verify(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+    }
+
+    @Test
+    fun `should not update an activity when user is not authenticated`() {
+        // Arrange
+        doThrow(IllegalStateException::class).whenever(userService).getAuthenticatedDomainUser()
+
+        // Act, Assert
+        assertThatThrownBy { sut.updateActivity(SOME_ACTIVITY_REQUEST, LOCALE) }.isInstanceOf(IllegalStateException::class.java)
+
+        // Verify
+        verify(userService).getAuthenticatedDomainUser()
+        verifyNoInteractions(activityRepository, activityValidator, activityEvidenceService, activityEvidenceMailService,
+                pendingApproveActivityMailService, projectRoleRepository, activityCalendarService)
+    }
+
+    @Test
+    fun `should not update an existing activity with a role that is not found`() {
+        // Arrange
+        whenever(projectRoleRepository.findById(any())).thenReturn(null)
+
+        // Act, Assert
+        assertThatThrownBy { sut.updateActivity(SOME_ACTIVITY_REQUEST, LOCALE) }.isInstanceOf(ProjectRoleNotFoundException::class.java)
+
+        // Verify
+        verify(projectRoleRepository).findById(SOME_ACTIVITY_REQUEST.projectRoleId)
+        verifyNoInteractions(activityRepository, activityValidator, activityEvidenceService, activityEvidenceMailService,
+                pendingApproveActivityMailService, activityCalendarService)
+        verifyNoMoreInteractions(projectRoleRepository)
+    }
+
+    @Test
+    fun `should not update an existing activity when activity is not valid for updating`() {
+        // Arrange
+        val role = PROJECT_ROLE
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingActivity = `get existing activity with no evidence`(role)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with no evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+
+        doThrow(IllegalArgumentException::class).whenever(activityValidator)
+                .checkActivityIsValidForUpdate(updatedActivity.toDomain(), existingActivity.toDomain(), USER)
+
+        // Act, Assert
+        assertThatThrownBy { sut.updateActivity(request, LOCALE) }.isInstanceOf(IllegalArgumentException::class.java)
+
+        // Verify
+        verify(projectRoleRepository).findById(request.projectRoleId)
+        verify(activityRepository).findById(request.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityValidator).checkActivityIsValidForUpdate(updatedActivity.toDomain(), existingActivity.toDomain(), USER)
+        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoMoreInteractions(projectRoleRepository, activityRepository, activityCalendarService)
+    }
+
+    @Test
+    fun `should not update a non existing activity`() {
+        // Arrange
+        val role = PROJECT_ROLE
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+        whenever(activityRepository.findById(any())).thenReturn(null)
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        // Act, Assert
+        assertThatThrownBy { sut.updateActivity(SOME_ACTIVITY_REQUEST, LOCALE) }.isInstanceOf(ActivityNotFoundException::class.java)
+
+        // Verify
+        verify(projectRoleRepository).findById(SOME_ACTIVITY_REQUEST.projectRoleId)
+        verify(activityRepository).findById(SOME_ACTIVITY_REQUEST.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verifyNoInteractions(activityValidator, activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoMoreInteractions(projectRoleRepository, activityRepository, activityCalendarService)
+    }
+
+    private fun `get activity updated with request`(existingActivity: Activity, request: ActivityRequestDTO, duration: Int): Activity =
+            existingActivity.copy(
+                    duration = duration,
+                    start = request.interval.start,
+                    end = request.interval.end,
+                    description = request.description,
+                    billable = request.billable,
+                    hasEvidences = request.hasEvidences
+            )
+
+    private fun `get existing pending activity with no evidence`(role: ProjectRole) =
+            Activity.emptyActivity(role).copy(
+                    id = 1L,
+                    userId = USER.id,
+                    hasEvidences = false,
+                    approvalState = PENDING,
+                    start = LocalDate.now().atTime(8, 0),
+                    end = LocalDate.now().atTime(12, 0),
+                    insertDate = Date.from(Instant.now()),
+                    departmentId = 1L,
+            )
+
+    private fun `get existing pending activity with evidence`(role: ProjectRole) =
+            Activity.emptyActivity(role).copy(
+                    id = 1L,
+                    userId = USER.id,
+                    hasEvidences = true,
+                    approvalState = PENDING,
+                    start = LocalDate.now().atTime(8, 0),
+                    end = LocalDate.now().atTime(12, 0),
+                    insertDate = Date.from(Instant.now()),
+                    departmentId = 1L,
+            )
+
+    private fun `get existing activity with evidence`(role: ProjectRole) =
+            Activity.emptyActivity(role).copy(
+                    id = 1L,
+                    userId = USER.id,
+                    hasEvidences = true,
+                    approvalState = NA,
+                    start = LocalDate.now().atTime(8, 0),
+                    end = LocalDate.now().atTime(12, 0),
+                    insertDate = Date.from(Instant.now()),
+                    departmentId = 1L,
+            )
+
+    private fun `get activity update request with no evidence`(existingActivity: Activity, duration: Int) =
+            ActivityRequestDTO(
+                    id = existingActivity.id!!,
+                    start = TODAY,
+                    end = TODAY.plusMinutes(duration.toLong()),
+                    description = existingActivity.description + " updated",
+                    billable = existingActivity.billable,
+                    projectRoleId = existingActivity.projectRole.id,
+                    hasEvidences = false,
+                    evidence = null,
+            )
+
+    private fun `get activity update request with evidence`(existingActivity: Activity, duration: Int) =
+            ActivityRequestDTO(
+                    id = existingActivity.id!!,
+                    start = TODAY,
+                    end = TODAY.plusMinutes(duration.toLong()),
+                    description = existingActivity.description + " updated",
+                    billable = existingActivity.billable,
+                    projectRoleId = existingActivity.projectRole.id,
+                    hasEvidences = true,
+                    evidence = SAMPLE_EVIDENCE_DTO
+            )
+
+    private fun `get role that requires approval`() =
+            PROJECT_ROLE.copy(isApprovalRequired = true, requireEvidence = NO, timeUnit = TimeUnit.MINUTES)
+
+    private fun `get role that does not require evidence nor approval`() =
+            PROJECT_ROLE.copy(isApprovalRequired = false, requireEvidence = NO, timeUnit = TimeUnit.MINUTES)
+
+    private fun `get role that requires evidence`() =
+            PROJECT_ROLE.copy(isApprovalRequired = false, requireEvidence = WEEKLY, timeUnit = TimeUnit.MINUTES)
+
+    private fun `get role that requires evidence and approval`() =
+            PROJECT_ROLE.copy(isApprovalRequired = true, requireEvidence = ONCE, timeUnit = TimeUnit.MINUTES)
+
+    private fun `get existing activity with no evidence`(role: ProjectRole) =
+            Activity.emptyActivity(role).copy(
+                    id = 1L,
+                    userId = USER.id,
+                    hasEvidences = false,
+                    approvalState = NA,
+                    start = LocalDate.now().atTime(8, 0),
+                    end = LocalDate.now().atTime(12, 0),
+                    insertDate = Date.from(Instant.now()),
+                    departmentId = 1L,
+            )
+
+    private fun assertThatUpdatedActivityIsEquivalent(result: ActivityResponseDTO, request: ActivityRequestDTO) {
+        assertThat(result.interval.start).isEqualTo(request.interval.start)
+        assertThat(result.interval.end).isEqualTo(request.interval.end)
+        assertThat(result.description).isEqualTo(request.description)
+        assertThat(result.billable).isEqualTo(request.billable)
+        assertThat(result.hasEvidences).isEqualTo(request.hasEvidences)
+        assertThat(result.projectRoleId).isEqualTo(request.projectRoleId)
     }
 
     private companion object {
         private val USER = createDomainUser()
-        private val TODAY = LocalDateTime.now()
-        private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
-
-        private val PROJECT = Project(
-            1L,
-            "Dummy Project",
-            open = true,
-            billable = false,
-            LocalDate.now(),
-            null,
-            null,
-            projectRoles = listOf(),
-            organization = ORGANIZATION
+        private val TODAY = LocalDate.now().atTime(8, 0)
+        private val ORGANIZATION = Organization(1L, "Organization", listOf())
+        private val PROJECT = Project(1L, "Project", open = true, billable = false,
+                LocalDate.now(), null, null, projectRoles = listOf(),
+                organization = ORGANIZATION
         )
-
-        private val evidence = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")
-        private val evidenceDomain = evidence.toDomain()
-
-        private val PROJECT_ROLE =
-            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
-        private val TIME_INFO_DTO = TimeInfoDTO(
-            MaxTimeAllowedDTO(PROJECT_ROLE.maxTimeAllowedByYear, PROJECT_ROLE.maxTimeAllowedByActivity),
-            PROJECT_ROLE.timeUnit,
-            0
+        private val PROJECT_ROLE = ProjectRole(10L, "Project role", NO, PROJECT, 5000,
+                1000, true, false, TimeUnit.MINUTES)
+        private val LOCALE = Locale.ENGLISH
+        private val SAMPLE_EVIDENCE_DTO = EvidenceDTO.from("data:image/png;base64,ABCsbG8gV29ybGQh")
+        private val SAMPLE_EVIDENCE = SAMPLE_EVIDENCE_DTO.toDomain()
+        private val SOME_ACTIVITY_REQUEST = ActivityRequestDTO(
+                1L,
+                TODAY,
+                TODAY.plusMinutes(75L),
+                "New activity",
+                false,
+                PROJECT_ROLE.id,
+                false,
         )
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
-            10L,
-            "Dummy Project role",
-            PROJECT_ROLE.project.organization.id,
-            PROJECT_ROLE.project.id,
-            PROJECT_ROLE.requireEvidence,
-            PROJECT_ROLE.isApprovalRequired,
-            USER.id,
-            TIME_INFO_DTO,
-        )
-        private val NEW_ACTIVITY_DTO = ActivityRequestDTO(
-            1L,
-            TODAY,
-            TODAY.plusMinutes(75L),
-            "New activity",
-            false,
-            PROJECT_ROLE.id,
-            false,
-        )
-        private val NEW_ACTIVITY_DTO_WITH_EVIDENCES = ActivityRequestDTO(
-            90,
-            TODAY,
-            TODAY.plusMinutes(75L),
-            "New activity",
-            false,
-            PROJECT_ROLE.id,
-            true,
-            evidence = evidence
-        )
-
-        private val todayActivity = createDomainActivity(
-            TODAY,
-            TODAY.plusMinutes(75L),
-            75,
-            PROJECT_ROLE.toDomain(),
-        )
-        private val todayActivityResponseDTO = ActivityResponseDTO(
-            true,
-            "Description",
-            false,
-            1,
-            PROJECT_ROLE_RESPONSE_DTO.id,
-            IntervalResponseDTO(TODAY, TODAY.plusMinutes(75L), 75, PROJECT_ROLE.timeUnit),
-            USER.id,
-            approval = ApprovalDTO(ApprovalState.NA)
-        )
-        private val activityToUpdate = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            1L,
-            TimeInterval.of(TODAY, TODAY.plusMinutes(75L)),
-            75,
-            "New activity",
-            PROJECT_ROLE.toDomain(),
-            1L,
-            false,
-            null,
-            LocalDateTime.now(),
-            false,
-            ApprovalState.NA,
-            null,
-            null,
-            null
-        )
-
-        private val currentActivity = Activity.of(activityToUpdate, PROJECT_ROLE)
-
-        private val currentTodayActivity = Activity.of(todayActivity, PROJECT_ROLE)
     }
+
 }
 

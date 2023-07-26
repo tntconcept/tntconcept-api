@@ -32,13 +32,12 @@ class ActivityUpdateUseCase internal constructor(
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
     private val activityEvidenceMailService: ActivityEvidenceMailService,
-    private val activityEvidenceService: ActivityEvidenceService
- //   private val pendingApproveActivityMailService: PendingApproveActivityMailService
+    private val activityEvidenceService: ActivityEvidenceService,
+    private val pendingApproveActivityMailService: PendingApproveActivityMailService
 ) {
     @Transactional
     @ReadOnly
     fun updateActivity(activityRequest: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
-
         val user = userService.getAuthenticatedDomainUser()
         val projectRoleEntity =
             projectRoleRepository.findById(activityRequest.projectRoleId)
@@ -84,13 +83,13 @@ class ActivityUpdateUseCase internal constructor(
             )
         }
 
-        if (updatedActivity.isEvidenceMissing()) {
+        if (updatedActivity.isEvidenceAttached()) {
             activityEvidenceMailService.sendActivityEvidenceMail(updatedActivity, user.username, locale)
         }
 
-       /* if (updatedActivity.canBeApprovedWithEvidence()){
+        if (updatedActivity.canBeApprovedWithEvidence()){
             pendingApproveActivityMailService.sendApprovalActivityMail(updatedActivity, user.username, locale)
-        }*/
+        }
 
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
