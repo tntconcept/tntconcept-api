@@ -46,6 +46,7 @@ internal class ActivityValidatorTest {
         )
 
     @Nested
+    @TestInstance(PER_CLASS)
     inner class CheckActivityIsValidForCreation {
 
         @AfterEach
@@ -308,16 +309,29 @@ internal class ActivityValidatorTest {
 
         private fun maxTimeRoleLimitProviderCreate() = arrayOf(
             arrayOf(
-                "reached limit no remaining time the year before",
+                "with nothing imputed, activity in minutes is added that exceeds the limit",
+                emptyList<Activity>(),
+                createProjectRoleWithLimit(
+                    maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                    maxTimeAllowedByActivity = 0
+                ),
+                createActivity(
+                    start = todayDateTime,
+                    end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
+                    duration = (MINUTES_IN_HOUR * 9)
+                ).copy(id = null),
+                480.0,
+                firstDayOfYear.minusYears(1L),
+                lastDayOfYear.minusYears(1L)
+            ),
+            arrayOf(
+                "with activities imputed the year before, activity in minutes is added that exceeds the limit [MINUTES]",
                 listOf(
                     Activity.of(
                         activityReachedLimitTimeOnlyAYearAgo, projectRoleLimitedByYear
                     )
                 ),
-                createProjectRoleWithLimit(
-                    maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
-                    maxTimeAllowedByActivity = 0
-                ),
+                projectRoleLimitedByYear,
                 createActivity(
                     start = todayDateTime.minusYears(1L),
                     end = todayDateTime.minusYears(1L).plusMinutes(MINUTES_IN_HOUR * 9L),
@@ -328,7 +342,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear.minusYears(1L)
             ),
             arrayOf(
-                "reached limit no remaining time",
+                "with activities imputed, activity in minutes is added that exceeds the limit",
                 listOf(Activity.of(activityReachedLimitTimeOnly, projectRoleLimitedByYear)),
                 projectRoleLimitedByYear,
                 createActivity(
@@ -341,7 +355,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "reached limit no remaining time current day",
+                "with activities imputed the same day, activity in minutes is added that exceeds the limit",
                 listOf(Activity.of(activityReachedLimitTodayTimeOnly, projectRoleLimitedByYear)),
                 projectRoleLimitedByYear,
                 createActivity(
@@ -354,7 +368,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "reached limit no remaining time for projectRole with days configuration",
+                "with activities imputed, activity in days is added that exceeds the limit",
                 listOf(
                     Activity.of(
                         createActivity(
@@ -382,7 +396,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "reached limit no remaining time for projectRole with natural days configuration",
+                "with activities imputed, activity in natural days is added that exceeds the limit",
                 listOf(
                     Activity.of(
                         createActivity(
@@ -409,29 +423,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "reached limit no remaining time half hour",
-                listOf(
-                    Activity.of(
-                        activityReachedHalfHourTimeOnly,
-                        createProjectRoleWithLimit(maxTimeAllowedByYear = 90, maxTimeAllowedByActivity = 0)
-                    )
-                ),
-                createProjectRoleWithLimit(maxTimeAllowedByYear = 90, maxTimeAllowedByActivity = 0),
-                createActivity(
-                    start = todayDateTime,
-                    end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
-                    duration = (MINUTES_IN_HOUR * 9),
-                    projectRole = createProjectRoleWithLimit(
-                        maxTimeAllowedByYear = 90,
-                        maxTimeAllowedByActivity = 0
-                    )
-                ).copy(id = null),
-                30,
-                firstDayOfYear,
-                lastDayOfYear
-            ),
-            arrayOf(
-                "not reached limit remaining time left",
+                "with activities imputed and not reached the limit, activity in minutes is added that exceeds the limit",
                 listOf(
                     Activity.of(
                         activityNotReachedLimitTimeOnly,
@@ -486,6 +478,7 @@ internal class ActivityValidatorTest {
     }
 
     @Nested
+    @TestInstance(PER_CLASS)
     inner class CheckActivityIsValidForUpdate {
         @Test
         fun `do nothing when activity is valid`() {
@@ -620,7 +613,6 @@ internal class ActivityValidatorTest {
                 false,
                 approvalState = ApprovalState.NA
             )
-
 
             doReturn(Optional.of(blockedProject))
                 .whenever(projectRepository)
@@ -765,7 +757,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear.minusYears(1L)
             ),
             arrayOf(
-                "reached limit remaining hours left related to the year before",
+                "not reached limit remaining hours left related to the year before",
                 listOf(activityForLimitedProjectRoleAYearAgo),
                 activityAYearAgoUpdated,
                 activity9HoursReachedLimit.copy(id = activityNotReachedLimitUpdate.id),
@@ -858,7 +850,6 @@ internal class ActivityValidatorTest {
                     ).toDomain()
                 )
             )
-
 
             whenever(projectRepository.findById(1L)).thenReturn(Optional.of(nonBlockedProject))
 
