@@ -311,10 +311,7 @@ internal class ActivityValidatorTest {
             arrayOf(
                 "with nothing imputed, activity in minutes is added that exceeds the limit",
                 emptyList<Activity>(),
-                createProjectRoleWithLimit(
-                    maxTimeAllowedByYear = (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
-                    maxTimeAllowedByActivity = 0
-                ),
+                projectRoleLimitedByYear,
                 createActivity(
                     start = todayDateTime,
                     end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
@@ -325,7 +322,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear.minusYears(1L)
             ),
             arrayOf(
-                "with activities imputed the year before, activity in minutes is added that exceeds the limit [MINUTES]",
+                "with activities imputed the year before reached limit, activity in minutes is added that exceeds the limit",
                 listOf(
                     Activity.of(
                         activityReachedLimitTimeOnlyAYearAgo, projectRoleLimitedByYear
@@ -342,7 +339,25 @@ internal class ActivityValidatorTest {
                 lastDayOfYear.minusYears(1L)
             ),
             arrayOf(
-                "with activities imputed, activity in minutes is added that exceeds the limit",
+                "with activities imputed and not reached the limit, activity in minutes is added that exceeds the limit",
+                listOf(
+                    Activity.of(
+                        activityNotReachedLimitTimeOnly,
+                        projectRoleLimitedByYear
+                    )
+                ),
+                projectRoleLimitedByYear,
+                createActivity(
+                    start = todayDateTime,
+                    end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 10L),
+                    duration = (MINUTES_IN_HOUR * 10)
+                ).copy(id = null),
+                180,
+                firstDayOfYear,
+                lastDayOfYear
+            ),
+            arrayOf(
+                "with activities imputed reached limit, activity in minutes is added that exceeds the limit",
                 listOf(Activity.of(activityReachedLimitTimeOnly, projectRoleLimitedByYear)),
                 projectRoleLimitedByYear,
                 createActivity(
@@ -355,7 +370,7 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "with activities imputed the same day, activity in minutes is added that exceeds the limit",
+                "with activities imputed the same day reached limit, activity in minutes is added that exceeds the limit",
                 listOf(Activity.of(activityReachedLimitTodayTimeOnly, projectRoleLimitedByYear)),
                 projectRoleLimitedByYear,
                 createActivity(
@@ -368,7 +383,48 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "with activities imputed, activity in days is added that exceeds the limit",
+                "with activities imputed reached limit, activity in days is added that exceeds the limit",
+                listOf(
+                    Activity.of(
+                        createActivity(
+                            start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
+                            end = LocalDate.of(2023, 6, 22).atTime(23, 59, 59),
+                            duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
+                            projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                                .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                        ),
+                        projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                            .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                    )
+                ),
+                projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                    .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                createActivity(
+                    start = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(LocalTime.MIN),
+                    end = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(23, 59, 59),
+                    duration = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
+                    projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                        .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                ).copy(id = null),
+                0.0,
+                firstDayOfYear,
+                lastDayOfYear
+            ), arrayOf(
+                "with nothing imputed, activity in days is added that exceeds the limit",
+                emptyList<Activity>(),
+                projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS),
+                createActivity(
+                    start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
+                    end = LocalDate.of(2023, 6, 22).atTime(23, 59, 59),
+                    duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
+                    projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                ).copy(id = null),
+                1.0,
+                firstDayOfYear,
+                lastDayOfYear
+            ),
+            arrayOf(
+                "with activities imputed reached limit, activity in days is added that exceeds the limit",
                 listOf(
                     Activity.of(
                         createActivity(
@@ -396,7 +452,49 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "with activities imputed, activity in natural days is added that exceeds the limit",
+                "with activities imputed not reached limit, activity in days is added that exceeds the limit",
+                listOf(
+                    Activity.of(
+                        createActivity(
+                            start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
+                            end = LocalDate.of(2023, 6, 21).atTime(23, 59, 59),
+                            duration = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
+                            projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                                .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                        ),
+                        projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                            .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                    )
+                ),
+                projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                    .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+                createActivity(
+                    start = LocalDate.of(2023, 6, 22).atTime(LocalTime.MIN),
+                    end = LocalDate.of(2023, 6, 23).atTime(23, 59, 59),
+                    duration = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
+                    projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.DAYS)
+                        .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                ).copy(id = null),
+                1.0,
+                firstDayOfYear,
+                lastDayOfYear
+            ),
+            arrayOf(
+                "with nothing imputed, activity in natural days is added that exceeds the limit",
+                emptyList<Activity>(),
+                projectRoleLimitedByYear.copy(timeUnit = TimeUnit.NATURAL_DAYS),
+                createActivity(
+                    start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
+                    end = LocalDate.of(2023, 6, 22).atTime(23, 59, 59),
+                    duration = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
+                    projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                ).copy(id = null),
+                1.0,
+                firstDayOfYear,
+                lastDayOfYear
+            ),
+            arrayOf(
+                "with activities imputed reached limit, activity in natural days is added that exceeds the limit",
                 listOf(
                     Activity.of(
                         createActivity(
@@ -423,20 +521,29 @@ internal class ActivityValidatorTest {
                 lastDayOfYear
             ),
             arrayOf(
-                "with activities imputed and not reached the limit, activity in minutes is added that exceeds the limit",
+                "with activities imputed not reached limit, activity in natural days is added that exceeds the limit",
                 listOf(
                     Activity.of(
-                        activityNotReachedLimitTimeOnly,
-                        projectRoleLimitedByYear
+                        createActivity(
+                            start = LocalDate.of(2023, 6, 21).atTime(LocalTime.MIN),
+                            end = LocalDate.of(2023, 6, 21).atTime(23, 59, 59),
+                            duration = (DAYS - 1) * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
+                            projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                                .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
+                        ), projectRoleLimitedByYear.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                            .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                     )
                 ),
-                projectRoleLimitedByYear,
+                projectRoleLimitedByYear.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                    .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
                 createActivity(
-                    start = todayDateTime,
-                    end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 10L),
-                    duration = (MINUTES_IN_HOUR * 10)
+                    start = LocalDate.of(2023, 6, 21).plusDays(1L).atTime(LocalTime.MIN),
+                    end = LocalDate.of(2023, 6, 21).plusDays(2L).atTime(23, 59, 59),
+                    duration = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY,
+                    projectRole = projectRoleLimitedByYear.copy(timeUnit = TimeUnit.NATURAL_DAYS)
+                        .copy(maxTimeAllowedByYear = DAYS * MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY)
                 ).copy(id = null),
-                180,
+                1.0,
                 firstDayOfYear,
                 lastDayOfYear
             )
@@ -745,6 +852,14 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForDeletion(approvedActivity)
             }
         }
+
+        /*                "with nothing imputed, activity in minutes is added that exceeds the limit",
+                        "with activities imputed the year before, activity in minutes is added that exceeds the limit [MINUTES]",
+                        "with activities imputed, activity in minutes is added that exceeds the limit",
+                        "with activities imputed the same day, activity in minutes is added that exceeds the limit",
+                        "with activities imputed, activity in days is added that exceeds the limit",
+                        "with activities imputed, activity in natural days is added that exceeds the limit",
+                        "with activities imputed and not reached the limit, activity in minutes is added that exceeds the limit",*/
 
         private fun maxTimeRoleLimitProviderUpdate() = arrayOf(
             arrayOf(
