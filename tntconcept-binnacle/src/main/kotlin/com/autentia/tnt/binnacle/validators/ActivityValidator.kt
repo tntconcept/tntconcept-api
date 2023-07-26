@@ -100,23 +100,6 @@ internal class ActivityValidator(
         return activities.sumOf { it.getDuration(yearCalendar) }
     }
 
-    private fun getTotalRegisteredDurationByProjectRoleWhenUpdate(activityToUpdate: Activity, userId: Long): Int {
-        val yearTimeInterval = TimeInterval.of(
-            TimeInterval.ofYear(activityToUpdate.getStart().year).start,
-            activityToUpdate.timeInterval.end
-        )
-
-        val yearCalendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
-
-        val activities =
-            activityService.getActivitiesByProjectRoleIds(
-                yearTimeInterval,
-                listOf(activityToUpdate.projectRole.id),
-                userId
-            )
-        return activities.sumOf { it.getDuration(yearCalendar) }
-    }
-
     private fun getTotalRegisteredDurationForThisRoleAfterSave(
         currentActivity: Activity,
         activityToUpdate: Activity,
@@ -184,7 +167,7 @@ internal class ActivityValidator(
             .orElseThrow { ProjectNotFoundException(currentActivity.projectRole.project.id) }
         val activityToUpdateStartYear = activityToUpdate.getYearOfStart()
         val totalRegisteredDurationForThisRoleStartYear =
-            getTotalRegisteredDurationByProjectRoleWhenUpdate(activityToUpdate, user.id)
+            getTotalRegisteredDurationByProjectRole(activityToUpdate, activityToUpdateStartYear, user.id)
         when {
             isEvidenceInputIncoherent(activityToUpdate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
 
