@@ -24,13 +24,9 @@ internal object ActivityPredicates {
     internal fun organizationId(organizationId: Long) = ActivityOrganizationIdSpecification(organizationId)
     internal fun userId(userId: Long) = ActivityUserIdSpecification(userId)
 
-    internal fun projectRoleRequiresEvidence(requireEvidence: RequireEvidence) =
-        ActivityProjectRoleRequiresEvidenceSpecification(requireEvidence)
-
     internal fun missingEvidenceWeekly() = ActivityMissingEvidenceWeeklySpecification()
 
     internal fun missingEvidenceOnce() = ActivityMissingEvidenceOnceSpecification()
-    internal fun hasNotEvidence() = ActivityHasNotEvidenceSpecification()
 
     internal fun belongsToUsers(userIds: List<Long>) = ActivityBelongsToUsers(userIds)
 }
@@ -61,42 +57,13 @@ class ActivityBelongsToUsers(private val userIds: List<Long>) : Specification<Ac
     }
 }
 
-class ActivityProjectRoleRequiresEvidenceSpecification(private val requireEvidence: RequireEvidence) :
-    Specification<Activity> {
-    override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
-    ): Predicate? {
-        return criteriaBuilder.equal(
-            root.get<ProjectRole>("projectRole").get<RequireEvidence>("requireEvidence"),
-            requireEvidence
-        )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is ActivityProjectRoleRequiresEvidenceSpecification) return false
-
-        return requireEvidence == other.requireEvidence
-    }
-
-    override fun hashCode(): Int {
-        return requireEvidence.hashCode()
-    }
-
-    override fun toString(): String {
-        return "activity.projectRole.requireEvidence=${requireEvidence}"
-    }
-}
-
 class ActivityMissingEvidenceOnceSpecification : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
         query: CriteriaQuery<*>,
         criteriaBuilder: CriteriaBuilder
     ): Predicate? {
-        return getActivitiesWithoutOnce(root, criteriaBuilder);
+        return getActivitiesWithoutOnce(root, criteriaBuilder)
     }
 
     private fun getActivitiesWithoutOnce(
@@ -104,7 +71,17 @@ class ActivityMissingEvidenceOnceSpecification : Specification<Activity> {
         criteriaBuilder: CriteriaBuilder,
     ): Predicate? = criteriaBuilder.and(
         requiresEvidenceType(root, criteriaBuilder, RequireEvidence.ONCE),
-        criteriaBuilder.not(hasEvidenceCondition(root, criteriaBuilder))
+        criteriaBuilder.not(hasEvidenceCondition(root, criteriaBuilder)) ,
+        criteriaBuilder.not(requiresApprovalState(root, criteriaBuilder, ApprovalState.ACCEPTED))
+    )
+
+    private fun requiresApprovalState(
+            root: Root<Activity>,
+            criteriaBuilder: CriteriaBuilder,
+            approvalState: ApprovalState
+    ): Predicate? = criteriaBuilder.equal(
+            root.get<ApprovalState>("approvalState"),
+            approvalState
     )
 
     private fun requiresEvidenceType(
@@ -235,34 +212,6 @@ class ActivityMissingEvidenceWeeklySpecification : Specification<Activity> {
 
     override fun hashCode(): Int {
         return javaClass.hashCode()
-    }
-
-
-}
-
-class ActivityHasNotEvidenceSpecification : Specification<Activity> {
-    override fun toPredicate(
-        root: Root<Activity>,
-        query: CriteriaQuery<*>,
-        criteriaBuilder: CriteriaBuilder,
-    ): Predicate? {
-        return criteriaBuilder.and(
-            criteriaBuilder.isFalse(root["hasEvidences"]),
-            criteriaBuilder.notLike(root["description"], "###Autocreated evidence###%")
-        )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        return other is ActivityHasNotEvidenceSpecification
-    }
-
-    override fun hashCode(): Int {
-        return javaClass.hashCode()
-    }
-
-    override fun toString(): String {
-        return "(activity.hasEvidence || activity.description LIKE '###Autocreated evidence###%')"
     }
 }
 
