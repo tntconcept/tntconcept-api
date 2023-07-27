@@ -30,14 +30,14 @@ class ActivityEvidenceMissingReminderUseCase @Inject internal constructor(
     @Transactional
     @ReadOnly
     fun sendReminders() {
-        val rolesMissingEvidenceByUser: Map<User, List<ProjectRole>> = getProjectRolesMissingEvidenceByUser()
+        val rolesMissingEvidenceByUser: Map<User, List<Activity>> = getActivitiesMissingEvidenceByUser()
 
-        rolesMissingEvidenceByUser.forEach { (user, rolesMissingEvidence) ->
-            notifyMissingEvidencesToUser(user, rolesMissingEvidence)
+        rolesMissingEvidenceByUser.forEach { (user, activitiesMissingEvidence) ->
+            notifyMissingEvidencesToUser(user, activitiesMissingEvidence)
         }
     }
 
-    private fun getProjectRolesMissingEvidenceByUser(): Map<User, List<ProjectRole>> {
+    private fun getActivitiesMissingEvidenceByUser(): Map<User, List<Activity>> {
         val activeUsers: List<User> = userService.getActiveUsersWithoutSecurity()
 
         val activitiesMissingEvidence: List<Activity> = activityRepository.findAll(
@@ -50,7 +50,7 @@ class ActivityEvidenceMissingReminderUseCase @Inject internal constructor(
         }
 
         return activitiesMissingEvidenceByUser.mapValues { activitiesByUser ->
-            activitiesByUser.value.map { it.projectRole }.distinct()
+            activitiesByUser.value.distinctBy { it -> it.projectRole }
         }
     }
 
@@ -65,14 +65,15 @@ class ActivityEvidenceMissingReminderUseCase @Inject internal constructor(
         )
     }
 
-    private fun notifyMissingEvidencesToUser(user: User, rolesMissingEvidence: List<ProjectRole>) {
+    private fun notifyMissingEvidencesToUser(user: User, activitiesMissingEvidence: List<Activity>) {
         val locale = Locale.forLanguageTag("es")
-        rolesMissingEvidence.forEach {
+        activitiesMissingEvidence.forEach {
             activityEvidenceMissingMailService.sendEmail(
-                it.project.organization.name,
-                it.project.name,
-                it.name,
-                it.requireEvidence,
+                it.projectRole.project.organization.name,
+                it.projectRole.project.name,
+                it.projectRole.name,
+                it.projectRole.requireEvidence,
+                it.start,
                 user.email,
                 locale
             )
