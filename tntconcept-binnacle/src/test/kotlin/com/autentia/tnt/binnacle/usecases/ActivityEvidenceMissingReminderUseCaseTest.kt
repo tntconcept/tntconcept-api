@@ -3,8 +3,6 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.config.*
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
-import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.services.ActivityEvidenceMissingMailService
 import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.*
@@ -502,19 +500,8 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             )
         }
 
-
-        private fun buildActivitiesPredicate(allUserIds: List<Long>) = PredicateBuilder.and(
-            PredicateBuilder.and(
-                ActivityPredicates.hasNotEvidence(),
-                ActivityPredicates.projectRoleRequiresEvidence(RequireEvidence.ONCE)
-            ), ActivityPredicates.belongsToUsers(allUserIds)
-        )
-
         private fun getListOfActiveUsers(): List<User> {
             return listOf(userFirst, userSecond, userThird)
         }
-
     }
-
-
 }
