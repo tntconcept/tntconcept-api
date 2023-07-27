@@ -24,6 +24,7 @@ data class ActivityResponse(
                 activityResponseDTO.userId,
                 Approval(
                     activityResponseDTO.approval.state,
+                    activityResponseDTO.approval.canBeApproved,
                     activityResponseDTO.approval.approvedByUserId,
                     activityResponseDTO.approval.approvalDate
                 )

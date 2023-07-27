@@ -30,20 +30,16 @@ import java.util.*
 @TestInstance(PER_CLASS)
 internal class ActivityApprovalUseCaseTest {
 
-    private val activityService = mock<ActivityService>()
     private val activityRepository = mock<ActivityRepository>()
     private val securityService = mock<SecurityService>()
     private val userRepository = mock<UserRepository>()
     private val converter = mock<ActivityResponseConverter>()
     private val approvedActivityMailService = mock<ApprovedActivityMailService>()
-    private val activityCalendarService = mock<ActivityCalendarService>()
-    private val projectRepository = mock<ProjectRepository>()
     private val dateService = mock<DateService>()
-    private val activityValidator = ActivityValidator(activityService, activityCalendarService, projectRepository)
 
     private val activityApprovalUseCase: ActivityApprovalUseCase = ActivityApprovalUseCase(
             activityRepository, securityService, converter, userRepository,
-            approvedActivityMailService, activityValidator, dateService
+            approvedActivityMailService, dateService
     )
 
     @BeforeAll

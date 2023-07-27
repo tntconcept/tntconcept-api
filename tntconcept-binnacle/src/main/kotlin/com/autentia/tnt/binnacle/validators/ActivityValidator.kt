@@ -287,12 +287,6 @@ internal class ActivityValidator(
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
     }
 
-    fun checkActivityIsValidForApproval(activity: Activity) {
-        when {
-            activity.approvalState == ApprovalState.ACCEPTED || activity.approvalState == ApprovalState.NA -> throw InvalidActivityApprovalStateException()
-            !activity.hasEvidences -> throw NoEvidenceInActivityException(activity.id!!)
-        }
-    }
 
     fun isBeforeProjectCreationDate(activity: Activity, project: Project): Boolean {
         return activity.timeInterval.start.toLocalDate() < project.startDate

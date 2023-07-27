@@ -81,7 +81,7 @@ class ActivityUpdateUseCase internal constructor(
             )
         }
 
-        if (updatedActivity.activityCanBeApproved()) {
+        if (updatedActivity.canBeApprovedWithEvidence()) {
             activityEvidenceMailService.sendActivityEvidenceMail(updatedActivity, user.username, locale)
         }
 

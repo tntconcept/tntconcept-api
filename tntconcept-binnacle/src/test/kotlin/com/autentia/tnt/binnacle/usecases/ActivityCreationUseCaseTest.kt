@@ -373,17 +373,6 @@ internal class ActivityCreationUseCaseTest {
             EVIDENCE
         )
 
-        private val ACTIVITY_APPROVAL_REQUEST_BODY_DTO = ActivityRequestDTO(
-            null,
-            TIME_NOW,
-            TIME_NOW.plusMinutes(75L),
-            "New activity",
-            false,
-            PROJECT_ROLE_APPROVAL.id,
-            false,
-            null,
-        )
-
         private fun generateLargeDescription(mainMessage: String): String {
             var description = mainMessage
             for (i in 1..2048) {
@@ -440,7 +429,7 @@ internal class ActivityCreationUseCaseTest {
                 projectRoleId,
                 IntervalResponseDTO(start, end, duration, timeUnit),
                 userId,
-                ApprovalDTO(approvalState,null,null)
+                ApprovalDTO(state = approvalState)
             )
 
     }
