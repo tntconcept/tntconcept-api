@@ -15,7 +15,6 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -37,7 +36,6 @@ internal class ActivityUpdateUseCaseTest {
     private val activityValidator = mock<ActivityValidator>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val userService = mock<UserService>()
-    private val activityEvidenceMailService = mock<ActivityEvidenceMailService>()
     private val activityEvidenceService = mock<ActivityEvidenceService>()
     private val pendingApproveActivityMailService = mock<PendingApproveActivityMailService>()
 
@@ -51,7 +49,6 @@ internal class ActivityUpdateUseCaseTest {
             ActivityResponseConverter(
                     ActivityIntervalResponseConverter()
             ),
-            activityEvidenceMailService,
             activityEvidenceService,
             pendingApproveActivityMailService
     )
@@ -68,7 +65,7 @@ internal class ActivityUpdateUseCaseTest {
 
     @AfterEach
     fun `reset mocks`() {
-        reset(activityRepository, activityValidator, activityEvidenceService, activityEvidenceMailService,
+        reset(activityRepository, activityValidator, activityEvidenceService,
                 userService, pendingApproveActivityMailService, projectRoleRepository, activityCalendarService)
     }
 
@@ -96,7 +93,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoInteractions(activityEvidenceService, pendingApproveActivityMailService)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -127,7 +124,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoInteractions(activityEvidenceService, pendingApproveActivityMailService)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -161,7 +158,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService)
+        verifyNoInteractions(activityEvidenceService)
         verify(pendingApproveActivityMailService).sendApprovalActivityMail(updatedActivity.toDomain(), USER.username, LOCALE)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -193,7 +190,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoInteractions(activityEvidenceService, pendingApproveActivityMailService)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -225,7 +222,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verifyNoInteractions(activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoInteractions(pendingApproveActivityMailService)
         verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -250,7 +247,6 @@ internal class ActivityUpdateUseCaseTest {
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
         doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
-        doNothing().whenever(activityEvidenceMailService).sendActivityEvidenceMail(updatedActivity.toDomain(), USER.username, LOCALE)
 
         // Act
         val result = sut.updateActivity(request, LOCALE)
@@ -261,7 +257,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(pendingApproveActivityMailService)
-        verify(activityEvidenceMailService).sendActivityEvidenceMail(updatedActivity.toDomain(), USER.username, LOCALE)
         verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -285,7 +280,6 @@ internal class ActivityUpdateUseCaseTest {
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
         doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
-        doNothing().whenever(activityEvidenceMailService).sendActivityEvidenceMail(updatedActivity.toDomain(), USER.username, LOCALE)
         doNothing().whenever(pendingApproveActivityMailService).sendApprovalActivityMail(updatedActivity.toDomain(), USER.username, LOCALE)
 
         // Act
@@ -297,7 +291,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verify(pendingApproveActivityMailService).sendApprovalActivityMail(updatedActivity.toDomain(), USER.username, LOCALE)
-        verify(activityEvidenceMailService).sendActivityEvidenceMail(updatedActivity.toDomain(), USER.username, LOCALE)
         verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -330,7 +323,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verifyNoInteractions(pendingApproveActivityMailService, activityEvidenceMailService)
+        verifyNoInteractions(pendingApproveActivityMailService)
         verify(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -363,7 +356,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verifyNoInteractions(pendingApproveActivityMailService, activityEvidenceMailService)
+        verifyNoInteractions(pendingApproveActivityMailService)
         verify(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -396,7 +389,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verifyNoInteractions(pendingApproveActivityMailService, activityEvidenceMailService)
+        verifyNoInteractions(pendingApproveActivityMailService)
         verify(activityEvidenceService).deleteActivityEvidence(eq(updatedActivity.id!!), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -414,8 +407,7 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verify(userService).getAuthenticatedDomainUser()
-        verifyNoInteractions(activityRepository, activityValidator, activityEvidenceService, activityEvidenceMailService,
-                pendingApproveActivityMailService, projectRoleRepository, activityCalendarService)
+        verifyNoInteractions(activityRepository, activityValidator, activityEvidenceService, pendingApproveActivityMailService, projectRoleRepository, activityCalendarService)
     }
 
     @Test
@@ -428,8 +420,7 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verify(projectRoleRepository).findById(SOME_ACTIVITY_REQUEST.projectRoleId)
-        verifyNoInteractions(activityRepository, activityValidator, activityEvidenceService, activityEvidenceMailService,
-                pendingApproveActivityMailService, activityCalendarService)
+        verifyNoInteractions(activityRepository, activityValidator, activityEvidenceService, pendingApproveActivityMailService, activityCalendarService)
         verifyNoMoreInteractions(projectRoleRepository)
     }
 
@@ -459,7 +450,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(request.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityValidator).checkActivityIsValidForUpdate(updatedActivity.toDomain(), existingActivity.toDomain(), USER)
-        verifyNoInteractions(activityEvidenceService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoInteractions(activityEvidenceService, pendingApproveActivityMailService)
         verifyNoMoreInteractions(projectRoleRepository, activityRepository, activityCalendarService)
     }
 
@@ -476,7 +467,7 @@ internal class ActivityUpdateUseCaseTest {
         // Verify
         verify(projectRoleRepository).findById(SOME_ACTIVITY_REQUEST.projectRoleId)
         verify(activityRepository).findById(SOME_ACTIVITY_REQUEST.id!!)
-        verifyNoInteractions(activityValidator, activityEvidenceService, activityCalendarService, activityEvidenceMailService, pendingApproveActivityMailService)
+        verifyNoInteractions(activityValidator, activityEvidenceService, activityCalendarService, pendingApproveActivityMailService)
         verifyNoMoreInteractions(projectRoleRepository, activityRepository)
     }
 

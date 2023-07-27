@@ -55,7 +55,6 @@ data class Activity private constructor(
             ((RequireEvidence.isRequired(projectRole.requireEvidence) && hasEvidences) || !RequireEvidence.isRequired(projectRole.requireEvidence))
 
     private fun isAcceptedOrNoApply() = approvalState == ApprovalState.ACCEPTED || approvalState == ApprovalState.NA
-    fun isEvidenceRequiredAndAttached() = RequireEvidence.isRequired(projectRole.requireEvidence) && hasEvidences
 
     companion object {
 

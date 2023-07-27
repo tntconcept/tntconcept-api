@@ -12,7 +12,6 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityEvidenceMailService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
@@ -30,7 +29,6 @@ class ActivityUpdateUseCase internal constructor(
         private val activityValidator: ActivityValidator,
         private val activityRequestBodyConverter: ActivityRequestBodyConverter,
         private val activityResponseConverter: ActivityResponseConverter,
-        private val activityEvidenceMailService: ActivityEvidenceMailService,
         private val activityEvidenceService: ActivityEvidenceService,
         private val pendingApproveActivityMailService: PendingApproveActivityMailService
 ) {
@@ -72,10 +70,6 @@ class ActivityUpdateUseCase internal constructor(
                     updatedActivityEntity.id!!,
                     updatedActivityEntity.insertDate!!
             )
-        }
-
-        if (updatedActivity.isEvidenceRequiredAndAttached()) {
-            activityEvidenceMailService.sendActivityEvidenceMail(updatedActivity, user.username, locale)
         }
 
         if (updatedActivity.canBeApproved()) {
