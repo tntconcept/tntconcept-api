@@ -46,13 +46,13 @@ data class Activity private constructor(
     fun checkActivityIsValidForApproval() {
         when {
             isAcceptedOrNoApply() -> throw InvalidActivityApprovalStateException()
-            !canBeApprovedWithEvidence() -> throw NoEvidenceInActivityException(id!!)
+            RequireEvidence.isRequired(projectRole.requireEvidence) && !hasEvidences -> throw NoEvidenceInActivityException(id!!)
+            !canBeApproved() -> throw InvalidActivityApprovalStateException()
         }
     }
 
-    fun canBeApprovedWithEvidence(): Boolean =
-            approvalState == ApprovalState.PENDING && (RequireEvidence.isRequired(projectRole.requireEvidence) &&
-                    hasEvidences || !RequireEvidence.isRequired(projectRole.requireEvidence))
+    fun canBeApproved(): Boolean = approvalState == ApprovalState.PENDING &&
+            ((RequireEvidence.isRequired(projectRole.requireEvidence) && hasEvidences) || !RequireEvidence.isRequired(projectRole.requireEvidence))
 
     private fun isAcceptedOrNoApply() = approvalState == ApprovalState.ACCEPTED || approvalState == ApprovalState.NA
 
