@@ -56,6 +56,7 @@ class ProjectRoleByProjectIdUseCase internal constructor(
             val projectRoleActivities = activityService.getProjectRoleActivities(projectRole.id, userId)
             val timeIntervalProjectRoleActivities =
                 activityService.filterActivitiesByTimeInterval(timeInterval, projectRoleActivities)
+                    .filter { it.getYearOfStart() == timeInterval.getYearOfStart() }
             val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                 projectRole,
                 timeIntervalProjectRoleActivities,

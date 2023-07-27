@@ -41,6 +41,7 @@ class SearchByRoleIdUseCase internal constructor(
                 userId
             )
                 .map(Activity::toDomain)
+                .filter { it.getYearOfStart() == timeIntervalForRemainingCalculation.getYearOfStart() }
 
         val projectRoleUsers = projectRoles.map { projectRole ->
             val remainingOfProjectRole = activityCalendarService.getRemainingOfProjectRoleForUser(

@@ -40,7 +40,8 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
                 timeIntervalForRemainingCalculation.start,
                 timeIntervalForRemainingCalculation.end,
                 userId
-            )
+            ).filter { it.start.year == timeIntervalForRemainingCalculation.getYearOfStart() }
+
         val lastMonthActivities =
             activityRepository.findOfLatestProjects(oneMonthDateRange.start, oneMonthDateRange.end, userId)
                 .map(Activity::toDomain)

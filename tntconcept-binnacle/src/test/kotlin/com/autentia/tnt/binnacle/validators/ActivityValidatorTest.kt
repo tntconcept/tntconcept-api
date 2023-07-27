@@ -859,15 +859,15 @@ internal class ActivityValidatorTest {
                 projectRoleLimitedByYear,
                 listOf(activityForLimitedProjectRoleAYearAgo, otherActivityForLimitedProjectRoleAYearAgo),
                 activityForLimitedProjectRoleAYearAgo,
-                activity9HoursReachedLimit.copy(id = activityAYearAgoUpdated.id),
+                activityForLimitedProjectRoleAYearAgoUpdated.copy(id = activityAYearAgoUpdated.id),
                 0.0
             ),
             arrayOf(
                 "not reached limit remaining hours left related to the year before",
                 projectRoleLimitedByYear,
                 listOf(activityForLimitedProjectRoleAYearAgo),
-                activityAYearAgoUpdated,
-                activity9HoursReachedLimit.copy(id = activityNotReachedLimitUpdate.id),
+                activityForLimitedProjectRoleAYearAgo,
+                activityForLimitedProjectRoleAYearAgoUpdated.copy(id = activityAYearAgoUpdated.id),
                 120.0
             ),
             arrayOf(
@@ -1609,6 +1609,14 @@ internal class ActivityValidatorTest {
             start = yesterdayDateTime.minusYears(1L),
             end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimitedByYear.maxTimeAllowedByYear - 120L),
             duration = projectRoleLimitedByYear.maxTimeAllowedByYear - 120,
+            projectRole = projectRoleLimitedByYear
+        )
+
+        private val activityForLimitedProjectRoleAYearAgoUpdated = createActivity(
+            id = 1L,
+            start = yesterdayDateTime.minusYears(1L),
+            end = yesterdayDateTime.minusYears(1L).plusMinutes(projectRoleLimitedByYear.maxTimeAllowedByYear + 120L),
+            duration = projectRoleLimitedByYear.maxTimeAllowedByYear + 120,
             projectRole = projectRoleLimitedByYear
         )
 

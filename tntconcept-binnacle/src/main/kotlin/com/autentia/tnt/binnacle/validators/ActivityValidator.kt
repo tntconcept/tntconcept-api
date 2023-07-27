@@ -94,7 +94,7 @@ internal class ActivityValidator(
                 yearTimeInterval,
                 listOf(activityToUpdate.projectRole.id),
                 userId
-            )
+            ).filter { it.getYearOfStart() == yearTimeInterval.getYearOfStart() }
 
         val lastDateOfAllActivities =
             if (activities.isNotEmpty()) activities.maxOf { it.getEnd() } else yearTimeInterval.end
@@ -117,10 +117,19 @@ internal class ActivityValidator(
         activityToUpdate: Activity,
         totalRegisteredDurationForThisRole: Int,
     ): Int {
-        val yearTimeInterval = activityToUpdate.timeInterval
-        val yearCalendar = activityCalendarService.createCalendar(yearTimeInterval.getDateInterval())
-        val currentActivityDuration = currentActivity.getDuration(yearCalendar)
-        val activityToUpdateDuration = activityToUpdate.getDuration(yearCalendar)
+        val activitiesTimeInterval =
+            TimeInterval.of(
+                if (currentActivity.getStart()
+                        .isBefore(activityToUpdate.getStart()) && currentActivity.getYearOfStart() > 0
+                ) currentActivity.getStart() else activityToUpdate.getStart(),
+                if (currentActivity.getEnd()
+                        .isAfter(activityToUpdate.getEnd())
+                ) currentActivity.getEnd() else activityToUpdate.getEnd()
+            )
+
+        val activitiesCalendar = activityCalendarService.createCalendar(activitiesTimeInterval.getDateInterval())
+        val currentActivityDuration = currentActivity.getDuration(activitiesCalendar)
+        val activityToUpdateDuration = activityToUpdate.getDuration(activitiesCalendar)
 
         var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
 
