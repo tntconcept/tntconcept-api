@@ -117,17 +117,10 @@ internal class ActivityValidator(
         activityToUpdate: Activity,
         totalRegisteredDurationForThisRole: Int,
     ): Int {
-        val activitiesTimeInterval =
-            TimeInterval.of(
-                if (currentActivity.getStart()
-                        .isBefore(activityToUpdate.getStart()) && currentActivity.getYearOfStart() > 0
-                ) currentActivity.getStart() else activityToUpdate.getStart(),
-                if (currentActivity.getEnd()
-                        .isAfter(activityToUpdate.getEnd())
-                ) currentActivity.getEnd() else activityToUpdate.getEnd()
-            )
+        val activitiesTimeInterval = getWidestActivitiesTimeInterval(currentActivity, activityToUpdate)
 
         val activitiesCalendar = activityCalendarService.createCalendar(activitiesTimeInterval.getDateInterval())
+
         val currentActivityDuration = currentActivity.getDuration(activitiesCalendar)
         val activityToUpdateDuration = activityToUpdate.getDuration(activitiesCalendar)
 
@@ -139,6 +132,18 @@ internal class ActivityValidator(
         }
         return totalRegisteredDurationForThisRoleAfterDiscount + activityToUpdateDuration
     }
+
+    private fun getWidestActivitiesTimeInterval(currentActivity: Activity, activityToUpdate: Activity) =
+        TimeInterval.of(
+            if (currentActivity.getStart()
+                    .isBefore(activityToUpdate.getStart()) && currentActivity.getYearOfStart() > 0
+            )
+                currentActivity.getStart() else activityToUpdate.getStart(),
+
+            if (currentActivity.getEnd()
+                    .isAfter(activityToUpdate.getEnd())
+            ) currentActivity.getEnd() else activityToUpdate.getEnd()
+        )
 
     private fun getRemainingByTimeUnit(
         activityToUpdate: Activity,
