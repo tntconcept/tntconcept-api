@@ -20,6 +20,18 @@ VALUES (12, 'Usuario de prueba 2', 'usuario.prueba2', 'BMS0Tp2pdyCiYnI8amMaU1QX'
         '', '', '', '', '', '', '', 'MAN', 0.0, 0.0, '', '', '', '');
 
 
+insert into archimedes_security_subject (id, principal_name, attributes, audit_created_at, audit_updated_at)
+values (11, 'usuario.prueba1@example.com', '{"sub": "11"}', '2023-04-24 06:33:21', '2023-04-24 06:33:21');
+
+insert into archimedes_security_subject_role_relation (subject_id, role_name, audit_created_at, audit_updated_at)
+values (11, "user", '2023-04-24 06:33:21', '2023-04-24 06:33:21');
+
+insert into archimedes_security_subject (id, principal_name, attributes, audit_created_at, audit_updated_at)
+values (12, 'usuario.prueba2@example.com', '{"sub": "12"}', '2023-04-24 06:33:21', '2023-04-24 06:33:21');
+
+insert into archimedes_security_subject_role_relation (subject_id, role_name, audit_created_at, audit_updated_at)
+values (12, "user", '2023-04-24 06:33:21', '2023-04-24 06:33:21');
+
 -- Organization id = 3
 INSERT INTO Organization (id, organizationTypeId, organizationISOCategoryId, name, documentNumber, phone,
                           street,

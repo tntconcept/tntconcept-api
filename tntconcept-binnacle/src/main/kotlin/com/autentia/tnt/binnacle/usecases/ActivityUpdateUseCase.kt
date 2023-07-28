@@ -13,7 +13,6 @@ import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
-import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -30,7 +29,7 @@ class ActivityUpdateUseCase internal constructor(
         private val activityRequestBodyConverter: ActivityRequestBodyConverter,
         private val activityResponseConverter: ActivityResponseConverter,
         private val activityEvidenceService: ActivityEvidenceService,
-        private val pendingApproveActivityMailService: PendingApproveActivityMailService
+        private val sendPendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase
 ) {
     @Transactional
     @ReadOnly
@@ -73,7 +72,7 @@ class ActivityUpdateUseCase internal constructor(
         }
 
         if (updatedActivity.canBeApproved()) {
-            pendingApproveActivityMailService.sendApprovalActivityMail(updatedActivity, user.username, locale)
+            sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
