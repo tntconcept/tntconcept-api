@@ -31,7 +31,7 @@ class ActivityCreationUseCase internal constructor(
         private val activityValidator: ActivityValidator,
         private val activityRequestBodyConverter: ActivityRequestBodyConverter,
         private val activityResponseConverter: ActivityResponseConverter,
-        private val pendingApproveActivityMailService: PendingApproveActivityMailService,
+        private val pendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase,
 ) {
 
     @Transactional
@@ -56,7 +56,7 @@ class ActivityCreationUseCase internal constructor(
         val savedActivityDomain = savedActivity.toDomain()
 
         if (savedActivityDomain.canBeApproved()) {
-            pendingApproveActivityMailService.sendApprovalActivityMail(savedActivityDomain, user.username, locale)
+            pendingApproveActivityMailUseCase.send(savedActivityDomain, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)

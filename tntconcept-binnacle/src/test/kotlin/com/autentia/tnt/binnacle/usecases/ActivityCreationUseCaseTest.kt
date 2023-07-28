@@ -41,7 +41,7 @@ internal class ActivityCreationUseCaseTest {
     private val projectRepository = mock<ProjectRepository>()
     private val activityService = mock<ActivityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-    private val activityRepository = mock<ActivityRepository>();
+    private val activityRepository = mock<ActivityRepository>()
     private val activityEvidenceService = mock<ActivityEvidenceService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val userService = mock<UserService>()
@@ -52,7 +52,7 @@ internal class ActivityCreationUseCaseTest {
             activityCalendarService,
             projectRepository)
 
-    private val pendingApproveActivityMailService = mock<PendingApproveActivityMailService>()
+    private val sendPendingApproveActivityMailUseCase = mock<SendPendingApproveActivityMailUseCase>()
 
 
     private val activityCreationUseCase = ActivityCreationUseCase(
@@ -65,8 +65,7 @@ internal class ActivityCreationUseCaseTest {
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
-        ),
-        pendingApproveActivityMailService)
+        ), sendPendingApproveActivityMailUseCase)
 
 
     @AfterEach
@@ -78,7 +77,7 @@ internal class ActivityCreationUseCaseTest {
             activityEvidenceService,
             activityCalendarService,
             userService,
-            pendingApproveActivityMailService,
+                sendPendingApproveActivityMailUseCase,
         )
     }
 
@@ -145,7 +144,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-        whenever(activityRepository.save(any())).thenReturn(activityEntity);
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
@@ -153,10 +152,10 @@ internal class ActivityCreationUseCaseTest {
             eq(activityEntity.id!!), any(), eq(activityEntity.insertDate!!)
         )
 
-        verify(pendingApproveActivityMailService, times(0)).sendApprovalActivityMail(
-            activityDomain,
-            user.username,
-            Locale.ENGLISH)
+        verify(sendPendingApproveActivityMailUseCase, times(0)).send(
+                activityDomain,
+                user.username,
+                Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
         Assertions.assertThat(activityCreated)
@@ -226,7 +225,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-        whenever(activityRepository.save(any())).thenReturn(activityEntity);
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
 
@@ -234,10 +233,10 @@ internal class ActivityCreationUseCaseTest {
             eq(activityEntity.id!!), any(), eq(activityEntity.insertDate!!)
         )
 
-        verify(pendingApproveActivityMailService, times(0)).sendApprovalActivityMail(
-            activityDomain,
-            user.username,
-            Locale.ENGLISH)
+        verify(sendPendingApproveActivityMailUseCase, times(0)).send(
+                activityDomain,
+                user.username,
+                Locale.ENGLISH)
 
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id)
 
@@ -256,7 +255,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-        whenever(activityRepository.save(any())).thenReturn(activityEntity);
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         // When
         val activityCreateRequest = ACTIVITY_WITH_EVIDENCE_DTO.copy(projectRoleId = projectRoleRequireEvidence.id)
@@ -265,7 +264,7 @@ internal class ActivityCreationUseCaseTest {
 
         // Then
         verify(activityEvidenceService).storeActivityEvidence(eq(activityEntity.id!!), any(), eq(activityEntity.insertDate!!))
-        verify(pendingApproveActivityMailService).sendApprovalActivityMail(activityDomain, user.username, Locale.ENGLISH)
+        verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = true, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
@@ -284,7 +283,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-        whenever(activityRepository.save(any())).thenReturn(activityEntity);
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         // When
         val activityCreateRequest = ACTIVITY_WITH_NO_EVIDENCE_DTO.copy(projectRoleId = projectRole.id)
@@ -293,7 +292,7 @@ internal class ActivityCreationUseCaseTest {
 
         // Then
         verifyNoInteractions(activityEvidenceService)
-        verify(pendingApproveActivityMailService).sendApprovalActivityMail(activityDomain, user.username, Locale.ENGLISH)
+        verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = false, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
@@ -307,12 +306,11 @@ internal class ActivityCreationUseCaseTest {
         // Given
         val projectRole = `get role that requires approval and evidence`()
         val activityEntity = `get activity entity without evidence`(projectRole)
-        val activityDomain = activityEntity.toDomain()
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-        whenever(activityRepository.save(any())).thenReturn(activityEntity);
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         // When
         val activityCreateRequest = ACTIVITY_WITH_NO_EVIDENCE_DTO.copy(projectRoleId = projectRole.id)
@@ -321,7 +319,7 @@ internal class ActivityCreationUseCaseTest {
 
         // Then
         verifyNoInteractions(activityEvidenceService)
-        verifyNoInteractions(pendingApproveActivityMailService)
+        verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = false, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = false))
 
@@ -340,7 +338,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-        whenever(activityRepository.save(any())).thenReturn(activityEntity);
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         // When
         val activityCreateRequest = ACTIVITY_WITH_EVIDENCE_DTO.copy(projectRoleId = projectRoleRequireEvidence.id)
@@ -349,7 +347,7 @@ internal class ActivityCreationUseCaseTest {
 
         // Then
         verify(activityEvidenceService).storeActivityEvidence(eq(activityEntity.id!!), any(), eq(activityEntity.insertDate!!))
-        verify(pendingApproveActivityMailService).sendApprovalActivityMail(activityDomain, user.username, Locale.ENGLISH)
+        verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = true, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 

@@ -7,6 +7,8 @@ import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
 @Singleton
 internal class PendingApproveActivityMailService(
@@ -14,7 +16,8 @@ internal class PendingApproveActivityMailService(
     private val messageSource: MessageSource,
     private val appProperties: AppProperties
 ) {
-    fun sendApprovalActivityMail(activity: Activity, username: String, locale: Locale) {
+    fun sendApprovalActivityMail(activity: Activity, username: String, locale: Locale,
+                                 listOfActivityApprovalUserEmails: List<String>) {
         if (!appProperties.mail.enabled) {
             logger.info("Mailing of approval activities is disabled")
             return
@@ -34,7 +37,13 @@ internal class PendingApproveActivityMailService(
             .getMessage("mail.request.pendingApproveActivity.subject", locale, username)
             .orElse(null) ?: error("Cannot find message mail.request.pendingApproveActivity.subject")
 
-        mailService.send(appProperties.mail.from, appProperties.binnacle.activitiesApprovers, subject, body)
+
+        val emailDestinations = Stream.concat(
+                listOfActivityApprovalUserEmails.stream(),
+                appProperties.binnacle.activitiesApprovers.stream())
+                .collect(Collectors.toSet())
+
+        mailService.send(appProperties.mail.from, emailDestinations.toList(), subject, body)
             .onFailure { logger.error("Error sending activity approve email", it) }
     }
 
