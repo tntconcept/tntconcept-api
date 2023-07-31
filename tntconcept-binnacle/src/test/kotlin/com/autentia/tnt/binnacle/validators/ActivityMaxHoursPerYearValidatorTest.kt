@@ -10,12 +10,12 @@ import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import org.assertj.core.api.Assumptions.assumeThat
-import org.junit.experimental.theories.DataPoints
-import org.junit.experimental.theories.Theories
-import org.junit.experimental.theories.Theory
+
+
 import org.junit.jupiter.api.AfterEach
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.reset
 import org.mockito.kotlin.mock
@@ -24,7 +24,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-@RunWith(Theories::class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ActivityMaxHoursPerYearValidatorTest {
 
     private val holidayRepository = mock<HolidayRepository>()
@@ -52,61 +52,83 @@ class ActivityMaxHoursPerYearValidatorTest {
         )
     }
 
-    @Theory
+    private fun testInputs() = arrayOf (
+//        arrayOf(2, 3, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(0, 1, TimeUnit.DAYS, true),
+        arrayOf(0, 1, TimeUnit.DAYS, false),
+        arrayOf(0, 1, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(0, 1, TimeUnit.NATURAL_DAYS, false),
+        arrayOf(0, 2, TimeUnit.MINUTES, true),
+        arrayOf(0, 2, TimeUnit.DAYS, true),
+        arrayOf(0, 2, TimeUnit.DAYS, false),
+        arrayOf(0, 2, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(0, 2, TimeUnit.NATURAL_DAYS, false),
+        arrayOf(0, 3, TimeUnit.MINUTES, true),
+        arrayOf(0, 3, TimeUnit.DAYS, true),
+        arrayOf(0, 3, TimeUnit.DAYS, false),
+        arrayOf(0, 3, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(0, 3, TimeUnit.NATURAL_DAYS, false),
+        arrayOf(0, 4, TimeUnit.MINUTES, true),
+        arrayOf(0, 4, TimeUnit.DAYS, true),
+        arrayOf(0, 4, TimeUnit.DAYS, false),
+        arrayOf(0, 4, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(0, 4, TimeUnit.NATURAL_DAYS, false),
+        arrayOf(1, 1, TimeUnit.MINUTES, true),
+        arrayOf(1, 1, TimeUnit.DAYS, true),
+        arrayOf(1, 1, TimeUnit.DAYS, false),
+        arrayOf(1, 1, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(1, 1, TimeUnit.NATURAL_DAYS, false),
+        arrayOf(1, 2, TimeUnit.MINUTES, true),
+        arrayOf(1, 2, TimeUnit.DAYS, true),
+        arrayOf(1, 2, TimeUnit.DAYS, false),
+        arrayOf(1, 2, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(1, 2, TimeUnit.NATURAL_DAYS, false),
+        arrayOf(1, 3, TimeUnit.MINUTES, true),
+        arrayOf(1, 3, TimeUnit.DAYS, true),
+        arrayOf(1, 3, TimeUnit.DAYS, false),
+        arrayOf(1, 3, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(2, 1, TimeUnit.MINUTES, true),
+        arrayOf(2, 1, TimeUnit.DAYS, true),
+        arrayOf(2, 1, TimeUnit.DAYS, false),
+        arrayOf(2, 1, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(2, 1, TimeUnit.NATURAL_DAYS, false),
+        arrayOf(2, 2, TimeUnit.MINUTES, true),
+        arrayOf(2, 2, TimeUnit.DAYS, true),
+        arrayOf(2, 2, TimeUnit.DAYS, false),
+        arrayOf(2, 2, TimeUnit.NATURAL_DAYS, true),
+        arrayOf(2, 2, TimeUnit.NATURAL_DAYS, false),
+        arrayOf(3, 1, TimeUnit.MINUTES, true),
+        arrayOf(3, 1, TimeUnit.DAYS, true),
+        arrayOf(3, 1, TimeUnit.NATURAL_DAYS, true)
+    )
+
+    @ParameterizedTest
+    @MethodSource("testInputs")
     fun `do nothing when activity is valid for creation in days and natural days`(
-        timeUsedForCurrentActivities: Int,
-        timeForNewActivity: Long,
+        previousTimeRegisteredForProjectRole: Int,
+        newActivityDuration: Long,
         timeUnit: TimeUnit,
-        isThisYear: Boolean,
+        activityEndsInCurrentYear: Boolean,
     ) {
-        assumeThat(timeForNewActivity + timeUsedForCurrentActivities).isLessThanOrEqualTo(4)
+
 
         val activityCanBeConfiguredWithAChangeOfYear =
-            !isThisYear && timeUsedForCurrentActivities <= 2 && timeUnit != TimeUnit.MINUTES
+            !activityEndsInCurrentYear && previousTimeRegisteredForProjectRole <= 2 && newActivityDuration > 1 && timeUnit != TimeUnit.MINUTES
 
-        var newActivity = customActivity.copy(
-            id = null,
-            start = customActivity.start.plusMonths(1),
-            end =
-            if (timeUnit != TimeUnit.MINUTES) customActivity.start.plusMonths(1).plusDays(timeForNewActivity - 1)
-            else customActivity.start.plusMonths(1).plusMinutes(timeForNewActivity * 60),
-            duration = timeForNewActivity.toInt() * 60 * 8,
-            projectRole = projectRoleLimitedByYear.copy(timeUnit = timeUnit)
-        ).toDomain()
+        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration; TimeUnit: $timeUnit; isThisYear: $activityEndsInCurrentYear");
+
+        var newActivity = createNewActivity (timeUnit, newActivityDuration)
 
         if (activityCanBeConfiguredWithAChangeOfYear)
-            newActivity = customActivity.copy(
-                id = null,
-                start = LocalDate.of(
-                    2023,
-                    12,
-                    if (TimeUnit.DAYS == timeUnit) 29 else 31
-                ).atTime(0, 0, 0),
-                end = LocalDate.of(
-                    2024,
-                    1,
-                    1
-                ).atTime(0, 0, 0),
-                duration = timeForNewActivity.toInt() * 60 * 8,
-                projectRole = projectRoleLimitedByYear.copy(timeUnit = timeUnit)
-            ).toDomain()
+            newActivity = createNewActivityWithChangeOfYear(timeUnit, newActivityDuration)
 
-        if (activityCanBeConfiguredWithAChangeOfYear || isThisYear) {
+        if (activityCanBeConfiguredWithAChangeOfYear || activityEndsInCurrentYear) {
             val activities2023 = ArrayList<Activity>()
 
-            if (timeUsedForCurrentActivities > 0)
-                for (index in 1..timeUsedForCurrentActivities)
+            if (previousTimeRegisteredForProjectRole > 0)
+                for (index in 1..previousTimeRegisteredForProjectRole)
                     activities2023.add(
-                        customActivity.copy(
-                            id = timeUsedForCurrentActivities.toLong(),
-                            start = if (timeUnit != TimeUnit.MINUTES) customActivity.start.plusDays(index.toLong() - 1)
-                            else customActivity.start.plusHours(index.toLong()),
-                            end = if (timeUnit != TimeUnit.MINUTES) customActivity.start.plusDays(index.toLong() - 1)
-                            else customActivity.start.plusHours(index.toLong()).plusMinutes(60),
-                            duration = if (timeUnit != TimeUnit.MINUTES) timeUsedForCurrentActivities * 60 * 8
-                            else 60,
-                            projectRole = projectRoleLimitedByYear.copy(timeUnit = timeUnit)
-                        )
+                        createExistingActivity(previousTimeRegisteredForProjectRole, timeUnit, index)
                     )
 
             val timeInterval2023 = TimeInterval.ofYear(2023)
@@ -124,21 +146,63 @@ class ActivityMaxHoursPerYearValidatorTest {
                     user.id
                 )
 
-            println("Test Params:: TimeUsedForCurrentActivities: $timeUsedForCurrentActivities; TimeForNewActivity: $timeForNewActivity; TimeUnit: $timeUnit; isThisYear: $isThisYear");
-
             activityValidator.checkActivityIsValidForCreation(newActivity, user)
         }
     }
 
+    private fun createExistingActivity(
+        timeUsedForCurrentActivities: Int,
+        timeUnit: TimeUnit,
+        index: Int
+    ) = customActivity.copy(
+        id = timeUsedForCurrentActivities.toLong(),
+        start = if (timeUnit != TimeUnit.MINUTES) customActivity.start.plusDays(index.toLong() - 1)
+        else customActivity.start.plusHours(index.toLong()),
+        end = if (timeUnit != TimeUnit.MINUTES) customActivity.end.plusDays(index.toLong() - 1)
+        else customActivity.start.plusHours(index.toLong()).plusMinutes(60),
+        duration = if (timeUnit != TimeUnit.MINUTES) 60 * 8
+        else 60,
+        projectRole = if (timeUnit == TimeUnit.MINUTES) projectRoleLimitedByYearMinutesVersion else projectRoleLimitedByYear.copy(
+            timeUnit = timeUnit
+        )
+    )
+
+    private fun createNewActivityWithChangeOfYear(
+        timeUnit: TimeUnit,
+        timeForNewActivity: Long
+    ) = customActivity.copy(
+        id = null,
+        start = LocalDate.of(
+            2023,
+            12,
+            if (TimeUnit.DAYS == timeUnit) 29 else 31  // 29 is Friday
+        ).atTime(0, 0, 0),
+        end = LocalDate.of(
+            2024,
+            1,
+            timeForNewActivity.toInt() - 1
+        ).atTime(23, 59, 59),
+        duration = timeForNewActivity.toInt() * 60 * 8,
+        projectRole = projectRoleLimitedByYear.copy(timeUnit = timeUnit)
+    ).toDomain()
+
+    private fun createNewActivity(
+        timeUnit: TimeUnit,
+        timeForNewActivity: Long
+    ) = customActivity.copy(
+        id = null,
+        start = customActivity.start.plusDays(7), // Next monday
+        end =
+        if (timeUnit != TimeUnit.MINUTES) customActivity.start.plusDays(7).plusDays(timeForNewActivity - 1)
+        else customActivity.start.plusDays(7).plusMinutes(timeForNewActivity * 60),
+        duration = timeForNewActivity.toInt() * 60 * 8,
+        projectRole = if (timeUnit == TimeUnit.MINUTES) projectRoleLimitedByYearMinutesVersion else projectRoleLimitedByYear.copy(
+            timeUnit = timeUnit
+        )
+    ).toDomain()
+
     private companion object {
 
-        @DataPoints
-        @JvmField
-        val timeUsedForCurrentActivities: List<Int> = listOf(0, 1, 2, 3, 4)
-
-        @DataPoints
-        @JvmField
-        val timeForNewActivity: List<Long> = listOf(1L, 2L, 3L, 4L)
 
         private val user = createDomainUser()
 
@@ -159,7 +223,19 @@ class ActivityMaxHoursPerYearValidatorTest {
             "project role",
             RequireEvidence.NO,
             project,
-            1920,
+            1920, // limited to 4 days
+            0,
+            true,
+            false,
+            TimeUnit.DAYS
+        )
+
+        private val projectRoleLimitedByYearMinutesVersion = ProjectRole(
+            1,
+            "project role",
+            RequireEvidence.NO,
+            project,
+            240, // limited to 4h
             0,
             true,
             false,
@@ -168,8 +244,8 @@ class ActivityMaxHoursPerYearValidatorTest {
 
         private val customActivity = Activity(
             1L,
-            LocalDateTime.of(2023, 3, 1, 13, 5, 25),
-            LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
+            LocalDateTime.of(2023, 3, 6, 0,0, 0),
+            LocalDateTime.of(2023, 3, 6, 23, 59, 59),
             60,
             "Activity",
             projectRoleLimitedByYear,
