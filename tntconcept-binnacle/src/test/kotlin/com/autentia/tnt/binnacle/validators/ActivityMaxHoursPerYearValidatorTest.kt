@@ -124,6 +124,8 @@ class ActivityMaxHoursPerYearValidatorTest {
                     user.id
                 )
 
+            println("Test Params:: TimeUsedForCurrentActivities: $timeUsedForCurrentActivities; TimeForNewActivity: $timeForNewActivity; TimeUnit: $timeUnit; isThisYear: $isThisYear");
+
             activityValidator.checkActivityIsValidForCreation(newActivity, user)
         }
     }

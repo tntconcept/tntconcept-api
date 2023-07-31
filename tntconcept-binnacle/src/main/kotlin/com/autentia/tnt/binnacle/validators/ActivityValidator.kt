@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.Activity
+import com.autentia.tnt.binnacle.core.domain.Calendar
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -43,14 +44,14 @@ internal class ActivityValidator(
                 throw ActivityBeforeHiringDateException()
 
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
-            isExceedingMaxTimePerActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
+            isExceedingMaxTimeByActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
                 activityToCreate.projectRole.getMaxTimeAllowedByActivityInTimeUnits(),
                 activityToCreate.projectRole.getMaxTimeAllowedByActivityInTimeUnits(),
                 activityToCreate.projectRole.timeInfo.timeUnit,
                 activityToCreateStartYear
             )
 
-            isExceedingMaxHoursForRole(
+            isExceedingMaxTimeByRole(
                 emptyActivity,
                 activityToCreate,
                 totalRegisteredDurationForThisRoleStartYear
@@ -66,7 +67,7 @@ internal class ActivityValidator(
         }
     }
 
-    private fun isExceedingMaxTimePerActivity(activityToCreate: Activity): Boolean {
+    private fun isExceedingMaxTimeByActivity(activityToCreate: Activity): Boolean {
         if (activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity == 0)
             return false
 
@@ -117,33 +118,33 @@ internal class ActivityValidator(
         activityToUpdate: Activity,
         totalRegisteredDurationForThisRole: Int,
     ): Int {
-        val activitiesTimeInterval = getWidestActivitiesTimeInterval(currentActivity, activityToUpdate)
+        val activitiesCalendar = getActivitiesCalendar(currentActivity, activityToUpdate)
 
-        val activitiesCalendar = activityCalendarService.createCalendar(activitiesTimeInterval.getDateInterval())
-
-        val currentActivityDuration = currentActivity.getDuration(activitiesCalendar)
-        val activityToUpdateDuration = activityToUpdate.getDuration(activitiesCalendar)
-
-        var totalRegisteredDurationForThisRoleAfterDiscount = totalRegisteredDurationForThisRole
-
-        if (currentActivity.projectRole.id == activityToUpdate.projectRole.id) {
-            totalRegisteredDurationForThisRoleAfterDiscount =
-                totalRegisteredDurationForThisRole - currentActivityDuration
+        var durationToReduce = 0
+        if(currentActivity.projectRole.id == activityToUpdate.projectRole.id) {
+            durationToReduce = currentActivity.getDuration(activitiesCalendar)
         }
-        return totalRegisteredDurationForThisRoleAfterDiscount + activityToUpdateDuration
+
+        val activityToUpdateDuration = activityToUpdate.getDuration(activitiesCalendar)
+        return totalRegisteredDurationForThisRole - durationToReduce + activityToUpdateDuration
     }
 
-    private fun getWidestActivitiesTimeInterval(currentActivity: Activity, activityToUpdate: Activity) =
-        TimeInterval.of(
-            if (currentActivity.getStart()
-                    .isBefore(activityToUpdate.getStart()) && currentActivity.getYearOfStart() > 0
-            )
-                currentActivity.getStart() else activityToUpdate.getStart(),
+    private fun getActivitiesCalendar(currentActivity: Activity, activityToUpdate: Activity): Calendar {
+        val isCurrentActivityNotDefined = currentActivity.getYearOfStart() < 0
+        val activitiesTimeInterval =
+            if(isCurrentActivityNotDefined ) {
+                activityToUpdate.timeInterval
+            } else {
+                val activities = listOf(currentActivity, activityToUpdate)
+                TimeInterval.of(
+                    activities.minOf { it.getStart() },
+                    activities.maxOf { it.getEnd() }
+                )
+            }
 
-            if (currentActivity.getEnd()
-                    .isAfter(activityToUpdate.getEnd())
-            ) currentActivity.getEnd() else activityToUpdate.getEnd()
-        )
+        return activityCalendarService.createCalendar(activitiesTimeInterval.getDateInterval())
+    }
+
 
     private fun getRemainingByTimeUnit(
         activityToUpdate: Activity,
@@ -158,7 +159,7 @@ internal class ActivityValidator(
         }
     }
 
-    private fun isExceedingMaxHoursForRole(
+    private fun isExceedingMaxTimeByRole(
         currentActivity: Activity,
         activityToUpdate: Activity,
         totalRegisteredDurationForThisRole: Int,
@@ -215,14 +216,14 @@ internal class ActivityValidator(
 
             activityToUpdate.isMoreThanOneDay() && activityToUpdate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
 
-            isExceedingMaxTimePerActivity(activityToUpdate) -> throw MaxTimePerActivityRoleException(
+            isExceedingMaxTimeByActivity(activityToUpdate) -> throw MaxTimePerActivityRoleException(
                 activityToUpdate.projectRole.timeInfo.getMaxTimeAllowedByActivityInUnits(),
                 activityToUpdate.projectRole.timeInfo.getMaxTimeAllowedByActivityInUnits(),
                 activityToUpdate.projectRole.timeInfo.timeUnit,
                 activityToUpdateStartYear,
             )
 
-            isExceedingMaxHoursForRole(
+            isExceedingMaxTimeByRole(
                 currentActivity,
                 activityToUpdate,
                 totalRegisteredDurationForThisRoleStartYear

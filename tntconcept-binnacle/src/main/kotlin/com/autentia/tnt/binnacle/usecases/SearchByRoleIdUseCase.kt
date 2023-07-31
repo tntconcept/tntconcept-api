@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.SearchConverter
-import com.autentia.tnt.binnacle.core.domain.DateInterval.Companion.getDateIntervalForRemainingCalculation
+import com.autentia.tnt.binnacle.core.domain.DateInterval.Companion.getDateIntervalForActivityList
 import com.autentia.tnt.binnacle.core.domain.TimeInterval.Companion.getTimeIntervalFromOptionalYear
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.SearchResponseDTO
@@ -30,24 +30,24 @@ class SearchByRoleIdUseCase internal constructor(
         val userId = authentication.id()
         val projectRoleIds = roleIds.distinct()
 
-        val timeIntervalForRemainingCalculation = getTimeIntervalFromOptionalYear(year)
+        val yearTimeInterval = getTimeIntervalFromOptionalYear(year)
 
         val projectRoles = projectRoleRepository.getAllByIdIn(projectRoleIds).map { it.toDomain() }
         val activities =
             activityRepository.findByProjectRoleIds(
-                timeIntervalForRemainingCalculation.start,
-                timeIntervalForRemainingCalculation.end,
+                yearTimeInterval.start,
+                yearTimeInterval.end,
                 projectRoleIds,
                 userId
             )
                 .map(Activity::toDomain)
-                .filter { it.getYearOfStart() == timeIntervalForRemainingCalculation.getYearOfStart() }
+                .filter { it.getYearOfStart() == yearTimeInterval.getYearOfStart() }
 
         val projectRoleUsers = projectRoles.map { projectRole ->
             val remainingOfProjectRole = activityCalendarService.getRemainingOfProjectRoleForUser(
                 projectRole,
                 activities,
-                getDateIntervalForRemainingCalculation(timeIntervalForRemainingCalculation, activities),
+                getDateIntervalForActivityList(activities, yearTimeInterval),
                 userId
             )
             projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRole, userId)

@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.core.domain.DateInterval.Companion.getDateIntervalForRemainingCalculation
+import com.autentia.tnt.binnacle.core.domain.DateInterval.Companion.getDateIntervalForActivityList
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.domain.TimeInterval.Companion.getTimeIntervalFromOptionalYear
 import com.autentia.tnt.binnacle.entities.Activity
@@ -33,14 +33,14 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
         val oneMonthDateRange = oneMonthTimeIntervalFromCurrentYear()
-        val timeIntervalForRemainingCalculation = getTimeIntervalFromOptionalYear(year)
+        val yearTimeInterval = getTimeIntervalFromOptionalYear(year)
 
         val requestedYearActivities =
             activityRepository.findOfLatestProjects(
-                timeIntervalForRemainingCalculation.start,
-                timeIntervalForRemainingCalculation.end,
+                yearTimeInterval.start,
+                yearTimeInterval.end,
                 userId
-            ).filter { it.start.year == timeIntervalForRemainingCalculation.getYearOfStart() }
+            ).filter { it.start.year == yearTimeInterval.getYearOfStart() }
 
         val lastMonthActivities =
             activityRepository.findOfLatestProjects(oneMonthDateRange.start, oneMonthDateRange.end, userId)
@@ -52,9 +52,9 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
                     val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                         projectRole,
                         requestedYearActivities.map(Activity::toDomain),
-                        getDateIntervalForRemainingCalculation(
-                            timeIntervalForRemainingCalculation,
-                            requestedYearActivities.map(Activity::toDomain)
+                        getDateIntervalForActivityList(
+                            requestedYearActivities.map(Activity::toDomain),
+                            yearTimeInterval
                         ),
                         userId
                     )

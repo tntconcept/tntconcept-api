@@ -2,7 +2,8 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
-import com.autentia.tnt.binnacle.core.domain.DateInterval.Companion.getDateIntervalForRemainingCalculation
+import com.autentia.tnt.binnacle.core.domain.DateInterval.Companion.getDateIntervalForActivityList
+import com.autentia.tnt.binnacle.core.domain.TimeInterval.Companion.getTimeIntervalFromOptionalYear
 import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
@@ -14,7 +15,6 @@ import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
-import java.time.LocalDate
 
 
 @Singleton
@@ -31,11 +31,11 @@ class ProjectRoleByProjectIdUseCase internal constructor(
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
 
-        val timeInterval = getTimeInterval(year)
+        val yearTimeInterval = getTimeIntervalFromOptionalYear(year)
         val projectRolesOfProject = projectRoleRepository.getAllByProjectId(projectId).map { it.toDomain() }
         val projectRolesUser = buildProjectRoleWithUserRemaining(
             projectRolesOfProject,
-            timeInterval,
+            yearTimeInterval,
             userId,
         )
 
@@ -43,11 +43,9 @@ class ProjectRoleByProjectIdUseCase internal constructor(
             .map(projectRoleResponseConverter::toProjectRoleUserDTO)
     }
 
-    private fun getTimeInterval(year: Int?) = TimeInterval.ofYear(year ?: LocalDate.now().year)
-
     private fun buildProjectRoleWithUserRemaining(
         projectRolesOfProject: List<com.autentia.tnt.binnacle.core.domain.ProjectRole>,
-        timeInterval: TimeInterval,
+        yearTimeInterval: TimeInterval,
         userId: Long,
     ): MutableList<ProjectRoleUser> {
         val projectRolesUser = mutableListOf<ProjectRoleUser>()
@@ -55,12 +53,12 @@ class ProjectRoleByProjectIdUseCase internal constructor(
         for (projectRole in projectRolesOfProject) {
             val projectRoleActivities = activityService.getProjectRoleActivities(projectRole.id, userId)
             val timeIntervalProjectRoleActivities =
-                activityService.filterActivitiesByTimeInterval(timeInterval, projectRoleActivities)
-                    .filter { it.getYearOfStart() == timeInterval.getYearOfStart() }
+                activityService.filterActivitiesByTimeInterval(yearTimeInterval, projectRoleActivities)
+                    .filter { it.getYearOfStart() == yearTimeInterval.getYearOfStart() }
             val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                 projectRole,
                 timeIntervalProjectRoleActivities,
-                getDateIntervalForRemainingCalculation(timeInterval, projectRoleActivities.map(Activity::toDomain)),
+                getDateIntervalForActivityList(projectRoleActivities.map(Activity::toDomain), yearTimeInterval),
                 userId
             )
             val projectRoleUser =
