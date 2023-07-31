@@ -31,18 +31,16 @@ class ActivityCreationUseCase internal constructor(
         private val activityValidator: ActivityValidator,
         private val activityRequestBodyConverter: ActivityRequestBodyConverter,
         private val activityResponseConverter: ActivityResponseConverter,
-        private val pendingApproveActivityMailService: PendingApproveActivityMailService,
+        private val pendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase,
 ) {
 
     @Transactional
     fun createActivity(@Valid activityRequestBody: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
         val user = userService.getAuthenticatedDomainUser()
-
-        val projectRole = projectRoleRepository.findById(activityRequestBody.projectRoleId)
-            ?: throw ProjectRoleNotFoundException(activityRequestBody.projectRoleId)
+        val projectRole = this.getProjectRole(activityRequestBody.projectRoleId)
 
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
+                ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
         )
 
         val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole.toDomain(), user)
@@ -55,10 +53,15 @@ class ActivityCreationUseCase internal constructor(
             activityEvidenceService.storeActivityEvidence(savedActivity.id!!, activityToCreate.evidence!!, savedActivity.insertDate!!)
         }
 
-        if (savedActivity.projectRole.isApprovalRequired) {
-            pendingApproveActivityMailService.sendApprovalActivityMail(savedActivity.toDomain(), user.username, locale)
+        val savedActivityDomain = savedActivity.toDomain()
+
+        if (savedActivityDomain.canBeApproved()) {
+            pendingApproveActivityMailUseCase.send(savedActivityDomain, user.username, locale)
         }
 
-        return activityResponseConverter.toActivityResponseDTO(savedActivity.toDomain())
+        return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
     }
+
+    private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)
+            ?: throw ProjectRoleNotFoundException(projectRoleId)
 }

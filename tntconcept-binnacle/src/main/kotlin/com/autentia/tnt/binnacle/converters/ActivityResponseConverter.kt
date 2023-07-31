@@ -22,7 +22,7 @@ class ActivityResponseConverter(
             userId = activity.userId,
             approval = ApprovalDTO(
                     state = activity.approvalState,
-                    canBeApproved = activity.canBeApprovedWithEvidence(),
+                    canBeApproved = activity.canBeApproved(),
                     approvedByUserId = activity.approvedByUserId,
                     approvalDate = activity.approvalDate
             )

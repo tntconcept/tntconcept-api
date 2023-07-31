@@ -9,6 +9,8 @@ import org.junit.jupiter.api.*
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -38,10 +40,11 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val role = "Role one"
             val evidence = RequireEvidence.WEEKLY
             val email = "userEmail@email.com"
+            val date = LocalDateTime.now()
             val locale = Locale.ENGLISH
 
             // When
-            sut.sendEmail(organizationName, projectName, role, evidence, email, locale)
+            sut.sendEmail(organizationName, projectName, role, evidence, date, email, locale)
 
             // Then
             verifyNoInteractions(mailService, activityEvidenceMissingMailBuilder)
@@ -59,14 +62,15 @@ internal class ActivityEvidenceMissingMailServiceTest {
             val toUserEmail = "userEmail@email.com"
             val locale = Locale.ENGLISH
             val evidence = RequireEvidence.WEEKLY
+            val date = LocalDateTime.now()
 
             doReturn(Mail("Subject", "Body")).`when`(activityEvidenceMissingMailBuilder)
-                .buildMessage(locale, organizationName, projectName, role, evidence)
+                .buildMessage(locale, organizationName, projectName, role, evidence, date)
             doReturn(Result.success("OK")).`when`(mailService)
                 .send(anyString(), anyList(), anyString(), anyString(), anyOrNull())
 
             // When
-            sut.sendEmail(organizationName, projectName, role, evidence, toUserEmail, locale)
+            sut.sendEmail(organizationName, projectName, role, evidence, date, toUserEmail, locale)
 
             // Then
             val expectedFrom = "fromTest@email.com"
@@ -83,7 +87,8 @@ internal class ActivityEvidenceMissingMailServiceTest {
                 organizationName,
                 projectName,
                 role,
-                evidence
+                evidence,
+                date
             )
         }
     }
@@ -99,13 +104,14 @@ internal class ActivityEvidenceMissingMailServiceTest {
         fun resetMocks() = reset(messageSource)
 
         @Test
-        fun `should build localized email content`() {
+        fun `should build weekly localized email content`() {
             // Given
             val locale = Locale.forLanguageTag("es")
             val organizationName = "Organization"
             val projectName = "Project"
             val evidence = RequireEvidence.WEEKLY
             val roleName = "Role one"
+            val date = LocalDateTime.now()
 
             val subjectMsg = "Sujeto de la evidencia"
             val bodyMsg = "Cuerpo de la evidencia"
@@ -120,7 +126,7 @@ internal class ActivityEvidenceMissingMailServiceTest {
                 .getMessage("mail.request.evidenceActivity.frequency.weekly", locale)
 
             // When
-            val message = sut.buildMessage(locale, organizationName, projectName, roleName, evidence)
+            val message = sut.buildMessage(locale, organizationName, projectName, roleName, evidence, date)
 
             // Then
             assertThat(message.subject).isEqualTo(subjectMsg)
@@ -133,6 +139,45 @@ internal class ActivityEvidenceMissingMailServiceTest {
                 "mail.request.evidenceActivity.template", locale, "weekly", projectName, roleName
             )
             verify(messageSource).getMessage("mail.request.evidenceActivity.frequency.weekly", locale)
+        }
+
+        @Test
+        fun `should build once localized email content`() {
+            // Given
+            val locale = Locale.forLanguageTag("es")
+            val organizationName = "Organization"
+            val projectName = "Project"
+            val evidence = RequireEvidence.ONCE
+            val roleName = "Role one"
+            val date = LocalDateTime.now()
+            val dateString = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+
+            val subjectMsg = "Sujeto de la evidencia"
+            val bodyMsg = "Cuerpo de la evidencia"
+
+            doReturn(Optional.of(subjectMsg)).`when`(messageSource)
+                .getMessage("mail.request.evidenceActivity.subject", locale, organizationName, projectName, roleName)
+
+            doReturn(Optional.of(bodyMsg)).`when`(messageSource)
+                .getMessage("mail.request.evidenceActivity.template", locale, "once", projectName, roleName)
+
+            doReturn(Optional.of("once")).`when`(messageSource)
+                .getMessage("mail.request.evidenceActivity.frequency.once", locale, dateString)
+
+            // When
+            val message = sut.buildMessage(locale, organizationName, projectName, roleName, evidence, date)
+
+            // Then
+            assertThat(message.subject).isEqualTo(subjectMsg)
+            assertThat(message.body).isEqualTo(bodyMsg)
+
+            verify(messageSource).getMessage(
+                "mail.request.evidenceActivity.subject", locale, organizationName, projectName, roleName
+            )
+            verify(messageSource).getMessage(
+                "mail.request.evidenceActivity.template", locale, "once", projectName, roleName
+            )
+            verify(messageSource).getMessage("mail.request.evidenceActivity.frequency.once", locale, dateString)
         }
 
     }
