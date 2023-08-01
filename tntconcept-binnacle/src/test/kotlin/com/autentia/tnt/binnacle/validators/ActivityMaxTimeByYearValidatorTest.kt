@@ -93,8 +93,6 @@ class ActivityMaxTimeByYearValidatorTest {
         timeUnit: TimeUnit
     ) {
 
-        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration; timeUnit: $timeUnit");
-
         var newActivity = createNewActivity(newActivityDuration, timeUnit)
 
         val activities2023 = ArrayList<Activity>()
@@ -139,8 +137,6 @@ class ActivityMaxTimeByYearValidatorTest {
         timeUnit: TimeUnit
     ) {
 
-        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration; timeUnit: $timeUnit");
-
         val newActivity = createNewActivityWithChangeOfYear(newActivityDuration, timeUnit)
 
         val activities2023 = ArrayList<Activity>()
@@ -181,8 +177,6 @@ class ActivityMaxTimeByYearValidatorTest {
         previousTimeRegisteredForProjectRole: Int,
         newActivityDuration: Long,
     ) {
-        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration")
-
         val newActivity = createNewActivityInMinutes(newActivityDuration)
 
         val activities2023 = ArrayList<Activity>()
