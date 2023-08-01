@@ -17,6 +17,21 @@ data class DateInterval private constructor(val start: LocalDate, val end: Local
             LocalDate.of(year, Month.JANUARY, 1),
             LocalDate.of(year, Month.DECEMBER, 31)
         )
+
+        fun getDateIntervalForActivityList(
+            activities: List<Activity>,
+            defaultTimeInterval: TimeInterval,
+        ): DateInterval {
+
+            return if (activities.isNotEmpty()) {
+                val minDate = activities.minOf { it.getStart() }
+                val maxDate = activities.maxOf { it.getEnd() }
+
+                return of(minDate.toLocalDate(), maxDate.toLocalDate())
+            } else defaultTimeInterval.getDateInterval()
+
+        }
+
     }
 
     fun includes(localDate: LocalDate) = !localDate.isBefore(start) && !localDate.isAfter(end)

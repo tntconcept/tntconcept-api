@@ -1,10 +1,14 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
+import com.autentia.tnt.binnacle.config.createDomainActivity
+import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.*
 import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -16,11 +20,13 @@ import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 internal class SearchByRoleIdUseCaseTest {
@@ -52,11 +58,11 @@ internal class SearchByRoleIdUseCaseTest {
     )
 
     @Test
-    fun `return empty list when roleid is not found for current year`() {
+    fun `return empty list when roleId is not found for current year`() {
 
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
 
-        doReturn(emptyList<com.autentia.tnt.binnacle.entities.ProjectRole>())
+        doReturn(emptyList<ProjectRole>())
             .whenever(projectRoleRepository).getAllByIdIn(listOf(UNKONW_ROLE_ID))
 
         val roles = searchByRoleIdUseCase.get(listOf(UNKONW_ROLE_ID), null)
@@ -75,8 +81,8 @@ internal class SearchByRoleIdUseCaseTest {
         whenever(projectRoleRepository.getAllByIdIn(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
         whenever(
             activityRepository.findByProjectRoleIds(
-                TimeInterval.ofYear( LocalDate.now().year).start,
-                TimeInterval.ofYear( LocalDate.now().year).end,
+                TimeInterval.ofYear(LocalDate.now().year).start,
+                TimeInterval.ofYear(LocalDate.now().year).end,
                 rolesForSearch,
                 authenticatedUser.id()
             )
@@ -106,12 +112,12 @@ internal class SearchByRoleIdUseCaseTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
         whenever(projectRoleRepository.getAllByIdIn(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
         whenever(
-                activityRepository.findByProjectRoleIds(
-                        TimeInterval.ofYear(2023).start,
-                        TimeInterval.ofYear(2023).end,
-                        rolesForSearch,
-                        authenticatedUser.id()
-                )
+            activityRepository.findByProjectRoleIds(
+                TimeInterval.ofYear(2023).start,
+                TimeInterval.ofYear(2023).end,
+                rolesForSearch,
+                authenticatedUser.id()
+            )
         ).thenReturn(listOf(activity))
         val roles = searchByRoleIdUseCase.get(rolesForSearch, 2023)
 
@@ -122,9 +128,9 @@ internal class SearchByRoleIdUseCaseTest {
         assertEquals(organizationResponseConverter.toOrganizationResponseDTO(AUTENTIA), roles.organizations[0])
         assertEquals(projectResponseConverter.toProjectResponseDTO(INTERNAL_TRAINING), roles.projects[0])
         assertEquals(
-                projectRoleResponseConverter.toProjectRoleUserDTO(
-                        projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT.toDomain(), 1380, 1L)
-                ), roles.projectRoles[0]
+            projectRoleResponseConverter.toProjectRoleUserDTO(
+                projectRoleConverter.toProjectRoleUser(INTERNAL_STUDENT.toDomain(), 1380, 1L)
+            ), roles.projectRoles[0]
         )
     }
 
@@ -191,16 +197,137 @@ internal class SearchByRoleIdUseCaseTest {
         })
     }
 
+    @Nested
+    inner class SearchRemainingCalculation {
+
+        @Test
+        fun `is correct when exist activities with change of year`() {
+
+            val expectedRemainingDays = 1
+
+            val activities = listOf(
+                Activity.of(
+                    createDomainActivity(
+                        start = LocalDateTime.of(2023, 1, 15, 0, 0, 0),
+                        end = LocalDateTime.of(2023, 1, 15, 23, 59, 59),
+                        duration = 960,
+                        projectRole = projectRoleLimitedInDays.toDomain()
+                    ), projectRoleLimitedInDays
+                ),
+                Activity.of(
+                    createDomainActivity(
+                        start = LocalDateTime.of(2023, 12, 31, 0, 0, 0),
+                        end = LocalDateTime.of(2024, 1, 1, 23, 59, 59),
+                        duration = 960,
+                        projectRole = projectRoleLimitedInDays.toDomain()
+                    ), projectRoleLimitedInDays
+                )
+            )
+
+            val projectRoleList = listOf(projectRoleLimitedInDays)
+            val timeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
+            val roleIds = listOf(1L)
+
+            whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
+            doReturn(projectRoleList)
+                .whenever(projectRoleRepository)
+                .getAllByIdIn(
+                    roleIds
+                )
+
+            doReturn(activities)
+                .whenever(activityRepository)
+                .findByProjectRoleIds(
+                    timeInterval.start,
+                    timeInterval.end,
+                    roleIds,
+                    createUser().id
+                )
+
+            val obtainedRoleWithoutYearParameter = searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
+            val obtainedRoleWithYearParameter = searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+
+            assertEquals(expectedRemainingDays, obtainedRoleWithoutYearParameter.timeInfo.userRemainingTime)
+            assertEquals(expectedRemainingDays, obtainedRoleWithYearParameter.timeInfo.userRemainingTime)
+        }
+
+        @Test
+        fun `is correct when exist activities in the same year`() {
+
+            val expectedRemainingTime = 135
+
+            val activities = listOf(
+                Activity.of(
+                    createDomainActivity(
+                        start = LocalDateTime.of(2023, 1, 15, 9, 0, 0),
+                        end = LocalDateTime.of(2023, 1, 15, 9, 45, 0),
+                        duration = 45,
+                        projectRole = projectRoleLimited.toDomain()
+                    ), projectRoleLimited
+                )
+            )
+
+            val projectRoleList = listOf(projectRoleLimited)
+            val timeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
+            val roleIds = listOf(1L)
+
+            whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+
+            doReturn(projectRoleList)
+                .whenever(projectRoleRepository)
+                .getAllByIdIn(
+                    roleIds
+                )
+
+            doReturn(activities)
+                .whenever(activityRepository)
+                .findByProjectRoleIds(
+                    timeInterval.start,
+                    timeInterval.end,
+                    roleIds,
+                    createUser().id
+                )
+
+            val obtainedRoleWithoutYearParameter = searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
+            val obtainedRoleWithYearParameter = searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+
+            assertEquals(expectedRemainingTime, obtainedRoleWithoutYearParameter.timeInfo.userRemainingTime)
+            assertEquals(expectedRemainingTime, obtainedRoleWithYearParameter.timeInfo.userRemainingTime)
+        }
+    }
+
+
     private companion object {
         private val UNKONW_ROLE_ID = -1L
 
         private val AUTENTIA = com.autentia.tnt.binnacle.entities.Organization(1L, "Autentia", listOf())
         private val INTERNAL_TRAINING =
-            com.autentia.tnt.binnacle.entities.Project(1, "Internal training", true, true, LocalDate.now(), null, null, AUTENTIA, listOf())
+            com.autentia.tnt.binnacle.entities.Project(
+                1,
+                "Internal training",
+                true,
+                true,
+                LocalDate.now(),
+                null,
+                null,
+                AUTENTIA,
+                listOf()
+            )
         private val INTERNAL_STUDENT =
-            com.autentia.tnt.binnacle.entities.ProjectRole(1, "Student", RequireEvidence.WEEKLY, INTERNAL_TRAINING, 1440, 0, false , true, TimeUnit.MINUTES)
+            ProjectRole(
+                1,
+                "Student",
+                RequireEvidence.WEEKLY,
+                INTERNAL_TRAINING,
+                1440,
+                0,
+                false,
+                true,
+                TimeUnit.MINUTES
+            )
         private val INTERNAL_TEACHER =
-            com.autentia.tnt.binnacle.entities.ProjectRole(
+            ProjectRole(
                 2,
                 "Internal Teacher",
                 RequireEvidence.WEEKLY,
@@ -214,9 +341,19 @@ internal class SearchByRoleIdUseCaseTest {
 
         private val OTHER_COMPANY = com.autentia.tnt.binnacle.entities.Organization(2L, "Other S.A.", listOf())
         private val EXTERNAL_TRAINING =
-            com.autentia.tnt.binnacle.entities.Project(2, "External training", true, true, LocalDate.now(), null, null, OTHER_COMPANY, listOf())
+            com.autentia.tnt.binnacle.entities.Project(
+                2,
+                "External training",
+                true,
+                true,
+                LocalDate.now(),
+                null,
+                null,
+                OTHER_COMPANY,
+                listOf()
+            )
         private val EXTERNAL_STUDENT =
-            com.autentia.tnt.binnacle.entities.ProjectRole(
+            ProjectRole(
                 3,
                 "External student",
                 RequireEvidence.WEEKLY,
@@ -228,7 +365,7 @@ internal class SearchByRoleIdUseCaseTest {
                 TimeUnit.MINUTES
             )
         private val EXTERNAL_TEACHER =
-            com.autentia.tnt.binnacle.entities.ProjectRole(
+            ProjectRole(
                 4,
                 "External teacher",
                 RequireEvidence.WEEKLY,
@@ -239,6 +376,33 @@ internal class SearchByRoleIdUseCaseTest {
                 true,
                 TimeUnit.MINUTES
             )
+
+        private val projectRoleLimitedInDays =
+            ProjectRole(
+                1L,
+                "My Project role",
+                RequireEvidence.NO,
+                INTERNAL_TRAINING,
+                1920,
+                0,
+                true,
+                false,
+                TimeUnit.NATURAL_DAYS
+            )
+
+        private val projectRoleLimited =
+            ProjectRole(
+                1L,
+                "My Project role",
+                RequireEvidence.NO,
+                INTERNAL_TRAINING,
+                180,
+                0,
+                true,
+                false,
+                TimeUnit.MINUTES
+            )
+
         private val authenticatedUser =
             ClientAuthentication(
                 "1",

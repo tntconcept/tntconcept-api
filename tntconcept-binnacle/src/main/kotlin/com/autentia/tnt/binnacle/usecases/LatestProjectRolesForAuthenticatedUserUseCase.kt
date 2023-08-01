@@ -2,7 +2,9 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ProjectRoleConverter
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.core.domain.DateInterval.Companion.getDateIntervalForActivityList
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.core.domain.TimeInterval.Companion.getTimeIntervalFromOptionalYear
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -31,12 +33,18 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
         val oneMonthDateRange = oneMonthTimeIntervalFromCurrentYear()
-        val timeIntervalForRemainingCalculation = getTimeIntervalForRemainingCalculation(year)
+        val yearTimeInterval = getTimeIntervalFromOptionalYear(year)
 
         val requestedYearActivities =
-            activityRepository.findOfLatestProjects(timeIntervalForRemainingCalculation.start, timeIntervalForRemainingCalculation.end, userId)
+            activityRepository.findOfLatestProjects(
+                yearTimeInterval.start,
+                yearTimeInterval.end,
+                userId
+            ).filter { it.start.year == yearTimeInterval.getYearOfStart() }
+
         val lastMonthActivities =
-            activityRepository.findOfLatestProjects(oneMonthDateRange.start, oneMonthDateRange.end, userId).map(Activity::toDomain)
+            activityRepository.findOfLatestProjects(oneMonthDateRange.start, oneMonthDateRange.end, userId)
+                .map(Activity::toDomain)
 
         val latestUserProjectRoles =
             lastMonthActivities.sortedByDescending { it.timeInterval.start }.map { it.projectRole }.distinct()
@@ -44,7 +52,10 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
                     val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                         projectRole,
                         requestedYearActivities.map(Activity::toDomain),
-                        timeIntervalForRemainingCalculation.getDateInterval(),
+                        getDateIntervalForActivityList(
+                            requestedYearActivities.map(Activity::toDomain),
+                            yearTimeInterval
+                        ),
                         userId
                     )
                     projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
@@ -61,8 +72,4 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
             now.atTime(23, 59, 59)
         )
     }
-
-    private fun getTimeIntervalForRemainingCalculation(year: Int?): TimeInterval =
-        TimeInterval.ofYear(year ?: LocalDate.now().year)
-
 }
