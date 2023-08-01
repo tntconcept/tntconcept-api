@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.Month
 import java.time.YearMonth
 
@@ -19,19 +18,17 @@ data class DateInterval private constructor(val start: LocalDate, val end: Local
             LocalDate.of(year, Month.DECEMBER, 31)
         )
 
-        fun getDateIntervalForActivityList (
+        fun getDateIntervalForActivityList(
             activities: List<Activity>,
             defaultTimeInterval: TimeInterval,
         ): DateInterval {
 
-            if (activities.isNotEmpty()) {
+            return if (activities.isNotEmpty()) {
                 val minDate = activities.minOf { it.getStart() }
                 val maxDate = activities.maxOf { it.getEnd() }
 
-                return DateInterval.of(minDate.toLocalDate(), maxDate.toLocalDate())
-            }
-
-            return defaultTimeInterval.getDateInterval()
+                return of(minDate.toLocalDate(), maxDate.toLocalDate())
+            } else defaultTimeInterval.getDateInterval()
 
         }
 
