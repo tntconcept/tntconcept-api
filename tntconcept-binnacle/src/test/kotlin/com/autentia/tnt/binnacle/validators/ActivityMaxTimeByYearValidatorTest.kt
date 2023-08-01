@@ -13,6 +13,7 @@ import com.autentia.tnt.binnacle.services.ActivityService
 
 
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -42,6 +43,16 @@ class ActivityMaxTimeByYearValidatorTest {
             activityCalendarService,
             projectRepository
         )
+    private val timeInterval2023 = TimeInterval.ofYear(2023)
+
+
+    @BeforeEach
+    fun setupTest() {
+
+        doReturn(Optional.of(project))
+            .whenever(projectRepository)
+            .findById(projectRoleLimitedByYear.project.id)
+    }
 
     @AfterEach
     fun resetMocks() {
@@ -53,48 +64,104 @@ class ActivityMaxTimeByYearValidatorTest {
     }
 
     private fun testInputsInDays() = arrayOf(
-        arrayOf(0, 1, true),
-        arrayOf(0, 1, false),
-        arrayOf(0, 2, true),
-        arrayOf(0, 2, false),
-        arrayOf(0, 3, true),
-        arrayOf(0, 3, false),
-        arrayOf(0, 4, true),
-        arrayOf(0, 4, false),
-        arrayOf(1, 1, true),
-        arrayOf(1, 1, false),
-        arrayOf(1, 2, true),
-        arrayOf(1, 2, false),
-        arrayOf(1, 3, true),
-        arrayOf(1, 3, false),
-        arrayOf(2, 1, true),
-        arrayOf(2, 1, false),
-        arrayOf(2, 2, true),
-        arrayOf(2, 2, false),
-        arrayOf(3, 1, true),
-
+        arrayOf(0, 1, TimeUnit.DAYS),
+        arrayOf(0, 1, TimeUnit.NATURAL_DAYS),
+        arrayOf(0, 2, TimeUnit.DAYS),
+        arrayOf(0, 2, TimeUnit.NATURAL_DAYS),
+        arrayOf(0, 3, TimeUnit.DAYS),
+        arrayOf(0, 3, TimeUnit.NATURAL_DAYS),
+        arrayOf(0, 4, TimeUnit.DAYS),
+        arrayOf(0, 4, TimeUnit.NATURAL_DAYS),
+        arrayOf(1, 1, TimeUnit.DAYS),
+        arrayOf(1, 1, TimeUnit.NATURAL_DAYS),
+        arrayOf(1, 2, TimeUnit.DAYS),
+        arrayOf(1, 2, TimeUnit.NATURAL_DAYS),
+        arrayOf(1, 3, TimeUnit.DAYS),
+        arrayOf(1, 3, TimeUnit.NATURAL_DAYS),
+        arrayOf(2, 1, TimeUnit.DAYS),
+        arrayOf(2, 1, TimeUnit.NATURAL_DAYS),
+        arrayOf(2, 2, TimeUnit.DAYS),
+        arrayOf(2, 2, TimeUnit.NATURAL_DAYS),
+        arrayOf(3, 1, TimeUnit.DAYS),
+        arrayOf(3, 1, TimeUnit.NATURAL_DAYS),
         )
+    @ParameterizedTest
+    @MethodSource("testInputsInDays")
+    fun `do not throw exception when activity is valid for creation in days or natural_days`(
+        previousTimeRegisteredForProjectRole: Int,
+        newActivityDuration: Long,
+        timeUnit: TimeUnit
+    ) {
 
-    private fun testInputsInNaturalDays() = arrayOf(
-        arrayOf(0, 1, true),
-        arrayOf(0, 1, false),
-        arrayOf(0, 2, true),
-        arrayOf(0, 2, false),
-        arrayOf(0, 3, true),
-        arrayOf(0, 3, false),
-        arrayOf(0, 4, true),
-        arrayOf(0, 4, false),
-        arrayOf(1, 1, true),
-        arrayOf(1, 1, false),
-        arrayOf(1, 2, true),
-        arrayOf(1, 2, false),
-        arrayOf(1, 3, true),
-        arrayOf(2, 1, true),
-        arrayOf(2, 1, false),
-        arrayOf(2, 2, true),
-        arrayOf(2, 2, false),
-        arrayOf(3, 1, true)
+        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration; timeUnit: $timeUnit");
+
+        var newActivity = createNewActivity(newActivityDuration, timeUnit)
+
+        val activities2023 = ArrayList<Activity>()
+
+        if (previousTimeRegisteredForProjectRole > 0)
+            for (index in 1..previousTimeRegisteredForProjectRole)
+                activities2023.add(
+                    createExistingActivity(previousTimeRegisteredForProjectRole, timeUnit, index)
+                )
+
+        doReturn(activities2023)
+            .whenever(activityRepository)
+            .findByProjectRoleIds(
+                timeInterval2023.start,
+                timeInterval2023.end,
+                listOf(projectRoleLimitedByYear.id),
+                user.id
+            )
+
+        activityValidator.checkActivityIsValidForCreation(newActivity, user)
+
+    }
+    private fun testInputsInDaysWithChangeOfYear() = arrayOf(
+        arrayOf(0, 2, TimeUnit.DAYS),
+        arrayOf(0, 2, TimeUnit.NATURAL_DAYS),
+        arrayOf(0, 3, TimeUnit.DAYS),
+        arrayOf(0, 3, TimeUnit.NATURAL_DAYS),
+        arrayOf(0, 4, TimeUnit.DAYS),
+        arrayOf(0, 4, TimeUnit.NATURAL_DAYS),
+        arrayOf(1, 2, TimeUnit.DAYS),
+        arrayOf(1, 2, TimeUnit.NATURAL_DAYS),
+        arrayOf(1, 3, TimeUnit.DAYS),
+        arrayOf(1, 3, TimeUnit.NATURAL_DAYS),
+        arrayOf(2, 2, TimeUnit.DAYS),
+        arrayOf(2, 2, TimeUnit.NATURAL_DAYS),
     )
+    @ParameterizedTest
+    @MethodSource("testInputsInDaysWithYearChange")
+    fun `do not throw exception when activity is valid for creation in days or natural days ending in different year`(
+        previousTimeRegisteredForProjectRole: Int,
+        newActivityDuration: Long,
+        timeUnit: TimeUnit
+    ) {
+
+        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration; timeUnit: $timeUnit");
+
+        val newActivity = createNewActivityWithChangeOfYear(newActivityDuration, timeUnit)
+
+        val activities2023 = ArrayList<Activity>()
+
+        if (previousTimeRegisteredForProjectRole > 0)
+            for (index in 1..previousTimeRegisteredForProjectRole)
+                activities2023.add(
+                    createExistingActivity(previousTimeRegisteredForProjectRole, timeUnit, index)
+                )
+
+        doReturn(activities2023)
+            .whenever(activityRepository)
+            .findByProjectRoleIds(
+                timeInterval2023.start,
+                timeInterval2023.end,
+                listOf(projectRoleLimitedByYear.id),
+                user.id
+            )
+
+        activityValidator.checkActivityIsValidForCreation(newActivity, user)
+    }
 
     private fun testInputsInMinutes() = arrayOf(
         arrayOf(0, 1),
@@ -108,106 +175,13 @@ class ActivityMaxTimeByYearValidatorTest {
         arrayOf(2, 2),
         arrayOf(3, 1)
     )
-
-    @ParameterizedTest
-    @MethodSource("testInputsInDays")
-    fun `do nothing when activity is valid for creation in days`(
-        previousTimeRegisteredForProjectRole: Int,
-        newActivityDuration: Long,
-        activityEndsInCurrentYear: Boolean,
-    ) {
-
-        val activityCanBeConfiguredWithAChangeOfYear =
-            !activityEndsInCurrentYear && previousTimeRegisteredForProjectRole <= 2 && newActivityDuration > 1
-
-        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration; isThisYear: $activityEndsInCurrentYear");
-
-        var newActivity = createNewActivity(newActivityDuration, TimeUnit.DAYS)
-
-        if (activityCanBeConfiguredWithAChangeOfYear)
-            newActivity = createNewActivityWithChangeOfYear(newActivityDuration, TimeUnit.DAYS)
-
-        if (activityCanBeConfiguredWithAChangeOfYear || activityEndsInCurrentYear) {
-            val activities2023 = ArrayList<Activity>()
-
-            if (previousTimeRegisteredForProjectRole > 0)
-                for (index in 1..previousTimeRegisteredForProjectRole)
-                    activities2023.add(
-                        createExistingActivity(previousTimeRegisteredForProjectRole, TimeUnit.DAYS, index)
-                    )
-
-            val timeInterval2023 = TimeInterval.ofYear(2023)
-
-            doReturn(Optional.of(project))
-                .whenever(projectRepository)
-                .findById(projectRoleLimitedByYear.project.id)
-
-            doReturn(activities2023)
-                .whenever(activityRepository)
-                .findByProjectRoleIds(
-                    timeInterval2023.start,
-                    timeInterval2023.end,
-                    listOf(projectRoleLimitedByYear.id),
-                    user.id
-                )
-
-            activityValidator.checkActivityIsValidForCreation(newActivity, user)
-        }
-    }
-
-    @ParameterizedTest
-    @MethodSource("testInputsInNaturalDays")
-    fun `do nothing when activity is valid for creation in natural days`(
-        previousTimeRegisteredForProjectRole: Int,
-        newActivityDuration: Long,
-        activityEndsInCurrentYear: Boolean,
-    ) {
-
-        val activityCanBeConfiguredWithAChangeOfYear =
-            !activityEndsInCurrentYear && previousTimeRegisteredForProjectRole <= 2 && newActivityDuration > 1
-
-        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration; isThisYear: $activityEndsInCurrentYear");
-
-        var newActivity = createNewActivity(newActivityDuration, TimeUnit.NATURAL_DAYS)
-
-        if (activityCanBeConfiguredWithAChangeOfYear)
-            newActivity = createNewActivityWithChangeOfYear(newActivityDuration, TimeUnit.NATURAL_DAYS)
-
-        if (activityCanBeConfiguredWithAChangeOfYear || activityEndsInCurrentYear) {
-            val activities2023 = ArrayList<Activity>()
-
-            if (previousTimeRegisteredForProjectRole > 0)
-                for (index in 1..previousTimeRegisteredForProjectRole)
-                    activities2023.add(
-                        createExistingActivity(previousTimeRegisteredForProjectRole, TimeUnit.NATURAL_DAYS, index)
-                    )
-
-            val timeInterval2023 = TimeInterval.ofYear(2023)
-
-            doReturn(Optional.of(project))
-                .whenever(projectRepository)
-                .findById(projectRoleLimitedByYear.project.id)
-
-            doReturn(activities2023)
-                .whenever(activityRepository)
-                .findByProjectRoleIds(
-                    timeInterval2023.start,
-                    timeInterval2023.end,
-                    listOf(projectRoleLimitedByYear.id),
-                    user.id
-                )
-
-            activityValidator.checkActivityIsValidForCreation(newActivity, user)
-        }
-    }
-
     @ParameterizedTest
     @MethodSource("testInputsInMinutes")
-    fun `do nothing when activity is valid for creation in minutes`(
+    fun `do not throw exception when activity is valid for creation in minutes`(
         previousTimeRegisteredForProjectRole: Int,
         newActivityDuration: Long,
     ) {
-        //println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration; TimeUnit: $timeUnit; isThisYear: $activityEndsInCurrentYear");
+        println("Test Params:: TimeUsedForCurrentActivities: $previousTimeRegisteredForProjectRole; TimeForNewActivity: $newActivityDuration")
 
         val newActivity = createNewActivityInMinutes(newActivityDuration)
 
@@ -218,12 +192,6 @@ class ActivityMaxTimeByYearValidatorTest {
                 activities2023.add(
                     createExistingActivityInMinutes(previousTimeRegisteredForProjectRole, index)
                 )
-
-        val timeInterval2023 = TimeInterval.ofYear(2023)
-
-        doReturn(Optional.of(project))
-            .whenever(projectRepository)
-            .findById(projectRoleLimitedByYear.project.id)
 
         doReturn(activities2023)
             .whenever(activityRepository)
