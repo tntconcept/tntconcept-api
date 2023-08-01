@@ -130,7 +130,7 @@ class ActivityMaxTimeByYearValidatorTest {
         arrayOf(2, 2, TimeUnit.NATURAL_DAYS),
     )
     @ParameterizedTest
-    @MethodSource("testInputsInDaysWithYearChange")
+    @MethodSource("testInputsInDaysWithChangeOfYear")
     fun `do not throw exception when activity is valid for creation in days or natural days ending in different year`(
         previousTimeRegisteredForProjectRole: Int,
         newActivityDuration: Long,
