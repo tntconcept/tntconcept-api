@@ -30,8 +30,8 @@ class PendingApproveActivityMailServiceTest {
 
         val anActivity = createActivity().toDomain()
         val username = "myuser"
-        val projectName = "Dummy Project"
-        val projectRoleName = "Dummy Project role"
+        val projectName = anActivity.projectRole.project.name
+        val projectRoleName = anActivity.projectRole.name
         val aLocale = Locale.ENGLISH
         val listOfApprovalUsers = listOf("approver@email.com", "two@email.com", "three@email.com")
 
