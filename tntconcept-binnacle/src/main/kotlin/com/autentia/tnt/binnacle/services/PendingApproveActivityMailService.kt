@@ -20,13 +20,13 @@ internal class PendingApproveActivityMailService(
         listOfActivityApprovalUserEmails: List<String>,
     ) {
 
-        val datePattern = getPatternOfActivityTimeUnit(activity)
+        val datePattern = getPatternOfActivityByTimeUnit(activity)
 
         if (!appProperties.mail.enabled) {
             logger.info("Mailing of approval activities is disabled")
             return
         }
-        
+
         val body = messageSource
             .getMessage(
                 "mail.request.pendingApproveActivity.template",
@@ -52,7 +52,7 @@ internal class PendingApproveActivityMailService(
             .onFailure { logger.error("Error sending activity approve email", it) }
     }
 
-    fun getPatternOfActivityTimeUnit(activity: Activity) =
+    fun getPatternOfActivityByTimeUnit(activity: Activity) =
         if (activity.timeUnit == TimeUnit.MINUTES) "yyyy-MM-dd HH:mm:ss" else "yyyy-MM-dd"
 
 
