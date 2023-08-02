@@ -31,6 +31,8 @@ internal class PendingApproveActivityMailService(
             .getMessage(
                 "mail.request.pendingApproveActivity.template",
                 locale,
+                activity.projectRole.project.name,
+                activity.projectRole.name,
                 username,
                 activity.getStart().format(DateTimeFormatter.ofPattern(datePattern)),
                 activity.getEnd().format(DateTimeFormatter.ofPattern(datePattern)),

@@ -40,6 +40,8 @@ class PendingApproveActivityMailServiceTest {
 
         val anActivity = createActivity().toDomain()
         val username = "myuser"
+        val projectName = anActivity.projectRole.project.name
+        val projectRoleName = anActivity.projectRole.name
         val aLocale = Locale.ENGLISH
         val listOfApprovalUsers = listOf("approver@email.com", "two@email.com", "three@email.com")
 
@@ -47,6 +49,8 @@ class PendingApproveActivityMailServiceTest {
             messageSource.getMessage(
                 "mail.request.pendingApproveActivity.template",
                 aLocale,
+                projectName,
+                projectRoleName,
                 username,
                 anActivity.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                 anActivity.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
@@ -76,6 +80,8 @@ class PendingApproveActivityMailServiceTest {
 
         val projectRole = createProjectRoleWithTimeUnit(1L, TimeUnit.DAYS)
         val anActivity = createActivity(projectRole = projectRole).toDomain()
+        val projectName = anActivity.projectRole.project.name
+        val projectRoleName = anActivity.projectRole.name
         val username = "myuser"
         val aLocale = Locale.ENGLISH
         val listOfApprovalUsers = listOf("approver@email.com", "two@email.com", "three@email.com")
@@ -84,6 +90,8 @@ class PendingApproveActivityMailServiceTest {
             messageSource.getMessage(
                 "mail.request.pendingApproveActivity.template",
                 aLocale,
+                projectName,
+                projectRoleName,
                 username,
                 anActivity.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                 anActivity.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
