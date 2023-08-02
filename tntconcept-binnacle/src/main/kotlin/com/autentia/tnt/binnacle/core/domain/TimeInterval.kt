@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.exception.TimeIntervalException
 import java.time.Duration
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
 
@@ -17,6 +18,9 @@ data class TimeInterval private constructor(val start: LocalDateTime, val end: L
             LocalDateTime.of(year, Month.JANUARY, 1, 0, 0),
             LocalDateTime.of(year, Month.DECEMBER, 31, 23, 59)
         )
+
+        fun getTimeIntervalFromOptionalYear(year: Int?): TimeInterval =
+            ofYear(year ?: LocalDate.now().year)
     }
 
     fun getDateInterval() = DateInterval.of(start.toLocalDate(), end.toLocalDate())
