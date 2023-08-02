@@ -30,10 +30,23 @@ class PendingApproveActivityMailServiceTest {
 
         val anActivity = createActivity().toDomain()
         val username = "myuser"
+        val projectName = "Dummy Project"
+        val projectRoleName = "Dummy Project role"
         val aLocale = Locale.ENGLISH
         val listOfApprovalUsers = listOf("approver@email.com", "two@email.com", "three@email.com")
 
-        whenever(messageSource.getMessage("mail.request.pendingApproveActivity.template", aLocale, username, anActivity.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), anActivity.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")), anActivity.description)).thenReturn(Optional.of("Message"))
+        whenever(
+            messageSource.getMessage(
+                "mail.request.pendingApproveActivity.template",
+                aLocale,
+                projectName,
+                projectRoleName,
+                username,
+                anActivity.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                anActivity.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                anActivity.description
+            )
+        ).thenReturn(Optional.of("Message"))
         whenever(messageSource.getMessage("mail.request.pendingApproveActivity.subject", aLocale, username)).thenReturn(Optional.of("Subject"))
 
         whenever(this.mailService.send(any(), any(), any(), any(), any())).thenReturn(Result.success("Email sent"))

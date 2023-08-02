@@ -7,8 +7,6 @@ import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import java.util.stream.Collectors
-import java.util.stream.Stream
 
 @Singleton
 internal class PendingApproveActivityMailService(
@@ -26,6 +24,8 @@ internal class PendingApproveActivityMailService(
                 .getMessage(
                         "mail.request.pendingApproveActivity.template",
                         locale,
+                        activity.projectRole.project.name,
+                        activity.projectRole.name,
                         username,
                         activity.getStart().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
                         activity.getEnd().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
