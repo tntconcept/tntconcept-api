@@ -43,7 +43,6 @@ internal class AppProperties {
         var workSummary = WorkSummaryProperties()
         var missingEvidencesNotification = MissingEvidencesNotificationProperties()
 
-
         @ConfigurationProperties("work-summary")
         internal class WorkSummaryProperties {
             var persistenceEnabled: Boolean = false
@@ -74,7 +73,17 @@ internal class AppProperties {
         @ConfigurationProperties("missing-evidences-notification")
         internal class MissingEvidencesNotificationProperties {
             var enabled: Boolean = false
-            var cronExpression: String? = null
+            var weekly = WeeklyProperties()
+            var once = OnceProperties()
+
+            @ConfigurationProperties("weekly")
+            internal class WeeklyProperties {
+                var cronExpression: String? = null
+            }
+            @ConfigurationProperties("once")
+            internal class OnceProperties {
+                var cronExpression: String? = null
+            }
         }
 
     }
