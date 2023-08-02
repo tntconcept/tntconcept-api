@@ -119,7 +119,7 @@ internal fun createBlockedProject(id: Long = 1L) = Project(
 internal fun createProjectRoleTimeInfo(
     maxTimeAllowedByYear: Int = 0,
     maxTimeAllowedByActivity: Int = 0,
-    timeUnit: TimeUnit = TimeUnit.MINUTES
+    timeUnit: TimeUnit = TimeUnit.MINUTES,
 ) =
     TimeInfo(MaxTimeAllowed(maxTimeAllowedByYear, maxTimeAllowedByActivity), timeUnit)
 
@@ -145,6 +145,18 @@ internal fun createProjectRole(id: Long = 1L, project: Project): ProjectRole = P
     true,
     false,
     TimeUnit.MINUTES
+)
+
+internal fun createProjectRoleWithTimeUnit(id: Long = 1L, timeUnit: TimeUnit): ProjectRole = ProjectRole(
+    id,
+    "Dummy Project role in days",
+    RequireEvidence.NO,
+    createProject(),
+    0,
+    0,
+    true,
+    false,
+    timeUnit
 )
 
 internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = ApprovalState.NA) = Activity(
