@@ -72,7 +72,7 @@ class PendingApproveActivityMailServiceTest {
     }
 
     @Test
-    fun `should not send time if activity is in days`() {
+    fun `should send email to approve users without time from app properties and from method parameter when activity is in days`() {
         // Given
         appProperties.mail.enabled = true
         appProperties.mail.from = "fromTest@email.com"
