@@ -5,10 +5,12 @@ import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRoleWithTimeUnit
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import io.micronaut.context.MessageSource
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.format.DateTimeFormatter
@@ -22,6 +24,12 @@ class PendingApproveActivityMailServiceTest {
     private val appProperties = AppProperties()
 
     private val sut = PendingApproveActivityMailService(mailService, messageSource, appProperties)
+
+    @AfterEach
+    fun resetMocks() {
+        reset(mailService)
+        reset(messageSource)
+    }
 
     @Test
     fun `should send email to approve users from app properties and from method parameter`() {
