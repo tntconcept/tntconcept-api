@@ -201,6 +201,26 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ActivitySummaryResponse'
+  /api/activity/{activityId}/evidence:
+    get:
+      tags:
+      - activity
+      summary: Retrieves an activity evidence by the activity id.
+      operationId: getEvidenceByActivityId$tntconcept_rest
+      parameters:
+      - name: activityId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: getEvidenceByActivityId$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: string
   /api/activity/{id}:
     get:
       tags:
@@ -261,26 +281,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
-  /api/activity/{id}/evidence:
-    get:
-      tags:
-      - activity
-      summary: Retrieves an activity evidence by the activity id.
-      operationId: getEvidenceByActivityId$tntconcept_rest
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: getEvidenceByActivityId$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                type: string
   /api/calendar/days/count:
     get:
       summary: Retrieves the days within a given period in the time unit of the selected

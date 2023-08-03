@@ -52,9 +52,6 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityDeletionUseCase::class)
     internal val activityDeletionUseCase = mock<ActivityDeletionUseCase>()
 
-    @get:MockBean(ActivityEvidenceRetrievalUseCase::class)
-    internal val activityEvidenceRetrievalUseCase = mock<ActivityEvidenceRetrievalUseCase>()
-
     @get:MockBean(ActivitiesSummaryUseCase::class)
     internal val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
 
@@ -186,20 +183,6 @@ internal class ActivityControllerIT {
 
         assertEquals(NOT_FOUND, ex.status)
         assertEquals("RESOURCE_NOT_FOUND", ex.response.getBody<ErrorResponse>().get().code)
-    }
-
-    @Test
-    fun `get an evidence activity by id`() {
-        val activityId = ACTIVITY_RESPONSE_DTO.id
-        doReturn(EvidenceDTO.from(ACTIVITY_IMAGE)).whenever(activityEvidenceRetrievalUseCase)
-            .getActivityEvidenceByActivityId(activityId)
-
-        val response = client.exchangeObject<String>(
-            GET("/api/activity/$activityId/evidence")
-        )
-
-        assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_IMAGE, response.body())
     }
 
     @Test

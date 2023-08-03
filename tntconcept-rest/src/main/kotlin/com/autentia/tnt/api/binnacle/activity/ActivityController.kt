@@ -27,7 +27,6 @@ internal class ActivityController(
     private val activityCreationUseCase: ActivityCreationUseCase,
     private val activityUpdateUseCase: ActivityUpdateUseCase,
     private val activityDeletionUseCase: ActivityDeletionUseCase,
-    private val activityEvidenceRetrievalUseCase: ActivityEvidenceRetrievalUseCase,
     private val activitiesSummaryUseCase: ActivitiesSummaryUseCase,
     private val activityApprovalUseCase: ActivityApprovalUseCase,
 ) {
@@ -40,11 +39,6 @@ internal class ActivityController(
     @Operation(summary = "Gets an activity by its id.")
     internal fun get(id: Long): ActivityResponse? =
         ActivityResponse.from(activityRetrievalUseCase.getActivityById(id))
-
-    @Get("/{id}/evidence")
-    @Operation(summary = "Retrieves an activity evidence by the activity id.")
-    internal fun getEvidenceByActivityId(id: Long): String =
-        activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(id).getDataUrl()
 
     @Post
     @Operation(summary = "Creates a new activity")
