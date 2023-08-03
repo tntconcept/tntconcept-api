@@ -218,9 +218,12 @@ paths:
         "200":
           description: getEvidenceByActivityId$tntconcept_rest 200 response
           content:
-            application/json:
+            multipart/form-data:
               schema:
-                type: string
+                type: array
+                items:
+                  type: string
+                  format: byte
   /api/activity/{id}:
     get:
       tags:
