@@ -18,7 +18,7 @@ class ActivityEvidenceRetrievalUseCase internal constructor(
 
     @Transactional
     @ReadOnly
-    fun getActivityEvidenceByActivityId(activityId: Long): EvidenceDTO {
+    fun getActivityEvidence(activityId: Long): EvidenceDTO {
         val activity = activityRepository.findById(activityId)?.toDomain() ?: throw ActivityNotFoundException(activityId)
 
         if (activity.hasEvidences) {

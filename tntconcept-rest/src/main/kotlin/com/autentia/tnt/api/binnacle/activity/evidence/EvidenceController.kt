@@ -27,11 +27,11 @@ internal class EvidenceController (
     @Produces(MediaType.MULTIPART_FORM_DATA)
     @Operation(summary = "Retrieves an activity evidence by the activity id.")
     internal fun getEvidenceByActivityId(activityId: Long): HttpResponse<ByteArray> {
-        val evidence = activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(activityId)
+        val evidence = activityEvidenceRetrievalUseCase.getActivityEvidence(activityId)
 
         return HttpResponse.ok(Base64.getDecoder().decode(evidence.base64data))
             .header("Content-type",  evidence.mediaType)
-            .header("Content-disposition", "attachment; filename=\"${activityId}_evidence.${getExtension(evidence.mediaType)}\"");
+            .header("Content-disposition", "attachment; filename=\"${activityId}_evidence.${getExtension(evidence.mediaType)}\"")
     }
 
     fun getExtension(mediaType: String) = mediaType.split("/")[1]

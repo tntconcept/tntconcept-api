@@ -43,7 +43,7 @@ class EvidenceControllerIT {
         val evidence = EvidenceDTO.from(EVIDENCE_BASE64)
 
         doReturn(evidence).whenever(activityEvidenceRetrievalUseCase)
-            .getActivityEvidenceByActivityId(ACTIVITY_ID)
+            .getActivityEvidence(ACTIVITY_ID)
 
         val response = client.exchangeObject<String>(
             HttpRequest.GET("/api/activity/$ACTIVITY_ID/evidence")

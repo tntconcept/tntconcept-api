@@ -50,22 +50,22 @@ internal class ActivityEvidenceRetrievalUseCaseTest {
             IMAGE
         )
 
-        assertEquals(IMAGE, activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(ID))
+        assertEquals(IMAGE, activityEvidenceRetrievalUseCase.getActivityEvidence(ACTIVITY_ID))
     }
 
     @Test
     fun `throw NoImageInActivityException with correct id when activity doesn't have an image`() {
-        whenever(activityRepository.findById(ID)).thenReturn(activityWithoutEvidenceEntity)
+        whenever(activityRepository.findById(ACTIVITY_ID)).thenReturn(activityWithoutEvidenceEntity)
 
         val exception = assertThrows<NoEvidenceInActivityException> {
-            activityEvidenceRetrievalUseCase.getActivityEvidenceByActivityId(ID)
+            activityEvidenceRetrievalUseCase.getActivityEvidence(ACTIVITY_ID)
         }
         
-        assertEquals(exception.id, ID)
+        assertEquals(exception.id, ACTIVITY_ID)
     }
 
     private companion object {
-        private const val ID = 1L
+        private const val ACTIVITY_ID = 1L
         private val TODAY = LocalDateTime.now()
         private val IMAGE = EvidenceDTO("Image in base 64", "")
         private val organization = Organization(1L, "Autentia", emptyList())
