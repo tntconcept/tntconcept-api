@@ -39,19 +39,6 @@ internal class ActivityEvidenceService(
         throw FileNotFoundException()
     }
 
-    @Deprecated("Use getActivityEvidence instead")
-    fun getActivityEvidenceAsBase64String(id: Long, insertDate: Date): String {
-        val supportedExtensions = getSupportedExtensions()
-        for (supportedExtension: String in supportedExtensions) {
-            val filePathWithExtension = getFilePath(insertDate, id, supportedExtension)
-            if (Files.exists(filePathWithExtension)) {
-                val fileContents = FileUtils.readFileToByteArray(File(filePathWithExtension.toUri()))
-                return Base64.getEncoder().encodeToString(fileContents)
-            }
-        }
-        throw FileNotFoundException()
-    }
-
 
     fun storeActivityEvidence(activityId: Long, evidence: Evidence, insertDate: Date) {
         require(isMimeTypeSupported(evidence.mediaType)) { "Mime type ${evidence.mediaType} is not supported" }

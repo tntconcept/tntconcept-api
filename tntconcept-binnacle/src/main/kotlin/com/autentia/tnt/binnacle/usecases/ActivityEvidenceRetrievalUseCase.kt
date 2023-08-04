@@ -15,18 +15,6 @@ class ActivityEvidenceRetrievalUseCase internal constructor(
     private val activityRepository: ActivityRepository,
     private val activityEvidenceService: ActivityEvidenceService,
 ) {
-    @Deprecated("Use getActivityEvidenceByActivityId")
-    @Transactional
-    @ReadOnly
-    fun getActivityEvidence(activityId: Long): String {
-        val activity = activityRepository.findById(activityId)?.toDomain() ?: throw ActivityNotFoundException(activityId)
-
-        if (activity.hasEvidences) {
-            return activityEvidenceService.getActivityEvidenceAsBase64String(activityId, toDate(activity.insertDate)!!)
-        } else {
-            throw NoEvidenceInActivityException(activityId)
-        }
-    }
 
     @Transactional
     @ReadOnly
@@ -39,4 +27,5 @@ class ActivityEvidenceRetrievalUseCase internal constructor(
             throw NoEvidenceInActivityException(activityId)
         }
     }
+
 }

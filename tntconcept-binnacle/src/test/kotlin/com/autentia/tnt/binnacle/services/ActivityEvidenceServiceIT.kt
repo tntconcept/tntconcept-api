@@ -109,27 +109,6 @@ internal class ActivityEvidenceServiceIT {
 
     @Nested
     inner class RetrievalImage {
-        @ParameterizedTest
-        @ValueSource(
-            strings = [
-                "jpg",
-                "jpeg",
-                "pdf",
-                "png",
-                "gif"
-            ]
-        )
-        fun `should return the stored image of the activity in base 64`(fileExtension: String) {
-            val file = File("${appProperties.files.evidencesPath}/2022/4/2.$fileExtension")
-            file.writeText("Hello World!")
-
-            val result = activityEvidenceService.getActivityEvidenceAsBase64String(2L, date)
-
-
-            file.delete()
-            assertThat(result).isEqualTo("SGVsbG8gV29ybGQh")
-            assertThat(file.exists()).isFalse()
-        }
 
         @ParameterizedTest
         @ValueSource(
