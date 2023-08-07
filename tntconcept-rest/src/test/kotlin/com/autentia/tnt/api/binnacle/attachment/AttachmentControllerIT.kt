@@ -23,7 +23,7 @@ import java.util.*
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AttachmentInfoInfoControllerIT {
+class AttachmentControllerIT {
 
     @Inject
     @field:Client(value = "/", errorType = String::class)
@@ -54,7 +54,7 @@ class AttachmentInfoInfoControllerIT {
 
         assertEquals(HttpStatus.OK, response.status)
         assertEquals(ATTACHMENT_MIME_TYPE, response.headers.get("Content-type"))
-        assertTrue(Arrays.equals(IMAGE_RAW, response.body()));
+        assertTrue(Arrays.equals(IMAGE_RAW, response.body()))
         assertEquals("attachment; filename=\"$ATTACHMENT_FILENAME\"", response.headers.get("Content-disposition"))
     }
 

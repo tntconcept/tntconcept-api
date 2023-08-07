@@ -28,12 +28,10 @@ internal class AttachmentController (
 
         val attachment = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
         println(Base64.getDecoder().decode(attachment))
-        val response =  HttpResponse.ok(Base64.getDecoder().decode(attachment))
+
+        return HttpResponse.ok(Base64.getDecoder().decode(attachment))
             .header("Content-type",  MediaType.IMAGE_PNG_TYPE)
             .header("Content-disposition", "attachment; filename=\"${id}.${getExtension(MediaType.IMAGE_PNG)}\"")
-
-
-        return response
     }
 
     @Post

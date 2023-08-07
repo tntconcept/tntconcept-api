@@ -6,6 +6,4 @@ import io.micronaut.data.repository.CrudRepository
 import java.util.*
 
 @Repository
-internal interface AttachmentInfoRepository : CrudRepository<AttachmentInfo, UUID> {
-
-}
+internal interface AttachmentInfoRepository : CrudRepository<AttachmentInfo, UUID>

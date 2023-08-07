@@ -7,22 +7,23 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.whenever
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AttachmentRetrievalUseCaseTest {
 
-    private val attachmentRepository = mock<AttachmentInfoRepository>()
-    private val attachmentFileRepository = mock<AttachmentFileRepository>()
-    private val attachmentRetrievalUseCase = AttachmentRetrievalUseCase(
-        attachmentRepository,
-        attachmentFileRepository
-    )
+    private val attachmentRepository = mock<AttachmentInfoRepository> ()
+    private val attachmentFileRepository = mock<AttachmentFileRepository> ()
+    private val attachmentRetrievalUseCase = AttachmentRetrievalUseCase (attachmentRepository, attachmentFileRepository)
 
 
     @Test
     fun `retrieve attachment by uuid`() {
-        //whenever(attachmentRepository.findById(ATTACHMENT_UUID)).thenReturn(Optional.of(ATTACHMENT_ENTITY))
+        whenever(attachmentRepository.findById(ATTACHMENT_UUID))
+            .thenReturn(Optional.of(ATTACHMENT_ENTITY))
+        whenever(attachmentFileRepository.getAttachment(ATTACHMENT_ENTITY.path, ATTACHMENT_ENTITY.type, ATTACHMENT_ENTITY.fileName))
+            .thenReturn(IMAGE_RAW)
 
         val attachment = attachmentRetrievalUseCase.getAttachmentFile(ATTACHMENT_UUID)
         assertTrue(Arrays.equals(IMAGE_RAW, attachment))
