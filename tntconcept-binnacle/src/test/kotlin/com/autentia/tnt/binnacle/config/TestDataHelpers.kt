@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.config
 
+import com.autentia.tnt.binnacle.core.domain.AttachmentType
 import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
@@ -11,6 +12,7 @@ import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
+import java.util.*
 
 internal fun createUser(): User = createUser(LocalDate.of(2020, Month.JANUARY, 1))
 internal fun createUser(hiringDate: LocalDate, id: Long = 1L, name: String = "John Doe"): User = User(
@@ -239,4 +241,14 @@ internal fun createActivityResponseDTO(
     interval = IntervalResponseDTO(start, end, 45, TimeUnit.MINUTES),
     userId = 1L,
     approval = ApprovalDTO(approvalState)
+)
+
+internal fun createAttachmentInfo() = AttachmentInfo(
+    id = UUID.randomUUID(),
+    type = AttachmentType.EVIDENCE,
+    path = "/",
+    fileName = "Evidence001",
+    mimeType = "application/png",
+    uploadDate = LocalDateTime.now(),
+    isTemporary = false
 )

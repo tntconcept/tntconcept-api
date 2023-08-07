@@ -1,6 +1,7 @@
 package com.autentia.tnt.api.binnacle.attachment
 
 import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
@@ -8,17 +9,21 @@ import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.multipart.MultipartBody
+import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.mockito.Mockito.doReturn
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.whenever
 import java.util.*
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AttachmentControllerIT {
+class AttachmentInfoInfoControllerIT {
 
     @Inject
     @field:Client(value = "/", errorType = String::class)
@@ -26,8 +31,8 @@ class AttachmentControllerIT {
 
     private lateinit var client: BlockingHttpClient
 
-//    @get:MockBean(ActivityEvidenceRetrievalUseCase::class)
-//    internal val activityEvidenceRetrievalUseCase = mock<ActivityEvidenceRetrievalUseCase>()
+    @get:MockBean(AttachmentRetrievalUseCase::class)
+    internal val attachmentRetrievalUseCase = mock<AttachmentRetrievalUseCase>()
 
 //    @get:MockBean(ActivityEvidenceCreationUseCase::class)
 //    internal val activityEvidenceCreationUseCase = mock<ActivityEvidenceCreationUseCase>()
@@ -39,10 +44,9 @@ class AttachmentControllerIT {
 
     @Test
     fun `get an attachment by id`() {
-//        val attachment = EvidenceDTO.from(ATTACHMENT_BASE64)
 
-//        doReturn(evidence).whenever(activityEvidenceRetrievalUseCase)
-//            .getActivityEvidence(ACTIVITY_ID)
+        doReturn(IMAGE_RAW).whenever(attachmentRetrievalUseCase)
+            .getAttachmentFile(ATTACHMENT_UUID)
 
         val response = client.exchangeObject<ByteArray>(
             HttpRequest.GET("/api/attachment/$ATTACHMENT_UUID")
@@ -51,8 +55,6 @@ class AttachmentControllerIT {
         assertEquals(HttpStatus.OK, response.status)
         assertEquals(ATTACHMENT_MIME_TYPE, response.headers.get("Content-type"))
         assertTrue(Arrays.equals(IMAGE_RAW, response.body()));
-
-//        assertEquals( IMAGE_RAW, response.body())
         assertEquals("attachment; filename=\"$ATTACHMENT_FILENAME\"", response.headers.get("Content-disposition"))
     }
 
@@ -87,7 +89,8 @@ class AttachmentControllerIT {
     // TODO generate tests for DELETE errors
 
     private companion object {
-        private const val IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
+        private const val IMAGE_BASE64 =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
         private const val ATTACHMENT_MIME_TYPE = "image/png"
         private val ATTACHMENT_UUID = UUID.randomUUID()
         private val IMAGE_RAW = Base64.getDecoder().decode(IMAGE_BASE64)
