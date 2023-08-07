@@ -201,29 +201,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ActivitySummaryResponse'
-  /api/activity/{activityId}/evidence:
-    get:
-      tags:
-      - activity
-      summary: Retrieves an activity evidence by the activity id.
-      operationId: getEvidenceByActivityId$tntconcept_rest
-      parameters:
-      - name: activityId
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: getEvidenceByActivityId$tntconcept_rest 200 response
-          content:
-            multipart/form-data:
-              schema:
-                type: array
-                items:
-                  type: string
-                  format: byte
   /api/activity/{id}:
     get:
       tags:
@@ -284,6 +261,70 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
+  /api/attachment:
+    post:
+      tags:
+      - activity
+      summary: Create an attachment
+      operationId: createAttachment$tntconcept_rest
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - attachmentFile
+              type: object
+              properties:
+                attachmentFile:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        "200":
+          description: createAttachment$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
+  /api/attachment/{id}:
+    get:
+      tags:
+      - activity
+      summary: Retrieves an attachment
+      operationId: getAttachment$tntconcept_rest
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: getAttachment$tntconcept_rest 200 response
+          content:
+            multipart/form-data:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
+    delete:
+      tags:
+      - activity
+      summary: Delete an attachment
+      operationId: deleteAttachment$tntconcept_rest
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: deleteAttachment$tntconcept_rest 200 response
   /api/calendar/days/count:
     get:
       summary: Retrieves the days within a given period in the time unit of the selected
