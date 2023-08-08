@@ -4,6 +4,7 @@ import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
 import com.autentia.tnt.binnacle.core.domain.AttachmentType
+import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -11,6 +12,7 @@ import io.micronaut.http.MediaType
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.client.multipart.MultipartBody
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -19,8 +21,10 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
 import java.util.*
@@ -63,6 +67,23 @@ class AttachmentControllerIT {
     }
 
     @Test
+    fun `returns HttpStatus NOT_FOUND when get an attachment that doesn't exist`() {
+        doThrow(AttachmentNotFoundException()).whenever(attachmentRetrievalUseCase)
+            .getAttachment(ATTACHMENT_UUID)
+
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeObject<ByteArray>(
+                HttpRequest.GET("/api/attachment/$ATTACHMENT_UUID")
+            )
+        }
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.status)
+
+    }
+
+
+
+    @Test
     fun `create an attachment`() {
 
 //        whenever(activityEvidenceCreationUseCase.createActivityEvidence(any(), any(), any())).thenReturn(ACTIVITY_ID)
@@ -76,6 +97,7 @@ class AttachmentControllerIT {
         assertNotNull(response.body)
         assertEquals(HttpStatus.OK, response.status)
     }
+
 
     // TODO generate tests for POST errors
 

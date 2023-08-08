@@ -1,8 +1,11 @@
 package com.autentia.tnt.api.binnacle.attachment
 
 import com.autentia.tnt.api.OpenApiTag
+import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 //import com.autentia.tnt.binnacle.usecases.ActivityEvidenceCreationUseCase
 import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCase
+import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
@@ -11,7 +14,6 @@ import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.util.*
-import javax.activation.MimeType
 
 @Controller("/api/attachment")
 @Validated
@@ -56,6 +58,10 @@ internal class AttachmentController (
     @Operation(summary = "Delete an attachment")
     internal fun deleteAttachment(id: UUID) {
     }
+
+    @Error
+    internal fun onAttachmentNotFoundException (request: HttpRequest<*>, e: AttachmentNotFoundException) =
+        HttpResponse.notFound(ErrorResponse("Evidence not found", e.message))
 
 
     fun getExtension(mediaType: String) = mediaType.split("/")[1]

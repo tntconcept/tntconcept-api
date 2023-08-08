@@ -1,15 +1,18 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import java.util.*
+import java.util.Optional.empty
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AttachmentRetrievalUseCaseTest {
@@ -30,6 +33,18 @@ class AttachmentRetrievalUseCaseTest {
         assertEquals(ATTACHMENT_INFO, attachment.info)
         assertTrue(Arrays.equals(IMAGE_RAW, attachment.file))
     }
+
+    @Test
+    fun `throws AttachmentNotFoundException when getn an attachment by id that doesnt exists` (){
+        whenever(attachmentRepository.findById(ATTACHMENT_UUID))
+            .thenReturn(empty())
+
+        assertThrows<AttachmentNotFoundException> {
+            attachmentRetrievalUseCase.getAttachment(ATTACHMENT_UUID)
+        }
+    }
+
+
 
     companion object {
         private val ATTACHMENT_INFO_ENTITY = createAttachmentInfo()
