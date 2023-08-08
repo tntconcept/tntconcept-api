@@ -53,12 +53,6 @@ internal class AttachmentController (
         return UUID.randomUUID()
     }
 
-
-    @Delete("/{id}")
-    @Operation(summary = "Delete an attachment")
-    internal fun deleteAttachment(id: UUID) {
-    }
-
     @Error
     internal fun onAttachmentNotFoundException (request: HttpRequest<*>, e: AttachmentNotFoundException) =
         HttpResponse.notFound(ErrorResponse("Evidence not found", e.message))

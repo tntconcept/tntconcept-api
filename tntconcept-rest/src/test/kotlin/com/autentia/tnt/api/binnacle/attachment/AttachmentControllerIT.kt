@@ -101,18 +101,6 @@ class AttachmentControllerIT {
 
     // TODO generate tests for POST errors
 
-    @Test
-    fun `delete an evidence associated to an activity`() {
-
-        // TODO review exchangeObjectType
-        val response = client.exchangeObject<Boolean>(
-            HttpRequest.DELETE("/api/attachment/$ATTACHMENT_UUID")
-        )
-
-        assertEquals(HttpStatus.OK, response.status)
-    }
-
-    // TODO generate tests for DELETE errors
 
     private companion object {
         private val ATTACHMENT_UUID = UUID.randomUUID()
