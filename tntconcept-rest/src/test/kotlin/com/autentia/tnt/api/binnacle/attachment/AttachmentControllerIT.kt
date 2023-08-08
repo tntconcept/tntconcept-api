@@ -1,9 +1,9 @@
 package com.autentia.tnt.api.binnacle.attachment
 
 import com.autentia.tnt.api.binnacle.exchangeObject
-import com.autentia.tnt.binnacle.core.domain.Attachment
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentType
+import com.autentia.tnt.binnacle.entities.AttachmentType
+import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
+import com.autentia.tnt.binnacle.entities.dto.AttachmentInfoDTO
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCase
 import io.micronaut.http.HttpRequest
@@ -53,7 +53,7 @@ class AttachmentControllerIT {
     @Test
     fun `get an attachment by id`() {
 
-        doReturn(ATTACHMENT).whenever(attachmentRetrievalUseCase)
+        doReturn(ATTACHMENT_DTO).whenever(attachmentRetrievalUseCase)
             .getAttachment(ATTACHMENT_UUID)
 
         val response = client.exchangeObject<ByteArray>(
@@ -120,10 +120,10 @@ class AttachmentControllerIT {
         private  val ATTACHMENT_FILENAME = "$ATTACHMENT_UUID.png"
         private const val IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
         private val IMAGE_RAW = Base64.getDecoder().decode(IMAGE_BASE64)
-        private val ATTACHMENT_INFO = AttachmentInfo(
+        private val ATTACHMENT_INFO_DTO = AttachmentInfoDTO(
             ATTACHMENT_UUID, AttachmentType.EVIDENCE, "/", ATTACHMENT_FILENAME, ATTACHMENT_MIME_TYPE,
             LocalDateTime.now(), false)
-        private val ATTACHMENT = Attachment(ATTACHMENT_INFO, IMAGE_RAW)
+        private val ATTACHMENT_DTO = AttachmentDTO(ATTACHMENT_INFO_DTO, IMAGE_RAW)
     }
 
 }

@@ -1,6 +1,8 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
+import com.autentia.tnt.binnacle.entities.dto.AttachmentInfoDTO
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -19,7 +21,8 @@ class AttachmentRetrievalUseCaseTest {
 
     private val attachmentRepository = mock<AttachmentInfoRepository> ()
     private val attachmentFileRepository = mock<AttachmentFileRepository> ()
-    private val attachmentRetrievalUseCase = AttachmentRetrievalUseCase (attachmentRepository, attachmentFileRepository)
+    private val attachmentInfoConverter = AttachmentInfoConverter()
+    private val attachmentRetrievalUseCase = AttachmentRetrievalUseCase (attachmentRepository, attachmentFileRepository, attachmentInfoConverter)
 
 
     @Test
@@ -30,7 +33,7 @@ class AttachmentRetrievalUseCaseTest {
             .thenReturn(IMAGE_RAW)
 
         val attachment = attachmentRetrievalUseCase.getAttachment(ATTACHMENT_UUID)
-        assertEquals(ATTACHMENT_INFO, attachment.info)
+        assertEquals(ATTACHMENT_INFO_DTO, attachment.info)
         assertTrue(Arrays.equals(IMAGE_RAW, attachment.file))
     }
 
@@ -49,6 +52,8 @@ class AttachmentRetrievalUseCaseTest {
     companion object {
         private val ATTACHMENT_INFO_ENTITY = createAttachmentInfo()
         private val ATTACHMENT_INFO = ATTACHMENT_INFO_ENTITY.toDomain()
+        private val ATTACHMENT_INFO_CONVERTER = AttachmentInfoConverter()
+        private val ATTACHMENT_INFO_DTO = ATTACHMENT_INFO_CONVERTER.toAttachmentInfoDTO(ATTACHMENT_INFO)
 
         private const val IMAGE_BASE64 =
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="

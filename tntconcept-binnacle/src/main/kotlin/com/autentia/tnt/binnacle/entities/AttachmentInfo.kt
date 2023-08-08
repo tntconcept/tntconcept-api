@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.entities
 
-import com.autentia.tnt.binnacle.core.domain.AttachmentType
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.Entity
@@ -31,4 +30,8 @@ data class AttachmentInfo(
             uploadDate,
             isTemporary
         )
+}
+
+enum class AttachmentType {
+    EVIDENCE
 }

@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.config
 
-import com.autentia.tnt.binnacle.core.domain.AttachmentType
 import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval

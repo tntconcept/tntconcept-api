@@ -1,10 +1,10 @@
-package com.autentia.tnt.binnacle.core.domain
+package com.autentia.tnt.binnacle.entities.dto
 
 import com.autentia.tnt.binnacle.entities.AttachmentType
 import java.time.LocalDateTime
 import java.util.*
 
-data class AttachmentInfo(
+data class AttachmentInfoDTO (
     val id: UUID,
     val type: AttachmentType,
     val path: String,
@@ -13,4 +13,3 @@ data class AttachmentInfo(
     val uploadDate: LocalDateTime,
     val isTemporary: Boolean,
 )
-

@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.core.domain.AttachmentType
+import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 
 import org.junit.jupiter.api.Assertions.*
