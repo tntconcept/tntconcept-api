@@ -26,7 +26,7 @@ internal class AttachmentFileRepository(
         val filePath = Path.of(getBasePath(type), path, fileName)
 
         if (!Files.exists(filePath)) {
-            throw AttachmentNotFoundException("Attachment file does not exist")
+            throw AttachmentNotFoundException("Attachment file does not exist: $filePath")
         }
 
         return FileUtils.readFileToByteArray(File(filePath.toUri()))
