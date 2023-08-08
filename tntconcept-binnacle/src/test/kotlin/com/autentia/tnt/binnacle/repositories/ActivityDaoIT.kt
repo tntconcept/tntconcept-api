@@ -12,7 +12,7 @@ import org.junit.jupiter.api.TestInstance
 import java.time.LocalDate
 import java.time.LocalTime
 
-@MicronautTest()
+@MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ActivityDaoIT {
 

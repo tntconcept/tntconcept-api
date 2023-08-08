@@ -62,7 +62,13 @@ data class Activity(
     var approvalState: ApprovalState,
 
     var approvedByUserId: Long? = null,
-    var approvalDate: LocalDateTime? = null
+    var approvalDate: LocalDateTime? = null,
+
+
+    @JoinColumn(name = "attachment_id")
+    @OneToMany(fetch = LAZY)
+    var evidences: MutableList<AttachmentInfo> = arrayListOf()
+
 ) {
     fun getTimeInterval() = TimeInterval.of(start, end)
 
