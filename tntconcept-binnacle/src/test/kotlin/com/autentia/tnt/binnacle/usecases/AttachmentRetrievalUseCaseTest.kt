@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.config.createAttachmentInfo
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -21,21 +22,22 @@ class AttachmentRetrievalUseCaseTest {
     @Test
     fun `retrieve attachment by uuid`() {
         whenever(attachmentRepository.findById(ATTACHMENT_UUID))
-            .thenReturn(Optional.of(ATTACHMENT_ENTITY))
-        whenever(attachmentFileRepository.getAttachment(ATTACHMENT_ENTITY.path, ATTACHMENT_ENTITY.type, ATTACHMENT_ENTITY.fileName))
+            .thenReturn(Optional.of(ATTACHMENT_INFO_ENTITY))
+        whenever(attachmentFileRepository.getAttachment(ATTACHMENT_INFO_ENTITY.path, ATTACHMENT_INFO_ENTITY.type, ATTACHMENT_INFO_ENTITY.fileName))
             .thenReturn(IMAGE_RAW)
 
-        val attachment = attachmentRetrievalUseCase.getAttachmentFile(ATTACHMENT_UUID)
-        assertTrue(Arrays.equals(IMAGE_RAW, attachment))
+        val attachment = attachmentRetrievalUseCase.getAttachment(ATTACHMENT_UUID)
+        assertEquals(ATTACHMENT_INFO, attachment.info)
+        assertTrue(Arrays.equals(IMAGE_RAW, attachment.file))
     }
 
     companion object {
-        private val ATTACHMENT_ENTITY = createAttachmentInfo()
+        private val ATTACHMENT_INFO_ENTITY = createAttachmentInfo()
+        private val ATTACHMENT_INFO = ATTACHMENT_INFO_ENTITY.toDomain()
+
         private const val IMAGE_BASE64 =
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
-        private const val ATTACHMENT_MIME_TYPE = "image/png"
         private val ATTACHMENT_UUID = UUID.randomUUID()
         private val IMAGE_RAW = Base64.getDecoder().decode(IMAGE_BASE64)
-        private val ATTACHMENT_FILENAME = "$ATTACHMENT_UUID.png"
     }
 }

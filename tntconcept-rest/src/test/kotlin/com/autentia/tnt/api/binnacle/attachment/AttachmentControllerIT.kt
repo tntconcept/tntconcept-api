@@ -1,6 +1,9 @@
 package com.autentia.tnt.api.binnacle.attachment
 
 import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.binnacle.core.domain.Attachment
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.domain.AttachmentType
 import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -19,6 +22,7 @@ import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
+import java.time.LocalDateTime
 import java.util.*
 
 @MicronautTest
@@ -45,8 +49,8 @@ class AttachmentControllerIT {
     @Test
     fun `get an attachment by id`() {
 
-        doReturn(IMAGE_RAW).whenever(attachmentRetrievalUseCase)
-            .getAttachmentFile(ATTACHMENT_UUID)
+        doReturn(ATTACHMENT).whenever(attachmentRetrievalUseCase)
+            .getAttachment(ATTACHMENT_UUID)
 
         val response = client.exchangeObject<ByteArray>(
             HttpRequest.GET("/api/attachment/$ATTACHMENT_UUID")
@@ -89,12 +93,15 @@ class AttachmentControllerIT {
     // TODO generate tests for DELETE errors
 
     private companion object {
-        private const val IMAGE_BASE64 =
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
-        private const val ATTACHMENT_MIME_TYPE = "image/png"
         private val ATTACHMENT_UUID = UUID.randomUUID()
+        private const val ATTACHMENT_MIME_TYPE = "image/png"
+        private  val ATTACHMENT_FILENAME = "$ATTACHMENT_UUID.png"
+        private const val IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
         private val IMAGE_RAW = Base64.getDecoder().decode(IMAGE_BASE64)
-        private val ATTACHMENT_FILENAME = "$ATTACHMENT_UUID.png"
+        private val ATTACHMENT_INFO = AttachmentInfo(
+            ATTACHMENT_UUID, AttachmentType.EVIDENCE, "/", ATTACHMENT_FILENAME, ATTACHMENT_MIME_TYPE,
+            LocalDateTime.now(), false)
+        private val ATTACHMENT = Attachment(ATTACHMENT_INFO, IMAGE_RAW)
     }
 
 }
