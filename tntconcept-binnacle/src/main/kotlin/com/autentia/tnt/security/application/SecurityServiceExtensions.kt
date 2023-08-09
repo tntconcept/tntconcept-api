@@ -32,6 +32,8 @@ fun Authentication.canAccessAllUsers() = isAdmin() || isActivityApproval() || is
 
 fun Authentication.canAccessAllActivities() = isAdmin() || isActivityApproval()
 
+fun Authentication.canAccessAllAttachments() = isAdmin() || isActivityApproval()
+
 fun Authentication.canBlockProjects() = isAdmin() || isBlockProject()
 
 fun Authentication.id(): Long = name.toLong()
