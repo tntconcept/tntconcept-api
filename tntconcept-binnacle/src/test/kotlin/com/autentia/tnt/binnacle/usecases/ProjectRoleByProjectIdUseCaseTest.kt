@@ -31,7 +31,6 @@ import java.util.*
 internal class ProjectRoleByProjectIdUseCaseTest {
 
     private val activityRepository: ActivityRepository = mock()
-    private val activityService = ActivityService(activityRepository)
     private val holidayRepository = mock<HolidayRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val calendarFactory = CalendarFactory(holidayRepository)
@@ -42,10 +41,10 @@ internal class ProjectRoleByProjectIdUseCaseTest {
     private val projectRoleConverter = ProjectRoleConverter()
     private val projectRoleByProjectIdUseCase =
         ProjectRoleByProjectIdUseCase(
-            activityService,
             activityCalendarService,
             securityService,
             projectRoleRepository,
+            activityRepository,
             projectRoleResponseConverter,
             projectRoleConverter
         )

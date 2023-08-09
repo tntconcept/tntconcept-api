@@ -24,15 +24,8 @@ internal class ActivityService(
         activityRepository.findByProjectRoleIds(timeInterval.start, timeInterval.end, projectRoleIds, userId)
             .map(Activity::toDomain)
 
-    fun filterActivitiesByTimeInterval(
-        filterTimeInterval: TimeInterval, activities: List<Activity>,
-    ) = activities.map(Activity::toDomain).filter { it.isInTheTimeInterval(filterTimeInterval) }.toList()
-
     @Transactional
     fun findOverlappedActivities(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long) =
         activityRepository.findOverlapped(startDate, endDate, userId).map(Activity::toDomain)
-
-    fun getProjectRoleActivities(projectRoleId: Long, userId: Long): List<Activity> =
-        activityRepository.findByProjectRoleIdAndUserId(projectRoleId, userId)
 
 }
