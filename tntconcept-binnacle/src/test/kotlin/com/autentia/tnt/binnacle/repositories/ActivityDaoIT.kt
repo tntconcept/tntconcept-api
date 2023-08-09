@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.*
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -636,7 +637,7 @@ internal class ActivityDaoIT {
         val result = activityDao.findById(activityDdId)
         assertTrue(result.isPresent)
         assertTrue(result.get().evidences.isNotEmpty())
-        assertEquals(attachmentDbId, result.get().evidences[0].id)
+        assertEquals(UUID.fromString(attachmentDbId), result.get().evidences[0].id)
     }
 
     private companion object {

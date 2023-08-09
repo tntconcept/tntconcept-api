@@ -65,8 +65,13 @@ data class Activity(
     var approvalDate: LocalDateTime? = null,
 
 
-    @JoinColumn(name = "id")
     @OneToMany(fetch = LAZY)
+    @JoinTable(name="ActivityEvidence",
+        joinColumns = [JoinColumn(name = "activityId",
+            referencedColumnName = "id")],
+        inverseJoinColumns = [JoinColumn(name = "attachmentId",
+            referencedColumnName = "id")]
+    )
     var evidences: MutableList<AttachmentInfo> = arrayListOf()
 
 ) {
