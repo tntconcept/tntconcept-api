@@ -78,8 +78,6 @@ class AttachmentControllerIT {
 
     }
 
-
-
     @Test
     fun `create an attachment`() {
 
@@ -103,12 +101,14 @@ class AttachmentControllerIT {
         private val ATTACHMENT_UUID = UUID.randomUUID()
         private const val ATTACHMENT_MIME_TYPE = "image/png"
         private val ATTACHMENT_FILENAME = "$ATTACHMENT_UUID.png"
-        private const val IMAGE_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
+        private const val IMAGE_BASE64 =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
         private val IMAGE_RAW = Base64.getDecoder().decode(IMAGE_BASE64)
         private const val ATTACHMENT_USERID = 1L
         private val ATTACHMENT_INFO_DTO = AttachmentInfoDTO(
             ATTACHMENT_UUID, ATTACHMENT_USERID, AttachmentType.EVIDENCE, "/", ATTACHMENT_FILENAME, ATTACHMENT_MIME_TYPE,
-            LocalDateTime.now(), false)
+            LocalDateTime.now(), false
+        )
         private val ATTACHMENT_DTO = AttachmentDTO(ATTACHMENT_INFO_DTO, IMAGE_RAW)
     }
 
