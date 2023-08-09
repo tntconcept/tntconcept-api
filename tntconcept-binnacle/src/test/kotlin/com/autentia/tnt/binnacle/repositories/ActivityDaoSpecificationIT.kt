@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -27,7 +28,6 @@ class ActivityDaoSpecificationIT {
     @Inject
     private lateinit var organizationRepository: OrganizationRepository
 
-    @Inject
 
     @Test
     fun `test findAll without condition`() {
@@ -38,27 +38,36 @@ class ActivityDaoSpecificationIT {
         activityDao.saveAll(activitiesToSave)
 
         val actualActivities = activityDao.findAll(ActivityPredicates.ALL)
-        assertEquals(2, actualActivities.size)
+        assertEquals(initialActivities + 2, actualActivities.size)
     }
 
     @Test
     fun `test findAll with order`() {
 
+        val expectedDates = listOf(
+            LocalDate.now().plusDays(1L).atTime(10, 30, 0),
+            LocalDate.now().plusDays(2L).atTime(12, 30, 0),
+            LocalDate.now().atTime(12, 30, 0),
+            LocalDate.now().atTime(9, 0, 0)
+        )
+
         val activitiesToSave = listOf(
-            createActivity().copy(id = null, start = LocalDate.now().plusDays(1L).atTime(10, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
-            createActivity().copy(id = null, start = LocalDate.now().plusDays(2L).atTime(12, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
-            createActivity().copy(id = null, start = LocalDate.now().atTime(12, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
-            createActivity().copy(id = null, userId = 1L, start = LocalDate.now().atTime(9, 0, 0), end = LocalDate.now().atTime(12, 30, 0)),
+            createActivity().copy(id = null, start = expectedDates[0], end = LocalDate.now().atTime(14, 30, 0)),
+            createActivity().copy(id = null, start = expectedDates[1], end = LocalDate.now().atTime(14, 30, 0)),
+            createActivity().copy(id = null, start = expectedDates[2], end = LocalDate.now().atTime(14, 30, 0)),
+            createActivity().copy(id = null, userId = 1L, start = expectedDates[3], end = LocalDate.now().atTime(12, 30, 0)),
         )
         activityDao.saveAll(activitiesToSave)
 
         val actualActivities = activityDao.findAll(ActivityPredicates.ALL, Sort.of(Sort.Order("start")))
 
-        assertEquals(4, actualActivities.size)
-        assertEquals(activitiesToSave[3].start, actualActivities[0].start)
-        assertEquals(activitiesToSave[2].start, actualActivities[1].start)
-        assertEquals(activitiesToSave[0].start, actualActivities[2].start)
-        assertEquals(activitiesToSave[1].start, actualActivities[3].start)
+        assertEquals(initialActivities + 4, actualActivities.size)
+
+        assertEquals(expectedDates[3], actualActivities[1].start)
+        assertEquals(expectedDates[2], actualActivities[2].start)
+        assertEquals(expectedDates[0], actualActivities[3].start)
+        assertEquals(expectedDates[1], actualActivities[4].start)
+        assertEquals(initialActivityStartDate, actualActivities[0].start)
 
     }
 
@@ -195,4 +204,10 @@ class ActivityDaoSpecificationIT {
         assertEquals(expectedActivityAtEnd.start, actualActivities[2].start)
         assertEquals(expectedActivityAtEnd.end, actualActivities[2].end)
     }
+
+    private companion object {
+        private val initialActivities = 1
+        private val initialActivityStartDate = LocalDateTime.of(2023, 8, 2, 9, 0, 0)
+    }
+
 }
