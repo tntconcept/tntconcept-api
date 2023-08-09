@@ -72,7 +72,7 @@ data class Activity(
         inverseJoinColumns = [JoinColumn(name = "attachmentId",
             referencedColumnName = "id")]
     )
-    var evidences: MutableList<AttachmentInfo> = arrayListOf()
+    var evidences: MutableList<AttachmentInfo> = ArrayList()
 
 ) {
     fun getTimeInterval() = TimeInterval.of(start, end)
@@ -153,7 +153,7 @@ data class Activity(
 
         fun emptyActivity(projectRole: ProjectRole): Activity = Activity(
             0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
-            false, 0, null, false, ApprovalState.NA, null, null
+            false, 0, null, false, ApprovalState.NA, null, null, arrayListOf()
         )
     }
 }
