@@ -1,16 +1,12 @@
-CREATE TABLE Activity_Evidence
+CREATE TABLE ActivityEvidence
 (
-    activity_id      int         NOT NULL,
-    attachment_id    VARCHAR(36) NOT NULL,
-    insert_timestamp DATETIME    NOT NULL,
+    activityId   int         NOT NULL,
+    attachmentId VARCHAR(36) NOT NULL,
+    insertDate   DATETIME    NOT NULL,
 
-    PRIMARY KEY (activity_id)
-
+    PRIMARY KEY (activityId),
+    CONSTRAINT fk_activity_id FOREIGN KEY (activityId) REFERENCES Activity (id),
+    CONSTRAINT fk_attachment_id FOREIGN KEY (attachmentId) REFERENCES Attachment (id)
 ) ENGINE = innodb
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_spanish_ci;
-
-ALTER TABLE Activity_Evidence
-    ADD CONSTRAINT fk_activity_id FOREIGN KEY (activity_id) REFERENCES Activity (id);
-ALTER TABLE Activity_Evidence
-    ADD CONSTRAINT fk_attachment_id FOREIGN KEY (attachment_id) REFERENCES Attachment (id);
