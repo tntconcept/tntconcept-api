@@ -8,9 +8,9 @@ import com.autentia.tnt.binnacle.core.domain.ProjectRoleUser
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
@@ -19,10 +19,10 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ProjectRoleByProjectIdUseCase internal constructor(
-    private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
     private val securityService: SecurityService,
     private val projectRoleRepository: ProjectRoleRepository,
+    private val activityRepository: ActivityRepository,
     private val projectRoleResponseConverter: ProjectRoleResponseConverter,
     private val projectRoleConverter: ProjectRoleConverter,
 ) {
@@ -56,10 +56,10 @@ class ProjectRoleByProjectIdUseCase internal constructor(
         val projectRolesUser = mutableListOf<ProjectRoleUser>()
 
         for (projectRole in projectRolesOfProject) {
-            val projectRoleActivities = activityService.getProjectRoleActivities(projectRole.id, userId)
+            val projectRoleActivities =
+                activityRepository.findByProjectRoleIdAndUserId(projectRole.id, userId)
             val timeIntervalProjectRoleActivities =
-                activityService.filterActivitiesByTimeInterval(yearTimeInterval, projectRoleActivities)
-                    .filter { it.getYearOfStart() == yearTimeInterval.getYearOfStart() }
+                filterActivitiesByTimeInterval(yearTimeInterval, projectRoleActivities)
             val remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                 projectRole,
                 timeIntervalProjectRoleActivities,
@@ -72,4 +72,10 @@ class ProjectRoleByProjectIdUseCase internal constructor(
         }
         return projectRolesUser
     }
+
+    private fun filterActivitiesByTimeInterval(
+        yearTimeInterval: TimeInterval,
+        projectRoleActivities: List<Activity>
+    ) = projectRoleActivities.map(Activity::toDomain).filter { it.isInTheTimeInterval(yearTimeInterval) }
+        .filter { it.getYearOfStart() == yearTimeInterval.getYearOfStart() }
 }
