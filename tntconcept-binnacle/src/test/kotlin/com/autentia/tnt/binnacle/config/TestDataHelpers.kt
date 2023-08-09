@@ -252,3 +252,14 @@ internal fun createAttachmentInfo() = AttachmentInfo(
     uploadDate = LocalDateTime.now(),
     isTemporary = false
 )
+
+internal fun createAttachmentInfoWithFilenameAndMimetype(filename: String? = null, mimeType: String) = AttachmentInfo(
+    id = UUID.randomUUID(),
+    userId = 1L,
+    type = AttachmentType.EVIDENCE,
+    path = "/",
+    fileName = filename ?: "Evidence001",
+    mimeType = mimeType,
+    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+    isTemporary = true
+)
