@@ -512,6 +512,12 @@ paths:
           type: integer
           format: int32
           nullable: true
+      - name: userId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
       responses:
         "200":
           description: getProjectRolesByProjectId_1 200 response

@@ -27,20 +27,25 @@ class ProjectRoleByProjectIdUseCase internal constructor(
     private val projectRoleConverter: ProjectRoleConverter,
 ) {
 
-    fun get(projectId: Long, year: Int?): List<ProjectRoleUserDTO> {
-        val authentication = securityService.checkAuthentication()
-        val userId = authentication.id()
+    fun get(projectId: Long, year: Int?, userId: Long?): List<ProjectRoleUserDTO> {
+        val projectRoleUserId = getProjectRoleUser(userId)
 
         val yearTimeInterval = getTimeIntervalFromOptionalYear(year)
         val projectRolesOfProject = projectRoleRepository.getAllByProjectId(projectId).map { it.toDomain() }
         val projectRolesUser = buildProjectRoleWithUserRemaining(
             projectRolesOfProject,
             yearTimeInterval,
-            userId,
+            projectRoleUserId,
         )
 
         return projectRolesUser
             .map(projectRoleResponseConverter::toProjectRoleUserDTO)
+    }
+
+    private fun getProjectRoleUser(userId: Long?): Long {
+        val authentication = securityService.checkAuthentication()
+
+        return userId ?: authentication.id()
     }
 
     private fun buildProjectRoleWithUserRemaining(
