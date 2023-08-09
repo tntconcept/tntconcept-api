@@ -330,21 +330,6 @@ paths:
                 items:
                   type: string
                   format: byte
-    delete:
-      tags:
-      - activity
-      summary: Delete an attachment
-      operationId: deleteAttachment$tntconcept_rest
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-      responses:
-        "200":
-          description: deleteAttachment$tntconcept_rest 200 response
   /api/calendar/days/count:
     get:
       summary: Retrieves the days within a given period in the time unit of the selected

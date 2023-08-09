@@ -244,6 +244,7 @@ internal fun createActivityResponseDTO(
 
 internal fun createAttachmentInfo() = AttachmentInfo(
     id = UUID.randomUUID(),
+    userId = 1L,
     type = AttachmentType.EVIDENCE,
     path = "/",
     fileName = "Evidence001",

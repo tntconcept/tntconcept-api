@@ -2,17 +2,20 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfo
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
-import com.autentia.tnt.binnacle.entities.dto.AttachmentInfoDTO
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
+import io.micronaut.security.authentication.ClientAuthentication
+import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mock
+import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
+import java.time.LocalDate
 import java.util.*
 import java.util.Optional.empty
 
@@ -22,13 +25,20 @@ class AttachmentRetrievalUseCaseTest {
     private val attachmentRepository = mock<AttachmentInfoRepository> ()
     private val attachmentFileRepository = mock<AttachmentFileRepository> ()
     private val attachmentInfoConverter = AttachmentInfoConverter()
-    private val attachmentRetrievalUseCase = AttachmentRetrievalUseCase (attachmentRepository, attachmentFileRepository, attachmentInfoConverter)
+    private val securityService = mock<SecurityService> ()
+    private val attachmentRetrievalUseCase = AttachmentRetrievalUseCase (securityService, attachmentRepository, attachmentFileRepository, attachmentInfoConverter)
+
+    @BeforeEach
+    fun setUp() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+    }
+
 
 
     @Test
     fun `retrieve attachment by uuid`() {
         whenever(attachmentRepository.findById(ATTACHMENT_UUID))
-            .thenReturn(Optional.of(ATTACHMENT_INFO_ENTITY))
+            .thenReturn(ATTACHMENT_INFO_ENTITY)
         whenever(attachmentFileRepository.getAttachment(ATTACHMENT_INFO_ENTITY.path, ATTACHMENT_INFO_ENTITY.type, ATTACHMENT_INFO_ENTITY.fileName))
             .thenReturn(IMAGE_RAW)
 
@@ -38,16 +48,14 @@ class AttachmentRetrievalUseCaseTest {
     }
 
     @Test
-    fun `throws AttachmentNotFoundException when getn an attachment by id that doesnt exists` (){
+    fun `throws AttachmentNotFoundException when get an attachment by id that doesnt exists` (){
         whenever(attachmentRepository.findById(ATTACHMENT_UUID))
-            .thenReturn(empty())
+            .thenReturn(null)
 
         assertThrows<AttachmentNotFoundException> {
             attachmentRetrievalUseCase.getAttachment(ATTACHMENT_UUID)
         }
     }
-
-
 
     companion object {
         private val ATTACHMENT_INFO_ENTITY = createAttachmentInfo()
@@ -59,5 +67,12 @@ class AttachmentRetrievalUseCaseTest {
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
         private val ATTACHMENT_UUID = UUID.randomUUID()
         private val IMAGE_RAW = Base64.getDecoder().decode(IMAGE_BASE64)
+
+        private const val userId = 1L
+        private const val adminUserId = 3L
+        private val authenticationAdmin =
+            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin")))
+        private val authenticationUser = ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
+
     }
 }

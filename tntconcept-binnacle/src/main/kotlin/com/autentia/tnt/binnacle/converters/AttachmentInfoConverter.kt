@@ -7,6 +7,6 @@ import jakarta.inject.Singleton
 @Singleton
 class AttachmentInfoConverter {
     fun toAttachmentInfoDTO(attachmentInfo: AttachmentInfo) =
-        AttachmentInfoDTO( attachmentInfo.id, attachmentInfo.type, attachmentInfo.path,
+        AttachmentInfoDTO( attachmentInfo.id!!,attachmentInfo.userId, attachmentInfo.type, attachmentInfo.path,
             attachmentInfo.fileName, attachmentInfo.mimeType, attachmentInfo.uploadDate, attachmentInfo.isTemporary )
 }

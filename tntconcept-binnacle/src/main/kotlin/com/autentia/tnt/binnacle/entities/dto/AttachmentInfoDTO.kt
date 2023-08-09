@@ -6,6 +6,7 @@ import java.util.*
 
 data class AttachmentInfoDTO (
     val id: UUID,
+    val userId: Long,
     val type: AttachmentType,
     val path: String,
     val fileName: String,
