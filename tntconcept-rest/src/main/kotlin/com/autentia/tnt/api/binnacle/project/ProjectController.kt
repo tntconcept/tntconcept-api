@@ -31,7 +31,7 @@ internal class ProjectController(
     @Operation(summary = "Retrieves a list of project roles from a project ID")
     @Get("/{projectId}/role")
     fun getProjectRolesByProjectId(projectId: Long, @QueryValue year: Int?): List<ProjectRoleUserResponse> =
-        projectRoleByProjectIdUseCase.get(projectId, year).map { ProjectRoleUserResponse.from(it) }
+        projectRoleByProjectIdUseCase.get(projectId, year, null).map { ProjectRoleUserResponse.from(it) }
 
     @Operation(summary = "Blocks a project until given date")
     @Post("/{projectId}/block")

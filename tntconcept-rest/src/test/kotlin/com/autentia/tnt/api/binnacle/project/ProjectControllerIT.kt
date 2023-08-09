@@ -94,7 +94,7 @@ internal class ProjectControllerIT {
         val projectId = 3L
         val year = 2023
 
-        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, year)
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, year, null)
 
         val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project/$projectId/role?year=$year"))
 
@@ -107,7 +107,7 @@ internal class ProjectControllerIT {
 
         val projectId = 3L
 
-        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, null)
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, null, null)
 
         val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project/$projectId/role"))
 
