@@ -631,11 +631,21 @@ internal class ActivityDaoIT {
         assertEquals(expectedActivities, result)
     }
 
+    @Test
+    fun `should find activity with attachment`() {
+        val result = activityDao.findById(activityDdId)
+        assertTrue(result.isPresent)
+        assertTrue(result.get().evidences.isNotEmpty())
+        assertEquals(attachmentDbId, result.get().evidences[0].id)
+    }
+
     private companion object {
         private val today = LocalDate.now()
         private val yesterday = LocalDate.now().minusDays(1)
         private const val userId = 1L
         private const val otherUserId = 2L
         private val projectRole = createProjectRole()
+        private const val activityDdId = 111L
+        private const val attachmentDbId = "4d3cbe3f-369f-11ee-99c2-0242ac180003"
     }
 }

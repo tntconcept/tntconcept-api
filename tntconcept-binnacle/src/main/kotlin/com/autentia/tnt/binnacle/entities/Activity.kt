@@ -65,7 +65,7 @@ data class Activity(
     var approvalDate: LocalDateTime? = null,
 
 
-    @JoinColumn(name = "attachment_id")
+    @JoinColumn(name = "id")
     @OneToMany(fetch = LAZY)
     var evidences: MutableList<AttachmentInfo> = arrayListOf()
 
