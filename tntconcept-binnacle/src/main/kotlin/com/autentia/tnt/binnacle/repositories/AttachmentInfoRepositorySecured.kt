@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.security.application.canAccessAllAttachments
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
-import com.autentia.tnt.security.application.isAdmin
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.util.*
