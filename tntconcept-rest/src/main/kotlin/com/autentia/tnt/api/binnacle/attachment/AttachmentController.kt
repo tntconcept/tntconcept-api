@@ -3,7 +3,7 @@ package com.autentia.tnt.api.binnacle.attachment
 import com.autentia.tnt.api.OpenApiTag
 import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
-//import com.autentia.tnt.binnacle.usecases.ActivityEvidenceCreationUseCase
+import com.autentia.tnt.binnacle.usecases.AttachmentCreationUseCase
 import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -13,15 +13,16 @@ import io.micronaut.http.multipart.StreamingFileUpload
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import java.io.File
 import java.util.*
 
 @Controller("/api/attachment")
 @Validated
 @Tag(name = OpenApiTag.ACTIVITY)
-internal class AttachmentController (
+internal class AttachmentController(
     private val attachmentRetrievalUseCase: AttachmentRetrievalUseCase,
-
-    ){
+    private val attachmentCreationUseCase: AttachmentCreationUseCase,
+) {
 
     @Get("/{id}")
     @Produces(MediaType.MULTIPART_FORM_DATA)
@@ -31,33 +32,32 @@ internal class AttachmentController (
         val attachment = attachmentRetrievalUseCase.getAttachment(id)
 
         return HttpResponse.ok(attachment.file)
-            .header("Content-type",  attachment.info.mimeType)
+            .header("Content-type", attachment.info.mimeType)
             .header("Content-disposition", "attachment; filename=\"${attachment.info.fileName}\"")
     }
 
-    @Post
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Post(value = "/", consumes = [MediaType.MULTIPART_FORM_DATA], produces = [MediaType.TEXT_PLAIN])
     @Operation(summary = "Create an attachment")
-    internal fun createAttachment(attachmentFile: StreamingFileUpload):UUID {
-//        val tempFile = File.createTempFile(evidenceFile.filename, "temp_")
-//        val uploadPublisher = evidenceFile.transferTo(tempFile)
-//        return Single.fromPublisher(uploadPublisher) .map { success ->
-//            if (success) {
-//                HttpResponse.ok("Uploaded")
-//            }
-//            else {
-//                HttpResponse.status<String>(HttpStatus.CONFLICT) .body("Upload Failed")
-//            }
-//        }
-//        activityEvidenceCreationUseCase.createActivityEvidence(activityId, MediaType.APPLICATION_PDF_TYPE  , tempFile)
-        return UUID.randomUUID()
+    internal fun createAttachment(
+        attachmentFile: StreamingFileUpload,
+    ): HttpResponse<UUID> {
+
+        val mimeType = attachmentFile.contentType.get().toString()
+        val filename = attachmentFile.filename
+        val fileToSave = saveToTempFile(attachmentFile).readBytes()
+
+        val attachmentId = attachmentCreationUseCase.storeAttachment(fileToSave, filename, mimeType).id
+
+        return HttpResponse.ok(attachmentId)
     }
 
     @Error
-    internal fun onAttachmentNotFoundException (request: HttpRequest<*>, e: AttachmentNotFoundException) =
+    internal fun onAttachmentNotFoundException(request: HttpRequest<*>, e: AttachmentNotFoundException) =
         HttpResponse.notFound(ErrorResponse("Evidence not found", e.message))
 
-
-    fun getExtension(mediaType: String) = mediaType.split("/")[1]
-
+    private fun saveToTempFile(file: StreamingFileUpload): File {
+        val tempFile = File.createTempFile(file.filename, "temp_")
+        file.transferTo(tempFile)
+        return tempFile;
+    }
 }

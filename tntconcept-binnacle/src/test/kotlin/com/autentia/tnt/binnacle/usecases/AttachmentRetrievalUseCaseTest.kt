@@ -15,31 +15,38 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
-import java.time.LocalDate
 import java.util.*
-import java.util.Optional.empty
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AttachmentRetrievalUseCaseTest {
 
-    private val attachmentRepository = mock<AttachmentInfoRepository> ()
-    private val attachmentFileRepository = mock<AttachmentFileRepository> ()
+    private val attachmentRepository = mock<AttachmentInfoRepository>()
+    private val attachmentFileRepository = mock<AttachmentFileRepository>()
     private val attachmentInfoConverter = AttachmentInfoConverter()
-    private val securityService = mock<SecurityService> ()
-    private val attachmentRetrievalUseCase = AttachmentRetrievalUseCase (securityService, attachmentRepository, attachmentFileRepository, attachmentInfoConverter)
+    private val securityService = mock<SecurityService>()
+    private val attachmentRetrievalUseCase = AttachmentRetrievalUseCase(
+        securityService,
+        attachmentRepository,
+        attachmentFileRepository,
+        attachmentInfoConverter
+    )
 
     @BeforeEach
     fun setUp() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
     }
 
-
-
     @Test
     fun `retrieve attachment by uuid`() {
         whenever(attachmentRepository.findById(ATTACHMENT_UUID))
             .thenReturn(ATTACHMENT_INFO_ENTITY)
-        whenever(attachmentFileRepository.getAttachment(ATTACHMENT_INFO_ENTITY.path, ATTACHMENT_INFO_ENTITY.type, ATTACHMENT_INFO_ENTITY.fileName))
+        whenever(
+            attachmentFileRepository.getAttachment(
+                ATTACHMENT_INFO_ENTITY.path,
+                ATTACHMENT_INFO_ENTITY.type,
+                ATTACHMENT_INFO_ENTITY.fileName
+            )
+        )
             .thenReturn(IMAGE_RAW)
 
         val attachment = attachmentRetrievalUseCase.getAttachment(ATTACHMENT_UUID)
@@ -48,7 +55,7 @@ class AttachmentRetrievalUseCaseTest {
     }
 
     @Test
-    fun `throws AttachmentNotFoundException when get an attachment by id that doesnt exists` (){
+    fun `throws AttachmentNotFoundException when get an attachment by id that doesnt exists`() {
         whenever(attachmentRepository.findById(ATTACHMENT_UUID))
             .thenReturn(null)
 

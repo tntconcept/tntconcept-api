@@ -1,13 +1,11 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
-import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.security.application.checkAuthentication
-import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.util.*
@@ -25,9 +23,8 @@ class AttachmentRetrievalUseCase internal constructor(
 
         val attachmentInfo = attachmentInfoRepository.findById(id) ?: throw AttachmentNotFoundException()
 
-        val attachmentFile =  attachmentFileRepository.getAttachment( attachmentInfo.path, attachmentInfo.type, attachmentInfo.fileName)
+        val attachmentFile =
+            attachmentFileRepository.getAttachment(attachmentInfo.path, attachmentInfo.type, attachmentInfo.fileName)
         return AttachmentDTO(attachmentInfoConverter.toAttachmentInfoDTO(attachmentInfo.toDomain()), attachmentFile)
     }
-
-
 }

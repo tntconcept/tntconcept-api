@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
 import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import jakarta.inject.Singleton
@@ -15,11 +16,10 @@ internal class AttachmentFileRepository(
 ) {
 
     private val evidencesPath: String
-    private val supportedMimeExtensions: Map<String, String>
+
 
     init {
         evidencesPath = appProperties.files.evidencesPath
-        supportedMimeExtensions = appProperties.files.supportedMimeTypes
     }
 
     fun getAttachment(path: String, type: AttachmentType, fileName: String): ByteArray {
@@ -39,42 +39,12 @@ internal class AttachmentFileRepository(
         }
     }
 
-    private fun getSupportedExtensions() = supportedMimeExtensions.values.distinct().toList()
+    fun storeAttachment(attachmentInfo: AttachmentInfo, fileByteArray: ByteArray) {
 
+        val pathFile = Path.of(getBasePath(attachmentInfo.type), attachmentInfo.path, attachmentInfo.fileName)
 
-    /*
-        fun storeActivityEvidence(activityId: Long, evidence: Evidence, insertDate: Date) {
-            require(isMimeTypeSupported(evidence.mediaType)) { "Mime type ${evidence.mediaType} is not supported" }
+        val attachmentFile = File(pathFile.toUri())
 
-            val evidenceFile = getEvidenceFile(evidence, insertDate, activityId)
-            val decodedFileContent = Base64.getDecoder().decode(evidence.base64data)
-            FileUtils.writeByteArrayToFile(evidenceFile, decodedFileContent)
-        }
-
-        fun deleteActivityEvidence(id: Long, insertDate: Date): Boolean {
-            val supportedExtensions = getSupportedExtensions()
-            for (supportedExtension in supportedExtensions) {
-                val filePath = getFilePath(insertDate, id, supportedExtension)
-                if (Files.deleteIfExists(filePath)) {
-                    return true
-                }
-            }
-            return false
-        }
-
-        private fun getEvidenceFile(
-            evidence: Evidence,
-            insertDate: Date,
-            activityId: Long,
-        ): File {
-            val fileExtension = getExtensionForMimeType(evidence.mediaType)
-            val fileName = getFilePath(insertDate, activityId, fileExtension)
-            return File(fileName.toUri())
-        }
-
-        private fun isMimeTypeSupported(mimeType: String): Boolean = supportedMimeExtensions.containsKey(mimeType)
-
-        private fun getExtensionForMimeType(mimeType: String): String =
-            supportedMimeExtensions[mimeType] ?: throw InvalidEvidenceMimeTypeException(mimeType)*/
-
+        FileUtils.writeByteArrayToFile(attachmentFile, fileByteArray)
+    }
 }

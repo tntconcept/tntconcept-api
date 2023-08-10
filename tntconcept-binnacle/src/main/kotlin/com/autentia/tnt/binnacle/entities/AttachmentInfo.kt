@@ -7,14 +7,14 @@ import java.util.*
 import javax.persistence.*
 
 @Entity
-@Table(name="Attachment")
+@Table(name = "Attachment")
 data class AttachmentInfo(
 
     @Id
-    @GeneratedValue (generator = "UUID")
-    @GenericGenerator (name = "UUID",strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Type(type = "uuid-char")
-    val id: UUID? = null,
+    val id: UUID?,
 
     val userId: Long,
     @Enumerated(EnumType.STRING)
@@ -25,7 +25,7 @@ data class AttachmentInfo(
     val uploadDate: LocalDateTime,
     val isTemporary: Boolean,
 
-) {
+    ) {
 
     fun toDomain() =
         com.autentia.tnt.binnacle.core.domain.AttachmentInfo(
@@ -38,6 +38,19 @@ data class AttachmentInfo(
             uploadDate,
             isTemporary
         )
+
+    companion object {
+        fun of(attachmentInfo: com.autentia.tnt.binnacle.core.domain.AttachmentInfo) = AttachmentInfo(
+            attachmentInfo.id,
+            attachmentInfo.userId,
+            attachmentInfo.type,
+            attachmentInfo.path,
+            attachmentInfo.fileName,
+            attachmentInfo.mimeType,
+            attachmentInfo.uploadDate,
+            attachmentInfo.isTemporary
+        )
+    }
 }
 
 enum class AttachmentType {

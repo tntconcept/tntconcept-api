@@ -4,8 +4,8 @@ import com.autentia.tnt.binnacle.entities.AttachmentType
 import java.time.LocalDateTime
 import java.util.*
 
-data class AttachmentInfoDTO (
-    val id: UUID,
+data class AttachmentInfoDTO(
+    val id: UUID? = null,
     val userId: Long,
     val type: AttachmentType,
     val path: String,
