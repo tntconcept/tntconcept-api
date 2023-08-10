@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.UUID
 
 data class Activity private constructor(
         val id: Long? = null,
@@ -20,7 +21,7 @@ data class Activity private constructor(
         var insertDate: LocalDateTime? = null,
         val hasEvidences: Boolean,
         var approvalState: ApprovalState,
-        var evidence: Evidence?,
+        var evidences: List<UUID> = arrayListOf(),
         val approvedByUserId: Long? = null,
         val approvalDate: LocalDateTime? = null,
 ) : ActivityTimeInterval(timeInterval, projectRole.getTimeUnit()) {
@@ -70,7 +71,7 @@ data class Activity private constructor(
                 insertDate: LocalDateTime?,
                 hasEvidences: Boolean,
                 approvalState: ApprovalState,
-                evidence: Evidence?,
+                evidences: List<UUID> = arrayListOf(),
                 approvedByUserId: Long? = null,
                 approvalDate: LocalDateTime? = null,
         ) = Activity(
@@ -88,7 +89,7 @@ data class Activity private constructor(
                 insertDate,
                 hasEvidences,
                 approvalState,
-                evidence,
+                evidences,
                 approvedByUserId,
                 approvalDate
         )
@@ -105,7 +106,7 @@ data class Activity private constructor(
                 LocalDateTime.MIN,
                 false,
                 ApprovalState.NA,
-                null,
+                arrayListOf(),
                 null,
                 null
         )

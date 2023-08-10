@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.entities.dto
 import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.exception.InvalidEvidenceFormatException
 
-
+// TODO Borrar
 data class EvidenceDTO internal constructor(val mediaType: String, val base64data: String) {
     companion object {
         private val regex = Regex("^data:([^,\\s]+);base64,([^,\\s]+)$")

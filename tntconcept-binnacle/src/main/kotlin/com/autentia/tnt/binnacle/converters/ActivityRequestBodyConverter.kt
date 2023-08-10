@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Singleton
-class ActivityRequestBodyConverter() {
+class ActivityRequestBodyConverter {
     fun toActivity(
         activityRequestBody: ActivityRequestDTO,
         duration: Int,
@@ -32,7 +32,7 @@ class ActivityRequestBodyConverter() {
             insertDate,
             activityRequestBody.hasEvidences,
             projectRole.getApprovalState(),
-            activityRequestBody.evidence?.toDomain()
+            activityRequestBody.evidences
         )
 
     fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =

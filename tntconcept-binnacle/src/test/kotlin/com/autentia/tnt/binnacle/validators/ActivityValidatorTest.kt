@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.validators
 
+import com.autentia.tnt.binnacle.config.createAttachmentInfo
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.config.createProject
@@ -11,6 +12,7 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.*
@@ -32,6 +34,7 @@ internal class ActivityValidatorTest {
     private val holidayRepository = mock<HolidayRepository>()
     private val activityRepository = mock<ActivityRepository>()
     private val projectRepository = mock<ProjectRepository>()
+    private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
 
     private val calendarFactory: CalendarFactory = CalendarFactory(holidayRepository)
     private val activitiesCalendarFactory: ActivitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
@@ -42,7 +45,8 @@ internal class ActivityValidatorTest {
         ActivityValidator(
             activityService,
             activityCalendarService,
-            projectRepository
+            projectRepository,
+            attachmentInfoRepository
         )
 
     @Nested
@@ -614,9 +618,9 @@ internal class ActivityValidatorTest {
         @Test
         fun `throw NoEvidenceInActivityException when activity evidence is incoherent`() {
             val firstIncoherentActivity =
-                createDomainActivity().copy(hasEvidences = true, evidence = null)
+                createDomainActivity().copy(hasEvidences = true, evidences = arrayListOf())
             val secondIncoherentActivity =
-                createDomainActivity().copy(hasEvidences = false, evidence = Evidence("", ""))
+                createDomainActivity().copy(hasEvidences = false, evidences = arrayListOf(UUID.randomUUID()))
 
 
             doReturn(Optional.of(createProject()))
@@ -1276,6 +1280,53 @@ internal class ActivityValidatorTest {
         }
     }
 
+        @Test
+        fun `throw AttachmentNotFoundException when activity has a invalid evidence id`() {
+            val attachmentID = UUID.randomUUID()
+
+            val activity = createActivity(
+                start = todayDateTime,
+                end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
+                duration = (MINUTES_IN_HOUR * 9),
+                hasEvidences = true,
+                evidences = arrayListOf(attachmentID)
+            ).copy(id = null)
+
+            doReturn(Optional.of(nonBlockedProject))
+                .whenever(projectRepository)
+                .findById(nonBlockedProject.id)
+
+            doReturn(null)
+                .whenever(attachmentInfoRepository)
+                .findById(attachmentID)
+
+            val exception = assertThrows<AttachmentNotFoundException> {
+                activityValidator.checkActivityIsValidForCreation(activity, user)
+            }
+
+            assertEquals("Attachment does not exist", exception.message)
+        }
+
+    @Test
+    fun `Do nothing when the attachments are correct`() {
+        val attachmentID = UUID.randomUUID()
+
+        val activity = newActivityWithEvidences(arrayListOf(attachmentID))
+
+        val attachmentInfo = createAttachmentInfo()
+
+        doReturn(Optional.of(vacationProject))
+            .whenever(projectRepository)
+            .findById(projectRole.project.id)
+
+        doReturn(attachmentInfo)
+            .whenever(attachmentInfoRepository)
+            .findById(attachmentID)
+
+        activityValidator.checkActivityIsValidForCreation(activity, user)
+
+    }
+
     private companion object {
 
         private val user = createDomainUser()
@@ -1676,8 +1727,27 @@ internal class ActivityValidatorTest {
             null,
             false,
             ApprovalState.NA,
-            null
+            arrayListOf()
         )
+
+        private fun newActivityWithEvidences (evidences : List<UUID>) = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            null,
+            TimeInterval.of(
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong())
+            ),
+            MINUTES_IN_HOUR,
+            "description",
+            projectRole.toDomain(),
+            1L,
+            false,
+            null,
+            null,
+            true,
+            ApprovalState.NA,
+            evidences
+        )
+
 
         private val newActivityInClosedProject = createDomainActivity(
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
@@ -1815,7 +1885,8 @@ internal class ActivityValidatorTest {
             projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = projectRoleLimitedByYear.toDomain(),
             billable: Boolean = false,
             hasEvidences: Boolean = false,
-        ) = createDomainActivity(start, end, duration, projectRole).copy(
+            evidences: List<UUID> = arrayListOf()
+        ) = createDomainActivity(start, end, duration, projectRole, evidences).copy(
             description = description,
             billable = billable,
             hasEvidences = hasEvidences

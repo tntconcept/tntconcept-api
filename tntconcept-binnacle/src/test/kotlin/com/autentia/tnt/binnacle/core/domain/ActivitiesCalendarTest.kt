@@ -36,7 +36,7 @@ class ActivitiesCalendarTest {
         LocalDateTime.now(),
         false,
         ApprovalState.NA,
-        null,
+        arrayListOf(),
         null,
         null
     )

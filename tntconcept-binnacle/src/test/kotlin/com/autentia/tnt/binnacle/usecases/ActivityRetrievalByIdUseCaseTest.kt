@@ -90,7 +90,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
             null,
             false,
             ApprovalState.NA,
-            null
+            arrayListOf()
         )
 
         private const val notFoundActivityId = 1L

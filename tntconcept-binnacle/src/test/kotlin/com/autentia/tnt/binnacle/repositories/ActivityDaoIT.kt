@@ -11,8 +11,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
-import javax.persistence.EnumType
-import javax.persistence.Enumerated
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -655,6 +653,7 @@ internal class ActivityDaoIT {
     @Test
     fun `should save activity with attachment`() {
         val attachmentInfo = AttachmentInfo(
+            null,
             userId = 11,
             type = AttachmentType.EVIDENCE,
             path = "path/to/file",

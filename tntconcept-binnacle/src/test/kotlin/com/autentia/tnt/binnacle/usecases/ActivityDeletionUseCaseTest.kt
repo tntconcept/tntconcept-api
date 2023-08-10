@@ -86,7 +86,7 @@ internal class ActivityDeletionUseCaseTest {
                 LocalDateTime.now(),
                 false,
                 ApprovalState.NA,
-                null
+                arrayListOf()
         )
 
         private val entityActivity = Activity.of(activity, PROJECT_ROLE)

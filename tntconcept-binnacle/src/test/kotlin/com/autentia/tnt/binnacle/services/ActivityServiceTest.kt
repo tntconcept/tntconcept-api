@@ -124,7 +124,7 @@ internal class ActivityServiceTest {
             null,
             false,
             ApprovalState.NA,
-            null
+            arrayListOf()
         )
 
         private val activityWithoutEvidenceAttached = com.autentia.tnt.binnacle.core.domain.Activity.of(
@@ -142,14 +142,14 @@ internal class ActivityServiceTest {
             null,
             true,
             ApprovalState.NA,
-            null
+            arrayListOf()
         )
 
         private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null, TimeInterval.of(
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA, null, null, null
+        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA, arrayListOf(), null, null
         )
 
         private val evidence = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")

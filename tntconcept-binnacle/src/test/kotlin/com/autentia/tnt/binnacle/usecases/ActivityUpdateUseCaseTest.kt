@@ -222,7 +222,7 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+//        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -256,7 +256,7 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+//        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -290,7 +290,7 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
-        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+//        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -525,7 +525,7 @@ internal class ActivityUpdateUseCaseTest {
                     billable = existingActivity.billable,
                     projectRoleId = existingActivity.projectRole.id,
                     hasEvidences = false,
-                    evidence = null,
+                    evidences = arrayListOf()
             )
 
     private fun `get activity update request with evidence`(existingActivity: Activity, duration: Int) =
@@ -537,7 +537,7 @@ internal class ActivityUpdateUseCaseTest {
                     billable = existingActivity.billable,
                     projectRoleId = existingActivity.projectRole.id,
                     hasEvidences = true,
-                    evidence = SAMPLE_EVIDENCE_DTO
+                    evidences = SAMPLE_EVIDENCES
             )
 
     private fun `get role that requires approval`() =
@@ -585,6 +585,7 @@ internal class ActivityUpdateUseCaseTest {
                 1000, true, false, TimeUnit.MINUTES)
         private val LOCALE = Locale.ENGLISH
         private val SAMPLE_EVIDENCE_DTO = EvidenceDTO.from("data:image/png;base64,ABCsbG8gV29ybGQh")
+        private val SAMPLE_EVIDENCES = arrayListOf(UUID.randomUUID(), UUID.randomUUID())
         private val SAMPLE_EVIDENCE = SAMPLE_EVIDENCE_DTO.toDomain()
         private val SOME_ACTIVITY_REQUEST = ActivityRequestDTO(
                 1L,

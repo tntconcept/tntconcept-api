@@ -303,7 +303,7 @@ paths:
         "200":
           description: createAttachment$tntconcept_rest 200 response
           content:
-            application/json:
+            text/plain:
               schema:
                 type: string
                 format: uuid

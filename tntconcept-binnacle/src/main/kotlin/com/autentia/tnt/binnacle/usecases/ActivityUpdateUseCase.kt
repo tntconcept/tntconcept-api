@@ -56,13 +56,13 @@ class ActivityUpdateUseCase internal constructor(
 
         val updatedActivity = updatedActivityEntity.toDomain();
 
-        if (activityToUpdate.hasEvidences) {
-            activityEvidenceService.storeActivityEvidence(
-                    updatedActivityEntity.id!!,
-                    activityToUpdate.evidence!!,
-                    updatedActivityEntity.insertDate!!
-            )
-        }
+//        if (activityToUpdate.hasEvidences) {
+//            activityEvidenceService.storeActivityEvidence(
+//                    updatedActivityEntity.id!!,
+//                    activityToUpdate.evidence!!,
+//                    updatedActivityEntity.insertDate!!
+//            )
+//        }
 
         if (!activityToUpdate.hasEvidences && currentActivity.hasEvidences) {
             activityEvidenceService.deleteActivityEvidence(

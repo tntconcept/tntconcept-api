@@ -208,6 +208,7 @@ internal fun createDomainActivity(
     end: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
     duration: Int = 60,
     projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = createDomainProjectRole(),
+    evidences: List<UUID> = arrayListOf()
 ) =
     com.autentia.tnt.binnacle.core.domain.Activity.of(
         1L,
@@ -224,7 +225,7 @@ internal fun createDomainActivity(
         null,
         false,
         ApprovalState.NA,
-        null,
+        evidences,
         null,
         null
     )

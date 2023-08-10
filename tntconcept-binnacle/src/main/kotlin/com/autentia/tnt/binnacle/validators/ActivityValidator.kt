@@ -8,12 +8,14 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -21,6 +23,7 @@ internal class ActivityValidator(
     private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
     private val projectRepository: ProjectRepository,
+    private val attachmentInfoRepository: AttachmentInfoRepository,
 ) {
     @Transactional
     @ReadOnly
@@ -42,7 +45,7 @@ internal class ActivityValidator(
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
-
+            !evidencesExist(activityToCreate.evidences) -> throw AttachmentNotFoundException()
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
             isExceedingMaxTimeByActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
                 activityToCreate.projectRole.getMaxTimeAllowedByActivityInTimeUnits(),
@@ -79,8 +82,15 @@ internal class ActivityValidator(
     }
 
     private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
-        return activity.hasEvidences && activity.evidence == null
-                || !activity.hasEvidences && activity.evidence != null
+        return activity.hasEvidences && activity.evidences.isEmpty()
+                || !activity.hasEvidences && activity.evidences.isNotEmpty()
+    }
+
+    private fun evidencesExist(evidencesIds: List<UUID>): Boolean {
+        for (evidenceId in evidencesIds) {
+            attachmentInfoRepository.findById(evidenceId) ?: return false
+        }
+        return true
     }
 
     private fun getTotalRegisteredDurationByProjectRole(

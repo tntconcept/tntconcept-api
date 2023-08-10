@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -31,6 +32,7 @@ class ActivityMaxTimeByYearValidatorTest {
     private val holidayRepository = mock<HolidayRepository>()
     private val activityRepository = mock<ActivityRepository>()
     private val projectRepository = mock<ProjectRepository>()
+    private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
 
     private val calendarFactory: CalendarFactory = CalendarFactory(holidayRepository)
     private val activitiesCalendarFactory: ActivitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
@@ -41,7 +43,8 @@ class ActivityMaxTimeByYearValidatorTest {
         ActivityValidator(
             activityService,
             activityCalendarService,
-            projectRepository
+            projectRepository,
+            attachmentInfoRepository
         )
     private val timeInterval2023 = TimeInterval.ofYear(2023)
 

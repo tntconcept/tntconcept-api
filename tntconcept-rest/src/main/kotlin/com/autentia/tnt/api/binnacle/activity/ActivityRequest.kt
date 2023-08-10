@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
-import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.entities.dto.TimeIntervalRequestDTO
 import io.micronaut.core.annotation.Introspected
 import javax.annotation.Nullable
@@ -30,6 +29,7 @@ data class ActivityRequest(
         billable,
         projectRoleId,
         hasEvidences,
-        evidence = if (evidence != null) EvidenceDTO.from(evidence) else null
+        // TODO Revisar
+        evidences = arrayListOf()
     )
 }

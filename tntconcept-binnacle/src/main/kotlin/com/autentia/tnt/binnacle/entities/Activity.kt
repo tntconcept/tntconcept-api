@@ -91,7 +91,7 @@ data class Activity(
             toLocalDateTime(insertDate),
             hasEvidences,
             approvalState,
-            null,
+            getAttachmentInfoIds(evidences),
             approvedByUserId,
             approvalDate
         )
@@ -155,5 +155,14 @@ data class Activity(
             0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
             false, 0, null, false, ApprovalState.NA, null, null, arrayListOf()
         )
+
+        fun getAttachmentInfoIds(attachmentInfos: MutableList<AttachmentInfo>): List<UUID> {
+            val ids: MutableList<UUID> = mutableListOf()
+            for (attachmentInfo in attachmentInfos) {
+                attachmentInfo.id?.let { ids.add(it) }
+            }
+            return ids
+        }
+
     }
 }
