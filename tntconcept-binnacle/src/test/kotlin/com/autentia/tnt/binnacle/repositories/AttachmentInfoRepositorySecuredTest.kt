@@ -1,19 +1,15 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfo
-import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.util.*
 
 internal class AttachmentInfoRepositorySecuredTest {
-    private val attachmentInfoDao = mock<AttachmentInfoDao> ()
+    private val attachmentInfoDao = mock<AttachmentInfoDao>()
     private val securityService = mock<SecurityService>()
     private val attachmentInfoRepositorySecured = AttachmentInfoRepositorySecured(securityService, attachmentInfoDao)
 
@@ -32,8 +28,6 @@ internal class AttachmentInfoRepositorySecuredTest {
 
         verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
     }
-
-
 
     companion object {
         private val attachmentId = UUID.randomUUID()

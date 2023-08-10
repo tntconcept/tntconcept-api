@@ -39,7 +39,7 @@ class AttachmentRetrievalUseCaseTest {
     @Test
     fun `retrieve attachment by uuid`() {
         whenever(attachmentRepository.findById(ATTACHMENT_UUID))
-            .thenReturn(ATTACHMENT_INFO_ENTITY)
+            .thenReturn(Optional.of(ATTACHMENT_INFO_ENTITY))
         whenever(
             attachmentFileRepository.getAttachment(
                 ATTACHMENT_INFO_ENTITY.path,
@@ -57,7 +57,7 @@ class AttachmentRetrievalUseCaseTest {
     @Test
     fun `throws AttachmentNotFoundException when get an attachment by id that doesnt exists`() {
         whenever(attachmentRepository.findById(ATTACHMENT_UUID))
-            .thenReturn(null)
+            .thenReturn(Optional.empty())
 
         assertThrows<AttachmentNotFoundException> {
             attachmentRetrievalUseCase.getAttachment(ATTACHMENT_UUID)

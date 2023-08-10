@@ -21,7 +21,7 @@ class AttachmentRetrievalUseCase internal constructor(
     fun getAttachment(id: UUID): AttachmentDTO {
         securityService.checkAuthentication()
 
-        val attachmentInfo = attachmentInfoRepository.findById(id) ?: throw AttachmentNotFoundException()
+        val attachmentInfo = attachmentInfoRepository.findById(id).orElseThrow { AttachmentNotFoundException() }
 
         val attachmentFile =
             attachmentFileRepository.getAttachment(attachmentInfo.path, attachmentInfo.type, attachmentInfo.fileName)
