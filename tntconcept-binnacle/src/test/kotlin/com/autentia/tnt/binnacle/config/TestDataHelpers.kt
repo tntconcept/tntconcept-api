@@ -160,7 +160,11 @@ internal fun createProjectRoleWithTimeUnit(id: Long = 1L, timeUnit: TimeUnit): P
     timeUnit
 )
 
-internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = ApprovalState.NA) = Activity(
+internal fun createActivity(
+    id: Long? = 1,
+    approvalState: ApprovalState = ApprovalState.NA,
+    evidences: MutableList<AttachmentInfo> = ArrayList()
+) = Activity(
     id,
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
@@ -172,10 +176,16 @@ internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = Approv
     1L,
     null,
     false,
-    approvalState
+    approvalState,
+    null,
+    null,
+    evidences
 )
 
-internal fun createActivity(projectRole: ProjectRole) = Activity(
+internal fun createActivity(
+    projectRole: ProjectRole,
+    evidences: MutableList<AttachmentInfo> = ArrayList()
+) = Activity(
     1,
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
@@ -187,7 +197,10 @@ internal fun createActivity(projectRole: ProjectRole) = Activity(
     1L,
     null,
     false,
-    ApprovalState.NA
+    ApprovalState.NA,
+    null,
+    null,
+    evidences
 )
 
 internal fun createDomainActivity(

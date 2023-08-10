@@ -1,17 +1,18 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.*
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
+import javax.persistence.EnumType
+import javax.persistence.Enumerated
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -22,7 +23,10 @@ internal class ActivityDaoIT {
 
     @Inject
     private lateinit var projectRepository: ProjectRepository
-    
+
+    @Inject
+    private lateinit var attachmentInfoDao: AttachmentInfoDao
+
     @Test
     fun `should find activity by id`() {
         val activity = Activity(
@@ -172,7 +176,15 @@ internal class ActivityDaoIT {
 
         projectRepository.update(
             Project(
-                project.id, project.name, false, project.billable, LocalDate.now(), null, null, project.organization, project.projectRoles
+                project.id,
+                project.name,
+                false,
+                project.billable,
+                LocalDate.now(),
+                null,
+                null,
+                project.organization,
+                project.projectRoles
             )
         )
         projectRepository.update(
@@ -638,6 +650,39 @@ internal class ActivityDaoIT {
         assertTrue(result.isPresent)
         assertTrue(result.get().evidences.isNotEmpty())
         assertEquals(UUID.fromString(attachmentDbId), result.get().evidences[0].id)
+    }
+
+    @Test
+    fun `should save activity with attachment`() {
+        val attachmentInfo = AttachmentInfo(
+            userId = 11,
+            type = AttachmentType.EVIDENCE,
+            path = "path/to/file",
+            fileName = "test.jpg",
+            mimeType = "image/jpeg",
+            uploadDate = LocalDateTime.now(),
+            isTemporary = true)
+
+        val savedAttachmentInfo = attachmentInfoDao.save(attachmentInfo)
+
+        val activity = Activity(
+            start = today.atTime(10, 0, 0),
+            end = today.atTime(12, 0, 0),
+            duration = 120,
+            description = "Test activity",
+            projectRole = createProjectRole(),
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.ACCEPTED,
+            evidences = mutableListOf(savedAttachmentInfo)
+        )
+
+        val savedActivity = activityDao.save(activity)
+
+        val result = activityDao.findById(savedActivity.id!!)
+
+        assertEquals(savedActivity, result.get())
     }
 
     private companion object {

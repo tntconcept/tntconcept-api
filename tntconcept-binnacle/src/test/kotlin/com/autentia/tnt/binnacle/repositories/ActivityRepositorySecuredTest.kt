@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createActivity
+import com.autentia.tnt.binnacle.config.createAttachmentInfo
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
@@ -726,6 +727,36 @@ internal class ActivityRepositorySecuredTest {
                     startDate, endDate, adminUserId
             )
         }
+    }
+
+
+    @Test
+    fun `find activities with associated evidences`() {
+        val evidences = mutableListOf(createAttachmentInfo(), createAttachmentInfo())
+
+        val activities = listOf(
+            Activity(
+                id = 2L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.NA,
+                evidences = evidences
+            )
+        )
+        val activitySpecification = ActivityPredicates.ALL
+
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
+        whenever(internalActivityRepository.findAll(activitySpecification)).thenReturn(activities)
+
+        val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
+
+        assertEquals(activities, result)
     }
 
     private companion object {
