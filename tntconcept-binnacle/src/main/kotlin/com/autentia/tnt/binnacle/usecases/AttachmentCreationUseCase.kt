@@ -27,16 +27,17 @@ class AttachmentCreationUseCase internal constructor(
         supportedMimeExtensions = appProperties.files.supportedMimeTypes
     }
 
-    fun storeAttachment(fileByteArray: ByteArray, filename: String, mimeType: String): AttachmentInfoDTO {
+    fun storeAttachment(attachmentFile: ByteArray, filename: String, mimeType: String): AttachmentInfoDTO {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
 
-        val attachmentInfoDTO = constructNewAttachmentInfo(filename, mimeType, userId)
-
         if (!isMimeTypeSupported(mimeType)) throw AttachmentMimeTypeNotSupportedException("Mime type $mimeType is not supported")
 
-        val attachmentInfoToCreate = attachmentInfoConverter.toAttachment(attachmentInfoDTO);
-        attachmentFileRepository.storeAttachment(attachmentInfoToCreate, fileByteArray)
+        val attachmentInfoToCreateDTO = constructNewAttachmentInfo(filename, mimeType, userId)
+
+
+        val attachmentInfoToCreate = attachmentInfoConverter.toAttachment(attachmentInfoToCreateDTO);
+        attachmentFileRepository.storeAttachment(attachmentInfoToCreate, attachmentFile)
 
         val attachmentInfoEntityToCreate = com.autentia.tnt.binnacle.entities.AttachmentInfo.of(attachmentInfoToCreate)
         val savedAttachment = attachmentInfoRepository.save(attachmentInfoEntityToCreate)
@@ -44,9 +45,8 @@ class AttachmentCreationUseCase internal constructor(
         return attachmentInfoConverter.toAttachmentInfoDTO(savedAttachment.toDomain())
     }
 
-    private fun constructNewAttachmentInfo(filename: String, mimeType: String, userId: Long): AttachmentInfoDTO {
-
-        return AttachmentInfoDTO(
+    private fun constructNewAttachmentInfo(filename: String, mimeType: String, userId: Long): AttachmentInfoDTO =
+        AttachmentInfoDTO(
             null,
             userId,
             AttachmentType.EVIDENCE,
@@ -56,7 +56,6 @@ class AttachmentCreationUseCase internal constructor(
             LocalDateTime.now().withSecond(0).withNano(0),
             true
         )
-    }
 
     private fun isMimeTypeSupported(mimeType: String): Boolean = supportedMimeExtensions.containsKey(mimeType)
 }

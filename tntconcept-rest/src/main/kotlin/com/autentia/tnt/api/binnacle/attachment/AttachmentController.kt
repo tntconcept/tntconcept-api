@@ -53,13 +53,13 @@ internal class AttachmentController(
 
     @Error
     internal fun onAttachmentNotFoundException(request: HttpRequest<*>, e: AttachmentNotFoundException) =
-        HttpResponse.notFound(ErrorResponse("Evidence not found", e.message))
+        HttpResponse.notFound(ErrorResponse("Attachment not found", e.message))
 
     @Error
     internal fun onAttachmentMimeTypeNotSupportedException(
         request: HttpRequest<*>,
         e: AttachmentMimeTypeNotSupportedException,
     ) =
-        HttpResponse.notFound(ErrorResponse("Evidence not valid", e.message))
+        HttpResponse.badRequest(ErrorResponse("Attachment mimetype not supported", e.message))
 
 }

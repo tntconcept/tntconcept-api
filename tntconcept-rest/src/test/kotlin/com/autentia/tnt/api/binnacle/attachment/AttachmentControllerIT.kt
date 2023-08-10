@@ -16,8 +16,6 @@ import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.client.multipart.MultipartBody
-import io.micronaut.security.authentication.ClientAuthentication
-import io.micronaut.security.utils.DefaultSecurityService
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -45,29 +43,13 @@ class AttachmentControllerIT {
     @get:MockBean(AttachmentCreationUseCase::class)
     internal val attachmentCreationUseCase = mock<AttachmentCreationUseCase>()
 
-    @get:MockBean(DefaultSecurityService::class)
-    internal val securityService = mock<DefaultSecurityService>()
-
-
     @BeforeAll
     fun setup() {
         client = httpClient.toBlocking()
     }
 
-    @BeforeEach
-    fun setUp() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
-    }
-
-    @AfterEach
-    fun resetMocks() {
-        reset(attachmentRetrievalUseCase)
-        reset(securityService)
-    }
-
     @Test
     fun `get an attachment by id`() {
-
         doReturn(ATTACHMENT_DTO).whenever(attachmentRetrievalUseCase)
             .getAttachment(ATTACHMENT_UUID)
 
@@ -76,9 +58,12 @@ class AttachmentControllerIT {
         )
 
         assertEquals(HttpStatus.OK, response.status)
-        assertEquals(ATTACHMENT_MIME_TYPE, response.headers.get("Content-type"))
+        assertEquals(SUPPORTED_ATTACHMENT_MIME_TYPE, response.headers.get("Content-type"))
         assertTrue(Arrays.equals(IMAGE_RAW, response.body()))
-        assertEquals("attachment; filename=\"$ATTACHMENT_FILENAME\"", response.headers.get("Content-disposition"))
+        assertEquals(
+            "attachment; filename=\"$SUPPORTED_ATTACHMENT_FILENAME\"",
+            response.headers.get("Content-disposition")
+        )
     }
 
     @Test
@@ -98,13 +83,18 @@ class AttachmentControllerIT {
 
     @Test
     fun `create an attachment`() {
-
-        whenever(attachmentCreationUseCase.storeAttachment(IMAGE_RAW, "attachment.png", "image/png")).thenReturn(
+        whenever(
+            attachmentCreationUseCase.storeAttachment(
+                IMAGE_RAW,
+                SUPPORTED_ATTACHMENT_FILENAME,
+                SUPPORTED_ATTACHMENT_MIME_TYPE
+            )
+        ).thenReturn(
             ATTACHMENT_INFO_DTO
         )
 
         val multipartBody = MultipartBody.builder()
-            .addPart("attachmentFile", "attachment.png", MediaType.IMAGE_PNG_TYPE, IMAGE_RAW)
+            .addPart("attachmentFile", SUPPORTED_ATTACHMENT_FILENAME, MediaType.IMAGE_PNG_TYPE, IMAGE_RAW)
             .build()
 
         val response = client.exchangeObject<UUID>(
@@ -117,15 +107,14 @@ class AttachmentControllerIT {
 
 
     @Test
-    fun `throw IllegalArgumentException when create an attachment with invalid mimeType`() {
-        val mimetype = "application/json"
+    fun `throw AttachmentMimeTypeNotSupportedException when create an attachment with invalid mimeType`() {
 
         doThrow(AttachmentMimeTypeNotSupportedException()).whenever(attachmentCreationUseCase).storeAttachment(
-            IMAGE_RAW, "attachment.json", mimetype
+            IMAGE_RAW, UNSUPPORTED_ATTACHMENT_FILENAME, UNSUPPORTED_ATTACHMENT_MIME_TYPE
         )
 
         val multipartBody = MultipartBody.builder()
-            .addPart("attachmentFile", "attachment.json", MediaType.APPLICATION_JSON_TYPE, IMAGE_RAW)
+            .addPart("attachmentFile", UNSUPPORTED_ATTACHMENT_FILENAME, MediaType.APPLICATION_JSON_TYPE, IMAGE_RAW)
             .build()
 
         val ex = assertThrows<HttpClientResponseException> {
@@ -134,7 +123,7 @@ class AttachmentControllerIT {
             )
         }
 
-        assertEquals(HttpStatus.NOT_FOUND, ex.status)
+        assertEquals(HttpStatus.BAD_REQUEST, ex.status)
         assertEquals("Attachment mimetype is not valid", ex.message)
     }
 
@@ -142,21 +131,23 @@ class AttachmentControllerIT {
     private companion object {
 
         private val ATTACHMENT_UUID = UUID.randomUUID()
-        private const val ATTACHMENT_MIME_TYPE = "image/png"
-        private const val ATTACHMENT_FILENAME = "filename.png"
-        private const val IMAGE_BASE64 =
-            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
-        private val IMAGE_RAW = Base64.getDecoder().decode(IMAGE_BASE64)
+        private const val SUPPORTED_ATTACHMENT_MIME_TYPE = "image/png"
+        private const val UNSUPPORTED_ATTACHMENT_MIME_TYPE = "application/json"
+        private const val SUPPORTED_ATTACHMENT_FILENAME = "filename.png"
+        private const val UNSUPPORTED_ATTACHMENT_FILENAME = "filename.json"
+        private val IMAGE_RAW = Base64.getDecoder()
+            .decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=")
         private const val ATTACHMENT_USERID = 1L
         private val ATTACHMENT_INFO_DTO = AttachmentInfoDTO(
-            ATTACHMENT_UUID, ATTACHMENT_USERID, AttachmentType.EVIDENCE, "/", ATTACHMENT_FILENAME, ATTACHMENT_MIME_TYPE,
-            LocalDateTime.now(), false
+            ATTACHMENT_UUID,
+            ATTACHMENT_USERID,
+            AttachmentType.EVIDENCE,
+            "/",
+            SUPPORTED_ATTACHMENT_FILENAME,
+            SUPPORTED_ATTACHMENT_MIME_TYPE,
+            LocalDateTime.now(),
+            false
         )
         private val ATTACHMENT_DTO = AttachmentDTO(ATTACHMENT_INFO_DTO, IMAGE_RAW)
-        private const val userId = 1L
-
-        private val authenticationUser =
-            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
-
 }
