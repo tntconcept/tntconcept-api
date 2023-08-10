@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createAttachmentInfoWithFilenameAndMimetype
-import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import org.assertj.core.api.Assertions.assertThat
@@ -82,8 +81,5 @@ AttachmentFileRepositoryIT {
 
         val IMAGE_BYTEARRAY =
             File("src/test/resources/attachments_test/evidences/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpeg").readBytes()
-
-        private val SUPPORTED_ATTACHMENT = Attachment(ATTACHMENT_INFO, IMAGE_BYTEARRAY)
-        private val UNSUPPORTED_ATTACHMENT = Attachment(UNSUPPORTED_ATTACHMENT_INFO, IMAGE_BYTEARRAY)
     }
 }

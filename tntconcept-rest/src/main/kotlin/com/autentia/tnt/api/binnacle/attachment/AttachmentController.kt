@@ -2,6 +2,7 @@ package com.autentia.tnt.api.binnacle.attachment
 
 import com.autentia.tnt.api.OpenApiTag
 import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.usecases.AttachmentCreationUseCase
 import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCase
@@ -9,11 +10,10 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
-import io.micronaut.http.multipart.StreamingFileUpload
+import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import java.io.File
 import java.util.*
 
 @Controller("/api/attachment")
@@ -39,12 +39,12 @@ internal class AttachmentController(
     @Post(value = "/", consumes = [MediaType.MULTIPART_FORM_DATA], produces = [MediaType.TEXT_PLAIN])
     @Operation(summary = "Create an attachment")
     internal fun createAttachment(
-        attachmentFile: StreamingFileUpload,
+        attachmentFile: CompletedFileUpload,
     ): HttpResponse<UUID> {
 
         val mimeType = attachmentFile.contentType.get().toString()
-        val filename = attachmentFile.filename
-        val fileToSave = saveToTempFile(attachmentFile).readBytes()
+        val filename = attachmentFile.filename!!
+        val fileToSave = attachmentFile.bytes
 
         val attachmentId = attachmentCreationUseCase.storeAttachment(fileToSave, filename, mimeType).id
 
@@ -53,11 +53,13 @@ internal class AttachmentController(
 
     @Error
     internal fun onAttachmentNotFoundException(request: HttpRequest<*>, e: AttachmentNotFoundException) =
-        HttpResponse.notFound(ErrorResponse("Evidence not found", e.message))
+        HttpResponse.notFound(ErrorResponse("Attachment not found", e.message))
 
-    private fun saveToTempFile(file: StreamingFileUpload): File {
-        val tempFile = File.createTempFile(file.filename, "temp_")
-        file.transferTo(tempFile)
-        return tempFile;
-    }
+    @Error
+    internal fun onAttachmentMimeTypeNotSupportedException(
+        request: HttpRequest<*>,
+        e: AttachmentMimeTypeNotSupportedException,
+    ) =
+        HttpResponse.badRequest(ErrorResponse("Attachment mimetype not supported", e.message))
+
 }

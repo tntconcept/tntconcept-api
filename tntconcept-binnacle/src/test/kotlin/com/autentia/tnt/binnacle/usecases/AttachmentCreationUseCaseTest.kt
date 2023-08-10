@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createAttachmentInfoWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
+import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import io.micronaut.security.authentication.ClientAuthentication
@@ -23,11 +24,7 @@ class AttachmentCreationUseCaseTest {
     private val appProperties = AppProperties().apply {
         files.evidencesPath = "src/test/resources/attachments_test/evidences"
         files.supportedMimeTypes = mapOf(
-            Pair("application/pdf", "pdf"),
-            Pair("image/jpg", "jpg"),
-            Pair("image/jpeg", "jpeg"),
             Pair("image/png", "png"),
-            Pair("image/gif", "gif")
         )
     }
     private val attachmentCreationUseCase =
@@ -45,13 +42,11 @@ class AttachmentCreationUseCaseTest {
     }
 
     @Test
-    fun `store attachment successfully`() {
+    fun `store attachment info when attachment is valid`() {
 
         whenever(attachmentInfoRepository.save(SUPPORTED_ATTACHMENT_INFO_ENTITY.copy(id = null))).thenReturn(
             SUPPORTED_ATTACHMENT_INFO_ENTITY
         )
-
-        println(SUPPORTED_ATTACHMENT_INFO_ENTITY.copy(id = null))
 
         val savedAttachment = attachmentCreationUseCase.storeAttachment(
             IMAGE_BYTEARRAY,
@@ -65,26 +60,24 @@ class AttachmentCreationUseCaseTest {
     }
 
     @Test
-    fun `throws IllegalArgumentException when mimetype is not valid`() {
-        assertThrows<IllegalArgumentException> {
-            attachmentCreationUseCase.storeAttachment(IMAGE_BYTEARRAY, "Evidence", "image/raw")
+    fun `throws AttachmentMimeTypeNotSupportedException when mimetype is not valid`() {
+        assertThrows<AttachmentMimeTypeNotSupportedException> {
+            attachmentCreationUseCase.storeAttachment(
+                IMAGE_BYTEARRAY,
+                UNSUPPORTED_INFO_ENTITY.fileName,
+                UNSUPPORTED_INFO_ENTITY.mimeType
+            )
         }
     }
 
     companion object {
-        val date = Date()
-        private val SUPPORTED_ATTACHMENT_INFO_ENTITY =
-            createAttachmentInfoWithFilenameAndMimetype(mimeType = "image/png")
-        private val UNSUPPORTED_INFO_ENTITY = createAttachmentInfoWithFilenameAndMimetype(mimeType = "image/raw")
-        private val ATTACHMENT_INFO = SUPPORTED_ATTACHMENT_INFO_ENTITY.toDomain()
-        private val UNSUPPORTED_ATTACHMENT_INFO = UNSUPPORTED_INFO_ENTITY.toDomain()
-
-
         val IMAGE_BYTEARRAY =
             File("src/test/resources/attachments_test/evidences/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpeg").readBytes()
+        private val SUPPORTED_ATTACHMENT_INFO_ENTITY =
+            createAttachmentInfoWithFilenameAndMimetype(mimeType = "image/png")
+        private val UNSUPPORTED_INFO_ENTITY = createAttachmentInfoWithFilenameAndMimetype(mimeType = "application/json")
 
         private const val userId = 1L
-
         private val authenticationUser =
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
 
