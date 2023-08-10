@@ -1,8 +1,10 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.config.createAttachmentInfoDtoWithFileNameAndMimeType
 import com.autentia.tnt.binnacle.config.createAttachmentInfoWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
+import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -49,9 +51,7 @@ class AttachmentCreationUseCaseTest {
         )
 
         val savedAttachment = attachmentCreationUseCase.storeAttachment(
-            IMAGE_BYTEARRAY,
-            SUPPORTED_ATTACHMENT_INFO_ENTITY.fileName,
-            SUPPORTED_ATTACHMENT_INFO_ENTITY.mimeType
+            SUPPORTED_ATTACHMENT_DTO
         )
 
         assertNotNull(savedAttachment.id)
@@ -63,23 +63,40 @@ class AttachmentCreationUseCaseTest {
     fun `throws AttachmentMimeTypeNotSupportedException when mimetype is not valid`() {
         assertThrows<AttachmentMimeTypeNotSupportedException> {
             attachmentCreationUseCase.storeAttachment(
-                IMAGE_BYTEARRAY,
-                UNSUPPORTED_INFO_ENTITY.fileName,
-                UNSUPPORTED_INFO_ENTITY.mimeType
+                UNSUPPORTED_ATTACHMENT_DTO
             )
         }
     }
 
     companion object {
-        val IMAGE_BYTEARRAY =
+        private val IMAGE_BYTEARRAY =
             File("src/test/resources/attachments_test/evidences/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpeg").readBytes()
+
+        private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
+        private const val IMAGE_UNSUPPORTED_FILENAME = "Evidence001.json"
+        private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
+        private const val IMAGE_UNSUPPORTED_MIMETYPE = "application/json"
+
         private val SUPPORTED_ATTACHMENT_INFO_ENTITY =
-            createAttachmentInfoWithFilenameAndMimetype(mimeType = "image/png")
-        private val UNSUPPORTED_INFO_ENTITY = createAttachmentInfoWithFilenameAndMimetype(mimeType = "application/json")
+            createAttachmentInfoWithFilenameAndMimetype(
+                filename = IMAGE_SUPPORTED_FILENAME,
+                mimeType = IMAGE_SUPPORTED_MIMETYPE
+            )
+
+        private val SUPPORTED_ATTACHMENT_INFO_DTO = createAttachmentInfoDtoWithFileNameAndMimeType(
+            IMAGE_SUPPORTED_FILENAME,
+            IMAGE_SUPPORTED_MIMETYPE
+        )
+        private val UNSUPPORTED_ATTACHMENT_INFO_DTO = createAttachmentInfoDtoWithFileNameAndMimeType(
+            IMAGE_UNSUPPORTED_FILENAME,
+            IMAGE_UNSUPPORTED_MIMETYPE
+        )
+
+        private val SUPPORTED_ATTACHMENT_DTO = AttachmentDTO(SUPPORTED_ATTACHMENT_INFO_DTO, IMAGE_BYTEARRAY)
+        private val UNSUPPORTED_ATTACHMENT_DTO = AttachmentDTO(UNSUPPORTED_ATTACHMENT_INFO_DTO, IMAGE_BYTEARRAY)
 
         private const val userId = 1L
         private val authenticationUser =
             ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
-
     }
 }

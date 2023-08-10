@@ -1,7 +1,6 @@
 package com.autentia.tnt.api.binnacle.attachment
 
 import com.autentia.tnt.api.binnacle.exchangeObject
-import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
 import com.autentia.tnt.binnacle.entities.dto.AttachmentInfoDTO
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
@@ -50,7 +49,7 @@ class AttachmentControllerIT {
 
     @Test
     fun `get an attachment by id`() {
-        doReturn(ATTACHMENT_DTO).whenever(attachmentRetrievalUseCase)
+        doReturn(SUPPORTED_ATTACHMENT_DTO).whenever(attachmentRetrievalUseCase)
             .getAttachment(ATTACHMENT_UUID)
 
         val response = client.exchangeObject<ByteArray>(
@@ -82,22 +81,16 @@ class AttachmentControllerIT {
     }
 
     @Test
-    fun `create an attachment`() {
+    fun `returns HttpResponse OK when store an attachment`() {
         whenever(
-            attachmentCreationUseCase.storeAttachment(
-                IMAGE_RAW,
-                SUPPORTED_ATTACHMENT_FILENAME,
-                SUPPORTED_ATTACHMENT_MIME_TYPE
-            )
-        ).thenReturn(
-            ATTACHMENT_INFO_DTO
-        )
+            attachmentCreationUseCase.storeAttachment(SUPPORTED_ATTACHMENT_DTO)
+        ).thenReturn(SUPPORTED_ATTACHMENT_INFO_DTO)
 
         val multipartBody = MultipartBody.builder()
             .addPart("attachmentFile", SUPPORTED_ATTACHMENT_FILENAME, MediaType.IMAGE_PNG_TYPE, IMAGE_RAW)
             .build()
 
-        val response = client.exchangeObject<UUID>(
+        val response = client.exchangeObject<AttachmentCreationResponse>(
             HttpRequest.POST("/api/attachment", multipartBody).contentType(MediaType.MULTIPART_FORM_DATA_TYPE)
         )
 
@@ -107,10 +100,10 @@ class AttachmentControllerIT {
 
 
     @Test
-    fun `throw AttachmentMimeTypeNotSupportedException when create an attachment with invalid mimeType`() {
+    fun `throw IllegalArgumentException when create an attachment with invalid mimeType`() {
 
         doThrow(AttachmentMimeTypeNotSupportedException()).whenever(attachmentCreationUseCase).storeAttachment(
-            IMAGE_RAW, UNSUPPORTED_ATTACHMENT_FILENAME, UNSUPPORTED_ATTACHMENT_MIME_TYPE
+            UNSUPPORTED_ATTACHMENT_DTO
         )
 
         val multipartBody = MultipartBody.builder()
@@ -118,13 +111,14 @@ class AttachmentControllerIT {
             .build()
 
         val ex = assertThrows<HttpClientResponseException> {
-            client.exchangeObject<UUID>(
+            client.exchangeObject<AttachmentCreationResponse>(
                 HttpRequest.POST("/api/attachment", multipartBody).contentType(MediaType.MULTIPART_FORM_DATA_TYPE)
             )
         }
 
         assertEquals(HttpStatus.BAD_REQUEST, ex.status)
-        assertEquals("Attachment mimetype is not valid", ex.message)
+        assertEquals("Attachment mimetype is not supported", ex.message)
+
     }
 
 
@@ -138,16 +132,22 @@ class AttachmentControllerIT {
         private val IMAGE_RAW = Base64.getDecoder()
             .decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII=")
         private const val ATTACHMENT_USERID = 1L
-        private val ATTACHMENT_INFO_DTO = AttachmentInfoDTO(
+        private val SUPPORTED_ATTACHMENT_INFO_DTO = AttachmentInfoDTO(
             ATTACHMENT_UUID,
-            ATTACHMENT_USERID,
-            AttachmentType.EVIDENCE,
-            "/",
             SUPPORTED_ATTACHMENT_FILENAME,
             SUPPORTED_ATTACHMENT_MIME_TYPE,
-            LocalDateTime.now(),
-            false
+            LocalDateTime.now().withSecond(0).withNano(0),
+            true
         )
-        private val ATTACHMENT_DTO = AttachmentDTO(ATTACHMENT_INFO_DTO, IMAGE_RAW)
+        private val UNSUPPORTED_ATTACHMENT_INFO_DTO = AttachmentInfoDTO(
+            ATTACHMENT_UUID,
+            UNSUPPORTED_ATTACHMENT_FILENAME,
+            UNSUPPORTED_ATTACHMENT_MIME_TYPE,
+            LocalDateTime.now().withSecond(0).withNano(0),
+            true
+        )
+        private val SUPPORTED_ATTACHMENT_DTO = AttachmentDTO(SUPPORTED_ATTACHMENT_INFO_DTO.copy(id = null), IMAGE_RAW)
+        private val UNSUPPORTED_ATTACHMENT_DTO =
+            AttachmentDTO(UNSUPPORTED_ATTACHMENT_INFO_DTO.copy(id = null), IMAGE_RAW)
     }
 }

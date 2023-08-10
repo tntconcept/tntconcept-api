@@ -4,10 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
-import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
@@ -253,12 +250,21 @@ internal fun createAttachmentInfo() = AttachmentInfo(
     isTemporary = false
 )
 
-internal fun createAttachmentInfoWithFilenameAndMimetype(filename: String? = null, mimeType: String) = AttachmentInfo(
+internal fun createAttachmentInfoWithFilenameAndMimetype(filename: String, mimeType: String) = AttachmentInfo(
     id = UUID.randomUUID(),
     userId = 1L,
     type = AttachmentType.EVIDENCE,
     path = "/",
-    fileName = filename ?: "Evidence001",
+    fileName = filename,
+    mimeType = mimeType,
+    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+    isTemporary = true
+)
+
+internal fun createAttachmentInfoDtoWithFileNameAndMimeType(filename: String, mimeType: String) = AttachmentInfoDTO(
+    null,
+    userId = 1L,
+    fileName = filename,
     mimeType = mimeType,
     uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
     isTemporary = true

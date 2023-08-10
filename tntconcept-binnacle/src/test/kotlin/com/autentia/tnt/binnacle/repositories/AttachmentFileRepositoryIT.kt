@@ -69,12 +69,6 @@ AttachmentFileRepositoryIT {
 
     companion object {
 
-        private val SUPPORTED_ATTACHMENT_INFO_ENTITY =
-            createAttachmentInfoWithFilenameAndMimetype(mimeType = "image/png")
-        private val UNSUPPORTED_INFO_ENTITY = createAttachmentInfoWithFilenameAndMimetype(mimeType = "image/raw")
-        private val ATTACHMENT_INFO = SUPPORTED_ATTACHMENT_INFO_ENTITY.toDomain()
-        private val UNSUPPORTED_ATTACHMENT_INFO = UNSUPPORTED_INFO_ENTITY.toDomain()
-
         const val ATTACHMENT_PATH = "/"
         const val ATTACHMENT_PATH_ERROR = "/error"
         const val ATTACHMENT_FILENAME = "7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpeg"

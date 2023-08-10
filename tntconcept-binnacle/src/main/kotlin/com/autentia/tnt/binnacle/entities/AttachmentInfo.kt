@@ -30,13 +30,13 @@ data class AttachmentInfo(
     fun toDomain() =
         com.autentia.tnt.binnacle.core.domain.AttachmentInfo(
             id,
-            userId,
-            type,
-            path,
             fileName,
             mimeType,
             uploadDate,
-            isTemporary
+            isTemporary,
+            userId,
+            type,
+            path,
         )
 
     companion object {

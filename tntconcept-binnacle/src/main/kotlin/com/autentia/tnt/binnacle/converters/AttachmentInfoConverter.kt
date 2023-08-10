@@ -8,19 +8,25 @@ import jakarta.inject.Singleton
 class AttachmentInfoConverter {
     fun toAttachmentInfoDTO(attachmentInfo: AttachmentInfo) =
         AttachmentInfoDTO(
-            attachmentInfo.id!!, attachmentInfo.userId, attachmentInfo.type, attachmentInfo.path,
-            attachmentInfo.fileName, attachmentInfo.mimeType, attachmentInfo.uploadDate, attachmentInfo.isTemporary
+            attachmentInfo.id!!,
+            attachmentInfo.fileName,
+            attachmentInfo.mimeType,
+            attachmentInfo.uploadDate,
+            attachmentInfo.isTemporary,
+            attachmentInfo.userId,
+            attachmentInfo.type,
+            attachmentInfo.path,
         )
 
     fun toAttachment(attachmentInfoDTO: AttachmentInfoDTO) =
         AttachmentInfo(
             attachmentInfoDTO.id,
-            attachmentInfoDTO.userId,
-            attachmentInfoDTO.type,
-            attachmentInfoDTO.path,
             attachmentInfoDTO.fileName,
             attachmentInfoDTO.mimeType,
             attachmentInfoDTO.uploadDate,
-            attachmentInfoDTO.isTemporary
+            attachmentInfoDTO.isTemporary,
+            attachmentInfoDTO.userId!!,
+            attachmentInfoDTO.type!!,
+            attachmentInfoDTO.path!!,
         )
 }
