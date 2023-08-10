@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createAttachmentInfo
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -24,7 +23,7 @@ class AttachmentInfoServiceTest {
     @Test
     fun `Should return empty if there are no uuids`() {
         val ids: List<UUID> = arrayListOf()
-        val activityEvidences = attachmentInfoService.getActivityEvidence(ids)
+        val activityEvidences = attachmentInfoService.getActivityEvidences(ids)
         assertTrue(activityEvidences.isEmpty())
     }
 
@@ -40,7 +39,7 @@ class AttachmentInfoServiceTest {
             .findById(id2)
 
         val exception = assertThrows<AttachmentNotFoundException> {
-            attachmentInfoService.getActivityEvidence(ids)
+            attachmentInfoService.getActivityEvidences(ids)
         }
 
         assertEquals("Attachment does not exist", exception.message)
@@ -61,7 +60,7 @@ class AttachmentInfoServiceTest {
             .whenever(attachmentInfoRepository)
             .findById(id2)
 
-        val attachmentInfos = attachmentInfoService.getActivityEvidence(ids)
+        val attachmentInfos = attachmentInfoService.getActivityEvidences(ids)
         assertEquals(ids.size, attachmentInfos.size)
     }
 

@@ -11,7 +11,6 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.validation.Validated
 import jakarta.inject.Singleton
@@ -24,7 +23,7 @@ import javax.validation.Valid
 class ActivityCreationUseCase internal constructor(
         private val projectRoleRepository: ProjectRoleRepository,
         private val activityRepository: ActivityRepository,
-        private val activityEvidenceService: ActivityEvidenceService,
+        private val attachmentInfoService: AttachmentInfoService,
         private val activityCalendarService: ActivityCalendarService,
         private val userService: UserService,
         private val activityValidator: ActivityValidator,
@@ -46,11 +45,9 @@ class ActivityCreationUseCase internal constructor(
 
         activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
 
-        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
+        val activityEvidences = attachmentInfoService.getActivityEvidences(activityToCreate.evidences).toMutableList()
 
-//        if (activityToCreate.hasEvidences) {
-//            activityEvidenceService.storeActivityEvidence(savedActivity.id!!, activityToCreate.evidence!!, savedActivity.insertDate!!)
-//        }
+        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole, activityEvidences))
 
         val savedActivityDomain = savedActivity.toDomain()
 
@@ -60,35 +57,6 @@ class ActivityCreationUseCase internal constructor(
 
         return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
     }
-
-    @Transactional
-    fun createActivity2(@Valid activityRequestBody: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
-        val user = userService.getAuthenticatedDomainUser()
-        val projectRole = this.getProjectRole(activityRequestBody.projectRoleId)
-
-        val duration = activityCalendarService.getDurationByCountingWorkingDays(
-            ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
-        )
-
-        val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole.toDomain(), user)
-
-        activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
-
-        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
-
-//        if (activityToCreate.hasEvidences) {
-//            activityEvidenceService.storeActivityEvidence(savedActivity.id!!, activityToCreate.evidence!!, savedActivity.insertDate!!)
-//        }
-
-        val savedActivityDomain = savedActivity.toDomain()
-
-        if (savedActivityDomain.canBeApproved()) {
-            pendingApproveActivityMailUseCase.send(savedActivityDomain, user.username, locale)
-        }
-
-        return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
-    }
-
 
     private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)
             ?: throw ProjectRoleNotFoundException(projectRoleId)

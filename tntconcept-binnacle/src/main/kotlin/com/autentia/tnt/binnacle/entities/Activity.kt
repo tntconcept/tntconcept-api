@@ -119,6 +119,27 @@ data class Activity(
             )
 
         fun of(
+            activity: com.autentia.tnt.binnacle.core.domain.Activity, projectRole: ProjectRole, attachmentInfos: MutableList<AttachmentInfo>
+        ) =
+            Activity(
+                activity.id,
+                activity.getStart(),
+                activity.getEnd(),
+                activity.duration,
+                activity.description,
+                projectRole,
+                activity.userId,
+                activity.billable,
+                activity.departmentId,
+                toDate(activity.insertDate),
+                activity.hasEvidences,
+                activity.approvalState,
+                activity.approvedByUserId,
+                activity.approvalDate,
+                attachmentInfos
+            )
+
+        fun of(
             id: Long?,
             start: LocalDateTime,
             end: LocalDateTime,

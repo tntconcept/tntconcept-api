@@ -34,6 +34,8 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
 
+
+// TODO ewview and check the AttachmentInfoService
 @TestInstance(PER_CLASS)
 internal class ActivityCreationUseCaseTest {
 
@@ -43,7 +45,7 @@ internal class ActivityCreationUseCaseTest {
     private val activityService = mock<ActivityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityRepository = mock<ActivityRepository>()
-    private val activityEvidenceService = mock<ActivityEvidenceService>()
+    private val attachmentInfoService = mock<AttachmentInfoService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val userService = mock<UserService>()
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
@@ -62,7 +64,7 @@ internal class ActivityCreationUseCaseTest {
     private val activityCreationUseCase = ActivityCreationUseCase(
         projectRoleRepository,
         activityRepository,
-        activityEvidenceService,
+        attachmentInfoService,
         activityCalendarService,
         userService,
         activityValidator,
@@ -78,7 +80,7 @@ internal class ActivityCreationUseCaseTest {
             activityService,
             projectRoleRepository,
             activityRepository,
-            activityEvidenceService,
+            attachmentInfoService,
             activityCalendarService,
             userService,
                 sendPendingApproveActivityMailUseCase,
@@ -290,7 +292,7 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
-        verifyNoInteractions(activityEvidenceService)
+//        verifyNoInteractions(activityEvidenceService)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = false, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
@@ -317,7 +319,7 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
-        verifyNoInteractions(activityEvidenceService)
+//        verifyNoInteractions(activityEvidenceService)
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = false, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = false))
