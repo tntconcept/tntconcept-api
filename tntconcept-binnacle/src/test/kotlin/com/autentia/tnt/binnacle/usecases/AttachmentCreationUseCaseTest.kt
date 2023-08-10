@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createAttachmentInfoWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
+import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import io.micronaut.security.authentication.ClientAuthentication
@@ -65,9 +66,9 @@ class AttachmentCreationUseCaseTest {
     }
 
     @Test
-    fun `throws IllegalArgumentException when mimetype is not valid`() {
-        assertThrows<IllegalArgumentException> {
-            attachmentCreationUseCase.storeAttachment(IMAGE_BYTEARRAY, "Evidence", "image/raw")
+    fun `throws AttachmentMimeTypeNotSupportedException when mimetype is not valid`() {
+        assertThrows<AttachmentMimeTypeNotSupportedException> {
+            attachmentCreationUseCase.storeAttachment(IMAGE_BYTEARRAY, "Evidence", "application/json")
         }
     }
 

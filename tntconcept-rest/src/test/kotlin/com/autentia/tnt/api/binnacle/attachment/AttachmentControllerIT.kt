@@ -4,7 +4,9 @@ import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
 import com.autentia.tnt.binnacle.entities.dto.AttachmentInfoDTO
+import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
+import com.autentia.tnt.binnacle.usecases.AttachmentCreationUseCase
 import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -14,14 +16,13 @@ import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.http.client.multipart.MultipartBody
+import io.micronaut.security.authentication.ClientAuthentication
+import io.micronaut.security.utils.DefaultSecurityService
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.*
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
@@ -41,10 +42,27 @@ class AttachmentControllerIT {
     @get:MockBean(AttachmentRetrievalUseCase::class)
     internal val attachmentRetrievalUseCase = mock<AttachmentRetrievalUseCase>()
 
+    @get:MockBean(AttachmentCreationUseCase::class)
+    internal val attachmentCreationUseCase = mock<AttachmentCreationUseCase>()
+
+    @get:MockBean(DefaultSecurityService::class)
+    internal val securityService = mock<DefaultSecurityService>()
+
 
     @BeforeAll
     fun setup() {
         client = httpClient.toBlocking()
+    }
+
+    @BeforeEach
+    fun setUp() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+    }
+
+    @AfterEach
+    fun resetMocks() {
+        reset(attachmentRetrievalUseCase)
+        reset(securityService)
     }
 
     @Test
@@ -75,13 +93,16 @@ class AttachmentControllerIT {
         }
 
         assertEquals(HttpStatus.NOT_FOUND, ex.status)
-
+        assertEquals("Attachment does not exist", ex.message)
     }
 
     @Test
     fun `create an attachment`() {
 
-//        whenever(activityEvidenceCreationUseCase.createActivityEvidence(any(), any(), any())).thenReturn(ACTIVITY_ID)
+        whenever(attachmentCreationUseCase.storeAttachment(IMAGE_RAW, "attachment.png", "image/png")).thenReturn(
+            ATTACHMENT_INFO_DTO
+        )
+
         val multipartBody = MultipartBody.builder()
             .addPart("attachmentFile", "attachment.png", MediaType.IMAGE_PNG_TYPE, IMAGE_RAW)
             .build()
@@ -89,18 +110,40 @@ class AttachmentControllerIT {
         val response = client.exchangeObject<UUID>(
             HttpRequest.POST("/api/attachment", multipartBody).contentType(MediaType.MULTIPART_FORM_DATA_TYPE)
         )
+
         assertNotNull(response.body)
         assertEquals(HttpStatus.OK, response.status)
     }
 
 
-    // TODO generate tests for POST errors
+    @Test
+    fun `throw IllegalArgumentException when create an attachment with invalid mimeType`() {
+        val mimetype = "application/json"
+
+        doThrow(AttachmentMimeTypeNotSupportedException()).whenever(attachmentCreationUseCase).storeAttachment(
+            IMAGE_RAW, "attachment.json", mimetype
+        )
+
+        val multipartBody = MultipartBody.builder()
+            .addPart("attachmentFile", "attachment.json", MediaType.APPLICATION_JSON_TYPE, IMAGE_RAW)
+            .build()
+
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeObject<UUID>(
+                HttpRequest.POST("/api/attachment", multipartBody).contentType(MediaType.MULTIPART_FORM_DATA_TYPE)
+            )
+        }
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.status)
+        assertEquals("Attachment mimetype is not valid", ex.message)
+    }
 
 
     private companion object {
+
         private val ATTACHMENT_UUID = UUID.randomUUID()
         private const val ATTACHMENT_MIME_TYPE = "image/png"
-        private val ATTACHMENT_FILENAME = "$ATTACHMENT_UUID.png"
+        private const val ATTACHMENT_FILENAME = "filename.png"
         private const val IMAGE_BASE64 =
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
         private val IMAGE_RAW = Base64.getDecoder().decode(IMAGE_BASE64)
@@ -110,6 +153,10 @@ class AttachmentControllerIT {
             LocalDateTime.now(), false
         )
         private val ATTACHMENT_DTO = AttachmentDTO(ATTACHMENT_INFO_DTO, IMAGE_RAW)
+        private const val userId = 1L
+
+        private val authenticationUser =
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 
 }

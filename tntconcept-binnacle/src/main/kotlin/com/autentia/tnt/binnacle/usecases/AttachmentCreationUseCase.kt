@@ -4,6 +4,7 @@ import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
 import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.entities.dto.AttachmentInfoDTO
+import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.security.application.checkAuthentication
@@ -32,7 +33,7 @@ class AttachmentCreationUseCase internal constructor(
 
         val attachmentInfoDTO = constructNewAttachmentInfo(filename, mimeType, userId)
 
-        require(isMimeTypeSupported(mimeType)) { "Mime type $mimeType is not supported" }
+        if (!isMimeTypeSupported(mimeType)) throw AttachmentMimeTypeNotSupportedException("Mime type $mimeType is not supported")
 
         val attachmentInfoToCreate = attachmentInfoConverter.toAttachment(attachmentInfoDTO);
         attachmentFileRepository.storeAttachment(attachmentInfoToCreate, fileByteArray)
