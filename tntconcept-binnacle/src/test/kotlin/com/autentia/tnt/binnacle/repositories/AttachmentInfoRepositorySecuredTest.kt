@@ -29,6 +29,23 @@ internal class AttachmentInfoRepositorySecuredTest {
         verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
     }
 
+    @Test
+    fun `call isPresent when user is admin`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
+        attachmentInfoRepositorySecured.isPresent(attachmentId)
+
+        verify(attachmentInfoDao).findById(attachmentId)
+    }
+
+    @Test
+    fun `call isPresent when user is not admin`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+        attachmentInfoRepositorySecured.isPresent(attachmentId)
+
+        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
+    }
+
+
     companion object {
         private val attachmentId = UUID.randomUUID()
         private const val userId = 1L
