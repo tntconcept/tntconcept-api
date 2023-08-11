@@ -45,7 +45,7 @@ class ActivityCreationUseCase internal constructor(
 
         activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
 
-        val activityEvidences = attachmentInfoService.getActivityEvidences(activityToCreate.evidences).toMutableList()
+        val activityEvidences = attachmentInfoService.getAttachments(activityToCreate.evidences).toMutableList()
 
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole, activityEvidences))
 

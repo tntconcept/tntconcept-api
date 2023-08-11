@@ -24,7 +24,7 @@ class AttachmentInfoServiceTest {
     @Test
     fun `Should return empty if there are no uuids`() {
         val ids: List<UUID> = arrayListOf()
-        val activityEvidences = attachmentInfoService.getActivityEvidences(ids)
+        val activityEvidences = attachmentInfoService.getAttachments(ids)
         assertTrue(activityEvidences.isEmpty())
     }
 
@@ -41,7 +41,7 @@ class AttachmentInfoServiceTest {
             .findById(id2)
 
         val exception = assertThrows<AttachmentNotFoundException> {
-            attachmentInfoService.getActivityEvidences(ids)
+            attachmentInfoService.getAttachments(ids)
         }
 
         assertEquals("Attachment does not exist", exception.message)
@@ -62,7 +62,7 @@ class AttachmentInfoServiceTest {
             .whenever(attachmentInfoRepository)
             .findById(id2)
 
-        val attachmentInfos = attachmentInfoService.getActivityEvidences(ids)
+        val attachmentInfos = attachmentInfoService.getAttachments(ids)
         assertEquals(ids.size, attachmentInfos.size)
     }
 
