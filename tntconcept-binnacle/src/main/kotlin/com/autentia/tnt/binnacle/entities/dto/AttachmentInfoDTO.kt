@@ -6,11 +6,11 @@ import java.util.*
 
 data class AttachmentInfoDTO(
     val id: UUID? = null,
-    val userId: Long,
-    val type: AttachmentType,
-    val path: String,
     val fileName: String,
     val mimeType: String,
     val uploadDate: LocalDateTime,
     val isTemporary: Boolean,
+    var userId: Long? = null,
+    var type: AttachmentType? = null,
+    var path: String? = null,
 )

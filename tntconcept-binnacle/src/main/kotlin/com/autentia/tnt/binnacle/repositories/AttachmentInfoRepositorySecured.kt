@@ -9,21 +9,32 @@ import jakarta.inject.Singleton
 import java.util.*
 
 @Singleton
-internal class AttachmentInfoRepositorySecured (
+internal class AttachmentInfoRepositorySecured(
     private val securityService: SecurityService,
     private val attachmentInfoDao: AttachmentInfoDao,
 ) : AttachmentInfoRepository {
 
-    override fun findById(id: UUID): AttachmentInfo? {
+    override fun findById(id: UUID): Optional<AttachmentInfo> {
         val authentication = securityService.checkAuthentication()
-        return if(authentication.canAccessAllAttachments()) {
-            attachmentInfoDao.findById(id).orElse(null)
-        } else {
+        return if (authentication.canAccessAllAttachments())
+            attachmentInfoDao.findById(id)
+        else
             attachmentInfoDao.findByIdAndUserId(id, authentication.id())
-        }
     }
 
     override fun save(attachmentInfo: AttachmentInfo): AttachmentInfo {
+        val authentication = securityService.checkAuthentication()
+        require(attachmentInfo.userId == authentication.id()) { "User cannot upload attachment" }
+
         return attachmentInfoDao.save(attachmentInfo)
+    }
+
+    override fun isPresent(id: UUID): Boolean {
+        val authentication = securityService.checkAuthentication()
+
+        return if (authentication.canAccessAllAttachments())
+            attachmentInfoDao.findById(id).isPresent
+        else
+            attachmentInfoDao.findByIdAndUserId(id, authentication.id()).isPresent
     }
 }

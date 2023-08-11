@@ -303,10 +303,9 @@ paths:
         "200":
           description: createAttachment$tntconcept_rest 200 response
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-                format: uuid
+                $ref: '#/components/schemas/AttachmentCreationResponse'
   /api/attachment/{id}:
     get:
       tags:
@@ -1021,6 +1020,13 @@ components:
       - PENDING
       - ACCEPTED
       - ALL
+    AttachmentCreationResponse:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
     BlockProjectRequest:
       required:
       - blockDate

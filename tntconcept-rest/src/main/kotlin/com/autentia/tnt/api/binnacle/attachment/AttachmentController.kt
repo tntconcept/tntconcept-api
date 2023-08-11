@@ -36,30 +36,26 @@ internal class AttachmentController(
             .header("Content-disposition", "attachment; filename=\"${attachment.info.fileName}\"")
     }
 
-    @Post(value = "/", consumes = [MediaType.MULTIPART_FORM_DATA], produces = [MediaType.TEXT_PLAIN])
+    @Post(value = "/", consumes = [MediaType.MULTIPART_FORM_DATA], produces = [MediaType.APPLICATION_JSON])
     @Operation(summary = "Create an attachment")
     internal fun createAttachment(
         attachmentFile: CompletedFileUpload,
-    ): HttpResponse<UUID> {
+    ): HttpResponse<AttachmentCreationResponse> {
+        val attachmentRequest = AttachmentRequest.of(attachmentFile)
+        val createdAttachmentDto = attachmentCreationUseCase.storeAttachment(attachmentRequest.toDto())
 
-        val mimeType = attachmentFile.contentType.get().toString()
-        val filename = attachmentFile.filename!!
-        val fileToSave = attachmentFile.bytes
-
-        val attachmentId = attachmentCreationUseCase.storeAttachment(fileToSave, filename, mimeType).id
-
-        return HttpResponse.ok(attachmentId)
+        return HttpResponse.ok(AttachmentCreationResponse(createdAttachmentDto.id!!.toString()))
     }
 
     @Error
     internal fun onAttachmentNotFoundException(request: HttpRequest<*>, e: AttachmentNotFoundException) =
-        HttpResponse.notFound(ErrorResponse("Attachment not found", e.message))
+        HttpResponse.notFound(ErrorResponse("ATTACHMENT_NOT_FOUND", e.message))
 
     @Error
-    internal fun onAttachmentMimeTypeNotSupportedException(
+    internal fun onAttachmentMimetypeNotSupportedException(
         request: HttpRequest<*>,
         e: AttachmentMimeTypeNotSupportedException,
     ) =
-        HttpResponse.badRequest(ErrorResponse("Attachment mimetype not supported", e.message))
+        HttpResponse.badRequest(ErrorResponse("ATTACHMENT_MIMETYPE_NOT_SUPPORTED", e.message))
 
 }

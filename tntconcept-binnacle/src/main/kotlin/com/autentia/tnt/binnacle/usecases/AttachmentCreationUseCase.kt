@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
 import com.autentia.tnt.binnacle.entities.AttachmentType
+import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
 import com.autentia.tnt.binnacle.entities.dto.AttachmentInfoDTO
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
@@ -11,7 +12,6 @@ import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.DefaultSecurityService
 import jakarta.inject.Singleton
-import java.time.LocalDateTime
 
 @Singleton
 class AttachmentCreationUseCase internal constructor(
@@ -27,17 +27,16 @@ class AttachmentCreationUseCase internal constructor(
         supportedMimeExtensions = appProperties.files.supportedMimeTypes
     }
 
-    fun storeAttachment(attachmentFile: ByteArray, filename: String, mimeType: String): AttachmentInfoDTO {
+    fun storeAttachment(attachmentDTO: AttachmentDTO): AttachmentInfoDTO {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
 
-        if (!isMimeTypeSupported(mimeType)) throw AttachmentMimeTypeNotSupportedException("Mime type $mimeType is not supported")
+        val attachmentInfoDto = establishAttachmentInfoDTO(attachmentDTO, userId)
 
-        val attachmentInfoToCreateDTO = constructNewAttachmentInfo(filename, mimeType, userId)
+        if (!isMimeTypeSupported(attachmentInfoDto.mimeType)) throw AttachmentMimeTypeNotSupportedException("Mime type ${attachmentInfoDto.mimeType} is not supported")
 
-
-        val attachmentInfoToCreate = attachmentInfoConverter.toAttachment(attachmentInfoToCreateDTO);
-        attachmentFileRepository.storeAttachment(attachmentInfoToCreate, attachmentFile)
+        val attachmentInfoToCreate = attachmentInfoConverter.toAttachment(attachmentInfoDto);
+        attachmentFileRepository.storeAttachment(attachmentInfoToCreate, attachmentDTO.file)
 
         val attachmentInfoEntityToCreate = com.autentia.tnt.binnacle.entities.AttachmentInfo.of(attachmentInfoToCreate)
         val savedAttachment = attachmentInfoRepository.save(attachmentInfoEntityToCreate)
@@ -45,17 +44,16 @@ class AttachmentCreationUseCase internal constructor(
         return attachmentInfoConverter.toAttachmentInfoDTO(savedAttachment.toDomain())
     }
 
-    private fun constructNewAttachmentInfo(filename: String, mimeType: String, userId: Long): AttachmentInfoDTO =
-        AttachmentInfoDTO(
-            null,
-            userId,
-            AttachmentType.EVIDENCE,
-            "/",
-            filename,
-            mimeType,
-            LocalDateTime.now().withSecond(0).withNano(0),
-            true
-        )
+    private fun establishAttachmentInfoDTO(
+        attachmentDTO: AttachmentDTO,
+        userId: Long,
+    ): AttachmentInfoDTO {
+        val attachmentInfoDto = attachmentDTO.info
+        attachmentInfoDto.userId = userId
+        attachmentInfoDto.path = "/"
+        attachmentInfoDto.type = AttachmentType.EVIDENCE
+        return attachmentInfoDto
+    }
 
     private fun isMimeTypeSupported(mimeType: String): Boolean = supportedMimeExtensions.containsKey(mimeType)
 }
