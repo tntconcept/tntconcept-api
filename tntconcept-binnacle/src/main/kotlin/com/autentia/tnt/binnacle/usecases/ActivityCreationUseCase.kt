@@ -49,6 +49,8 @@ class ActivityCreationUseCase internal constructor(
 
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole, activityEvidences))
 
+        // TODO Update the is temporary flag to true
+
         val savedActivityDomain = savedActivity.toDomain()
 
         if (savedActivityDomain.canBeApproved()) {

@@ -35,7 +35,6 @@ import java.time.LocalTime
 import java.util.*
 
 
-// TODO review and check the AttachmentInfoService
 @TestInstance(PER_CLASS)
 internal class ActivityCreationUseCaseTest {
 
