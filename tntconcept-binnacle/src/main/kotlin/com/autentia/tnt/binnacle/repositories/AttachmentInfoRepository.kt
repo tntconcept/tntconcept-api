@@ -7,4 +7,5 @@ internal interface AttachmentInfoRepository {
     fun findById(id: UUID): Optional<AttachmentInfo>
     fun save(attachmentInfo: AttachmentInfo): AttachmentInfo
     fun isPresent(id: UUID): Boolean
+    fun updateIsTemporary(id: UUID, state: Boolean)
 }

@@ -9,16 +9,17 @@ import org.mockito.kotlin.whenever
 import java.util.*
 
 internal class AttachmentInfoRepositorySecuredTest {
-    private val attachmentInfoDao = mock<AttachmentInfoDao>()
+    private val internalAttachmentRepository = mock<InternalAttachmentRepository>()
     private val securityService = mock<SecurityService>()
-    private val attachmentInfoRepositorySecured = AttachmentInfoRepositorySecured(securityService, attachmentInfoDao)
+    private val attachmentInfoRepositorySecured =
+        AttachmentInfoRepositorySecured(securityService, internalAttachmentRepository)
 
     @Test
     fun `call findById when user is admin`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.findById(attachmentId)
 
-        verify(attachmentInfoDao).findById(attachmentId)
+        verify(internalAttachmentRepository).findById(attachmentId)
     }
 
     @Test
@@ -26,7 +27,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         attachmentInfoRepositorySecured.findById(attachmentId)
 
-        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
+        verify(internalAttachmentRepository).findByIdAndUserId(attachmentId, userId)
     }
 
     @Test
@@ -34,7 +35,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.isPresent(attachmentId)
 
-        verify(attachmentInfoDao).findById(attachmentId)
+        verify(internalAttachmentRepository).findById(attachmentId)
     }
 
     @Test
@@ -42,7 +43,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         attachmentInfoRepositorySecured.isPresent(attachmentId)
 
-        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
+        verify(internalAttachmentRepository).findByIdAndUserId(attachmentId, userId)
     }
 
 
