@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -33,8 +34,9 @@ class AttachmentInfoServiceTest {
         val id1 = UUID.randomUUID()
         val id2 = UUID.randomUUID()
         val ids = arrayListOf(id1, id2)
+        val emptyAttachmentInfo: Optional<AttachmentInfo> = Optional.empty()
 
-        Mockito.doReturn(null)
+        Mockito.doReturn(emptyAttachmentInfo)
             .whenever(attachmentInfoRepository)
             .findById(id2)
 
@@ -52,11 +54,11 @@ class AttachmentInfoServiceTest {
         val id2 = UUID.randomUUID()
         val ids = arrayListOf(id1, id2)
 
-        Mockito.doReturn(createAttachmentInfo())
+        Mockito.doReturn(Optional.of(createAttachmentInfo()))
             .whenever(attachmentInfoRepository)
             .findById(id1)
 
-        Mockito.doReturn(createAttachmentInfo())
+        Mockito.doReturn(Optional.of(createAttachmentInfo()))
             .whenever(attachmentInfoRepository)
             .findById(id2)
 

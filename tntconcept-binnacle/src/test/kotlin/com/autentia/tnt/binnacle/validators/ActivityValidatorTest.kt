@@ -1296,9 +1296,9 @@ internal class ActivityValidatorTest {
                 .whenever(projectRepository)
                 .findById(nonBlockedProject.id)
 
-            doReturn(null)
+            doReturn(false)
                 .whenever(attachmentInfoRepository)
-                .findById(attachmentID)
+                .isPresent(attachmentID)
 
             val exception = assertThrows<AttachmentNotFoundException> {
                 activityValidator.checkActivityIsValidForCreation(activity, user)
@@ -1313,15 +1313,13 @@ internal class ActivityValidatorTest {
 
         val activity = newActivityWithEvidences(arrayListOf(attachmentID))
 
-        val attachmentInfo = createAttachmentInfo()
-
         doReturn(Optional.of(vacationProject))
             .whenever(projectRepository)
             .findById(projectRole.project.id)
 
-        doReturn(attachmentInfo)
+        doReturn(true)
             .whenever(attachmentInfoRepository)
-            .findById(attachmentID)
+            .isPresent(attachmentID)
 
         activityValidator.checkActivityIsValidForCreation(activity, user)
 

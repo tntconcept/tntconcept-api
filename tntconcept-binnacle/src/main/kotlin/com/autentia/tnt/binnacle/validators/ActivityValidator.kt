@@ -88,7 +88,9 @@ internal class ActivityValidator(
 
     private fun evidencesExist(evidencesIds: List<UUID>): Boolean {
         for (evidenceId in evidencesIds) {
-            attachmentInfoRepository.findById(evidenceId) ?: return false
+            if (!attachmentInfoRepository.isPresent(evidenceId)) {
+                return false
+            }
         }
         return true
     }

@@ -17,8 +17,8 @@ internal class AttachmentInfoService(
     @ReadOnly
     fun getActivityEvidences(ids: List<UUID>): List<AttachmentInfo> {
         val attachmentInfos: MutableList<AttachmentInfo> = arrayListOf()
-        for(id in ids) {
-            val attachmentInfo = attachmentInfoRepository.findById(id) ?: throw AttachmentNotFoundException()
+        for (id in ids) {
+            val attachmentInfo = attachmentInfoRepository.findById(id).orElseThrow { AttachmentNotFoundException() }
             attachmentInfos.add(attachmentInfo)
         }
         return attachmentInfos

@@ -35,7 +35,7 @@ import java.time.LocalTime
 import java.util.*
 
 
-// TODO ewview and check the AttachmentInfoService
+// TODO review and check the AttachmentInfoService
 @TestInstance(PER_CLASS)
 internal class ActivityCreationUseCaseTest {
 
@@ -152,6 +152,9 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
+
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
         verify(sendPendingApproveActivityMailUseCase, times(0)).send(
@@ -183,7 +186,8 @@ internal class ActivityCreationUseCaseTest {
             )
         )
 
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(createAttachmentInfo())
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
@@ -211,7 +215,9 @@ internal class ActivityCreationUseCaseTest {
                 createProject()
             )
         )
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(createAttachmentInfo())
+
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
@@ -231,6 +237,9 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
+
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
 
@@ -257,7 +266,8 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(createAttachmentInfo())
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         // When
         val activityCreateRequest = ACTIVITY_WITH_EVIDENCE_DTO.copy(projectRoleId = projectRoleRequireEvidence.id)
@@ -340,6 +350,9 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
+
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         // When
         val activityCreateRequest = ACTIVITY_WITH_EVIDENCE_DTO.copy(projectRoleId = projectRoleRequireEvidence.id)
