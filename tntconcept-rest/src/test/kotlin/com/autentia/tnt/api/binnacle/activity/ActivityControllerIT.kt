@@ -93,7 +93,7 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `get all perding activities by approvalState`() {
+    fun `get all pending activities by approvalState`() {
         val approvalState = ApprovalStateActivityFilter.PENDING
         val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
         val activities = listOf(ACTIVITY_RESPONSE)
