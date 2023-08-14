@@ -239,7 +239,7 @@ internal fun createActivityResponseDTO(
     approval = ApprovalDTO(approvalState)
 )
 
-internal fun createAttachmentInfo() = AttachmentInfo(
+internal fun createAttachmentInfoEntity() = AttachmentInfo(
     id = UUID.randomUUID(),
     userId = 1L,
     path = "/",
@@ -249,7 +249,7 @@ internal fun createAttachmentInfo() = AttachmentInfo(
     isTemporary = false
 )
 
-internal fun createAttachmentInfoWithFilenameAndMimetype(filename: String, mimeType: String) = AttachmentInfo(
+internal fun createAttachmentInfoEntityWithFilenameAndMimetype(filename: String, mimeType: String) = AttachmentInfo(
     id = UUID.randomUUID(),
     userId = 1L,
     path = "/",

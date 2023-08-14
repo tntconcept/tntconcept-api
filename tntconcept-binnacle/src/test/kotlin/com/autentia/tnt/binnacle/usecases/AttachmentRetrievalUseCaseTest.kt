@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
@@ -64,7 +64,7 @@ class AttachmentRetrievalUseCaseTest {
     }
 
     companion object {
-        private val ATTACHMENT_INFO_ENTITY = createAttachmentInfo()
+        private val ATTACHMENT_INFO_ENTITY = createAttachmentInfoEntity()
         private val ATTACHMENT_INFO = ATTACHMENT_INFO_ENTITY.toDomain()
         private val ATTACHMENT_INFO_CONVERTER = AttachmentInfoConverter()
         private val ATTACHMENT_INFO_DTO = ATTACHMENT_INFO_CONVERTER.toAttachmentInfoDTO(ATTACHMENT_INFO)

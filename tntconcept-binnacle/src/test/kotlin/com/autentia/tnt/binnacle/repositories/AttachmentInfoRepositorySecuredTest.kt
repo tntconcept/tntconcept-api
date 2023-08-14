@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfoWithFilenameAndMimetype
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Test
@@ -90,7 +90,7 @@ internal class AttachmentInfoRepositorySecuredTest {
 
         private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
         private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
-        private val SUPPORTED_ATTACHMENT_INFO = createAttachmentInfoWithFilenameAndMimetype(
+        private val SUPPORTED_ATTACHMENT_INFO = createAttachmentInfoEntityWithFilenameAndMimetype(
             IMAGE_SUPPORTED_FILENAME,
             IMAGE_SUPPORTED_MIMETYPE
         )

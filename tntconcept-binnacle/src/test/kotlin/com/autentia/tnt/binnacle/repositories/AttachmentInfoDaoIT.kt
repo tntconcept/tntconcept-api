@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions
@@ -18,7 +18,7 @@ class AttachmentInfoDaoIT {
 
     @Test
     fun `should save an attachment and find it by id`() {
-        val savedAttachment = attachmentInfoDao.save(createAttachmentInfo().copy(id = null))
+        val savedAttachment = attachmentInfoDao.save(createAttachmentInfoEntity().copy(id = null))
 
         val result = attachmentInfoDao.findById(savedAttachment.id!!)
 
@@ -27,7 +27,7 @@ class AttachmentInfoDaoIT {
 
     @Test
     fun `should find an attachment by id and user id`() {
-        val savedAttachment = attachmentInfoDao.save(createAttachmentInfo().copy(id = null))
+        val savedAttachment = attachmentInfoDao.save(createAttachmentInfoEntity().copy(id = null))
 
         val result = attachmentInfoDao.findByIdAndUserId(savedAttachment.id!!, savedAttachment.userId)
 

@@ -14,15 +14,15 @@ internal class AttachmentFileRepository(
     appProperties: AppProperties,
 ) {
 
-    private val evidencesPath: String
+    private val attachmentsPath: String
 
 
     init {
-        evidencesPath = appProperties.files.evidencesPath
+        attachmentsPath = appProperties.files.attachmentsPath
     }
 
     fun getAttachment(path: String, fileName: String): ByteArray {
-        val filePath = Path.of(evidencesPath, path, fileName)
+        val filePath = Path.of(attachmentsPath, path, fileName)
 
         if (!Files.exists(filePath)) {
             throw AttachmentNotFoundException("Attachment file does not exist: $filePath")
@@ -33,7 +33,7 @@ internal class AttachmentFileRepository(
 
     fun storeAttachment(attachmentInfo: AttachmentInfo, fileByteArray: ByteArray) {
 
-        val pathFile = Path.of(evidencesPath, attachmentInfo.path, attachmentInfo.fileName)
+        val pathFile = Path.of(attachmentsPath, attachmentInfo.path, attachmentInfo.fileName)
 
         val attachmentFile = File(pathFile.toUri())
 

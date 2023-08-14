@@ -18,7 +18,7 @@ internal class AppProperties {
     @ConfigurationProperties("files")
     internal class FilesProperties {
         @NotBlank
-        var evidencesPath: String = ""
+        var attachmentsPath: String = ""
 
         @NotEmpty
         var supportedMimeTypes: Map<String, String> = emptyMap()
@@ -80,6 +80,7 @@ internal class AppProperties {
             internal class WeeklyProperties {
                 var cronExpression: String? = null
             }
+
             @ConfigurationProperties("once")
             internal class OnceProperties {
                 var cronExpression: String? = null

@@ -21,7 +21,7 @@ import java.util.*
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ActivityEvidenceServiceIT {
     private val appProperties = AppProperties().apply {
-        files.evidencesPath = "src/test/resources/testfolder"
+        files.attachmentsPath = "src/test/resources/testfolder"
         files.supportedMimeTypes = mapOf(
             Pair("application/pdf", "pdf"),
             Pair("image/jpg", "jpg"),
@@ -35,14 +35,14 @@ internal class ActivityEvidenceServiceIT {
 
     @BeforeAll
     fun createTestFolder() {
-        if (Files.notExists(Path.of(appProperties.files.evidencesPath))) {
-            Files.createDirectory(Path.of(appProperties.files.evidencesPath))
+        if (Files.notExists(Path.of(appProperties.files.attachmentsPath))) {
+            Files.createDirectory(Path.of(appProperties.files.attachmentsPath))
         }
     }
 
     @AfterAll
     fun deleteContents() {
-        FileUtils.deleteDirectory(File(appProperties.files.evidencesPath))
+        FileUtils.deleteDirectory(File(appProperties.files.attachmentsPath))
     }
 
     @Nested
@@ -62,7 +62,7 @@ internal class ActivityEvidenceServiceIT {
             activityEvidenceService.storeActivityEvidence(2L, evidence, date)
 
             val expectedExtension = getExtensionForMimeType(mimeType)
-            val expectedEvidenceFilename = "${appProperties.files.evidencesPath}/2022/4/2.$expectedExtension"
+            val expectedEvidenceFilename = "${appProperties.files.attachmentsPath}/2022/4/2.$expectedExtension"
             val file = File(expectedEvidenceFilename)
             val content = File(expectedEvidenceFilename).readText()
 
@@ -90,7 +90,7 @@ internal class ActivityEvidenceServiceIT {
             ]
         )
         fun `should delete evidence with any valid file type`(fileExtension: String) {
-            val file = File("${appProperties.files.evidencesPath}/2022/4/2.$fileExtension")
+            val file = File("${appProperties.files.attachmentsPath}/2022/4/2.$fileExtension")
             file.createNewFile()
 
             val result = activityEvidenceService.deleteActivityEvidence(2L, date)
@@ -120,7 +120,7 @@ internal class ActivityEvidenceServiceIT {
             ]
         )
         fun `should return the stored image of the activity in base 64`(fileExtension: String) {
-            val file = File("${appProperties.files.evidencesPath}/2022/4/2.$fileExtension")
+            val file = File("${appProperties.files.attachmentsPath}/2022/4/2.$fileExtension")
             file.writeText("Hello World!")
 
             val result = activityEvidenceService.getActivityEvidenceAsBase64String(2L, date)
@@ -142,7 +142,7 @@ internal class ActivityEvidenceServiceIT {
         )
         fun `should return the stored image of the activity as evidence dto`(mimeType: String) {
             val fileExtension = appProperties.files.supportedMimeTypes[mimeType] ?: fail("Invalid mime type")
-            val file = File("${appProperties.files.evidencesPath}/2022/4/2.$fileExtension")
+            val file = File("${appProperties.files.attachmentsPath}/2022/4/2.$fileExtension")
             file.writeText("Hello World!")
 
             val result = activityEvidenceService.getActivityEvidence(2L, date)
