@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.config.createAttachmentInfoWithFilenameAndMimetype
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
@@ -17,7 +17,7 @@ import java.util.*
 internal class
 AttachmentFileRepositoryIT {
     private val appProperties = AppProperties().apply {
-        files.evidencesPath = "src/test/resources/attachments_test/evidences"
+        files.attachmentsPath = "src/test/resources/attachments_test/evidences"
     }
     private val attachmentFileRepository: AttachmentFileRepository = AttachmentFileRepository(appProperties)
 
@@ -50,14 +50,14 @@ AttachmentFileRepositoryIT {
 
         val extension = mimeType.split("/")[1]
 
-        val attachmentInfo = createAttachmentInfoWithFilenameAndMimetype(
+        val attachmentInfo = createAttachmentInfoEntityWithFilenameAndMimetype(
             filename = "Evidence.$extension",
             mimeType = mimeType
         ).toDomain()
 
         attachmentFileRepository.storeAttachment(attachmentInfo, IMAGE_BYTEARRAY)
 
-        val expectedEvidenceFilename = "${appProperties.files.evidencesPath}/${attachmentInfo.fileName}"
+        val expectedEvidenceFilename = "${appProperties.files.attachmentsPath}/${attachmentInfo.fileName}"
         val file = File(expectedEvidenceFilename)
         val content = File(expectedEvidenceFilename).readBytes()
 

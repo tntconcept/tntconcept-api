@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createAttachmentInfoDtoWithFileNameAndMimeType
-import com.autentia.tnt.binnacle.config.createAttachmentInfoWithFilenameAndMimetype
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
 import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
@@ -24,7 +24,7 @@ class AttachmentCreationUseCaseTest {
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
     private val attachmentInfoConverter = AttachmentInfoConverter()
     private val appProperties = AppProperties().apply {
-        files.evidencesPath = "src/test/resources/attachments_test/evidences"
+        files.attachmentsPath = "src/test/resources/attachments_test/evidences"
         files.supportedMimeTypes = mapOf(
             Pair("image/png", "png"),
         )
@@ -78,7 +78,7 @@ class AttachmentCreationUseCaseTest {
         private const val IMAGE_UNSUPPORTED_MIMETYPE = "application/json"
 
         private val SUPPORTED_ATTACHMENT_INFO_ENTITY =
-            createAttachmentInfoWithFilenameAndMimetype(
+            createAttachmentInfoEntityWithFilenameAndMimetype(
                 filename = IMAGE_SUPPORTED_FILENAME,
                 mimeType = IMAGE_SUPPORTED_MIMETYPE
             )

@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -66,7 +66,7 @@ class InternalAttachmentInfoRepositoryTest {
 
     companion object {
         val attachmentId: UUID = UUID.randomUUID()
-        val attachmentCreated = createAttachmentInfo()
-        val attachmentToCreate = createAttachmentInfo().copy(id = null)
+        val attachmentCreated = createAttachmentInfoEntity()
+        val attachmentToCreate = createAttachmentInfoEntity().copy(id = null)
     }
 }

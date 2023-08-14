@@ -22,7 +22,7 @@ internal class ActivityEvidenceService(
     private val supportedMimeExtensions: Map<String, String>
 
     init {
-        evidencesPath = appProperties.files.evidencesPath
+        evidencesPath = appProperties.files.attachmentsPath
         supportedMimeExtensions = appProperties.files.supportedMimeTypes
     }
 
