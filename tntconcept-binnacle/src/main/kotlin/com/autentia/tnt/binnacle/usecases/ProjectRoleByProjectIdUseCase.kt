@@ -14,7 +14,9 @@ import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService
+import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
+import javax.transaction.Transactional
 
 
 @Singleton
@@ -27,6 +29,8 @@ class ProjectRoleByProjectIdUseCase internal constructor(
     private val projectRoleConverter: ProjectRoleConverter,
 ) {
 
+    @Transactional
+    @ReadOnly
     fun get(projectId: Long, year: Int?): List<ProjectRoleUserDTO> {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
