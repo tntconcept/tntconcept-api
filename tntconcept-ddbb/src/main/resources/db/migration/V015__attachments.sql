@@ -1,4 +1,6 @@
-CREATE TABLE Attachment (
+DROP TABLE IF EXISTS `Attachment`;
+
+CREATE TABLE `Attachment` (
     id              VARCHAR(36)  NOT NULL,
     userId          INT          NOT NULL,
     path            VARCHAR(255) NOT NULL,
