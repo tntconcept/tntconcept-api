@@ -11,6 +11,7 @@ import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.DefaultSecurityService
 import jakarta.inject.Singleton
+import javax.transaction.Transactional
 
 @Singleton
 class AttachmentCreationUseCase internal constructor(
@@ -26,6 +27,7 @@ class AttachmentCreationUseCase internal constructor(
         supportedMimeExtensions = appProperties.files.supportedMimeTypes
     }
 
+    @Transactional
     fun storeAttachment(attachmentDTO: AttachmentDTO): AttachmentInfoDTO {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
