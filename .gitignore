@@ -43,5 +43,5 @@ tntconcept-ddbb/src/main/resources/db/migration/R__*
 utils/R__*
 
 ### Docker ###
-docker-compose.local.yml
+docker-compose*.local.yml
 .mysql

@@ -17,7 +17,9 @@ import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -25,10 +27,10 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.util.*
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ProjectRoleByProjectIdUseCaseTest {
 
     private val activityRepository: ActivityRepository = mock()
-    private val activityService = ActivityService(activityRepository)
     private val holidayRepository = mock<HolidayRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val calendarFactory = CalendarFactory(holidayRepository)
@@ -39,17 +41,25 @@ internal class ProjectRoleByProjectIdUseCaseTest {
     private val projectRoleConverter = ProjectRoleConverter()
     private val projectRoleByProjectIdUseCase =
         ProjectRoleByProjectIdUseCase(
-            activityService,
             activityCalendarService,
             securityService,
             projectRoleRepository,
+            activityRepository,
             projectRoleResponseConverter,
             projectRoleConverter
         )
 
-    @Test
-    fun `return the expected project role`() {
-        val userId = 1L
+    private fun userInputs() = arrayOf(
+        arrayOf(null, USER_LOGGED_ID),
+        arrayOf(OTHER_USER_ID, OTHER_USER_ID)
+    )
+
+    @ParameterizedTest
+    @MethodSource("userInputs")
+    fun `return the expected project role for authenticated user`(
+        requestedUserId: Long?,
+        projectRoleUserId: Long
+    ) {
         val projectRoles = listOf(
             ProjectRole(
                 id = 1L,
@@ -107,8 +117,8 @@ internal class ProjectRoleByProjectIdUseCaseTest {
                 isWorkingTime = true
             ),
         )
-        val activity = createActivity(projectRoles[0])
-        val otherActivity = createActivity(projectRoles[1])
+        val activity = createActivity(projectRoles[0]).copy(userId = projectRoleUserId)
+        val otherActivity = createActivity(projectRoles[1]).copy(userId = projectRoleUserId)
         val year = activity.getTimeInterval().getYearOfStart()
 
         val activitiesProjectRole1 = listOf(
@@ -116,12 +126,14 @@ internal class ProjectRoleByProjectIdUseCaseTest {
             activity.copy(
                 start = activity.end,
                 end = activity.end.plusMinutes(10),
-                duration = 10
+                duration = 10,
+                userId = projectRoleUserId
             ),
             activity.copy(
                 start = activity.end.minusYears(1L),
                 end = activity.end.plusMinutes(10).minusYears(1L),
-                duration = 10
+                duration = 10,
+                userId = projectRoleUserId
             )
         )
         val activitiesProjectRole2 = listOf(
@@ -133,7 +145,8 @@ internal class ProjectRoleByProjectIdUseCaseTest {
                 start = LocalDate.of(2023, 12, 30).atTime(LocalTime.MIN),
                 end = LocalDate.of(2024, 1, 1).atTime(LocalTime.MAX),
                 duration = 1920,
-                projectRole = projectRoles[3]
+                projectRole = projectRoles[3],
+                userId = projectRoleUserId
             )
         )
 
@@ -142,7 +155,8 @@ internal class ProjectRoleByProjectIdUseCaseTest {
                 start = LocalDate.of(2023, 12, 29).atTime(LocalTime.MIN),
                 end = LocalDate.of(2024, 1, 2).atTime(LocalTime.MAX),
                 duration = 1440,
-                projectRole = projectRoles[4]
+                projectRole = projectRoles[4],
+                userId = projectRoleUserId
             )
         )
 
@@ -154,34 +168,34 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
         doReturn(activitiesProjectRole1)
             .whenever(activityRepository)
-            .findByProjectRoleIdAndUserId(1L, userId)
+            .findByProjectRoleIdAndUserId(1L, projectRoleUserId)
 
         doReturn(activitiesProjectRole2)
             .whenever(activityRepository)
-            .findByProjectRoleIdAndUserId(2L, userId)
+            .findByProjectRoleIdAndUserId(2L, projectRoleUserId)
 
         doReturn(emptyList<Activity>())
             .whenever(activityRepository)
-            .findByProjectRoleIdAndUserId(3L, userId)
+            .findByProjectRoleIdAndUserId(3L, projectRoleUserId)
 
         doReturn(activitiesProjectRole4)
             .whenever(activityRepository)
-            .findByProjectRoleIdAndUserId(4L, userId)
+            .findByProjectRoleIdAndUserId(4L, projectRoleUserId)
 
         doReturn(activitiesProjectRole5)
             .whenever(activityRepository)
-            .findByProjectRoleIdAndUserId(5L, userId)
+            .findByProjectRoleIdAndUserId(5L, projectRoleUserId)
 
 
         val expectedProjectRoles = listOf(
-            buildProjectRoleUserDTO(1L, 120, 50, TimeUnit.MINUTES),
-            buildProjectRoleUserDTO(2L, 90, 30, TimeUnit.MINUTES),
-            buildProjectRoleUserDTO(3L, 0, 0, TimeUnit.MINUTES),
-            buildProjectRoleUserDTO(4L, 4, 1, TimeUnit.NATURAL_DAYS),
-            buildProjectRoleUserDTO(5L, 5, 2, TimeUnit.DAYS),
+            buildProjectRoleUserDTO(1L, 120, 50, TimeUnit.MINUTES, projectRoleUserId),
+            buildProjectRoleUserDTO(2L, 90, 30, TimeUnit.MINUTES, projectRoleUserId),
+            buildProjectRoleUserDTO(3L, 0, 0, TimeUnit.MINUTES, projectRoleUserId),
+            buildProjectRoleUserDTO(4L, 4, 1, TimeUnit.NATURAL_DAYS, projectRoleUserId),
+            buildProjectRoleUserDTO(5L, 5, 2, TimeUnit.DAYS, projectRoleUserId),
         )
 
-        assertEquals(expectedProjectRoles, projectRoleByProjectIdUseCase.get(PROJECT_ID, year))
+        assertEquals(expectedProjectRoles, projectRoleByProjectIdUseCase.get(PROJECT_ID, year, requestedUserId))
     }
 
     private fun buildProjectRoleUserDTO(
@@ -189,6 +203,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
         maxAllowed: Int = 0,
         remaining: Int = 0,
         timeUnit: TimeUnit,
+        userId: Long,
     ): ProjectRoleUserDTO =
         ProjectRoleUserDTO(
             id,
@@ -197,12 +212,13 @@ internal class ProjectRoleByProjectIdUseCaseTest {
             1L,
             RequireEvidence.WEEKLY,
             false,
-            USER_ID,
+            userId,
             TimeInfoDTO(MaxTimeAllowedDTO(maxAllowed, 0), timeUnit, remaining)
         )
 
     private companion object {
-        private const val USER_ID = 1L
+        private const val USER_LOGGED_ID = 1L
+        private const val OTHER_USER_ID = 2L
         private const val PROJECT_ID = 1L
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
@@ -210,6 +226,6 @@ internal class ProjectRoleByProjectIdUseCaseTest {
             Project(1L, "Dummy project", true, false, LocalDate.now(), null, null, ORGANIZATION, listOf())
 
         private val authentication =
-            ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("admin")))
+            ClientAuthentication(USER_LOGGED_ID.toString(), mapOf("roles" to listOf("admin")))
     }
 }
