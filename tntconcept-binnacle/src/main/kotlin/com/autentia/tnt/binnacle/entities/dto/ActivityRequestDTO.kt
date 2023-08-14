@@ -11,7 +11,6 @@ data class ActivityRequestDTO(
     val description: String,
     val billable: Boolean,
     val projectRoleId: Long,
-    val hasEvidences: Boolean,
     val evidences: List<UUID> = arrayListOf()
 ) {
     constructor(
@@ -21,7 +20,9 @@ data class ActivityRequestDTO(
         description: String,
         billable: Boolean,
         projectRoleId: Long,
-        hasEvidences: Boolean,
         evidences: List<UUID> = arrayListOf()
-    ) : this(id, TimeIntervalRequestDTO(start, end), description, billable, projectRoleId, hasEvidences, evidences)
+    ) : this(id, TimeIntervalRequestDTO(start, end), description, billable, projectRoleId, evidences)
+
+    fun hasEvidences() = evidences.isNotEmpty()
+
 }

@@ -30,7 +30,7 @@ class ActivityRequestBodyConverter {
             activityRequestBody.billable,
             user.departmentId,
             insertDate,
-            activityRequestBody.hasEvidences,
+            activityRequestBody.hasEvidences(),
             projectRole.getApprovalState(),
             activityRequestBody.evidences
         )

@@ -96,35 +96,6 @@ internal class ActivityCreationUseCaseTest {
     }
 
 
-    private fun exceptionProvider() = arrayOf(
-        arrayOf(
-            "ActivityWithEvidenceButNotAttachedException",
-            ACTIVITY_WITH_EVIDENCE_BUT_NOT_ATTACHED_DTO
-        ),
-        arrayOf(
-            "ActivityWithAttachedEvidenceButNotTrueException",
-            ACTIVITY_WITH_ATTACHED_EVIDENCE_BUT_NOT_AS_TRUE
-        )
-    )
-
-    @ParameterizedTest
-    @MethodSource("exceptionProvider")
-    fun `create activity with incomplete evidence information throws an exception`(
-        testDescription: String,
-        activityRequest: ActivityRequestDTO,
-    ) {
-        val activityEntity = createActivity(userId = user.id)
-
-        whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
-        whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
-        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-
-        assertThrows<NoEvidenceInActivityException> {
-            activityCreationUseCase.createActivity(activityRequest, Locale.ENGLISH)
-        }
-
-    }
-
     @Test
     fun `create activity before project creation date throws an exception`() {
         val activityEntity = createActivity(userId = user.id)
@@ -430,29 +401,6 @@ internal class ActivityCreationUseCaseTest {
             "New activity",
             false,
             PROJECT_ROLE_NO_APPROVAL.id,
-            true,
-            EVIDENCES,
-        )
-
-        private val ACTIVITY_WITH_EVIDENCE_BUT_NOT_ATTACHED_DTO = ActivityRequestDTO(
-            null,
-            TIME_NOW,
-            TIME_NOW.plusMinutes(75L),
-            "New activity evidence empty",
-            false,
-            PROJECT_ROLE_NO_APPROVAL.id,
-            true,
-            arrayListOf(),
-        )
-
-        private val ACTIVITY_WITH_ATTACHED_EVIDENCE_BUT_NOT_AS_TRUE = ActivityRequestDTO(
-            null,
-            TIME_NOW,
-            TIME_NOW.plusMinutes(75L),
-            "New activity evidence empty",
-            false,
-            PROJECT_ROLE_NO_APPROVAL.id,
-            false,
             EVIDENCES,
         )
 
@@ -463,7 +411,6 @@ internal class ActivityCreationUseCaseTest {
                 "New activity wit",
                 false,
                 PROJECT_ROLE_NO_APPROVAL.id,
-                true,
                 EVIDENCES
         )
 
@@ -474,7 +421,6 @@ internal class ActivityCreationUseCaseTest {
             "New activity wit",
             false,
             PROJECT_ROLE_NO_APPROVAL.id,
-            true,
             EVIDENCES
         )
 
@@ -485,7 +431,6 @@ internal class ActivityCreationUseCaseTest {
                 "New activity wit",
                 false,
                 PROJECT_ROLE_NO_APPROVAL.id,
-                false
         )
 
         private fun generateLargeDescription(mainMessage: String): String {

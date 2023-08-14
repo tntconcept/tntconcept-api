@@ -477,7 +477,7 @@ internal class ActivityUpdateUseCaseTest {
                     end = request.interval.end,
                     description = request.description,
                     billable = request.billable,
-                    hasEvidences = request.hasEvidences
+                    hasEvidences = request.hasEvidences()
             )
 
     private fun `get existing pending activity with no evidence`(role: ProjectRole) =
@@ -524,7 +524,6 @@ internal class ActivityUpdateUseCaseTest {
                     description = existingActivity.description + " updated",
                     billable = existingActivity.billable,
                     projectRoleId = existingActivity.projectRole.id,
-                    hasEvidences = false,
                     evidences = arrayListOf()
             )
 
@@ -536,7 +535,6 @@ internal class ActivityUpdateUseCaseTest {
                     description = existingActivity.description + " updated",
                     billable = existingActivity.billable,
                     projectRoleId = existingActivity.projectRole.id,
-                    hasEvidences = true,
                     evidences = SAMPLE_EVIDENCES
             )
 
@@ -569,7 +567,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.interval.end).isEqualTo(request.interval.end)
         assertThat(result.description).isEqualTo(request.description)
         assertThat(result.billable).isEqualTo(request.billable)
-        assertThat(result.hasEvidences).isEqualTo(request.hasEvidences)
+        assertThat(result.hasEvidences).isEqualTo(request.hasEvidences())
         assertThat(result.projectRoleId).isEqualTo(request.projectRoleId)
     }
 
@@ -594,7 +592,6 @@ internal class ActivityUpdateUseCaseTest {
                 "New activity",
                 false,
                 PROJECT_ROLE.id,
-                false,
         )
     }
 

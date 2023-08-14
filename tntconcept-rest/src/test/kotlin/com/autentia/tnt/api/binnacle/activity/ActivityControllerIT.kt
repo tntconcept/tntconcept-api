@@ -422,7 +422,7 @@ internal class ActivityControllerIT {
         )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequest(
-            null, INTERVAL_REQUEST_DTO, "Activity description", true, 3, false, null
+            null, INTERVAL_REQUEST_DTO, "Activity description", true, 3, arrayListOf()
         )
 
         private val ACTIVITY_POST_JSON = """
@@ -434,7 +434,7 @@ internal class ActivityControllerIT {
                 "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
                 "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
-                "hasEvidences": ${ACTIVITY_REQUEST_BODY_DTO.hasEvidences}                
+                "evidences": []
             }
         """.trimIndent()
 
@@ -447,8 +447,7 @@ internal class ActivityControllerIT {
                 "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
                 "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
-                "hasEvidences": true,
-                "evidence": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+                "evidences": ["b4afdac6-e536-41de-8a44-2561f8ffad50"]
             }
         """.trimIndent()
 
@@ -470,7 +469,7 @@ internal class ActivityControllerIT {
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             ACTIVITY_REQUEST_BODY_DTO.billable,
             ACTIVITY_REQUEST_BODY_DTO.description,
-            ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
+            ACTIVITY_REQUEST_BODY_DTO.hasEvidences(),
             2L,
             ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
             IntervalResponseDTO(
@@ -497,7 +496,7 @@ internal class ActivityControllerIT {
                 "description": "Updated activity description",
                 "billable": ${ACTIVITY_RESPONSE_DTO.billable},
                 "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRoleId},
-                "hasEvidences": ${ACTIVITY_RESPONSE_DTO.hasEvidences}
+                "evidences": []
             }
         """.trimIndent()
 

@@ -616,34 +616,6 @@ internal class ActivityValidatorTest {
         }
 
         @Test
-        fun `throw NoEvidenceInActivityException when activity evidence is incoherent`() {
-            val firstIncoherentActivity =
-                createDomainActivity().copy(hasEvidences = true, evidences = arrayListOf())
-            val secondIncoherentActivity =
-                createDomainActivity().copy(hasEvidences = false, evidences = arrayListOf(UUID.randomUUID()))
-
-
-            doReturn(Optional.of(createProject()))
-                .whenever(projectRepository)
-                .findById(firstIncoherentActivity.projectRole.project.id)
-
-            doReturn(Optional.of(createProject()))
-                .whenever(projectRepository)
-                .findById(secondIncoherentActivity.projectRole.project.id)
-
-            assertThrows<NoEvidenceInActivityException> {
-                activityValidator.checkActivityIsValidForUpdate(firstIncoherentActivity, firstIncoherentActivity, user)
-            }
-            assertThrows<NoEvidenceInActivityException> {
-                activityValidator.checkActivityIsValidForUpdate(
-                    secondIncoherentActivity,
-                    secondIncoherentActivity,
-                    user
-                )
-            }
-        }
-
-        @Test
         fun `throw ProjectBlockedException when currentProject is blocked`() {
             val newActivity = createDomainActivity(
                 LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),

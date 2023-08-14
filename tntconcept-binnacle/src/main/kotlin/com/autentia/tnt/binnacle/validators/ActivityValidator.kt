@@ -37,7 +37,6 @@ internal class ActivityValidator(
             getTotalRegisteredDurationByProjectRole(emptyActivity, activityToCreateStartYear, user.id)
 
         when {
-            isEvidenceInputIncoherent(activityToCreate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
@@ -79,11 +78,6 @@ internal class ActivityValidator(
 
         val activityDuration = activityToCreate.getDuration(calendar)
         return activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
-    }
-
-    private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
-        return activity.hasEvidences && activity.evidences.isEmpty()
-                || !activity.hasEvidences && activity.evidences.isNotEmpty()
     }
 
     private fun evidencesExist(evidencesIds: List<UUID>): Boolean {
@@ -208,8 +202,6 @@ internal class ActivityValidator(
         val totalRegisteredDurationForThisRoleStartYear =
             getTotalRegisteredDurationByProjectRole(activityToUpdate, activityToUpdateStartYear, user.id)
         when {
-            isEvidenceInputIncoherent(activityToUpdate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
-
             isProjectBlocked(
                 projectToUpdate,
                 activityToUpdate

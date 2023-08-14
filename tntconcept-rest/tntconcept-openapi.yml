@@ -906,7 +906,7 @@ components:
       required:
       - billable
       - description
-      - hasEvidences
+      - evidences
       - interval
       - projectRoleId
       type: object
@@ -925,12 +925,11 @@ components:
         projectRoleId:
           type: integer
           format: int64
-        hasEvidences:
-          type: boolean
-        evidence:
-          pattern: "^data:[^,]+;base64,.+$"
-          type: string
-          nullable: true
+        evidences:
+          type: array
+          items:
+            type: string
+            format: uuid
     ActivityResponse:
       required:
       - approval
