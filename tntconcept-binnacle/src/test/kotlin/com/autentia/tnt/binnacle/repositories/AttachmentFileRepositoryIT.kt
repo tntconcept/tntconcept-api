@@ -66,6 +66,34 @@ AttachmentFileRepositoryIT {
         assertThat(file.exists()).isFalse()
     }
 
+    @Test
+    fun `should delete a list of attachment files`() {
+
+        val attachmentInfo = createAttachmentInfoEntityWithFilenameAndMimetype(
+            filename = "Evidence.jpg",
+            mimeType = "image/jpg"
+        ).toDomain()
+        
+        val secondAttachmentInfo = createAttachmentInfoEntityWithFilenameAndMimetype(
+            filename = "Evidence.jpg",
+            mimeType = "image/jpg"
+        ).toDomain()
+
+        attachmentFileRepository.storeAttachment(attachmentInfo, IMAGE_BYTEARRAY)
+        attachmentFileRepository.storeAttachment(secondAttachmentInfo, IMAGE_BYTEARRAY)
+
+        attachmentFileRepository.deleteActivityEvidence(listOf(attachmentInfo, secondAttachmentInfo))
+
+        val expectedEvidenceFilename = "${appProperties.files.attachmentsPath}/${attachmentInfo.fileName}"
+        val expectedSecondEvidenceFilename = "${appProperties.files.attachmentsPath}/${secondAttachmentInfo.fileName}"
+
+        val file = File(expectedEvidenceFilename)
+        val secondFile = File(expectedSecondEvidenceFilename)
+
+        assertThat(file.exists()).isFalse()
+        assertThat(secondFile.exists()).isFalse()
+    }
+
     companion object {
 
         const val ATTACHMENT_PATH = "/"

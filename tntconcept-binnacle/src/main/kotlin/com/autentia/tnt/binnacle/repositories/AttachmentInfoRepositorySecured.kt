@@ -13,34 +13,41 @@ import java.util.*
 @Primary
 internal class AttachmentInfoRepositorySecured(
     private val securityService: SecurityService,
-    private val internalAttachmentRepository: InternalAttachmentRepository,
+    private val internalAttachmentInfoRepository: InternalAttachmentInfoRepository,
 ) : AttachmentInfoRepository {
 
     override fun findById(id: UUID): Optional<AttachmentInfo> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllAttachments())
-            internalAttachmentRepository.findById(id)
+            internalAttachmentInfoRepository.findById(id)
         else
-            internalAttachmentRepository.findByIdAndUserId(id, authentication.id())
+            internalAttachmentInfoRepository.findByIdAndUserId(id, authentication.id())
     }
 
     override fun save(attachmentInfo: AttachmentInfo): AttachmentInfo {
         val authentication = securityService.checkAuthentication()
         require(attachmentInfo.userId == authentication.id()) { "User cannot upload attachment" }
 
-        return internalAttachmentRepository.save(attachmentInfo)
+        return internalAttachmentInfoRepository.save(attachmentInfo)
     }
 
     override fun isPresent(id: UUID): Boolean {
         val authentication = securityService.checkAuthentication()
 
         return if (authentication.canAccessAllAttachments())
-            internalAttachmentRepository.findById(id).isPresent
+            internalAttachmentInfoRepository.findById(id).isPresent
         else
-            internalAttachmentRepository.findByIdAndUserId(id, authentication.id()).isPresent
+            internalAttachmentInfoRepository.findByIdAndUserId(id, authentication.id()).isPresent
     }
 
     override fun updateIsTemporary(id: UUID, state: Boolean) {
-        internalAttachmentRepository.updateIsTemporary(id, state)
+        internalAttachmentInfoRepository.updateIsTemporary(id, state)
     }
+
+    override fun findByIsTemporaryTrue(): List<AttachmentInfo> =
+        internalAttachmentInfoRepository.findByIsTemporaryTrue()
+
+    override fun deleteTemporaryList(temporaryAttachments: List<UUID>) =
+        internalAttachmentInfoRepository.deleteTemporaryList(temporaryAttachments)
+
 }

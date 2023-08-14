@@ -39,4 +39,11 @@ internal class AttachmentFileRepository(
 
         FileUtils.writeByteArrayToFile(attachmentFile, fileByteArray)
     }
+
+    fun deleteActivityEvidence(attachmentInfo: List<AttachmentInfo>) {
+        attachmentInfo.forEach {
+            val filePath = Path.of(attachmentsPath, it.path, it.fileName)
+            Files.deleteIfExists(filePath)
+        }
+    }
 }

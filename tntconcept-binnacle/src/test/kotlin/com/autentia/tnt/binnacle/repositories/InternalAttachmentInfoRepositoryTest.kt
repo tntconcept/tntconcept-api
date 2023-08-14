@@ -12,10 +12,10 @@ class InternalAttachmentInfoRepositoryTest {
 
     private val attachmentInfoDao = mock<AttachmentInfoDao>()
 
-    private val internalAttachmentInfoRepository = InternalAttachmentRepository(attachmentInfoDao)
+    private val internalAttachmentInfoRepository = InternalAttachmentInfoRepository(attachmentInfoDao)
 
     @Test
-    fun findById() {
+    fun `should return attachment when findById`() {
         whenever(attachmentInfoDao.findById(attachmentId)).thenReturn(Optional.of(attachmentCreated))
 
         val result = internalAttachmentInfoRepository.findById(attachmentId)
@@ -24,7 +24,7 @@ class InternalAttachmentInfoRepositoryTest {
     }
 
     @Test
-    fun save() {
+    fun `should store attachment when save`() {
         whenever(attachmentInfoDao.save(attachmentToCreate)).thenReturn(attachmentCreated)
 
         val result = internalAttachmentInfoRepository.save(attachmentToCreate)
@@ -51,17 +51,33 @@ class InternalAttachmentInfoRepositoryTest {
     }
 
     @Test
-    fun updateIsTemporary() {
-        internalAttachmentInfoRepository.updateIsTemporary(attachmentId, true)
+    fun `should call updateIsTemporary in attachment info dao`() {
+        val isTemporary = true
 
-        verify(attachmentInfoDao).updateIsTemporary(attachmentId, true)
+        internalAttachmentInfoRepository.updateIsTemporary(attachmentId, isTemporary)
+
+        verify(attachmentInfoDao).updateIsTemporary(attachmentId, isTemporary)
     }
 
     @Test
-    fun findByIdAndUserId() {
+    fun `should call findByIsTemporary in attachment info dao`() {
+        internalAttachmentInfoRepository.findByIsTemporaryTrue()
+
+        verify(attachmentInfoDao).findByIsTemporaryTrue()
+    }
+
+    @Test
+    fun `should call findByIdAndUserId in attachment info dao`() {
         internalAttachmentInfoRepository.findByIdAndUserId(attachmentId, 1L)
 
         verify(attachmentInfoDao).findByIdAndUserId(attachmentId, 1L)
+    }
+
+    @Test
+    fun `should call deleteTemporaryList in attachment info dao`() {
+        internalAttachmentInfoRepository.deleteTemporaryList(listOf(attachmentCreated.id!!))
+
+        verify(attachmentInfoDao).deleteTemporaryList(listOf(attachmentCreated.id!!))
     }
 
     companion object {

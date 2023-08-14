@@ -9,7 +9,12 @@ import java.util.*
 @Repository
 internal interface AttachmentInfoDao : CrudRepository<AttachmentInfo, UUID> {
     fun findByIdAndUserId(id: UUID, userId: Long): Optional<AttachmentInfo>
-    
+
+    fun findByIsTemporaryTrue(): List<AttachmentInfo>
+
     @Query("UPDATE AttachmentInfo SET isTemporary = :state WHERE id = :id")
     fun updateIsTemporary(id: UUID, state: Boolean)
+
+    @Query("DELETE FROM AttachmentInfo WHERE id IN (:temporaryAttachments)")
+    fun deleteTemporaryList(temporaryAttachments: List<UUID>)
 }
