@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import jakarta.inject.Singleton
 import org.apache.commons.io.FileUtils
@@ -22,8 +21,8 @@ internal class AttachmentFileRepository(
         evidencesPath = appProperties.files.evidencesPath
     }
 
-    fun getAttachment(path: String, type: AttachmentType, fileName: String): ByteArray {
-        val filePath = Path.of(getBasePath(type), path, fileName)
+    fun getAttachment(path: String, fileName: String): ByteArray {
+        val filePath = Path.of(evidencesPath, path, fileName)
 
         if (!Files.exists(filePath)) {
             throw AttachmentNotFoundException("Attachment file does not exist: $filePath")
@@ -32,16 +31,9 @@ internal class AttachmentFileRepository(
         return FileUtils.readFileToByteArray(File(filePath.toUri()))
     }
 
-    fun getBasePath(type: AttachmentType): String {
-        // TODO extract to a different class
-        return when (type) {
-            AttachmentType.EVIDENCE -> evidencesPath
-        }
-    }
-
     fun storeAttachment(attachmentInfo: AttachmentInfo, fileByteArray: ByteArray) {
 
-        val pathFile = Path.of(getBasePath(attachmentInfo.type), attachmentInfo.path, attachmentInfo.fileName)
+        val pathFile = Path.of(evidencesPath, attachmentInfo.path, attachmentInfo.fileName)
 
         val attachmentFile = File(pathFile.toUri())
 

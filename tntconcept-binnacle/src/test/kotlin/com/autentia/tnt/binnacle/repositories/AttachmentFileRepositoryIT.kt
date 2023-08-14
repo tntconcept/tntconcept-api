@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createAttachmentInfoWithFilenameAndMimetype
-import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
@@ -25,7 +24,7 @@ AttachmentFileRepositoryIT {
     @Test
     fun `should return the stored attachment`() {
         val result =
-            attachmentFileRepository.getAttachment(ATTACHMENT_PATH, AttachmentType.EVIDENCE, ATTACHMENT_FILENAME)
+            attachmentFileRepository.getAttachment(ATTACHMENT_PATH, ATTACHMENT_FILENAME)
 
         assertTrue(IMAGE_BYTEARRAY.contentEquals(result))
     }
@@ -33,7 +32,7 @@ AttachmentFileRepositoryIT {
     @Test
     fun `throws AttachmentNotFoundExceptionWhenAttachmentDoesNotExist`() {
         assertThrows<AttachmentNotFoundException> {
-            attachmentFileRepository.getAttachment(ATTACHMENT_PATH_ERROR, AttachmentType.EVIDENCE, ATTACHMENT_FILENAME)
+            attachmentFileRepository.getAttachment(ATTACHMENT_PATH_ERROR, ATTACHMENT_FILENAME)
         }
     }
 

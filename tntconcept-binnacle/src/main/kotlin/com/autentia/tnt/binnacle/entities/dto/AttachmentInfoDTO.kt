@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.entities.dto
 
-import com.autentia.tnt.binnacle.entities.AttachmentType
 import java.time.LocalDateTime
 import java.util.*
 
@@ -11,6 +10,5 @@ data class AttachmentInfoDTO(
     val uploadDate: LocalDateTime,
     val isTemporary: Boolean,
     var userId: Long? = null,
-    var type: AttachmentType? = null,
     var path: String? = null,
 )

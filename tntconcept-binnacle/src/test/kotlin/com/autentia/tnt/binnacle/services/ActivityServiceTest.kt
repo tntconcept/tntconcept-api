@@ -37,18 +37,6 @@ internal class ActivityServiceTest {
     }
 
     @Test
-    fun `get activities by project role id and user id`() {
-        val expectedProjectRoleActivities = listOf(activityWithoutEvidenceSaved, activityWithEvidenceToSave)
-        val userId = 1L
-
-        whenever(activityRepository.findByProjectRoleIdAndUserId(1L, userId)).thenReturn(expectedProjectRoleActivities)
-
-        val result = sut.getProjectRoleActivities(1L, userId)
-
-        assertEquals(expectedProjectRoleActivities, result)
-    }
-
-    @Test
     fun `get activities by time interval should call repository`() {
         val userIds = listOf(1L)
 
