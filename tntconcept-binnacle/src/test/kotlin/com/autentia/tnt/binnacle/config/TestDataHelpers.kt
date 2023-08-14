@@ -260,7 +260,7 @@ internal fun createAttachmentInfo() = AttachmentInfo(
     path = "/",
     fileName = "Evidence001",
     mimeType = "application/png",
-    uploadDate = LocalDateTime.now(),
+    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
     isTemporary = false
 )
 
