@@ -655,7 +655,6 @@ internal class ActivityDaoIT {
         val attachmentInfo = AttachmentInfo(
             null,
             userId = 11,
-            type = AttachmentType.EVIDENCE,
             path = "path/to/file",
             fileName = "test.jpg",
             mimeType = "image/jpeg",
