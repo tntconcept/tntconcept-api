@@ -4,7 +4,10 @@ import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
 import java.time.LocalDateTime
 import java.util.*
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "Attachment")
@@ -17,8 +20,6 @@ data class AttachmentInfo(
     val id: UUID?,
 
     val userId: Long,
-    @Enumerated(EnumType.STRING)
-    val type: AttachmentType,
     val path: String,
     val fileName: String,
     val mimeType: String,
@@ -35,7 +36,6 @@ data class AttachmentInfo(
             uploadDate,
             isTemporary,
             userId,
-            type,
             path,
         )
 
@@ -43,7 +43,6 @@ data class AttachmentInfo(
         fun of(attachmentInfo: com.autentia.tnt.binnacle.core.domain.AttachmentInfo) = AttachmentInfo(
             attachmentInfo.id,
             attachmentInfo.userId,
-            attachmentInfo.type,
             attachmentInfo.path,
             attachmentInfo.fileName,
             attachmentInfo.mimeType,
@@ -51,8 +50,4 @@ data class AttachmentInfo(
             attachmentInfo.isTemporary
         )
     }
-}
-
-enum class AttachmentType {
-    EVIDENCE
 }

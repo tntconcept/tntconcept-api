@@ -24,7 +24,7 @@ class AttachmentRetrievalUseCase internal constructor(
         val attachmentInfo = attachmentInfoRepository.findById(id).orElseThrow { AttachmentNotFoundException() }
 
         val attachmentFile =
-            attachmentFileRepository.getAttachment(attachmentInfo.path, attachmentInfo.type, attachmentInfo.fileName)
+            attachmentFileRepository.getAttachment(attachmentInfo.path, attachmentInfo.fileName)
         return AttachmentDTO(attachmentInfoConverter.toAttachmentInfoDTO(attachmentInfo.toDomain()), attachmentFile)
     }
 }

@@ -242,7 +242,6 @@ internal fun createActivityResponseDTO(
 internal fun createAttachmentInfo() = AttachmentInfo(
     id = UUID.randomUUID(),
     userId = 1L,
-    type = AttachmentType.EVIDENCE,
     path = "/",
     fileName = "Evidence001",
     mimeType = "application/png",
@@ -253,7 +252,6 @@ internal fun createAttachmentInfo() = AttachmentInfo(
 internal fun createAttachmentInfoWithFilenameAndMimetype(filename: String, mimeType: String) = AttachmentInfo(
     id = UUID.randomUUID(),
     userId = 1L,
-    type = AttachmentType.EVIDENCE,
     path = "/",
     fileName = filename,
     mimeType = mimeType,

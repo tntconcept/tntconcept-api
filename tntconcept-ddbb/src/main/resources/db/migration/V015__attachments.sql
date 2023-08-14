@@ -1,7 +1,6 @@
 CREATE TABLE Attachment (
     id              VARCHAR(36)  NOT NULL,
     userId          INT          NOT NULL,
-    type            VARCHAR(25)  NOT NULL,
     path            VARCHAR(255) NOT NULL,
     fileName        VARCHAR(100) NOT NULL,
     mimeType        VARCHAR(100) NOT NULL,

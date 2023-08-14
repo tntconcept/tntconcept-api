@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
-import com.autentia.tnt.binnacle.entities.AttachmentType
 import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
 import com.autentia.tnt.binnacle.entities.dto.AttachmentInfoDTO
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
@@ -51,7 +50,6 @@ class AttachmentCreationUseCase internal constructor(
         val attachmentInfoDto = attachmentDTO.info
         attachmentInfoDto.userId = userId
         attachmentInfoDto.path = "/"
-        attachmentInfoDto.type = AttachmentType.EVIDENCE
         return attachmentInfoDto
     }
 

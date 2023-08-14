@@ -14,7 +14,6 @@ class AttachmentInfoConverter {
             attachmentInfo.uploadDate,
             attachmentInfo.isTemporary,
             attachmentInfo.userId,
-            attachmentInfo.type,
             attachmentInfo.path,
         )
 
@@ -26,7 +25,6 @@ class AttachmentInfoConverter {
             attachmentInfoDTO.uploadDate,
             attachmentInfoDTO.isTemporary,
             attachmentInfoDTO.userId!!,
-            attachmentInfoDTO.type!!,
             attachmentInfoDTO.path!!,
         )
 }

@@ -114,6 +114,6 @@ VALUES (9, 3, '2023-04-24', null, 0, 'Closed project for testing', '', null, nul
 
 
 -- Attachment
-INSERT INTO Attachment (id, userId, type, path, fileName, mimeType, uploadDate, isTemporary)
-VALUES ('4d3cbe3f-369f-11ee-99c2-0242ac180003', 11, 'EVIDENCE', 'path/to/test/file', 'testFile,jpg', 'image/jpeg',
+INSERT INTO Attachment (id, userId, path, fileName, mimeType, uploadDate, isTemporary)
+VALUES ('4d3cbe3f-369f-11ee-99c2-0242ac180003', 11, 'path/to/test/file', 'testFile,jpg', 'image/jpeg',
         NOW(), TRUE);

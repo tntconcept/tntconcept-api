@@ -43,7 +43,6 @@ class AttachmentRetrievalUseCaseTest {
         whenever(
             attachmentFileRepository.getAttachment(
                 ATTACHMENT_INFO_ENTITY.path,
-                ATTACHMENT_INFO_ENTITY.type,
                 ATTACHMENT_INFO_ENTITY.fileName
             )
         )
