@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
@@ -113,7 +113,7 @@ internal class ActivityCreationUseCaseTest {
 
         val activityEntity = createActivity(userId = user.id)
         val activityDomain = activityEntity.toDomain()
-        val attachmentInfo = createAttachmentInfo()
+        val attachmentInfo = createAttachmentInfoEntity()
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
@@ -156,7 +156,7 @@ internal class ActivityCreationUseCaseTest {
             )
         )
 
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
         whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
@@ -186,7 +186,7 @@ internal class ActivityCreationUseCaseTest {
             )
         )
 
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
         whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
@@ -208,7 +208,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
         whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
@@ -238,7 +238,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
         whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         // When
@@ -322,7 +322,7 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
         whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         // When

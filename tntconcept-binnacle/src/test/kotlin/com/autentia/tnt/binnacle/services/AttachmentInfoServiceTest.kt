@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.services
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -54,11 +54,11 @@ class AttachmentInfoServiceTest {
         val id2 = UUID.randomUUID()
         val ids = arrayListOf(id1, id2)
 
-        doReturn(Optional.of(createAttachmentInfo()))
+        doReturn(Optional.of(createAttachmentInfoEntity()))
             .whenever(attachmentInfoRepository)
             .findById(id1)
 
-        doReturn(Optional.of(createAttachmentInfo()))
+        doReturn(Optional.of(createAttachmentInfoEntity()))
             .whenever(attachmentInfoRepository)
             .findById(id2)
 

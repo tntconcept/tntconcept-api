@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createActivity
-import com.autentia.tnt.binnacle.config.createAttachmentInfo
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
@@ -732,7 +732,7 @@ internal class ActivityRepositorySecuredTest {
 
     @Test
     fun `find activities with associated evidences`() {
-        val evidences = mutableListOf(createAttachmentInfo(), createAttachmentInfo())
+        val evidences = mutableListOf(createAttachmentInfoEntity(), createAttachmentInfoEntity())
 
         val activities = listOf(
             Activity(

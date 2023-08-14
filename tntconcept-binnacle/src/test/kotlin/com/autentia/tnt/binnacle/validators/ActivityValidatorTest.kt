@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.validators
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfo
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.config.createProject

@@ -2,7 +2,7 @@ CREATE TABLE ActivityEvidence
 (
     activityId   int         NOT NULL,
     attachmentId VARCHAR(36) NOT NULL,
-    insertDate   DATETIME    NOT NULL,
+    insertDate   DATETIME    NOT NULL DEFAULT NOW(),
 
     PRIMARY KEY (activityId),
     CONSTRAINT fk_activity_id FOREIGN KEY (activityId) REFERENCES Activity (id),
