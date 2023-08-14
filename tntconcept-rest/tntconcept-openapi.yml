@@ -912,7 +912,6 @@ components:
       required:
       - billable
       - description
-      - evidences
       - interval
       - projectRoleId
       type: object
@@ -933,6 +932,7 @@ components:
           format: int64
         evidences:
           type: array
+          nullable: true
           items:
             type: string
             format: uuid

@@ -14,7 +14,7 @@ data class ActivityRequest(
     val description: String,
     val billable: Boolean,
     val projectRoleId: Long,
-    val evidences: List<UUID>
+    val evidences: List<UUID>? = emptyList()
 ) {
     fun toDto(): ActivityRequestDTO = ActivityRequestDTO(
         id,
@@ -22,8 +22,8 @@ data class ActivityRequest(
         description,
         billable,
         projectRoleId,
-        evidences
+        evidences ?: emptyList()
     )
 
-    fun hasEvidences() = evidences.isNotEmpty()
+    fun hasEvidences() = evidences?.isEmpty() ?: false
 }
