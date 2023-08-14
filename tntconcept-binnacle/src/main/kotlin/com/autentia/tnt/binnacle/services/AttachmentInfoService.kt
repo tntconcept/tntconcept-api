@@ -25,4 +25,10 @@ internal class AttachmentInfoService(
     }
 
 
+    fun consolidateAttachments(ids: List<UUID>) {
+        for (id in ids) {
+            attachmentInfoRepository.updateIsTemporary(id, false)
+        }
+    }
+
 }

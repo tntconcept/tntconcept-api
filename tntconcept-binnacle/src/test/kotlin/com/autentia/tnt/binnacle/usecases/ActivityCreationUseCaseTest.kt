@@ -12,7 +12,6 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDateException
-import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -26,8 +25,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -116,16 +113,19 @@ internal class ActivityCreationUseCaseTest {
 
         val activityEntity = createActivity(userId = user.id)
         val activityDomain = activityEntity.toDomain()
+        val attachmentInfo = createAttachmentInfo()
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(PROJECT_ROLE_NO_APPROVAL.id)).thenReturn(PROJECT_ROLE_NO_APPROVAL)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfo()))
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(attachmentInfo))
         whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
+
+        verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
 
         verify(sendPendingApproveActivityMailUseCase, times(0)).send(
                 activityDomain,
@@ -213,6 +213,8 @@ internal class ActivityCreationUseCaseTest {
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
 
+        verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
+
         verify(sendPendingApproveActivityMailUseCase, times(0)).send(
                 activityDomain,
                 user.username,
@@ -245,6 +247,7 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
+        verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = true, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
@@ -272,7 +275,6 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
-//        verifyNoInteractions(activityEvidenceService)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = false, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
@@ -299,7 +301,6 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
-//        verifyNoInteractions(activityEvidenceService)
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = false, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = false))
@@ -330,6 +331,7 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
+        verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = true, description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))

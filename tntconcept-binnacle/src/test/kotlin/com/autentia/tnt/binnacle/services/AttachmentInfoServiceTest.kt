@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito
+import org.mockito.Mockito.*
 
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -36,7 +36,7 @@ class AttachmentInfoServiceTest {
         val ids = arrayListOf(id1, id2)
         val emptyAttachmentInfo: Optional<AttachmentInfo> = Optional.empty()
 
-        Mockito.doReturn(emptyAttachmentInfo)
+        doReturn(emptyAttachmentInfo)
             .whenever(attachmentInfoRepository)
             .findById(id2)
 
@@ -54,16 +54,36 @@ class AttachmentInfoServiceTest {
         val id2 = UUID.randomUUID()
         val ids = arrayListOf(id1, id2)
 
-        Mockito.doReturn(Optional.of(createAttachmentInfo()))
+        doReturn(Optional.of(createAttachmentInfo()))
             .whenever(attachmentInfoRepository)
             .findById(id1)
 
-        Mockito.doReturn(Optional.of(createAttachmentInfo()))
+        doReturn(Optional.of(createAttachmentInfo()))
             .whenever(attachmentInfoRepository)
             .findById(id2)
 
         val attachmentInfos = attachmentInfoService.getAttachments(ids)
         assertEquals(ids.size, attachmentInfos.size)
     }
+
+    @Test
+    fun `Should consolidate the attachments`() {
+        val id1 = UUID.randomUUID()
+        val id2 = UUID.randomUUID()
+        val ids = arrayListOf(id1, id2)
+
+        doNothing()
+            .whenever(attachmentInfoRepository)
+            .updateIsTemporary(id1, false)
+
+        doNothing()
+            .whenever(attachmentInfoRepository)
+            .updateIsTemporary(id1, false)
+
+        attachmentInfoService.consolidateAttachments(ids)
+        verify(attachmentInfoRepository).updateIsTemporary(id1, false)
+        verify(attachmentInfoRepository).updateIsTemporary(id2, false)
+    }
+
 
 }
