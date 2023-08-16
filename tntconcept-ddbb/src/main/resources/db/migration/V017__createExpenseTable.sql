@@ -1,15 +1,36 @@
+DROP TABLE IF EXISTS `Expense`;
+
 CREATE TABLE `Expense`
 (
-    `id`           int UNSIGNED  NOT NULL AUTO_INCREMENT,
-    `userId`       int           NOT NULL DEFAULT 1,
-    `date`         datetime      NOT NULL NOW(),
-    `description`  varchar(1024) NOT NULL DEFAULT '',
-    `amount`       decimal(10,2) NOT NULL DEFAULT 0.0,
-    `type`         varchar(64)   NOT NULL DEFAULT 'STRUCTURE',
-    `state`        varchar(64)   NOT NULL DEFAULT 'PENDING',
-    PRIMARY KEY (`id`),
-    CONSTRAINT `fk_expense_userId` FOREIGN KEY (`userId`) REFERENCES `User` (`id`)
+    id          INT AUTO_INCREMENT,
+    userId      INT            NOT NULL ,
+    date        DATETIME       NOT NULL ,
+    description VARCHAR(2048)  NOT NULL ,
+    amount      DECIMAL(10, 2) NOT NULL ,
+    type        VARCHAR(64)    NOT NULL ,
+    state       VARCHAR(64)    NOT NULL ,
 
-) ENGINE = InnoDB
+    PRIMARY KEY (id),
+    CONSTRAINT fk_expense_userId
+        FOREIGN KEY (userID) REFERENCES User (id)
+)
+    COMMENT 'Information related to expense sheets'
+    ENGINE = innodb
+    DEFAULT CHARSET = utf8mb4
+    COLLATE = utf8mb4_spanish_ci;
+
+
+DROP TABLE IF EXISTS `ExpenseDocument`;
+
+CREATE TABLE ExpenseDocument
+(
+    expenseId    INT         NOT NULL,
+    attachmentId VARCHAR(64) NOT NULL,
+    insertDate   DATETIME    NOT NULL DEFAULT NOW(),
+
+    PRIMARY KEY (expenseId,attachmentId),
+    CONSTRAINT fk_expense_id FOREIGN KEY (expenseId) REFERENCES Expense (id),
+    CONSTRAINT fk_attachment_id FOREIGN KEY (attachmentId) REFERENCES Attachment (id)
+) ENGINE = innodb
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_spanish_ci;
