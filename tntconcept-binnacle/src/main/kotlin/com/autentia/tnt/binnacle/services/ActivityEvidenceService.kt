@@ -4,7 +4,6 @@ import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.core.utils.takeMonth
 import com.autentia.tnt.binnacle.core.utils.takeYear
-import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.InvalidEvidenceMimeTypeException
 import jakarta.inject.Singleton
 import org.apache.commons.io.FileUtils
@@ -24,32 +23,6 @@ internal class ActivityEvidenceService(
     init {
         evidencesPath = appProperties.files.attachmentsPath
         supportedMimeExtensions = appProperties.files.supportedMimeTypes
-    }
-
-    fun getActivityEvidence(id: Long, insertDate: Date): EvidenceDTO {
-        val supportedExtensions = getSupportedExtensions()
-        for (supportedExtension: String in supportedExtensions) {
-            val filePathWithExtension = getFilePath(insertDate, id, supportedExtension)
-            if (Files.exists(filePathWithExtension)) {
-                val fileContents = FileUtils.readFileToByteArray(File(filePathWithExtension.toUri()))
-                val base64contents = Base64.getEncoder().encodeToString(fileContents)
-                return EvidenceDTO(Files.probeContentType(filePathWithExtension), base64contents)
-            }
-        }
-        throw FileNotFoundException()
-    }
-
-    @Deprecated("Use getActivityEvidence instead")
-    fun getActivityEvidenceAsBase64String(id: Long, insertDate: Date): String {
-        val supportedExtensions = getSupportedExtensions()
-        for (supportedExtension: String in supportedExtensions) {
-            val filePathWithExtension = getFilePath(insertDate, id, supportedExtension)
-            if (Files.exists(filePathWithExtension)) {
-                val fileContents = FileUtils.readFileToByteArray(File(filePathWithExtension.toUri()))
-                return Base64.getEncoder().encodeToString(fileContents)
-            }
-        }
-        throw FileNotFoundException()
     }
 
 

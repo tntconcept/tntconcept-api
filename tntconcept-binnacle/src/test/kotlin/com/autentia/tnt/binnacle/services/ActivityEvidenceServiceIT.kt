@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.InvalidEvidenceMimeTypeException
 import org.apache.commons.io.FileUtils
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -107,48 +106,4 @@ internal class ActivityEvidenceServiceIT {
         }
     }
 
-    @Nested
-    inner class RetrievalImage {
-        @ParameterizedTest
-        @ValueSource(
-            strings = [
-                "jpg",
-                "jpeg",
-                "pdf",
-                "png",
-                "gif"
-            ]
-        )
-        fun `should return the stored image of the activity in base 64`(fileExtension: String) {
-            val file = File("${appProperties.files.attachmentsPath}/2022/4/2.$fileExtension")
-            file.writeText("Hello World!")
-
-            val result = activityEvidenceService.getActivityEvidenceAsBase64String(2L, date)
-
-
-            file.delete()
-            assertThat(result).isEqualTo("SGVsbG8gV29ybGQh")
-            assertThat(file.exists()).isFalse()
-        }
-
-        @ParameterizedTest
-        @ValueSource(
-            strings = [
-                "application/pdf",
-                "image/png",
-                "image/jpeg",
-                "image/gif"
-            ]
-        )
-        fun `should return the stored image of the activity as evidence dto`(mimeType: String) {
-            val fileExtension = appProperties.files.supportedMimeTypes[mimeType] ?: fail("Invalid mime type")
-            val file = File("${appProperties.files.attachmentsPath}/2022/4/2.$fileExtension")
-            file.writeText("Hello World!")
-
-            val result = activityEvidenceService.getActivityEvidence(2L, date)
-
-            file.delete()
-            assertThat(result).isEqualTo(EvidenceDTO(mimeType, "SGVsbG8gV29ybGQh"))
-        }
-    }
 }
