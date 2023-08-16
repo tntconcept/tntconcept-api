@@ -15,8 +15,8 @@ internal class DeleteTemporaryAttachmentsJob(
 ) {
 
     init {
-        if (appProperties.binnacle.attachments.cronExpression != null) {
-            taskScheduler.schedule(appProperties.binnacle.attachments.cronExpression) {
+        if (appProperties.binnacle.temporaryAttachments.cronExpression != null) {
+            taskScheduler.schedule(appProperties.binnacle.temporaryAttachments.cronExpression) {
                 temporaryAttachmentsDeletionUseCase.delete()
             }
         }

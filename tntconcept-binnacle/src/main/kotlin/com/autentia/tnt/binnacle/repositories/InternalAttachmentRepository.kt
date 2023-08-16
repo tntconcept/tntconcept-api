@@ -23,6 +23,14 @@ internal class InternalAttachmentRepository(
     override fun updateIsTemporary(id: UUID, state: Boolean) =
         attachmentInfoDao.updateIsTemporary(id, state)
 
+    override fun findByIsTemporaryTrue(): List<AttachmentInfo> =
+        attachmentInfoDao.findByIsTemporaryTrue()
+
+
+    override fun deleteTemporaryList(temporaryAttachments: List<UUID>) {
+        attachmentInfoDao.deleteTemporaryList(temporaryAttachments)
+    }
+
     fun findByIdAndUserId(id: UUID, userId: Long): Optional<AttachmentInfo> =
         attachmentInfoDao.findByIdAndUserId(id, userId)
 

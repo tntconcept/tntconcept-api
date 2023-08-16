@@ -44,7 +44,7 @@ internal class AppProperties {
         var workSummary = WorkSummaryProperties()
         var missingEvidencesNotification = MissingEvidencesNotificationProperties()
 
-        var attachments = TemporaryAttachmentsDeletionProperties()
+        var temporaryAttachments = TemporaryAttachmentsDeletionProperties()
 
         @ConfigurationProperties("work-summary")
         internal class WorkSummaryProperties {
@@ -90,7 +90,7 @@ internal class AppProperties {
             }
         }
 
-        @ConfigurationProperties("attachments")
+        @ConfigurationProperties("temporary-attachments")
         internal class TemporaryAttachmentsDeletionProperties {
             var cronExpression: String? = null
         }
