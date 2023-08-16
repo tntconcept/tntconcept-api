@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import javax.persistence.*
+import javax.persistence.FetchType.LAZY
 
 
 enum class ExpenseType {
@@ -23,4 +24,13 @@ data class Expense (
     val type:ExpenseType,
     @Enumerated(EnumType.STRING)
     var state: ApprovalState,
+
+    @OneToMany(fetch = LAZY)
+    @JoinTable(name="ExpenseDocument",
+        joinColumns = [JoinColumn(name = "expenseId",
+            referencedColumnName = "id")],
+        inverseJoinColumns = [JoinColumn(name = "attachmentId",
+            referencedColumnName = "id")]
+    )
+    var attachmens: List<AttachmentInfo> = ArrayList()
 )
