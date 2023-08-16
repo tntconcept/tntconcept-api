@@ -25,7 +25,7 @@ internal class AppPropertiesIT {
     fun `recover a second level property files evidences-path`() {
         val appProperties = context.getBean(AppProperties::class.java)
 
-        assertEquals("/tmp/activity/images", appProperties.files.evidencesPath)
+        assertEquals("/tmp/activity/images", appProperties.files.attachmentsPath)
     }
 
     @Test

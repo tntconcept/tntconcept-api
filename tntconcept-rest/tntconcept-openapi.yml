@@ -281,6 +281,54 @@ paths:
             application/json:
               schema:
                 type: string
+  /api/attachment:
+    post:
+      tags:
+      - activity
+      summary: Create an attachment
+      operationId: createAttachment$tntconcept_rest
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              required:
+              - attachmentFile
+              type: object
+              properties:
+                attachmentFile:
+                  type: string
+                  format: binary
+        required: true
+      responses:
+        "200":
+          description: createAttachment$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentCreationResponse'
+  /api/attachment/{id}:
+    get:
+      tags:
+      - activity
+      summary: Retrieves an attachment
+      operationId: getAttachment$tntconcept_rest
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        "200":
+          description: getAttachment$tntconcept_rest 200 response
+          content:
+            multipart/form-data:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: byte
   /api/calendar/days/count:
     get:
       summary: Retrieves the days within a given period in the time unit of the selected
@@ -978,6 +1026,13 @@ components:
       - PENDING
       - ACCEPTED
       - ALL
+    AttachmentCreationResponse:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          type: string
     BlockProjectRequest:
       required:
       - blockDate

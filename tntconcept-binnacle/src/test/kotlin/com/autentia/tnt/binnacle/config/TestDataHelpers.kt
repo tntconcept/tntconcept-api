@@ -4,13 +4,11 @@ import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
-import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
+import java.util.*
 
 internal fun createUser(): User = createUser(LocalDate.of(2020, Month.JANUARY, 1))
 internal fun createUser(hiringDate: LocalDate, id: Long = 1L, name: String = "John Doe"): User = User(
@@ -239,4 +237,33 @@ internal fun createActivityResponseDTO(
     interval = IntervalResponseDTO(start, end, 45, TimeUnit.MINUTES),
     userId = 1L,
     approval = ApprovalDTO(approvalState)
+)
+
+internal fun createAttachmentInfoEntity() = AttachmentInfo(
+    id = UUID.randomUUID(),
+    userId = 1L,
+    path = "/",
+    fileName = "Evidence001",
+    mimeType = "application/png",
+    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+    isTemporary = false
+)
+
+internal fun createAttachmentInfoEntityWithFilenameAndMimetype(filename: String, mimeType: String) = AttachmentInfo(
+    id = UUID.randomUUID(),
+    userId = 1L,
+    path = "/",
+    fileName = filename,
+    mimeType = mimeType,
+    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+    isTemporary = true
+)
+
+internal fun createAttachmentInfoDtoWithFileNameAndMimeType(filename: String, mimeType: String) = AttachmentInfoDTO(
+    null,
+    userId = 1L,
+    fileName = filename,
+    mimeType = mimeType,
+    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+    isTemporary = true
 )
