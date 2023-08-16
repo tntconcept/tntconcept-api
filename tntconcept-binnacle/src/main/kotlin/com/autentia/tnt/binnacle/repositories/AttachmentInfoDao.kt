@@ -17,4 +17,5 @@ internal interface AttachmentInfoDao : CrudRepository<AttachmentInfo, UUID> {
 
     @Query("DELETE FROM AttachmentInfo WHERE id IN (:temporaryAttachments)")
     fun deleteTemporaryList(temporaryAttachments: List<UUID>)
+
 }
