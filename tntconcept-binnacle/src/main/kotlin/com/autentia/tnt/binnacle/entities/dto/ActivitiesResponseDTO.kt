@@ -12,5 +12,4 @@ data class ActivitiesResponseDTO(
     val billable: Boolean,
     val organization: OrganizationResponseDTO,
     val project: ProjectResponseDTO,
-    val hasImage: Boolean?
 )

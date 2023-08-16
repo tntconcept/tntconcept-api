@@ -2,9 +2,11 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createActivityResponseDTO
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -69,8 +71,11 @@ internal class ActivityApprovalUseCaseTest {
     fun `should approve activity`() {
         val user = createUser()
 
+        val attachmentInfo = createAttachmentInfoEntity()
+        val evidences = mutableListOf(attachmentInfo)
+
         val activityToApprove =
-                createActivity(approvalState = ApprovalState.PENDING).copy(hasEvidences = true)
+                createActivity(approvalState = ApprovalState.PENDING, evidences = evidences)
         val approvedActivity = activityToApprove.copy(approvalState = ApprovalState.ACCEPTED,
                 approvedByUserId = user.id, approvalDate = currentDate)
 

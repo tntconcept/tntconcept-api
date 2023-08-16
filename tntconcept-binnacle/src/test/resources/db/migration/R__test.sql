@@ -119,9 +119,9 @@ VALUES ('4d3cbe3f-369f-11ee-99c2-0242ac180003', 11, 'path/to/test/file', 'testFi
         NOW(), TRUE);
 
 -- Activity
-INSERT INTO Activity (id, userId, start, duration, billable, roleId, description, departmentId, hasEvidences,
+INSERT INTO Activity (id, userId, start, duration, billable, roleId, description, departmentId,
                       insertDate, updateDate, end, approvalState, approvedByUserId, approvalDate)
-VALUES (111, 11, '2023-08-02 09:00:00', 240, 1, 10, 'Permiso', 1, 1, '2023-08-02 11:48:38', '2023-08-02 11:48:37',
+VALUES (111, 11, '2023-08-02 09:00:00', 240, 1, 10, 'Permiso', 1, '2023-08-02 11:48:38', '2023-08-02 11:48:37',
         '2023-08-02 13:00:00', 'NA', null, null);
 
 -- Activity evidence

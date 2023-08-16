@@ -21,7 +21,7 @@ class ActivityEvidenceRetrievalUseCase internal constructor(
     fun getActivityEvidence(id: Long): String {
         val activity = activityRepository.findById(id)?.toDomain() ?: throw ActivityNotFoundException(id)
 
-        if (activity.hasEvidences) {
+        if (activity.hasEvidences()) {
             return activityEvidenceService.getActivityEvidenceAsBase64String(id, toDate(activity.insertDate)!!)
         } else {
             throw NoEvidenceInActivityException(id)
@@ -33,7 +33,7 @@ class ActivityEvidenceRetrievalUseCase internal constructor(
     fun getActivityEvidenceByActivityId(id: Long): EvidenceDTO {
         val activity = activityRepository.findById(id)?.toDomain() ?: throw ActivityNotFoundException(id)
 
-        if (activity.hasEvidences) {
+        if (activity.hasEvidences()) {
             return activityEvidenceService.getActivityEvidence(id, toDate(activity.insertDate)!!)
         } else {
             throw NoEvidenceInActivityException(id)

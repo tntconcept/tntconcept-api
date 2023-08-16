@@ -235,12 +235,13 @@ internal class ActivityCreationUseCaseTest {
         val projectRoleRequireEvidence = `get role that requires approval and evidence`()
         val activityEntity = `get activity entity with evidence`(projectRoleRequireEvidence)
         val activityDomain = activityEntity.toDomain()
+        val attachmentInfo = createAttachmentInfoEntity()
 
         whenever(userService.getAuthenticatedDomainUser()).thenReturn(user)
         whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
-        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
+        whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(attachmentInfo))
         whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         // When
@@ -251,7 +252,7 @@ internal class ActivityCreationUseCaseTest {
         // Then
         verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(), description = activityEntity.description)
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_API_PREFIX.plus(ATTACHMENT_INFO.id)), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
         Assertions.assertThat(activityCreated)
@@ -335,7 +336,7 @@ internal class ActivityCreationUseCaseTest {
         // Then
         verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(), description = activityEntity.description)
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_API_PREFIX.plus(ATTACHMENT_INFO.id)), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
         Assertions.assertThat(activityCreated)
@@ -345,13 +346,12 @@ internal class ActivityCreationUseCaseTest {
 
     private fun `get activity entity with evidence`(projectRoleRequireEvidence: ProjectRole) =
             createActivity(description = "This is an activity with evidence", userId = user.id,
-                    projectRole = projectRoleRequireEvidence, hasEvidences = true,
+                    projectRole = projectRoleRequireEvidence, evidences = mutableListOf(ATTACHMENT_INFO),
                     approvalState = ApprovalState.PENDING)
 
     private fun `get activity entity without evidence`(projectRole: ProjectRole) =
             createActivity(description = "This is an activity without evidence", userId = user.id,
-                    projectRole = projectRole, hasEvidences = false,
-                    approvalState = ApprovalState.PENDING)
+                    projectRole = projectRole, approvalState = ApprovalState.PENDING)
 
     private fun `get role that requires approval and evidence`() =
             PROJECT_ROLE_APPROVAL.copy(requireEvidence = RequireEvidence.ONCE, isApprovalRequired = true)
@@ -368,6 +368,10 @@ internal class ActivityCreationUseCaseTest {
         private val ATTACHMENT_ID_2 = UUID.randomUUID()
 
         private val TODAY = Date()
+
+        private val ATTACHMENT_API_PREFIX = "/api/attachment/"
+
+        private val ATTACHMENT_INFO = createAttachmentInfoEntity()
 
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
 
@@ -453,7 +457,7 @@ internal class ActivityCreationUseCaseTest {
             end: LocalDateTime = TIME_NOW.plusMinutes(75L),
             duration: Int = 75,
             billable: Boolean = false,
-            hasEvidences: Boolean = false,
+            evidences: MutableList<AttachmentInfo> = arrayListOf(),
             projectRole: ProjectRole = PROJECT_ROLE_NO_APPROVAL,
             approvalState: ApprovalState = ApprovalState.NA,
             insertDate: Date = TODAY,
@@ -466,7 +470,7 @@ internal class ActivityCreationUseCaseTest {
                 end = end,
                 duration = duration,
                 billable = billable,
-                hasEvidences = hasEvidences,
+                evidences = evidences,
                 projectRole = projectRole,
                 approvalState = approvalState,
                 insertDate = insertDate

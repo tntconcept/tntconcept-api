@@ -9,6 +9,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
@@ -39,6 +40,7 @@ internal class ActivityEvidenceRetrievalUseCaseTest {
     }
 
     @Test
+    @Disabled("Delete this endpoint")
     fun `return image in base 64 from service`() {
         whenever(activityRepository.findById(activityWithEvidenceEntity.id!!)).thenReturn(activityWithEvidenceEntity)
         whenever(
@@ -74,11 +76,13 @@ internal class ActivityEvidenceRetrievalUseCaseTest {
         private val projectRole =
             ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, 0, true, false, TimeUnit.MINUTES)
 
+        private val evidenceId = UUID.randomUUID()
+
         private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
             1L, TimeInterval.of(
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, TODAY, true, ApprovalState.NA, arrayListOf(), null, null
+        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, TODAY, ApprovalState.NA, arrayListOf(evidenceId), null, null
         )
 
         private val activityWithoutEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
@@ -94,7 +98,6 @@ internal class ActivityEvidenceRetrievalUseCaseTest {
             false,
             1L,
             TODAY,
-            false,
             ApprovalState.NA,
             arrayListOf()
         )

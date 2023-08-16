@@ -25,5 +25,4 @@ data class ActivityRequest(
         evidences ?: emptyList()
     )
 
-    fun hasEvidences() = evidences?.isEmpty() ?: false
 }

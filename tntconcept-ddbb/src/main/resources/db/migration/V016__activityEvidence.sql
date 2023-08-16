@@ -10,3 +10,5 @@ CREATE TABLE ActivityEvidence
 ) ENGINE = innodb
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_spanish_ci;
+
+ALTER TABLE Activity DROP COLUMN hasEvidences;

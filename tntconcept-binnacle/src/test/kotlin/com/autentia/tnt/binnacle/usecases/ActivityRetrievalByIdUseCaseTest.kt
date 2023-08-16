@@ -90,7 +90,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
             false,
             1L,
             null,
-            false,
             ApprovalState.NA,
             arrayListOf()
         )

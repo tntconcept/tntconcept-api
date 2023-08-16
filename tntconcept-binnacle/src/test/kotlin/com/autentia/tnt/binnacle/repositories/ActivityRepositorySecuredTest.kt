@@ -43,7 +43,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA
                 )
         )
@@ -69,7 +68,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA
                 )
         )
@@ -96,7 +94,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA
         )
         whenever(internalActivityRepository.findByIdAndUserId(activityId, userId)).thenReturn(activity)
@@ -117,7 +114,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = 2L,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(internalActivityRepository.findById(activityId)).thenReturn(activity)
@@ -321,7 +317,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA,
                 )
         )
@@ -368,7 +363,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA,
                 )
         )
@@ -403,7 +397,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
@@ -423,7 +416,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         val expectedActivity = Activity(
@@ -435,7 +427,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -466,7 +457,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
@@ -487,7 +477,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -509,7 +498,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -532,7 +520,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -581,7 +568,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -603,7 +589,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = 234L,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.ACCEPTED,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
@@ -626,7 +611,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA,
                 )
         )
@@ -684,7 +668,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA,
                 )
         )
@@ -744,7 +727,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
                 evidences = evidences
             )

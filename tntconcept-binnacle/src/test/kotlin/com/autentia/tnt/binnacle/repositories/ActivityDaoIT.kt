@@ -35,7 +35,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val savedActivity = activityDao.save(activity)
@@ -55,7 +54,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val savedActivity = activityDao.save(activity)
@@ -75,7 +73,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -86,7 +83,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
@@ -97,7 +93,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val savedActivities = activityDao.saveAll(
@@ -126,7 +121,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -137,7 +131,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
@@ -148,7 +141,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val savedActivities = activityDao.saveAll(
@@ -207,7 +199,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(1L, openedProject),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -218,7 +209,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole().copy(id = 5),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
@@ -229,7 +219,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(1L, openedProject),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val savedActivities = activityDao.saveAll(
@@ -258,7 +247,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
@@ -269,7 +257,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole.copy(id = 2L),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
 
@@ -298,7 +285,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -309,7 +295,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
@@ -320,7 +305,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val savedActivities = activityDao.saveAll(
@@ -349,7 +333,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -360,7 +343,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
@@ -371,7 +353,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val savedActivities = activityDao.saveAll(
@@ -396,7 +377,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -407,7 +387,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
@@ -418,7 +397,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
@@ -449,7 +427,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -460,7 +437,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
@@ -471,7 +447,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
@@ -502,7 +477,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -513,7 +487,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val theDayBeforeYesterdayActivity = Activity(
@@ -524,7 +497,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
@@ -553,7 +525,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -564,7 +535,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(2L),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val theDayBeforeYesterdayActivity = Activity(
@@ -575,7 +545,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
@@ -600,7 +569,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
@@ -611,7 +579,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(2L),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         val theDayBeforeYesterdayActivity = Activity(
@@ -622,7 +589,6 @@ internal class ActivityDaoIT {
             projectRole = projectRole,
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
@@ -671,7 +637,6 @@ internal class ActivityDaoIT {
             projectRole = createProjectRole(),
             userId = userId,
             billable = false,
-            hasEvidences = false,
             approvalState = ApprovalState.ACCEPTED,
             evidences = mutableListOf(savedAttachmentInfo)
         )

@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.*
 import org.mockito.kotlin.*
 import java.time.LocalDateTime
+import java.util.ArrayList
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ActivityEvidenceMissingReminderUseCaseTest {
@@ -464,32 +465,14 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             role: ProjectRole,
             date: LocalDateTime,
             durationInHours: Long,
-            hasEvidence: Boolean = false
+            evidences: MutableList<AttachmentInfo> = ArrayList()
         ): Activity {
             return createActivity(role).copy(
                 getIncrementalId(),
                 userId = user.id,
-                hasEvidences = hasEvidence,
+                evidences = evidences,
                 start = date,
                 end = date.plusHours(durationInHours),
-                description = name
-            )
-        }
-
-        fun createActivityInterval(
-            name: String,
-            user: User,
-            role: ProjectRole,
-            startDate: LocalDateTime,
-            endDate: LocalDateTime,
-            hasEvidence: Boolean = false
-        ): Activity {
-            return createActivity(role).copy(
-                getIncrementalId(),
-                userId = user.id,
-                hasEvidences = hasEvidence,
-                start = startDate,
-                end = endDate,
                 description = name
             )
         }

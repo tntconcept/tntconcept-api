@@ -60,7 +60,6 @@ internal class ActivityRequestBodyConverterTest {
             false,
             1,
             null,
-            false,
             ApprovalState.NA
         )
 

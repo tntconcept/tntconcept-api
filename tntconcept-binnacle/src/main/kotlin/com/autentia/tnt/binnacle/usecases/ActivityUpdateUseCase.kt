@@ -64,7 +64,7 @@ class ActivityUpdateUseCase internal constructor(
 //            )
 //        }
 
-        if (!activityToUpdate.hasEvidences && currentActivity.hasEvidences) {
+        if (!activityToUpdate.hasEvidences() && currentActivity.hasEvidences()) {
             activityEvidenceService.deleteActivityEvidence(
                     updatedActivityEntity.id!!,
                     updatedActivityEntity.insertDate!!

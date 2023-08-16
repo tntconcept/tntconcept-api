@@ -178,7 +178,6 @@ internal class UserTimeSummaryUseCaseTest {
             false,
             null,
             null,
-            false,
             approvalState = ApprovalState.NA
         )
 

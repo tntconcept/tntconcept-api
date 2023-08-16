@@ -56,8 +56,6 @@ data class Activity(
     @JsonIgnore
     var insertDate: Date? = null,
 
-    var hasEvidences: Boolean = false,
-
     @Enumerated(EnumType.STRING)
     var approvalState: ApprovalState,
 
@@ -89,12 +87,13 @@ data class Activity(
             billable,
             departmentId,
             toLocalDateTime(insertDate),
-            hasEvidences,
             approvalState,
             getAttachmentInfoIds(evidences),
             approvedByUserId,
             approvalDate
         )
+
+    fun hasEvidences() = evidences.isNotEmpty()
 
     companion object {
 
@@ -112,7 +111,6 @@ data class Activity(
                 activity.billable,
                 activity.departmentId,
                 toDate(activity.insertDate),
-                activity.hasEvidences,
                 activity.approvalState,
                 activity.approvedByUserId,
                 activity.approvalDate
@@ -132,7 +130,6 @@ data class Activity(
                 activity.billable,
                 activity.departmentId,
                 toDate(activity.insertDate),
-                activity.hasEvidences,
                 activity.approvalState,
                 activity.approvedByUserId,
                 activity.approvalDate,
@@ -150,7 +147,6 @@ data class Activity(
             billable: Boolean,
             departmentId: Long?,
             insertDate: Date?,
-            hasEvidences: Boolean,
             approvalState: ApprovalState,
             approvedByUser: Long?,
             approvalDate: LocalDateTime?
@@ -166,7 +162,6 @@ data class Activity(
                 billable,
                 departmentId,
                 insertDate,
-                hasEvidences,
                 approvalState,
                 approvedByUser,
                 approvalDate
@@ -174,7 +169,7 @@ data class Activity(
 
         fun emptyActivity(projectRole: ProjectRole): Activity = Activity(
             0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
-            false, 0, null, false, ApprovalState.NA, null, null, arrayListOf()
+            false, 0, null, ApprovalState.NA, null, null, arrayListOf()
         )
 
         fun getAttachmentInfoIds(attachmentInfos: MutableList<AttachmentInfo>): List<UUID> {

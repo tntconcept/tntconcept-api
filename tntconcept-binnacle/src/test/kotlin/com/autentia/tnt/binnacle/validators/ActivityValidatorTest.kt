@@ -774,7 +774,6 @@ internal class ActivityValidatorTest {
                     user.id,
                     billable = false,
                     approvalState = ApprovalState.NA,
-                    hasEvidences = false
                 )
             )
 
@@ -946,7 +945,6 @@ internal class ActivityValidatorTest {
                         projectRole,
                         user.id,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA
 
                     ).toDomain()
@@ -1259,7 +1257,6 @@ internal class ActivityValidatorTest {
                 start = todayDateTime,
                 end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
                 duration = (MINUTES_IN_HOUR * 9),
-                hasEvidences = true,
                 evidences = arrayListOf(attachmentID)
             ).copy(id = null)
 
@@ -1671,7 +1668,6 @@ internal class ActivityValidatorTest {
             user.id,
             billable = false,
             approvalState = ApprovalState.NA,
-            hasEvidences = false
         )
 
         private val overlappedActivityToCreate = createDomainActivity(
@@ -1694,7 +1690,6 @@ internal class ActivityValidatorTest {
             false,
             null,
             null,
-            false,
             ApprovalState.NA,
             arrayListOf()
         )
@@ -1712,7 +1707,6 @@ internal class ActivityValidatorTest {
             false,
             null,
             null,
-            true,
             ApprovalState.NA,
             evidences
         )
@@ -1838,14 +1832,6 @@ internal class ActivityValidatorTest {
             projectRole = projectRoleLimitedByYearInDays.toDomain()
         )
 
-        private val activityWithAcceptedApprovalState =
-            createDomainActivity().copy(approvalState = ApprovalState.ACCEPTED)
-        private val activityWithNotApplicableApprovalState =
-            createDomainActivity().copy(approvalState = ApprovalState.NA)
-        private val activityWithoutEvidence = createDomainActivity().copy(approvalState = ApprovalState.PENDING)
-        private val activityValidForApproval =
-            createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = true)
-
         private fun createActivity(
             start: LocalDateTime,
             end: LocalDateTime,
@@ -1853,12 +1839,10 @@ internal class ActivityValidatorTest {
             description: String = "",
             projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = projectRoleLimitedByYear.toDomain(),
             billable: Boolean = false,
-            hasEvidences: Boolean = false,
             evidences: List<UUID> = arrayListOf()
         ) = createDomainActivity(start, end, duration, projectRole, evidences).copy(
             description = description,
             billable = billable,
-            hasEvidences = hasEvidences
         )
 
         private fun createActivity(

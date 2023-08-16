@@ -30,7 +30,7 @@ class ActivityDeletionUseCase internal constructor(
             activityValidator.checkActivityIsValidForDeletion(activityToDelete.toDomain())
         }
 
-        if (activityToDelete.hasEvidences) {
+        if (activityToDelete.hasEvidences()) {
             activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
         }
         

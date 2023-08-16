@@ -23,6 +23,4 @@ data class ActivityRequestDTO(
         evidences: List<UUID> = arrayListOf()
     ) : this(id, TimeIntervalRequestDTO(start, end), description, billable, projectRoleId, evidences)
 
-    fun hasEvidences() = evidences.isNotEmpty()
-
 }

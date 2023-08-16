@@ -25,7 +25,6 @@ class ActivitiesResponseConverter(
         project = activity.projectRole.project,
         projectRole = activity.projectRole,
         duration = activity.duration,
-        hasImage = activity.hasEvidences
     )
 
     fun toActivityResponseDTO(activityResponse: ActivitiesResponse) =
@@ -38,8 +37,7 @@ class ActivitiesResponseConverter(
             activityResponse.userId,
             activityResponse.billable,
             organizationResponseConverter.toOrganizationResponseDTO(activityResponse.organization),
-            projectResponseConverter.toProjectResponseDTO(activityResponse.project),
-            activityResponse.hasImage,
+            projectResponseConverter.toProjectResponseDTO(activityResponse.project)
 
             )
 

@@ -110,7 +110,6 @@ internal class ActivityServiceTest {
             false,
             1L,
             null,
-            false,
             ApprovalState.NA,
             arrayListOf()
         )
@@ -128,7 +127,6 @@ internal class ActivityServiceTest {
             false,
             1L,
             null,
-            true,
             ApprovalState.NA,
             arrayListOf()
         )
@@ -137,7 +135,7 @@ internal class ActivityServiceTest {
             null, TimeInterval.of(
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
             LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA, arrayListOf(), null, null
+        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, ApprovalState.NA, arrayListOf(), null, null
         )
 
         private val evidence = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")

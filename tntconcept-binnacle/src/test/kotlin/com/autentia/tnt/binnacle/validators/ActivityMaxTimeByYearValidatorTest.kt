@@ -319,7 +319,6 @@ class ActivityMaxTimeByYearValidatorTest {
             true,
             1L,
             null,
-            false,
             ApprovalState.NA
         )
     }

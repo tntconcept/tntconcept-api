@@ -19,7 +19,6 @@ data class Activity private constructor(
         val billable: Boolean,
         val departmentId: Long?,
         var insertDate: LocalDateTime? = null,
-        val hasEvidences: Boolean,
         var approvalState: ApprovalState,
         var evidences: List<UUID> = arrayListOf(),
         val approvedByUserId: Long? = null,
@@ -47,15 +46,17 @@ data class Activity private constructor(
     fun checkActivityIsValidForApproval() {
         when {
             isAcceptedOrNoApply() -> throw InvalidActivityApprovalStateException()
-            RequireEvidence.isRequired(projectRole.requireEvidence) && !hasEvidences -> throw NoEvidenceInActivityException(id!!)
+            RequireEvidence.isRequired(projectRole.requireEvidence) && !hasEvidences() -> throw NoEvidenceInActivityException(id!!)
             !canBeApproved() -> throw InvalidActivityApprovalStateException()
         }
     }
 
     fun canBeApproved(): Boolean = approvalState == ApprovalState.PENDING &&
-            ((RequireEvidence.isRequired(projectRole.requireEvidence) && hasEvidences) || !RequireEvidence.isRequired(projectRole.requireEvidence))
+            ((RequireEvidence.isRequired(projectRole.requireEvidence) && hasEvidences()) || !RequireEvidence.isRequired(projectRole.requireEvidence))
 
     private fun isAcceptedOrNoApply() = approvalState == ApprovalState.ACCEPTED || approvalState == ApprovalState.NA
+
+    fun hasEvidences() = evidences.isNotEmpty()
 
     companion object {
 
@@ -69,7 +70,6 @@ data class Activity private constructor(
                 billable: Boolean,
                 departmentId: Long?,
                 insertDate: LocalDateTime?,
-                hasEvidences: Boolean,
                 approvalState: ApprovalState,
                 evidences: List<UUID> = arrayListOf(),
                 approvedByUserId: Long? = null,
@@ -87,7 +87,6 @@ data class Activity private constructor(
                 billable,
                 departmentId,
                 insertDate,
-                hasEvidences,
                 approvalState,
                 evidences,
                 approvedByUserId,
@@ -104,7 +103,6 @@ data class Activity private constructor(
                 false,
                 null,
                 LocalDateTime.MIN,
-                false,
                 ApprovalState.NA,
                 arrayListOf(),
                 null,
