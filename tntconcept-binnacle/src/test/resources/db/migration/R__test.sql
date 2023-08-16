@@ -117,3 +117,7 @@ VALUES (9, 3, '2023-04-24', null, 0, 'Closed project for testing', '', null, nul
 INSERT INTO Attachment (id, userId, path, fileName, mimeType, uploadDate, isTemporary)
 VALUES ('4d3cbe3f-369f-11ee-99c2-0242ac180003', 11, 'path/to/test/file', 'testFile,jpg', 'image/jpeg',
         NOW(), TRUE);
+
+
+INSERT INTO Expense (id, userId, date, description, amount, type, state)
+VALUES (1, 1, '2023-08-17 00:00:00', 'Expense for tests', 10.0, 'MARKETING', 'PENDING')
