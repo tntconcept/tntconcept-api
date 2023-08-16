@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.converters.ActivityEvidenceResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
@@ -24,7 +25,7 @@ import java.util.*
 internal class ActivitiesByFilterUseCaseTest {
     private val activityRepository = mock<ActivityRepository>()
     private val securityService = mock<SecurityService>()
-    private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
+    private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter(), ActivityEvidenceResponseConverter())
     private val activitiesByFilterUseCase =
         ActivitiesByFilterUseCase(activityRepository, securityService, activityResponseConverter)
 

@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.converters.ActivityEvidenceResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
@@ -27,7 +28,8 @@ internal class ActivityRetrievalByIdUseCaseTest {
         ActivityRetrievalByIdUseCase(
             activityRepository,
             ActivityResponseConverter(
-                ActivityIntervalResponseConverter()
+                ActivityIntervalResponseConverter(),
+                ActivityEvidenceResponseConverter()
             )
         )
 
@@ -103,7 +105,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
         private val activityResponseDTO = ActivityResponseDTO(
             false,
             "Dummy description",
-            false,
+            arrayListOf(),
             1L,
             PROJECT_ROLE.id,
             IntervalResponseDTO(

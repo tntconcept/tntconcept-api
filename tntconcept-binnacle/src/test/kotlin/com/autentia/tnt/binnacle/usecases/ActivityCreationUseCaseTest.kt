@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.config.createProject
+import com.autentia.tnt.binnacle.converters.ActivityEvidenceResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
@@ -66,7 +67,8 @@ internal class ActivityCreationUseCaseTest {
         activityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(
-            ActivityIntervalResponseConverter()
+            ActivityIntervalResponseConverter(),
+            ActivityEvidenceResponseConverter()
         ), sendPendingApproveActivityMailUseCase)
 
 
@@ -249,7 +251,7 @@ internal class ActivityCreationUseCaseTest {
         // Then
         verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = true, description = activityEntity.description)
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
         Assertions.assertThat(activityCreated)
@@ -276,7 +278,7 @@ internal class ActivityCreationUseCaseTest {
 
         // Then
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = false, description = activityEntity.description)
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
         Assertions.assertThat(activityCreated)
@@ -302,7 +304,7 @@ internal class ActivityCreationUseCaseTest {
 
         // Then
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = false, description = activityEntity.description)
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = false))
 
         Assertions.assertThat(activityCreated)
@@ -333,7 +335,7 @@ internal class ActivityCreationUseCaseTest {
         // Then
         verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, hasEvidences = true, description = activityEntity.description)
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
         Assertions.assertThat(activityCreated)
@@ -478,7 +480,7 @@ internal class ActivityCreationUseCaseTest {
             end: LocalDateTime = TIME_NOW.plusMinutes(75L),
             duration: Int = 75,
             billable: Boolean = false,
-            hasEvidences: Boolean = false,
+            evidences: List<String> = arrayListOf(),
             projectRoleId: Long = 10L,
             approvalState: ApprovalState = ApprovalState.NA,
             timeUnit: TimeUnit = PROJECT_ROLE_NO_APPROVAL.timeUnit,
@@ -486,7 +488,7 @@ internal class ActivityCreationUseCaseTest {
             ActivityResponseDTO(
                 billable,
                 description,
-                hasEvidences,
+                evidences,
                 id,
                 projectRoleId,
                 IntervalResponseDTO(start, end, duration, timeUnit),

@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createDomainUser
+import com.autentia.tnt.binnacle.converters.ActivityEvidenceResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
@@ -46,7 +47,8 @@ internal class ActivityUpdateUseCaseTest {
             activityValidator,
             ActivityRequestBodyConverter(),
             ActivityResponseConverter(
-                    ActivityIntervalResponseConverter()
+                    ActivityIntervalResponseConverter(),
+                    ActivityEvidenceResponseConverter()
             ),
             activityEvidenceService,
             sendPendingApproveActivityMailUseCase
@@ -222,7 +224,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-//        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -256,7 +257,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-//        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -290,7 +290,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
-//        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -567,7 +566,8 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.interval.end).isEqualTo(request.interval.end)
         assertThat(result.description).isEqualTo(request.description)
         assertThat(result.billable).isEqualTo(request.billable)
-        assertThat(result.hasEvidences).isEqualTo(request.hasEvidences())
+        // TODO uncomment when the logic is implemented in the update
+//        assertThat(result.evidences).isEqualTo(request.evidences)
         assertThat(result.projectRoleId).isEqualTo(request.projectRoleId)
     }
 

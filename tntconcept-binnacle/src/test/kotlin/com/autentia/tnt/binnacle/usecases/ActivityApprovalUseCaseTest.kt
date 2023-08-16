@@ -78,7 +78,7 @@ internal class ActivityApprovalUseCaseTest {
                 activityId,
                 approvedActivity.start,
                 approvedActivity.end,
-                approvedActivity.hasEvidences,
+                arrayListOf(),
                 approvedActivity.approvalState
         )
 

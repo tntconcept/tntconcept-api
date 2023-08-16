@@ -469,7 +469,7 @@ internal class ActivityControllerIT {
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             ACTIVITY_REQUEST_BODY_DTO.billable,
             ACTIVITY_REQUEST_BODY_DTO.description,
-            ACTIVITY_REQUEST_BODY_DTO.hasEvidences(),
+            arrayListOf(),
             2L,
             ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
             IntervalResponseDTO(
