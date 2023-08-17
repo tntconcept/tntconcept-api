@@ -14,7 +14,7 @@ enum class ExpenseType {
 @Entity
 data class Expense (
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long? = null,
     val userId:Long,
     @JsonFormat(pattern = "yyyy-MM-dd")
     val date: LocalDateTime,
@@ -25,12 +25,12 @@ data class Expense (
     @Enumerated(EnumType.STRING)
     var state: ApprovalState,
 
-    @OneToMany(fetch = LAZY)
+    @OneToMany(fetch = LAZY, cascade = [CascadeType.REMOVE])
     @JoinTable(name="ExpenseDocument",
         joinColumns = [JoinColumn(name = "expenseId",
             referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "attachmentId",
             referencedColumnName = "id")]
     )
-    var attachmens: List<AttachmentInfo> = ArrayList()
+    var attachments: List<AttachmentInfo> = ArrayList()
 )
