@@ -22,12 +22,13 @@ class ActivityDeletionUseCase internal constructor(
     @Transactional
     fun deleteActivityById(id: Long) {
         val activityToDelete = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
+        val activityToDeleteDomain = activityToDelete.toDomain()
         val authentication = securityService.checkAuthentication()
 
         if (authentication.canAccessAllActivities()) {
-            activityValidator.checkAllAccessActivityIsValidForDeletion(activityToDelete.toDomain())
+            activityValidator.checkAllAccessActivityIsValidForDeletion(activityToDeleteDomain)
         } else {
-            activityValidator.checkActivityIsValidForDeletion(activityToDelete.toDomain())
+            activityValidator.checkActivityIsValidForDeletion(activityToDeleteDomain)
         }
 
         if (activityToDelete.hasEvidences()) {
