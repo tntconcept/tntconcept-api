@@ -6,7 +6,6 @@ import com.autentia.tnt.binnacle.entities.Expense
 import com.autentia.tnt.binnacle.entities.ExpenseType
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -114,9 +113,9 @@ internal class ExpenseDaoIT {
     }
 
     @Test
-    fun `should save a new expense without attachment`() {
-        val expectedExpense = Expense(
-            4,
+    fun `should save a new expense`() {
+        val expectedExpenseWithoutAttachment = Expense(
+            3,
             1,
             LocalDateTime.of(2023, Month.AUGUST, 17, 0, 0, 0),
             "Expense for tests",
@@ -124,7 +123,7 @@ internal class ExpenseDaoIT {
             ExpenseType.OPERATION,
             ApprovalState.PENDING
         )
-        val actualExpense:Expense = expenseDaoSut.save(Expense(
+        val actualExpenseWithoutAttachment:Expense = expenseDaoSut.save(Expense(
             null,
             1,
             LocalDateTime.of(2023, Month.AUGUST, 17, 0, 0, 0),
@@ -133,13 +132,10 @@ internal class ExpenseDaoIT {
             ExpenseType.OPERATION,
             ApprovalState.PENDING))
 
-        Assertions.assertEquals(expectedExpense, actualExpense)
-    }
+        Assertions.assertEquals(expectedExpenseWithoutAttachment, actualExpenseWithoutAttachment)
 
-    @Test
-    fun `should save a new expense with attachment`() {
         val expectedExpense = Expense(
-            3,
+            4,
             1,
             LocalDateTime.of(2023, Month.AUGUST, 17, 0, 0, 0),
             "Expense for tests",
