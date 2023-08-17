@@ -12,9 +12,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
-import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.util.*
 import javax.transaction.Transactional
@@ -28,11 +26,11 @@ class ActivityUpdateUseCase internal constructor(
         private val activityValidator: ActivityValidator,
         private val activityRequestBodyConverter: ActivityRequestBodyConverter,
         private val activityResponseConverter: ActivityResponseConverter,
-        private val activityEvidenceService: ActivityEvidenceService,
-        private val sendPendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase
+        private val sendPendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase,
+        private val attachmentInfoService: AttachmentInfoService
 ) {
+
     @Transactional
-    @ReadOnly
     fun updateActivity(activityRequest: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
         val user = userService.getAuthenticatedDomainUser()
         val projectRoleEntity = this.getProjectRoleEntity(activityRequest.projectRoleId)
@@ -52,24 +50,15 @@ class ActivityUpdateUseCase internal constructor(
 
         activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
 
-        val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
+        attachmentInfoService.markAttachmentsAsTemporary(currentActivity.evidences)
+
+        val activityEvidences = attachmentInfoService.getAttachments(activityToUpdate.evidences).toMutableList()
+
+        val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity, activityEvidences))
+
+        attachmentInfoService.markAttachmentsAsNonTemporary(activityToUpdate.evidences)
 
         val updatedActivity = updatedActivityEntity.toDomain();
-
-//        if (activityToUpdate.hasEvidences) {
-//            activityEvidenceService.storeActivityEvidence(
-//                    updatedActivityEntity.id!!,
-//                    activityToUpdate.evidence!!,
-//                    updatedActivityEntity.insertDate!!
-//            )
-//        }
-
-        if (!activityToUpdate.hasEvidences() && currentActivity.hasEvidences()) {
-            activityEvidenceService.deleteActivityEvidence(
-                    updatedActivityEntity.id!!,
-                    updatedActivityEntity.insertDate!!
-            )
-        }
 
         if (updatedActivity.canBeApproved()) {
             sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)

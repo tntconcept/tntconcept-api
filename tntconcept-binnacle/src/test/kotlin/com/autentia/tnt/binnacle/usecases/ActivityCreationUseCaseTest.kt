@@ -127,7 +127,7 @@ internal class ActivityCreationUseCaseTest {
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
-        verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
+        verify(attachmentInfoService, times(1)).markAttachmentsAsNonTemporary(EVIDENCES)
 
         verify(sendPendingApproveActivityMailUseCase, times(0)).send(
                 activityDomain,
@@ -215,7 +215,7 @@ internal class ActivityCreationUseCaseTest {
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
 
-        verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
+        verify(attachmentInfoService, times(1)).markAttachmentsAsNonTemporary(EVIDENCES)
 
         verify(sendPendingApproveActivityMailUseCase, times(0)).send(
                 activityDomain,
@@ -250,7 +250,7 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
-        verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
+        verify(attachmentInfoService, times(1)).markAttachmentsAsNonTemporary(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_API_PREFIX.plus(ATTACHMENT_INFO.id)), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
@@ -334,7 +334,7 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
-        verify(attachmentInfoService, times(1)).consolidateAttachments(EVIDENCES)
+        verify(attachmentInfoService, times(1)).markAttachmentsAsNonTemporary(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_API_PREFIX.plus(ATTACHMENT_INFO.id)), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))

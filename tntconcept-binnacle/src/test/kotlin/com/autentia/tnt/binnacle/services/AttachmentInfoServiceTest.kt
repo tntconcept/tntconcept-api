@@ -80,7 +80,7 @@ class AttachmentInfoServiceTest {
             .whenever(attachmentInfoRepository)
             .updateIsTemporary(id1, false)
 
-        attachmentInfoService.consolidateAttachments(ids)
+        attachmentInfoService.markAttachmentsAsNonTemporary(ids)
         verify(attachmentInfoRepository).updateIsTemporary(id1, false)
         verify(attachmentInfoRepository).updateIsTemporary(id2, false)
     }

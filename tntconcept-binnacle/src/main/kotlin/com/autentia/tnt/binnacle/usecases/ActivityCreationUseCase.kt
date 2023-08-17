@@ -49,7 +49,7 @@ class ActivityCreationUseCase internal constructor(
 
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole, activityEvidences))
 
-        attachmentInfoService.consolidateAttachments(activityToCreate.evidences)
+        attachmentInfoService.markAttachmentsAsNonTemporary(activityToCreate.evidences)
 
         val savedActivityDomain = savedActivity.toDomain()
 
