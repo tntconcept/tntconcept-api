@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
@@ -36,11 +37,22 @@ internal class ActivityDeletionUseCaseTest {
     }
 
     @Test
-    fun `call the repository to delete the activity`() {
-        whenever(activityRepository.findById(1L)).thenReturn(entityActivity)
+    fun `call only the repository to delete the activity without evidences`() {
+        whenever(activityRepository.findById(1L)).thenReturn(entityActivityWithoutEvidences)
 
         useCase.deleteActivityById(1L)
 
+        verify(activityRepository).deleteById(1L)
+        verifyNoInteractions(attachmentInfoService)
+    }
+
+    @Test
+    fun `call the repository and attachment service to mark the activities as temporary and delete activity`() {
+        whenever(activityRepository.findById(1L)).thenReturn(entityActivityWithEvidences)
+
+        useCase.deleteActivityById(1L)
+
+        verify(attachmentInfoService).markAttachmentsAsTemporary(entityActivityWithEvidences.toDomain().evidences)
         verify(activityRepository).deleteById(1L)
     }
 
@@ -87,7 +99,11 @@ internal class ActivityDeletionUseCaseTest {
                 arrayListOf()
         )
 
-        private val entityActivity = Activity.of(activity, PROJECT_ROLE)
+        private val entityActivityWithoutEvidences = Activity.of(activity, PROJECT_ROLE)
+
+        private val entityActivityWithEvidences = Activity.of(activity, PROJECT_ROLE, mutableListOf(
+            createAttachmentInfoEntity()))
+
     }
 
 }
