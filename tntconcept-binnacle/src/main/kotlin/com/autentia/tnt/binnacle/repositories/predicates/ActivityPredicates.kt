@@ -98,7 +98,7 @@ class ActivityMissingEvidenceOnceSpecification : Specification<Activity> {
         criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.or(
-            criteriaBuilder. isNotEmpty(root.get("evidences")),
+            criteriaBuilder.isNotEmpty(root.get("evidences")),
             criteriaBuilder.like(root.get("description"), "###Autocreated evidence###%")
         )
     }
@@ -200,7 +200,7 @@ class ActivityMissingEvidenceWeeklySpecification : Specification<Activity> {
         criteriaBuilder: CriteriaBuilder,
     ): Predicate? {
         return criteriaBuilder.or(
-            criteriaBuilder. isNotEmpty(root.get("evidences")),
+            criteriaBuilder.isNotEmpty(root.get("evidences")),
             criteriaBuilder.like(root.get("description"), "###Autocreated evidence###%")
         )
     }
