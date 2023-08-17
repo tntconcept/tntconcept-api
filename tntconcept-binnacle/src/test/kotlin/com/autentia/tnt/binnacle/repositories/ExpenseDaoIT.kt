@@ -87,7 +87,7 @@ internal class ExpenseDaoIT {
 
 
     @Test
-    fun `should find all expense by date range and status`() {
+    fun `should find all expense by date range and user`() {
         var actualExpense: List<Expense> =
             expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1)
         Assertions.assertTrue(actualExpense.size==2, "The result of the search by dates and user is not as expected")
@@ -111,6 +111,32 @@ internal class ExpenseDaoIT {
             "The result of the search by dates and user and status is not as expected"
         )
     }
+
+    @Test
+    fun `should find all expense by id and user`() {
+        val actualExpense: Optional <Expense> = expenseDaoSut.find(1,1)
+        Assertions.assertFalse(
+            actualExpense.isEmpty,
+            "The result of the search by id and userId is not as expected"
+        )
+    }
+
+    @Test
+    fun `should find all expense by status and user`() {
+        val actualExpense: List <Expense> = expenseDaoSut.find(ApprovalState.PENDING,1)
+        Assertions.assertTrue(
+            actualExpense.size==2,
+            "The result of the search by status and userId is not as expected"
+        )
+    }
+
+    @Test
+    fun `should find all expense by date range and status`() {
+        var actualExpense: List<Expense> =
+            expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), ApprovalState.PENDING)
+        Assertions.assertTrue(actualExpense.size == 2, "The result of the search by dates and status is not as expected")
+    }
+
 
     @Test
     fun `should save a new expense`() {
