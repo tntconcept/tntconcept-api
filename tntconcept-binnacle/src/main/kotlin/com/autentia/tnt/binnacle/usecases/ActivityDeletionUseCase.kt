@@ -3,11 +3,11 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
+import com.autentia.tnt.binnacle.services.AttachmentInfoService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import com.autentia.tnt.security.application.canAccessAllActivities
 import com.autentia.tnt.security.application.checkAuthentication
 import io.micronaut.security.utils.SecurityService
-import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
@@ -15,11 +15,11 @@ import javax.transaction.Transactional
 class ActivityDeletionUseCase internal constructor(
         private val activityRepository: ActivityRepository,
         private val activityValidator: ActivityValidator,
-        private val activityEvidenceService: ActivityEvidenceService,
-        private val securityService: SecurityService
+        private val securityService: SecurityService,
+        private val attachmentInfoService: AttachmentInfoService
 ) {
+
     @Transactional
-    @ReadOnly
     fun deleteActivityById(id: Long) {
         val activityToDelete = activityRepository.findById(id) ?: throw ActivityNotFoundException(id)
         val authentication = securityService.checkAuthentication()
@@ -31,7 +31,7 @@ class ActivityDeletionUseCase internal constructor(
         }
 
         if (activityToDelete.hasEvidences()) {
-            activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
+            attachmentInfoService.markAttachmentsAsTemporary(activityToDeleteDomain.evidences)
         }
         
         activityRepository.deleteById(id)

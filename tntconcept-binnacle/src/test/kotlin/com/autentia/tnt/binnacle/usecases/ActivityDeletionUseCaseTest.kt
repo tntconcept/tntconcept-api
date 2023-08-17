@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
+import com.autentia.tnt.binnacle.services.AttachmentInfoService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -19,15 +19,14 @@ internal class ActivityDeletionUseCaseTest {
 
     private val activityRepository = mock<ActivityRepository>()
     private val activityValidator = mock<ActivityValidator>()
-    private val activityEvidenceService = mock<ActivityEvidenceService>()
     private val securityService = mock<SecurityService>()
+    private val attachmentInfoService = mock<AttachmentInfoService>()
 
-    private val useCase = ActivityDeletionUseCase(activityRepository, activityValidator,
-            activityEvidenceService, securityService)
+    private val useCase = ActivityDeletionUseCase(activityRepository, activityValidator, securityService, attachmentInfoService)
 
     @AfterEach
     fun resetMocks() {
-        reset(activityRepository, activityValidator, activityEvidenceService)
+        reset(activityRepository, activityValidator, attachmentInfoService)
     }
 
     @BeforeAll
