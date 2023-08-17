@@ -20,7 +20,7 @@ import java.util.*
 internal class ExpenseDaoIT {
 
     @Inject
-    private lateinit var expenseDaoSut: ExpenseDao;
+    private lateinit var expenseDaoSut: ExpenseDao
 
     @Test
     fun `should find expense without attachment by id`() {
@@ -33,8 +33,8 @@ internal class ExpenseDaoIT {
             ExpenseType.MARKETING,
             ApprovalState.PENDING
         ))
-        val actualExpense = expenseDaoSut.findById(1);
-        Assertions.assertEquals(expectedExpense, actualExpense);
+        val actualExpense = expenseDaoSut.findById(1)
+        Assertions.assertEquals(expectedExpense, actualExpense)
     }
 
     @Test
@@ -61,50 +61,56 @@ internal class ExpenseDaoIT {
                 )
             )
         )
-        val actualExpense = expenseDaoSut.findById(2);
-        Assertions.assertEquals(expectedExpense, actualExpense);
+        val actualExpense = expenseDaoSut.findById(2)
+        Assertions.assertEquals(expectedExpense, actualExpense)
     }
 
     @Test
     fun `should find all expense by date range`() {
         var actualExpense:List<Expense> =
-            expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0));
-        assertTrue("The result of the search by dates is not as expected",actualExpense.size==2)
-        actualExpense = expenseDaoSut.find(LocalDateTime.of(2023, 8, 18, 0, 0, 0), LocalDateTime.of(2023, 8, 21, 0, 0, 0));
-        assertTrue("The result of the search by dates is not as expected", actualExpense.isEmpty())
+            expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0))
+        Assertions.assertTrue(actualExpense.size==2, "The result of the search by dates is not as expected")
+        actualExpense = expenseDaoSut.find(LocalDateTime.of(2023, 8, 18, 0, 0, 0), LocalDateTime.of(2023, 8, 21, 0, 0, 0))
+        Assertions.assertTrue(actualExpense.isEmpty(), "The result of the search by dates is not as expected")
     }
 
     @Test
     fun `should find all expense by status`() {
         val actualExpense:List<Expense> = expenseDaoSut.find(ApprovalState.PENDING)
-        assertTrue("The result of the search by status is not as expected",actualExpense.size==2)
+        Assertions.assertTrue(actualExpense.size==2, "The result of the search by status is not as expected")
     }
 
     @Test
     fun `should find all expense by user`() {
         val actualExpense:List<Expense> = expenseDaoSut.find(1)
-        assertTrue("The result of the search by status is not as expected",actualExpense.size==2)
+        Assertions.assertTrue(actualExpense.size==2, "The result of the search by status is not as expected")
     }
 
 
     @Test
     fun `should find all expense by date range and status`() {
         var actualExpense: List<Expense> =
-            expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1);
-        assertTrue("The result of the search by dates and user is not as expected",actualExpense.size==2)
-        actualExpense = expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 10);
-        assertTrue("The result of the search by dates and user is not as expected", actualExpense.isEmpty())
-        actualExpense = expenseDaoSut.find(LocalDateTime.of(2023, 8, 18, 0, 0, 0), LocalDateTime.of(2023, 8, 19, 0, 0, 0), 1);
-        assertTrue("The result of the search by dates and user is not as expected", actualExpense.isEmpty())
+            expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1)
+        Assertions.assertTrue(actualExpense.size==2, "The result of the search by dates and user is not as expected")
+        actualExpense = expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 10)
+        Assertions.assertTrue(actualExpense.isEmpty(), "The result of the search by dates and user is not as expected")
+        actualExpense = expenseDaoSut.find(LocalDateTime.of(2023, 8, 18, 0, 0, 0), LocalDateTime.of(2023, 8, 19, 0, 0, 0), 1)
+        Assertions.assertTrue(actualExpense.isEmpty(), "The result of the search by dates and user is not as expected")
     }
 
     @Test
     fun `should find all expense by date range and status and user`() {
         var actualExpense: List<Expense> =
-            expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1,ApprovalState.PENDING);
-        assertTrue("The result of the search by dates and user and status is not as expected",actualExpense.size==2)
-        actualExpense = expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1,ApprovalState.ACCEPTED);
-        assertTrue("The result of the search by dates and user and status is not as expected", actualExpense.isEmpty())
+            expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1,ApprovalState.PENDING)
+        Assertions.assertTrue(
+            actualExpense.size==2,
+            "The result of the search by dates and user and status is not as expected"
+        )
+        actualExpense = expenseDaoSut.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1,ApprovalState.ACCEPTED)
+        Assertions.assertTrue(
+            actualExpense.isEmpty(),
+            "The result of the search by dates and user and status is not as expected"
+        )
     }
 
     @Test
@@ -127,7 +133,7 @@ internal class ExpenseDaoIT {
             ExpenseType.OPERATION,
             ApprovalState.PENDING))
 
-        Assertions.assertEquals(expectedExpense, actualExpense);
+        Assertions.assertEquals(expectedExpense, actualExpense)
     }
 
     @Test
@@ -172,35 +178,35 @@ internal class ExpenseDaoIT {
                 )
             )))
 
-        Assertions.assertEquals(expectedExpense, actualExpense);
+        Assertions.assertEquals(expectedExpense, actualExpense)
     }
 
     @Test
     fun `should update a exist expense without attachment`() {
-        val originalExpense = expenseDaoSut.findById(1);
+        val originalExpense = expenseDaoSut.findById(1)
         expenseDaoSut.update(originalExpense.get().copy(amount = BigDecimal("1000.50")))
         Assertions.assertEquals(BigDecimal("1000.50"),originalExpense.get().amount)
     }
 
     @Test
     fun `should update a exist expense with attachment`() {
-        val originalExpense = expenseDaoSut.findById(2);
+        val originalExpense = expenseDaoSut.findById(2)
         expenseDaoSut.update(originalExpense.get().copy(amount = BigDecimal("2000.50")))
         Assertions.assertEquals(BigDecimal("2000.50"),originalExpense.get().amount)
     }
 
     @Test
     fun `should delete an exist expense without attachment`() {
-        expenseDaoSut.deleteById(1);
-        val originalExpense = expenseDaoSut.findById(1);
-        Assertions.assertFalse(originalExpense.isPresent);
+        expenseDaoSut.deleteById(1)
+        val originalExpense = expenseDaoSut.findById(1)
+        Assertions.assertFalse(originalExpense.isPresent)
     }
 
     @Test
     fun `should delete an exist expense with attachment`() {
-        expenseDaoSut.deleteById(2);
-        val originalExpense = expenseDaoSut.findById(2);
-        Assertions.assertFalse(originalExpense.isPresent);
+        expenseDaoSut.deleteById(2)
+        val originalExpense = expenseDaoSut.findById(2)
+        Assertions.assertFalse(originalExpense.isPresent)
     }
 
 }
