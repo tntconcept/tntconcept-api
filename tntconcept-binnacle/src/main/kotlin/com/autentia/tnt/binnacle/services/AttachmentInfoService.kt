@@ -6,14 +6,12 @@ import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.util.*
-import javax.transaction.Transactional
 
 @Singleton
 internal class AttachmentInfoService(
     private val attachmentInfoRepository: AttachmentInfoRepository
 ) {
 
-    @Transactional
     @ReadOnly
     fun getAttachments(ids: List<UUID>): List<AttachmentInfo> {
         val attachmentInfos: MutableList<AttachmentInfo> = arrayListOf()
