@@ -15,8 +15,8 @@ class ActivityEvidenceResponseConverterTest {
         val attachmentInfo2 = createAttachmentInfoEntity()
         val evidences = mutableListOf(attachmentInfo1, attachmentInfo2)
 
-        val expectedUrl1 = ActivityEvidenceResponseConverter.ATTACHMENT_API_PREFIX + attachmentInfo1.id
-        val expectedUrl2 = ActivityEvidenceResponseConverter.ATTACHMENT_API_PREFIX + attachmentInfo2.id
+        val expectedUrl1 = ATTACHMENT_API_PREFIX + attachmentInfo1.id
+        val expectedUrl2 = ATTACHMENT_API_PREFIX + attachmentInfo2.id
 
         val activityWithEvidences = createActivity(evidences = evidences)
         val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUrls(activityWithEvidences)
@@ -40,8 +40,8 @@ class ActivityEvidenceResponseConverterTest {
         val attachmentInfo2 = createAttachmentInfoEntity()
         val evidences = mutableListOf(attachmentInfo1, attachmentInfo2)
 
-        val expectedUrl1 = ActivityEvidenceResponseConverter.ATTACHMENT_API_PREFIX + attachmentInfo1.id
-        val expectedUrl2 = ActivityEvidenceResponseConverter.ATTACHMENT_API_PREFIX + attachmentInfo2.id
+        val expectedUrl1 = ATTACHMENT_API_PREFIX + attachmentInfo1.id
+        val expectedUrl2 = ATTACHMENT_API_PREFIX + attachmentInfo2.id
 
         val activityWithEvidences = createActivity(evidences = evidences).toDomain()
         val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUrls(activityWithEvidences)
@@ -58,5 +58,9 @@ class ActivityEvidenceResponseConverterTest {
         assertTrue(evidencesUrls.isEmpty())
     }
 
+
+    companion object {
+        private const val ATTACHMENT_API_PREFIX = "/api/attachment/"
+    }
 
 }

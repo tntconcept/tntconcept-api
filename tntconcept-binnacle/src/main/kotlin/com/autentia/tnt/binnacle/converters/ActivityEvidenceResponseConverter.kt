@@ -14,6 +14,6 @@ class ActivityEvidenceResponseConverter {
     }
 
     companion object {
-        const val ATTACHMENT_API_PREFIX = "/api/attachment/"
+        private const val ATTACHMENT_API_PREFIX = "/api/attachment/"
     }
 }
