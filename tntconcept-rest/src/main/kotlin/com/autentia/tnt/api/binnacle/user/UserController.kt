@@ -1,7 +1,5 @@
 package com.autentia.tnt.api.binnacle.user
 
-import com.autentia.tnt.binnacle.entities.dto.UserInfoResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
 import com.autentia.tnt.binnacle.usecases.FindUserInfoUseCase
 import com.autentia.tnt.binnacle.usecases.UsersRetrievalUseCase
 import io.micronaut.http.HttpRequest
