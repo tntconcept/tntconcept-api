@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.AttachmentInfoService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import com.autentia.tnt.security.application.canAccessAllActivities
