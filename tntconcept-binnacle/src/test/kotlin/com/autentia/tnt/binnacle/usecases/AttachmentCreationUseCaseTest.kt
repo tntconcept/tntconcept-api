@@ -1,20 +1,19 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.config.createAttachmentInfoDtoWithFileNameAndMimeType
-import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
-import com.autentia.tnt.binnacle.converters.AttachmentInfoConverter
-import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
+import com.autentia.tnt.binnacle.core.domain.Attachment
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.entities.dto.AttachmentCreationRequestDTO
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.DefaultSecurityService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
-import org.mockito.Mockito.*
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.io.File
+import java.time.LocalDateTime
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -22,81 +21,102 @@ class AttachmentCreationUseCaseTest {
     private val securityService = mock<DefaultSecurityService>()
     private val attachmentFileRepository = mock<AttachmentFileRepository>()
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
-    private val attachmentInfoConverter = AttachmentInfoConverter()
+
     private val appProperties = AppProperties().apply {
         files.attachmentsPath = "src/test/resources/attachments_test/evidences"
         files.supportedMimeTypes = mapOf(
-            Pair("image/png", "png"),
+                Pair("image/jpeg", "jpg"),
         )
     }
-    private val attachmentCreationUseCase =
-        AttachmentCreationUseCase(
+    private val sut = AttachmentCreationUseCase(
             securityService,
             attachmentFileRepository,
             attachmentInfoRepository,
-            attachmentInfoConverter,
             appProperties
-        )
+    )
 
     @BeforeEach
     fun setUp() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
+        reset(attachmentInfoRepository, attachmentFileRepository)
     }
 
     @Test
-    fun `store attachment info when attachment is valid`() {
+    fun `create and persist an attachment via repository and store the file`() {
+        // Given
+        val attachmentCreationRequestDTO = `request with a jpeg as attachment`()
+        doNothing().whenever(this.attachmentFileRepository).storeAttachment(any())
+        doNothing().whenever(this.attachmentInfoRepository).save(any())
 
-        whenever(attachmentInfoRepository.save(SUPPORTED_ATTACHMENT_INFO_ENTITY.copy(id = null))).thenReturn(
-            SUPPORTED_ATTACHMENT_INFO_ENTITY
-        )
+        // When
+        val result = this.sut.createAttachment(attachmentCreationRequestDTO)
 
-        val savedAttachment = attachmentCreationUseCase.storeAttachment(
-            SUPPORTED_ATTACHMENT_DTO
-        )
+        // Then
+        assertThat(result.fileName).isEqualTo(attachmentCreationRequestDTO.fileName)
+        assertThat(result.mimeType).isEqualTo(attachmentCreationRequestDTO.mimeType)
+        assertThat(result.uploadDate).isEqualTo(attachmentCreationRequestDTO.uploadDate)
+        assertThat(result.isTemporary).isEqualTo(true)
 
-        assertNotNull(savedAttachment.id)
-        assertTrue(savedAttachment.isTemporary)
-        assertEquals(SUPPORTED_ATTACHMENT_INFO_ENTITY.fileName, savedAttachment.fileName)
+        // Verify
+        val attachmentCaptor = argumentCaptor<Attachment>()
+        val attachmentInfoCaptor = argumentCaptor<AttachmentInfo>()
+
+        verify(attachmentFileRepository).storeAttachment(attachmentCaptor.capture())
+        verify(attachmentInfoRepository).save(attachmentInfoCaptor.capture())
+
+        assertThat(attachmentCaptor.firstValue.file.contentEquals(attachmentCreationRequestDTO.file)).isTrue()
+
+        assertThat(attachmentInfoCaptor.firstValue.fileName).isEqualTo(attachmentCreationRequestDTO.fileName)
+        assertThat(attachmentInfoCaptor.firstValue.mimeType).isEqualTo(attachmentCreationRequestDTO.mimeType)
+        assertThat(attachmentInfoCaptor.firstValue.uploadDate).isEqualTo(attachmentCreationRequestDTO.uploadDate)
+        assertThat(attachmentInfoCaptor.firstValue.isTemporary).isEqualTo(true)
+        assertThat(attachmentInfoCaptor.firstValue.userId).isEqualTo(USER_ID)
+        assertThat(attachmentInfoCaptor.firstValue.path).isEqualTo(DEFAULT_PATH)
+
+
+        verifyNoMoreInteractions(attachmentFileRepository, attachmentInfoRepository)
     }
 
     @Test
     fun `throws AttachmentMimeTypeNotSupportedException when mimetype is not valid`() {
+        // Given
+        val attachment = `a request with a not supported attachment`()
+
+        // When, Then
         assertThrows<AttachmentMimeTypeNotSupportedException> {
-            attachmentCreationUseCase.storeAttachment(
-                UNSUPPORTED_ATTACHMENT_DTO
-            )
+            sut.createAttachment(attachment)
         }
+
+        // Verify
+        verifyNoInteractions(attachmentFileRepository, attachmentInfoRepository)
     }
 
-    companion object {
-        private val IMAGE_BYTEARRAY =
-            File("src/test/resources/attachments_test/evidences/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpeg").readBytes()
+    private fun `request with a jpeg as attachment`() = AttachmentCreationRequestDTO(
+            fileName = "some_image.jpeg",
+            mimeType = "image/jpeg",
+            uploadDate = LocalDateTime.now(),
+            file = IMAGE_BYTEARRAY
+    )
 
-        private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
-        private const val IMAGE_UNSUPPORTED_FILENAME = "Evidence001.json"
-        private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
-        private const val IMAGE_UNSUPPORTED_MIMETYPE = "application/json"
-
-        private val SUPPORTED_ATTACHMENT_INFO_ENTITY =
-            createAttachmentInfoEntityWithFilenameAndMimetype(
-                filename = IMAGE_SUPPORTED_FILENAME,
-                mimeType = IMAGE_SUPPORTED_MIMETYPE
+    private fun `a request with a not supported attachment`() =
+            AttachmentCreationRequestDTO(
+                    fileName = "some_json.json",
+                    mimeType = "application/json",
+                    uploadDate = LocalDateTime.now(),
+                    file = SOME_BYTE_ARRAY
             )
 
-        private val SUPPORTED_ATTACHMENT_INFO_DTO = createAttachmentInfoDtoWithFileNameAndMimeType(
-            IMAGE_SUPPORTED_FILENAME,
-            IMAGE_SUPPORTED_MIMETYPE
-        )
-        private val UNSUPPORTED_ATTACHMENT_INFO_DTO = createAttachmentInfoDtoWithFileNameAndMimeType(
-            IMAGE_UNSUPPORTED_FILENAME,
-            IMAGE_UNSUPPORTED_MIMETYPE
-        )
+    companion object {
+        private const val DEFAULT_PATH = "/"
 
-        private val SUPPORTED_ATTACHMENT_DTO = AttachmentDTO(SUPPORTED_ATTACHMENT_INFO_DTO, IMAGE_BYTEARRAY)
-        private val UNSUPPORTED_ATTACHMENT_DTO = AttachmentDTO(UNSUPPORTED_ATTACHMENT_INFO_DTO, IMAGE_BYTEARRAY)
+        private val IMAGE_BYTEARRAY =
+                File("src/test/resources/attachments_test/evidences/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpeg").readBytes()
 
-        private const val userId = 1L
+
+        private val SOME_BYTE_ARRAY = ByteArray(2)
+
+        private const val USER_ID: Long = 1L
         private val authenticationUser =
-            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
+                ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("user")))
     }
 }

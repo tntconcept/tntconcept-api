@@ -3,26 +3,37 @@ package com.autentia.tnt.binnacle.repositories
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import java.util.*
 
+@TestInstance(PER_CLASS)
 internal class AttachmentInfoRepositorySecuredTest {
-    private val internalAttachmentRepository = mock<InternalAttachmentRepository>()
     private val securityService = mock<SecurityService>()
+    private val attachmentInfoDao = mock<AttachmentInfoDao>()
+
     private val attachmentInfoRepositorySecured =
-        AttachmentInfoRepositorySecured(securityService, internalAttachmentRepository)
+            AttachmentInfoRepositorySecured(securityService, attachmentInfoDao)
+
+    @BeforeEach
+    fun setUp() {
+        reset(attachmentInfoDao)
+    }
 
     @Test
     fun `call findById when user is admin`() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.findById(attachmentId)
 
-        verify(internalAttachmentRepository).findById(attachmentId)
+        verify(attachmentInfoDao).findById(attachmentId)
     }
 
     @Test
@@ -30,7 +41,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         attachmentInfoRepositorySecured.findById(attachmentId)
 
-        verify(internalAttachmentRepository).findByIdAndUserId(attachmentId, userId)
+        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
     }
 
     @Test
@@ -38,7 +49,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.save(SUPPORTED_ATTACHMENT_INFO.copy(userId = 3L))
 
-        verify(internalAttachmentRepository).save(SUPPORTED_ATTACHMENT_INFO.copy(userId = 3L))
+        verify(attachmentInfoDao).save(SUPPORTED_ATTACHMENT_INFO_ENTITY.copy(id = SUPPORTED_ATTACHMENT_INFO.id, userId = 3L))
     }
 
     @Test
@@ -46,13 +57,13 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         assertThrows<IllegalArgumentException> {
             attachmentInfoRepositorySecured.save(
-                SUPPORTED_ATTACHMENT_INFO.copy(
-                    userId = 2L
-                )
+                    SUPPORTED_ATTACHMENT_INFO.copy(
+                            userId = 2L
+                    )
             )
         }
 
-        verifyNoInteractions(internalAttachmentRepository)
+        verifyNoInteractions(attachmentInfoDao)
     }
 
     @Test
@@ -60,7 +71,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.isPresent(attachmentId)
 
-        verify(internalAttachmentRepository).findById(attachmentId)
+        verify(attachmentInfoDao).findById(attachmentId)
     }
 
     @Test
@@ -68,7 +79,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         attachmentInfoRepositorySecured.isPresent(attachmentId)
 
-        verify(internalAttachmentRepository).findByIdAndUserId(attachmentId, userId)
+        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
     }
 
     @Test
@@ -76,7 +87,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         val state = true
         attachmentInfoRepositorySecured.updateIsTemporary(attachmentId, state)
 
-        verify(internalAttachmentRepository).updateIsTemporary(attachmentId, state)
+        verify(attachmentInfoDao).updateIsTemporary(attachmentId, state)
     }
 
 
@@ -85,14 +96,21 @@ internal class AttachmentInfoRepositorySecuredTest {
         private const val userId = 1L
         private const val adminUserId = 3L
         private val authenticationAdmin =
-            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin")))
+                ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin")))
         private val authenticationUser = ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
 
         private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
         private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
+
+
         private val SUPPORTED_ATTACHMENT_INFO = createAttachmentInfoEntityWithFilenameAndMimetype(
-            IMAGE_SUPPORTED_FILENAME,
-            IMAGE_SUPPORTED_MIMETYPE
+                IMAGE_SUPPORTED_FILENAME,
+                IMAGE_SUPPORTED_MIMETYPE
+        ).toDomain()
+
+        private val SUPPORTED_ATTACHMENT_INFO_ENTITY = createAttachmentInfoEntityWithFilenameAndMimetype(
+                IMAGE_SUPPORTED_FILENAME,
+                IMAGE_SUPPORTED_MIMETYPE
         )
     }
 

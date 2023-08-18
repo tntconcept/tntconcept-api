@@ -1,7 +1,8 @@
 package com.autentia.tnt.api.binnacle.attachment
 
-import com.autentia.tnt.binnacle.entities.dto.AttachmentDTO
+import com.autentia.tnt.binnacle.entities.dto.AttachmentCreationRequestDTO
 import io.micronaut.http.multipart.CompletedFileUpload
+import java.time.LocalDateTime
 
 data class AttachmentRequest(
     private val attachmentInfoRequest: AttachmentInfoRequest,
@@ -15,10 +16,10 @@ data class AttachmentRequest(
         )
     }
 
-
-    fun toDto() =
-        AttachmentDTO(
-            attachmentInfoRequest.toDto(),
+    fun toAttachmentCreationRequestDTO() = AttachmentCreationRequestDTO(
+            fileName = attachmentInfoRequest.fileName,
+            mimeType = attachmentInfoRequest.mimeType,
+            uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
             attachmentFile
         )
 

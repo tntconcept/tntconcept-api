@@ -42,9 +42,10 @@ internal class AttachmentController(
         attachmentFile: CompletedFileUpload,
     ): HttpResponse<AttachmentCreationResponse> {
         val attachmentRequest = AttachmentRequest.of(attachmentFile)
-        val createdAttachmentDto = attachmentCreationUseCase.storeAttachment(attachmentRequest.toDto())
 
-        return HttpResponse.ok(AttachmentCreationResponse(createdAttachmentDto.id!!.toString()))
+        val createdAttachmentDto = attachmentCreationUseCase.createAttachment(attachmentRequest.toAttachmentCreationRequestDTO())
+
+        return HttpResponse.ok(AttachmentCreationResponse(createdAttachmentDto.id.toString()))
     }
 
     @Error
