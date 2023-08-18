@@ -19,7 +19,8 @@ internal class AttachmentFileRepository(
     private val attachmentsPath = appProperties.files.attachmentsPath
 
     fun getAttachmentContent(attachmentInfo: AttachmentInfo): ByteArray {
-        val filePath = Path.of(attachmentsPath, attachmentInfo.path, "${attachmentInfo.id}.${FilenameUtils.getExtension(attachmentInfo.fileName)}")
+        val fileName = "${attachmentInfo.id}.${FilenameUtils.getExtension(attachmentInfo.fileName)}"
+        val filePath = Path.of(attachmentsPath, attachmentInfo.path, fileName)
 
         if (!Files.exists(filePath)) {
             throw AttachmentNotFoundException("Attachment file does not exist: $filePath")
