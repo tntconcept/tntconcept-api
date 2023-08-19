@@ -51,6 +51,20 @@ class ExpenseRepositorySecuredTest {
     }
 
     @Test
+    fun `find with date range ans status and permission return expense for any user`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
+        expenseRepositorySecured.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0),ApprovalState.PENDING)
+        verify(expenseDao).find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0),ApprovalState.PENDING)
+    }
+
+    @Test
+    fun `find with date range and status and permission return expense for logged user`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
+        expenseRepositorySecured.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0),ApprovalState.PENDING)
+        verify(expenseDao).find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1,ApprovalState.PENDING)
+    }
+
+    @Test
     fun `find with status and permission return expense for any user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
         expenseRepositorySecured.find(ApprovalState.PENDING)

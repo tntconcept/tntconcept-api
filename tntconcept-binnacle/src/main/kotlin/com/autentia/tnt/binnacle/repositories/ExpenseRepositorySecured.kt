@@ -43,6 +43,15 @@ internal class ExpenseRepositorySecured(
         }
     }
 
+    override fun find(startDate: LocalDateTime, endDate: LocalDateTime, status: ApprovalState): List<Expense> {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.canAccessAllExpense()) {
+            expenseDao.find(startDate, endDate, status)
+        } else {
+            expenseDao.find(startDate, endDate, authentication.id(), status)
+        }
+    }
+
     override fun find(userId: Long): List<Expense> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllExpense() || userId == authentication.id()) {
