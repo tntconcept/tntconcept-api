@@ -19,7 +19,7 @@ internal class AttachmentFileRepository(
     private val attachmentsPath = appProperties.files.attachmentsPath
 
     fun getAttachmentContent(attachmentInfo: AttachmentInfo): ByteArray {
-        val fileName = "${attachmentInfo.id}.${FilenameUtils.getExtension(attachmentInfo.fileName)}"
+        val fileName = this.getFileName(attachmentInfo)
         val filePath = Path.of(attachmentsPath, attachmentInfo.path, fileName)
 
         if (!Files.exists(filePath)) {
@@ -33,7 +33,7 @@ internal class AttachmentFileRepository(
         val extension = FilenameUtils.getExtension(attachment.info.fileName)
         require(isValidExtension(extension))
 
-        val fileName = "${attachment.info.id}.$extension"
+        val fileName = this.getFileName(attachment.info)
         val pathFile = Path.of(attachmentsPath, attachment.info.path, fileName)
         val attachmentFile = File(pathFile.toUri())
 
@@ -41,5 +41,7 @@ internal class AttachmentFileRepository(
     }
 
     private fun isValidExtension(extension: String?) = extension != null && extension != ""
+
+    private fun getFileName(attachmentInfo: AttachmentInfo) = "${attachmentInfo.id}.${FilenameUtils.getExtension(attachmentInfo.fileName)}"
 
 }
