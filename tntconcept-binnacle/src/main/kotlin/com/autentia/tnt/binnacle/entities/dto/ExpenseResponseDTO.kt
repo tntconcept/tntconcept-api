@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.entities.dto
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-data class ExpenseResponseDTO (
+data class ExpenseResponseDTO(
     val id: Long,
     val date: LocalDateTime,
     val description: String,
@@ -11,5 +11,5 @@ data class ExpenseResponseDTO (
     val userId:Long,
     val state: String,
     val type: String,
-    val hasAttachments: Boolean
+    val documents: List<String>
 )

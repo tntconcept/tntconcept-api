@@ -297,7 +297,7 @@ internal class ExpenseControllerIT {
         private val EXPENSE_RESPONSE_DTO = ExpenseResponseDTO(
             1,
             LocalDateTime.of(2018, 1, 10, 8, 0), "EXPENSE",
-            BigDecimal(10.00), 1, ApprovalState.PENDING.name,ExpenseType.MARKETING.name,false
+            BigDecimal(10.00), 1, ApprovalState.PENDING.name,ExpenseType.MARKETING.name, listOf()
         )
 
         private val EXPENSE_RESPONSE = ExpenseResponse.from(EXPENSE_RESPONSE_DTO)

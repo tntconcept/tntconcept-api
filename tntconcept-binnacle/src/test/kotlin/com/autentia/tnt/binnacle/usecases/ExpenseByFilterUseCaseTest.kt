@@ -190,7 +190,7 @@ internal class ExpenseByFilterUseCaseTest {
         Assertions.assertEquals(1, expenses[0].userId)
         Assertions.assertEquals("expense", expenses[0].description)
         Assertions.assertEquals(BigDecimal(10.0), expenses[0].amount)
-        Assertions.assertEquals(true, expenses[0].hasAttachments)
+        Assertions.assertEquals(1, expenses[0].documents.size)
         Assertions.assertEquals("PENDING", expenses[0].state)
     }
 

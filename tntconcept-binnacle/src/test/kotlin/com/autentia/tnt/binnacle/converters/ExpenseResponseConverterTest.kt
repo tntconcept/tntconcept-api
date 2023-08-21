@@ -46,7 +46,7 @@ class ExpenseResponseConverterTest {
         assertEquals(1L,dto.userId)
         assertEquals("PENDING",dto.state)
         assertEquals("MARKETING",dto.type)
-        assertEquals(true,dto.hasAttachments)
+        assertEquals(1,dto.documents.size)
 
     }
 }

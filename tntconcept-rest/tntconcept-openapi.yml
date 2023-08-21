@@ -1131,7 +1131,7 @@ components:
       - amount
       - date
       - description
-      - hasAttachments
+      - documents
       - id
       - state
       - type
@@ -1155,8 +1155,10 @@ components:
           type: string
         type:
           type: string
-        hasAttachments:
-          type: boolean
+        documents:
+          type: array
+          items:
+            type: string
     HolidayDetailsResponse:
       required:
       - date

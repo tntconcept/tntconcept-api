@@ -12,7 +12,7 @@ data class ExpenseResponse(
     val userId: Long,
     val state: String,
     val type: String,
-    val hasAttachments: Boolean
+    val documents: List<String>
 ) {
     companion object {
         fun from(expenseResponseDTO: ExpenseResponseDTO) = ExpenseResponse(
@@ -23,7 +23,7 @@ data class ExpenseResponse(
             expenseResponseDTO.userId,
             expenseResponseDTO.state,
             expenseResponseDTO.type,
-            expenseResponseDTO.hasAttachments
+            expenseResponseDTO.documents
         )
     }
 }
