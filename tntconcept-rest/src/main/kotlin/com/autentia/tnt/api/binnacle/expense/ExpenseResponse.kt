@@ -6,22 +6,24 @@ import java.time.LocalDateTime
 
 data class ExpenseResponse(
     val id: Long,
-    val userId: Long,
     val date: LocalDateTime,
     val description: String,
     val amount: BigDecimal,
-    val hasAttachments: Boolean,
-    val state: String
+    val userId: Long,
+    val state: String,
+    val type: String,
+    val hasAttachments: Boolean
 ) {
     companion object {
         fun from(expenseResponseDTO: ExpenseResponseDTO) = ExpenseResponse(
             expenseResponseDTO.id,
-            expenseResponseDTO.userId,
             expenseResponseDTO.date,
             expenseResponseDTO.description,
             expenseResponseDTO.amount,
-            expenseResponseDTO.hasAttachments,
-            expenseResponseDTO.state
+            expenseResponseDTO.userId,
+            expenseResponseDTO.state,
+            expenseResponseDTO.type,
+            expenseResponseDTO.hasAttachments
         )
     }
 }

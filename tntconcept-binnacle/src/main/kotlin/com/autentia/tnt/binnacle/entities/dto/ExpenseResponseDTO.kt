@@ -5,10 +5,11 @@ import java.time.LocalDateTime
 
 data class ExpenseResponseDTO (
     val id: Long,
-    val userId:Long,
     val date: LocalDateTime,
     val description: String,
     val amount: BigDecimal,
-    val hasAttachments: Boolean,
-    val state: String
+    val userId:Long,
+    val state: String,
+    val type: String,
+    val hasAttachments: Boolean
 )

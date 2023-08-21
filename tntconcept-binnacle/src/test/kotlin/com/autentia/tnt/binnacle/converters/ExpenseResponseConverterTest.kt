@@ -39,11 +39,14 @@ class ExpenseResponseConverterTest {
             )
         )
 
+        assertEquals(1L,dto.id)
         assertEquals(LocalDateTime.of(2023, 8, 23, 0, 0, 0),dto.date)
         assertEquals("expense",dto.description)
         assertEquals(BigDecimal(10.0),dto.amount)
-        assertEquals(true,dto.hasAttachments)
+        assertEquals(1L,dto.userId)
         assertEquals("PENDING",dto.state)
+        assertEquals("MARKETING",dto.type)
+        assertEquals(true,dto.hasAttachments)
 
     }
 }

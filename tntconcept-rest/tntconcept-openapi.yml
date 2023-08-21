@@ -1134,13 +1134,11 @@ components:
       - hasAttachments
       - id
       - state
+      - type
       - userId
       type: object
       properties:
         id:
-          type: integer
-          format: int64
-        userId:
           type: integer
           format: int64
         date:
@@ -1150,10 +1148,15 @@ components:
           type: string
         amount:
           type: number
-        hasAttachments:
-          type: boolean
+        userId:
+          type: integer
+          format: int64
         state:
           type: string
+        type:
+          type: string
+        hasAttachments:
+          type: boolean
     HolidayDetailsResponse:
       required:
       - date

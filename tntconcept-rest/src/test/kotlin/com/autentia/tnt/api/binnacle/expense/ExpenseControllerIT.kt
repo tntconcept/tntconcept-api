@@ -3,6 +3,7 @@ package com.autentia.tnt.api.binnacle.expense
 import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.api.binnacle.toJson
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.ExpenseType
 import com.autentia.tnt.binnacle.entities.dto.ExpenseFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ExpenseResponseDTO
 import com.autentia.tnt.binnacle.usecases.ExpenseByFilterUseCase
@@ -294,9 +295,9 @@ internal class ExpenseControllerIT {
         private val END_DATE = LocalDateTime.of(2018, 1, 10, 12, 0)
 
         private val EXPENSE_RESPONSE_DTO = ExpenseResponseDTO(
-            1,1,
+            1,
             LocalDateTime.of(2018, 1, 10, 8, 0), "EXPENSE",
-            BigDecimal(10.00), false, ApprovalState.PENDING.name
+            BigDecimal(10.00), 1, ApprovalState.PENDING.name,ExpenseType.MARKETING.name,false
         )
 
         private val EXPENSE_RESPONSE = ExpenseResponse.from(EXPENSE_RESPONSE_DTO)
