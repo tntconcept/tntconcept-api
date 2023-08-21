@@ -598,7 +598,7 @@ internal class ActivityUpdateUseCaseTest {
 
     private fun assertThatUpdatedActivityIsEquivalent(result: ActivityResponseDTO, request: ActivityRequestDTO) {
 
-        val evidences = request.evidences.map { attachmentUrl.plus(it) }
+        val evidences = request.evidences.map { it.toString() }
 
         assertThat(result.interval.start).isEqualTo(request.interval.start)
         assertThat(result.interval.end).isEqualTo(request.interval.end)
@@ -628,8 +628,6 @@ internal class ActivityUpdateUseCaseTest {
                 false,
                 PROJECT_ROLE.id,
         )
-
-        private const val attachmentUrl =  "/api/attachment/"
     }
 
 }

@@ -16,7 +16,7 @@ class ActivityResponseConverter(
     fun toActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = ActivityResponseDTO(
             billable = activity.billable,
             description = activity.description,
-            evidences = activityEvidenceResponseConverter.getEvidencesUrls(activity),
+            evidences = activityEvidenceResponseConverter.getEvidencesUUIDs(activity),
             id = activity.id!!,
             projectRoleId = activity.projectRole.id,
             interval = activityIntervalResponseConverter.toIntervalResponseDTO(activity),
@@ -40,7 +40,7 @@ class ActivityResponseConverter(
             project = activity.projectRole.project,
             projectRole = activity.projectRole,
             duration = activity.duration,
-            evidences =  activityEvidenceResponseConverter.getEvidencesUrls(activity),
+            evidences =  activityEvidenceResponseConverter.getEvidencesUUIDs(activity),
             approval = Approval(
                     activity.approvalState,
                     activity.approvedByUserId,

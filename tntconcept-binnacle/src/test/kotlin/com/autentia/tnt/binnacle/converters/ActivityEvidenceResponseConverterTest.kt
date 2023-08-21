@@ -10,57 +10,53 @@ class ActivityEvidenceResponseConverterTest {
     private val activityEvidenceResponseConverter = ActivityEvidenceResponseConverter()
 
     @Test
-    fun `given entity Activity should return domain the evidences urls`() {
+    fun `given entity Activity should return domain the evidences UUID's`() {
         val attachmentInfo1 = createAttachmentInfoEntity()
         val attachmentInfo2 = createAttachmentInfoEntity()
         val evidences = mutableListOf(attachmentInfo1, attachmentInfo2)
 
-        val expectedUrl1 = ATTACHMENT_API_PREFIX + attachmentInfo1.id
-        val expectedUrl2 = ATTACHMENT_API_PREFIX + attachmentInfo2.id
+        val expectedUrl1 =  attachmentInfo1.id
+        val expectedUrl2 =  attachmentInfo2.id
 
         val activityWithEvidences = createActivity(evidences = evidences)
-        val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUrls(activityWithEvidences)
+        val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUUIDs(activityWithEvidences)
         assertTrue(evidencesUrls.isNotEmpty())
-        assertTrue(evidencesUrls.contains(expectedUrl1))
-        assertTrue(evidencesUrls.contains(expectedUrl2))
+        assertTrue(evidencesUrls.contains(expectedUrl1.toString()))
+        assertTrue(evidencesUrls.contains(expectedUrl2.toString()))
 
     }
 
     @Test
-    fun `given entity Activity without evidences should return empty evidences urls`() {
+    fun `given entity Activity without evidences should return empty evidences UUID's`() {
         val activityWithoutEvidence = createActivity().toDomain()
-        val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUrls(activityWithoutEvidence)
+        val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUUIDs(activityWithoutEvidence)
         assertTrue(evidencesUrls.isEmpty())
     }
 
 
     @Test
-    fun `given domain Activity should return domain the evidences urls`() {
+    fun `given domain Activity should return domain the evidences UUID's`() {
         val attachmentInfo1 = createAttachmentInfoEntity()
         val attachmentInfo2 = createAttachmentInfoEntity()
         val evidences = mutableListOf(attachmentInfo1, attachmentInfo2)
 
-        val expectedUrl1 = ATTACHMENT_API_PREFIX + attachmentInfo1.id
-        val expectedUrl2 = ATTACHMENT_API_PREFIX + attachmentInfo2.id
+        val expectedUrl1 = attachmentInfo1.id
+        val expectedUrl2 = attachmentInfo2.id
 
         val activityWithEvidences = createActivity(evidences = evidences).toDomain()
-        val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUrls(activityWithEvidences)
+        val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUUIDs(activityWithEvidences)
         assertTrue(evidencesUrls.isNotEmpty())
-        assertTrue(evidencesUrls.contains(expectedUrl1))
-        assertTrue(evidencesUrls.contains(expectedUrl2))
+        assertTrue(evidencesUrls.contains(expectedUrl1.toString()))
+        assertTrue(evidencesUrls.contains(expectedUrl2.toString()))
 
     }
 
     @Test
-    fun `given domain Activity without evidences should return empty evidences urls`() {
+    fun `given domain Activity without evidences should return empty evidences UUID's`() {
         val activityWithoutEvidence = createActivity().toDomain()
-        val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUrls(activityWithoutEvidence)
+        val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUUIDs(activityWithoutEvidence)
         assertTrue(evidencesUrls.isEmpty())
     }
 
-
-    companion object {
-        private const val ATTACHMENT_API_PREFIX = "/api/attachment/"
-    }
 
 }

@@ -252,7 +252,7 @@ internal class ActivityCreationUseCaseTest {
         // Then
         verify(attachmentInfoService).markAttachmentsAsNonTemporary(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_API_PREFIX.plus(ATTACHMENT_INFO.id)), description = activityEntity.description)
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_INFO.id.toString()), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
         Assertions.assertThat(activityCreated)
@@ -336,7 +336,7 @@ internal class ActivityCreationUseCaseTest {
         // Then
         verify(attachmentInfoService).markAttachmentsAsNonTemporary(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
-        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_API_PREFIX.plus(ATTACHMENT_INFO.id)), description = activityEntity.description)
+        val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_INFO.id.toString()), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
         Assertions.assertThat(activityCreated)
@@ -368,8 +368,6 @@ internal class ActivityCreationUseCaseTest {
         private val ATTACHMENT_ID_2 = UUID.randomUUID()
 
         private val TODAY = Date()
-
-        private val ATTACHMENT_API_PREFIX = "/api/attachment/"
 
         private val ATTACHMENT_INFO = createAttachmentInfoEntity()
 
