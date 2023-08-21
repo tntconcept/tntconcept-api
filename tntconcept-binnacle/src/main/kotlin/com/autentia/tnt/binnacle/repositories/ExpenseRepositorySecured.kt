@@ -43,6 +43,13 @@ internal class ExpenseRepositorySecured(
         }
     }
 
+    override fun find(status: ApprovalState,userId: Long): List<Expense> {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.canAccessAllExpense() || userId == authentication.id()) {
+            expenseDao.find(status, userId)
+        } else throw UserPermissionException("the received user does not match the identified user")
+    }
+
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, status: ApprovalState): List<Expense> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllExpense()) {

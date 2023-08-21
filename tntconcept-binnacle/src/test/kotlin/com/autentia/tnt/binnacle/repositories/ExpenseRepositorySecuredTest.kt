@@ -23,70 +23,97 @@ class ExpenseRepositorySecuredTest {
     private val expenseRepositorySecured = ExpenseRepositorySecured(expenseDao, securityService)
 
     @Test
-    fun `find with id filter and permission return expense for any user`() {
+    fun `find with id filter and permission access all return expense for all user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
         expenseRepositorySecured.findById(1)
         verify(expenseDao).findById(1)
     }
 
     @Test
-    fun `find with id filter and without permission return expense for logged user`() {
+    fun `find with id filter and without permission access all return expense for logged user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         expenseRepositorySecured.findById(1)
         verify(expenseDao).find(1, 1)
     }
 
     @Test
-    fun `find with date range and permission return expense for any user`() {
+    fun `find with date range and permission access all return expense for all user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
         expenseRepositorySecured.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0))
         verify(expenseDao).find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0))
     }
 
     @Test
-    fun `find with date range and permission return expense for logged user`() {
+    fun `find with date range and without permission access all return expense for logged user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         expenseRepositorySecured.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0))
         verify(expenseDao).find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1)
     }
 
     @Test
-    fun `find with date range ans status and permission return expense for any user`() {
+    fun `find with date range ans status and permission access all return expense for all user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
         expenseRepositorySecured.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0),ApprovalState.PENDING)
         verify(expenseDao).find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0),ApprovalState.PENDING)
     }
 
     @Test
-    fun `find with date range and status and permission return expense for logged user`() {
+    fun `find with date range and status and qithout permission access all return expense for logged user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         expenseRepositorySecured.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0),ApprovalState.PENDING)
         verify(expenseDao).find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1,ApprovalState.PENDING)
     }
 
     @Test
-    fun `find with status and permission return expense for any user`() {
+    fun `find with status and permission access all return expense for all user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
         expenseRepositorySecured.find(ApprovalState.PENDING)
         verify(expenseDao).find(ApprovalState.PENDING)
     }
 
+
     @Test
-    fun `find with status and permission return expense for logged user`() {
+    fun `find with status and user with permission access all return all expense for user`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
+        expenseRepositorySecured.find(ApprovalState.PENDING,1)
+        verify(expenseDao).find(ApprovalState.PENDING,1)
+    }
+
+    @Test
+    fun `find with status and user without permission access all return all expense for user`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
+        expenseRepositorySecured.find(ApprovalState.PENDING,1)
+        verify(expenseDao).find(ApprovalState.PENDING,1)
+    }
+
+    @Test
+    fun `find with status and user without permission access and without logged return UserPermissionException`() {
+        whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
+        assertThrows(UserPermissionException::class.java) {
+            expenseRepositorySecured.find(ApprovalState.PENDING,2)
+        }
+        verify(expenseDao, times(0)).find(ApprovalState.PENDING,2)
+    }
+
+
+
+
+    @Test
+    fun `find with status and without permission access all return expense for logged user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         expenseRepositorySecured.find(ApprovalState.PENDING)
         verify(expenseDao).find(ApprovalState.PENDING, 1)
     }
 
     @Test
-    fun `find with userId and permission return all expense for user`() {
+    fun `find with userId and permission access all return all expense for user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
         expenseRepositorySecured.find(1)
         verify(expenseDao).find(1)
     }
 
     @Test
-    fun `find with userId and without permission return all expense for logged user`() {
+    fun `find with userId and without permission access all return all expense for logged user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         expenseRepositorySecured.find(1)
         verify(expenseDao).find(1)
@@ -103,21 +130,21 @@ class ExpenseRepositorySecuredTest {
 
 
     @Test
-    fun `find with date range and userId and permission return all expense for user`() {
+    fun `find with date range and userId and permission access all return all expense for user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
         expenseRepositorySecured.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1)
         verify(expenseDao).find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1)
     }
 
     @Test
-    fun `find with date range and userId and without permission return all expense for logged user`() {
+    fun `find with date range and userId and without permission access all return all expense for logged user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         expenseRepositorySecured.find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1)
         verify(expenseDao).find(LocalDateTime.of(2023, 8, 16, 0, 0, 0), LocalDateTime.of(2023, 8, 18, 0, 0, 0), 1)
     }
 
     @Test
-    fun `find with date range and userId and without permission and without logged return UserPermissionException`() {
+    fun `find with date range and userId and without permission access all and without logged return UserPermissionException`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         assertThrows(UserPermissionException::class.java) {
             expenseRepositorySecured.find(
@@ -134,7 +161,7 @@ class ExpenseRepositorySecuredTest {
     }
 
     @Test
-    fun `find with date range and userId and status and permission return all expense for user`() {
+    fun `find with date range and userId and status and permission access all return all expense for user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(adminRolesAuth))
         expenseRepositorySecured.find(
             LocalDateTime.of(2023, 8, 16, 0, 0, 0),
@@ -152,7 +179,7 @@ class ExpenseRepositorySecuredTest {
 
 
     @Test
-    fun `find with date range and userId and status and without permission return all expense for logged user`() {
+    fun `find with date range and userId and status and without permission access all return all expense for logged user`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         expenseRepositorySecured.find(
             LocalDateTime.of(2023, 8, 16, 0, 0, 0),
@@ -169,7 +196,7 @@ class ExpenseRepositorySecuredTest {
     }
 
     @Test
-    fun `find with date range and userId and status and without permission and without logged return UserPermissionException`() {
+    fun `find with date range and userId and status and without permission access all and without logged return UserPermissionException`() {
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
         assertThrows(UserPermissionException::class.java) {
             expenseRepositorySecured.find(
@@ -188,7 +215,7 @@ class ExpenseRepositorySecuredTest {
     }
 
     @Test
-    fun `save with permission return persist new expense`() {
+    fun `save with permission access all return persist new expense`() {
         val expenseToSave = Expense(
             null,
             1,
@@ -207,7 +234,7 @@ class ExpenseRepositorySecuredTest {
     }
 
     @Test
-    fun `save without permission and logged user return persist new expense`() {
+    fun `save without permission access all and logged user return persist new expense`() {
         val expenseToSave = Expense(
             null,
             1,
@@ -226,7 +253,7 @@ class ExpenseRepositorySecuredTest {
     }
 
     @Test
-    fun `save without permission and without logged user return UserPermissionException`() {
+    fun `save without permission access all and without logged user return UserPermissionException`() {
         val expenseToSave = Expense(
             null,
             10,
@@ -246,7 +273,7 @@ class ExpenseRepositorySecuredTest {
         verify(expenseDao, times(0)).save(expenseToSave)
     }
     @Test
-    fun `update with permission return update expense`() {
+    fun `update with permission access all return update expense`() {
         val expenseToUpdate = Expense(
             1,
             1,
@@ -264,7 +291,7 @@ class ExpenseRepositorySecuredTest {
         verify(expenseDao).update(expenseToUpdate)
     }
     @Test
-    fun `update without permission and logged user return updated expense`() {
+    fun `update without permission access all and logged user return updated expense`() {
         val expenseToUpdate = Expense(
             1,
             1,
@@ -281,7 +308,7 @@ class ExpenseRepositorySecuredTest {
         verify(expenseDao).update(expenseToUpdate)
     }
     @Test
-    fun `update without permission and without logged user return UserPermissionException`() {
+    fun `update without permission access all and without logged user return UserPermissionException`() {
         val expenseToUpdate = Expense(
             1,
             10,
@@ -303,7 +330,7 @@ class ExpenseRepositorySecuredTest {
 
 
     @Test
-    fun `delete with permission remove a exist expense`() {
+    fun `delete with permission access all remove a exist expense`() {
         val expenseToDelete = Expense(
             1,
             1,
@@ -322,7 +349,7 @@ class ExpenseRepositorySecuredTest {
         verify(expenseDao).deleteById(expenseToDelete.id)
     }
     @Test
-    fun `delete without permission and logged user remove a exist expense`() {
+    fun `delete without permission access all and logged user remove a exist expense`() {
         val expenseToDelete = Expense(
             1,
             1,
@@ -340,7 +367,7 @@ class ExpenseRepositorySecuredTest {
         verify(expenseDao).deleteById(expenseToDelete.id)
     }
     @Test
-    fun `delete without permission and without logged user return UserPermissionException`() {
+    fun `delete without permission access all and without logged user return UserPermissionException`() {
         val expenseToDelete = Expense(
             1,
             10,

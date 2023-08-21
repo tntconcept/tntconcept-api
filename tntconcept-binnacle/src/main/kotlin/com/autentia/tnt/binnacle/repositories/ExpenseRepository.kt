@@ -11,6 +11,7 @@ internal interface ExpenseRepository {
     fun find(status: ApprovalState): List<Expense>
     fun find(startDate: LocalDateTime, endDate: LocalDateTime,status: ApprovalState): List<Expense>
     fun find(userId: Long): List<Expense>
+    fun find(status: ApprovalState,userId: Long): List<Expense>
     fun find(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Expense>
     fun find(
         startDate: LocalDateTime,

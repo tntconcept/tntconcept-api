@@ -88,6 +88,104 @@ internal class ExpenseControllerIT {
         Assertions.assertEquals(expenses, response.body.get())
     }
 
+
+    @Test
+    fun `get all expenses by user `() {
+        val expenseResponseDTOs = listOf(EXPENSE_RESPONSE_DTO)
+        val expenses = listOf(EXPENSE_RESPONSE)
+
+        whenever(
+            expenseByFilterUseCase.getExpenses(
+                ExpenseFilterDTO(
+                    userId = 1
+                )
+            )
+        ).thenReturn(expenseResponseDTOs)
+
+        val response = client.exchangeList<ExpenseResponse>(
+            HttpRequest.GET(
+                "/api/expense?" + "userId=1"
+            ),
+        )
+
+        Assertions.assertEquals(HttpStatus.OK, response.status)
+        Assertions.assertEquals(expenses, response.body.get())
+    }
+
+    @Test
+    fun `get all expenses between the start and end date and user`() {
+
+        val expenseResponseDTOs = listOf(EXPENSE_RESPONSE_DTO)
+        val expenses = listOf(EXPENSE_RESPONSE)
+
+        whenever(
+            expenseByFilterUseCase.getExpenses(
+                ExpenseFilterDTO(
+                    startDate = START_DATE, endDate = END_DATE, userId = 1
+                )
+            )
+        ).thenReturn(expenseResponseDTOs)
+
+        val response = client.exchangeList<ExpenseResponse>(
+            HttpRequest.GET(
+                "/api/expense?" + "startDate=${START_DATE.toJson()}" + "&endDate=${END_DATE.toJson()}" + "&userId=1"
+            ),
+        )
+
+        Assertions.assertEquals(HttpStatus.OK, response.status)
+        Assertions.assertEquals(expenses, response.body.get())
+
+    }
+
+    @Test
+    fun `get all expenses by status and user `() {
+        val expenseResponseDTOs = listOf(EXPENSE_RESPONSE_DTO)
+        val expenses = listOf(EXPENSE_RESPONSE)
+
+        whenever(
+            expenseByFilterUseCase.getExpenses(
+                ExpenseFilterDTO(
+                    state = ApprovalState.PENDING,
+                    userId = 1
+                )
+            )
+        ).thenReturn(expenseResponseDTOs)
+
+        val response = client.exchangeList<ExpenseResponse>(
+            HttpRequest.GET(
+                "/api/expense?" + "state=${ApprovalState.PENDING}" + "&userId=1"
+            ),
+        )
+
+        Assertions.assertEquals(HttpStatus.OK, response.status)
+        Assertions.assertEquals(expenses, response.body.get())
+    }
+
+    @Test
+    fun `get all expenses between the start and end date and user ans state`() {
+
+        val expenseResponseDTOs = listOf(EXPENSE_RESPONSE_DTO)
+        val expenses = listOf(EXPENSE_RESPONSE)
+
+        whenever(
+            expenseByFilterUseCase.getExpenses(
+                ExpenseFilterDTO(
+                    startDate = START_DATE, endDate = END_DATE, userId = 1, state = ApprovalState.PENDING
+                )
+            )
+        ).thenReturn(expenseResponseDTOs)
+
+        val response = client.exchangeList<ExpenseResponse>(
+            HttpRequest.GET(
+                "/api/expense?" + "startDate=${START_DATE.toJson()}" + "&endDate=${END_DATE.toJson()}" + "&userId=1" + "&state=${ApprovalState.PENDING}"
+            ),
+        )
+
+        Assertions.assertEquals(HttpStatus.OK, response.status)
+        Assertions.assertEquals(expenses, response.body.get())
+
+    }
+
     @Test
     fun `get all expenses by status and between the start and end date`() {
         val expenseResponseDTOs = listOf(EXPENSE_RESPONSE_DTO)

@@ -18,6 +18,8 @@ data class ExpenseFilterRequest(
     val endDate: LocalDateTime? = null,
     @Pattern(regexp = "PENDING|ACCEPTED", flags = [Pattern.Flag.CASE_INSENSITIVE])
     var state: ApprovalState? = null,
+
+    val userId: Long? = null,
 ) {
-    fun toDto(): ExpenseFilterDTO = ExpenseFilterDTO(startDate, endDate, state)
+    fun toDto(): ExpenseFilterDTO = ExpenseFilterDTO(startDate, endDate, state, userId)
 }

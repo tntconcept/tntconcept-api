@@ -1122,6 +1122,10 @@ components:
           nullable: true
           allOf:
           - $ref: '#/components/schemas/ApprovalState'
+        userId:
+          type: integer
+          format: int64
+          nullable: true
     ExpenseResponse:
       required:
       - amount

@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.entities.Expense
 import com.autentia.tnt.binnacle.entities.ExpenseType
 import com.autentia.tnt.binnacle.entities.dto.ExpenseFilterDTO
+import com.autentia.tnt.binnacle.entities.dto.ExpenseResponseDTO
 import com.autentia.tnt.binnacle.repositories.ExpenseRepository
 import org.junit.Assert
 import org.junit.jupiter.api.Assertions
@@ -30,6 +31,7 @@ internal class ExpenseByFilterUseCaseTest {
             expenseRepository.find(
                 LocalDateTime.of(2023, 8, 23, 0, 0, 0),
                 LocalDateTime.of(2023, 8, 31, 0, 0, 0),
+                1,
                 ApprovalState.PENDING
             )
         ).thenReturn(listOf(expenseExpected))
@@ -39,14 +41,68 @@ internal class ExpenseByFilterUseCaseTest {
         verify(expenseRepository).find(
             LocalDateTime.of(2023, 8, 23, 0, 0, 0),
             LocalDateTime.of(2023, 8, 31, 0, 0, 0),
+            1,
             ApprovalState.PENDING
         )
 
-        Assertions.assertEquals(LocalDateTime.of(2023, 8, 23, 0, 0, 0), expenses[0].date)
-        Assertions.assertEquals("expense", expenses[0].description)
-        Assertions.assertEquals(BigDecimal(10.0), expenses[0].amount)
-        Assertions.assertEquals(true, expenses[0].hasAttachments)
-        Assertions.assertEquals("PENDING", expenses[0].state)
+        assertExpense(expenses)
+    }
+
+    @Test
+    fun `find expenses with all filters except state return data`() {
+        whenever(
+            expenseRepository.find(
+                LocalDateTime.of(2023, 8, 23, 0, 0, 0),
+                LocalDateTime.of(2023, 8, 31, 0, 0, 0),
+                1
+            )
+        ).thenReturn(listOf(expenseExpected))
+
+        val expenses = expenseByFilterUseCase.getExpenses(filterWithOutState)
+
+        verify(expenseRepository).find(
+            LocalDateTime.of(2023, 8, 23, 0, 0, 0),
+            LocalDateTime.of(2023, 8, 31, 0, 0, 0),
+            1
+        )
+
+        assertExpense(expenses)
+    }
+
+    @Test
+    fun `find expenses with all filters except date range return data`() {
+        whenever(
+            expenseRepository.find(
+                ApprovalState.PENDING,
+                1
+            )
+        ).thenReturn(listOf(expenseExpected))
+
+        val expenses = expenseByFilterUseCase.getExpenses(filterWithOutDateRange)
+
+        verify(expenseRepository).find(
+            ApprovalState.PENDING,
+            1
+        )
+
+        assertExpense(expenses)
+    }
+
+    @Test
+    fun `find expenses with all filters except date range and state return data`() {
+        whenever(
+            expenseRepository.find(
+                1
+            )
+        ).thenReturn(listOf(expenseExpected))
+
+        val expenses = expenseByFilterUseCase.getExpenses(filterWithOutDateRangeAndState)
+
+        verify(expenseRepository).find(
+            1
+        )
+
+        assertExpense(expenses)
     }
 
     @Test
@@ -65,11 +121,28 @@ internal class ExpenseByFilterUseCaseTest {
             LocalDateTime.of(2023, 8, 31, 0, 0, 0)
         )
 
-        Assertions.assertEquals(LocalDateTime.of(2023, 8, 23, 0, 0, 0), expenses[0].date)
-        Assertions.assertEquals("expense", expenses[0].description)
-        Assertions.assertEquals(BigDecimal(10.0), expenses[0].amount)
-        Assertions.assertEquals(true, expenses[0].hasAttachments)
-        Assertions.assertEquals("PENDING", expenses[0].state)
+        assertExpense(expenses)
+    }
+
+    @Test
+    fun `find expenses with date range  and state filters return data`() {
+        whenever(
+            expenseRepository.find(
+                LocalDateTime.of(2023, 8, 23, 0, 0, 0),
+                LocalDateTime.of(2023, 8, 31, 0, 0, 0),
+                ApprovalState.PENDING
+            )
+        ).thenReturn(listOf(expenseExpected))
+
+        val expenses = expenseByFilterUseCase.getExpenses(filterDateRangeAndState)
+
+        verify(expenseRepository).find(
+            LocalDateTime.of(2023, 8, 23, 0, 0, 0),
+            LocalDateTime.of(2023, 8, 31, 0, 0, 0),
+            ApprovalState.PENDING
+        )
+
+        assertExpense(expenses)
     }
 
     @Test
@@ -86,11 +159,7 @@ internal class ExpenseByFilterUseCaseTest {
             ApprovalState.PENDING
         )
 
-        Assertions.assertEquals(LocalDateTime.of(2023, 8, 23, 0, 0, 0), expenses[0].date)
-        Assertions.assertEquals("expense", expenses[0].description)
-        Assertions.assertEquals(BigDecimal(10.0), expenses[0].amount)
-        Assertions.assertEquals(true, expenses[0].hasAttachments)
-        Assertions.assertEquals("PENDING", expenses[0].state)
+        assertExpense(expenses)
     }
 
     @Test
@@ -113,6 +182,16 @@ internal class ExpenseByFilterUseCaseTest {
         verify(expenseRepository, times(0)).find(
             ApprovalState.PENDING
         )
+    }
+
+
+    private fun assertExpense(expenses: List<ExpenseResponseDTO>) {
+        Assertions.assertEquals(LocalDateTime.of(2023, 8, 23, 0, 0, 0), expenses[0].date)
+        Assertions.assertEquals(1, expenses[0].userId)
+        Assertions.assertEquals("expense", expenses[0].description)
+        Assertions.assertEquals(BigDecimal(10.0), expenses[0].amount)
+        Assertions.assertEquals(true, expenses[0].hasAttachments)
+        Assertions.assertEquals("PENDING", expenses[0].state)
     }
 
     companion object {
@@ -140,12 +219,36 @@ internal class ExpenseByFilterUseCaseTest {
         private val filterComplete = ExpenseFilterDTO(
             LocalDateTime.of(2023, 8, 23, 0, 0, 0),
             LocalDateTime.of(2023, 8, 31, 0, 0, 0),
-            ApprovalState.PENDING
+            ApprovalState.PENDING,1
+        )
+
+        private val filterWithOutState = ExpenseFilterDTO(
+            LocalDateTime.of(2023, 8, 23, 0, 0, 0),
+            LocalDateTime.of(2023, 8, 31, 0, 0, 0),
+            null,1
+        )
+
+        private val filterWithOutDateRange = ExpenseFilterDTO(
+            null,
+            null,
+            ApprovalState.PENDING,1
+        )
+
+        private val filterWithOutDateRangeAndState = ExpenseFilterDTO(
+            null,
+            null,
+            null,1
         )
 
         private val filterDateRange = ExpenseFilterDTO(
             LocalDateTime.of(2023, 8, 23, 0, 0, 0),
             LocalDateTime.of(2023, 8, 31, 0, 0, 0)
+        )
+
+        private val filterDateRangeAndState = ExpenseFilterDTO(
+            LocalDateTime.of(2023, 8, 23, 0, 0, 0),
+            LocalDateTime.of(2023, 8, 31, 0, 0, 0),
+            ApprovalState.PENDING
         )
 
         private val filterState = ExpenseFilterDTO(

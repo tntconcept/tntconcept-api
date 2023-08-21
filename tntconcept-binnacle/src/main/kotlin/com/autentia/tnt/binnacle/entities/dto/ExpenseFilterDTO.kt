@@ -10,4 +10,5 @@ data class ExpenseFilterDTO (
     val startDate: LocalDateTime? = null,
     val endDate: LocalDateTime? = null,
     var state: ApprovalState? = null,
+    val userId: Long? = null,
 )

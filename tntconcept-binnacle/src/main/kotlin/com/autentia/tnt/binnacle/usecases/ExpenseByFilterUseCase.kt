@@ -24,6 +24,27 @@ class ExpenseByFilterUseCase internal constructor(
 
     private fun filterExpenses(expenseFilter: ExpenseFilterDTO): List<Expense> {
         return when {
+            expenseFilter.userId != null -> {
+                if (expenseFilter.startDate != null && expenseFilter.endDate != null) {
+                    if (expenseFilter.state != null) {
+                        expenseRepository.find(
+                            expenseFilter.startDate,
+                            expenseFilter.endDate,
+                            expenseFilter.userId,
+                            expenseFilter.state!!
+                        )
+                    } else {
+                        expenseRepository.find(expenseFilter.startDate, expenseFilter.endDate, expenseFilter.userId)
+                    }
+                } else {
+                    if (expenseFilter.state != null) {
+                        expenseRepository.find(expenseFilter.state!!, expenseFilter.userId)
+                    } else {
+                        expenseRepository.find(expenseFilter.userId)
+                    }
+                }
+            }
+
             expenseFilter.startDate != null && expenseFilter.endDate != null -> {
                 if (expenseFilter.state != null) {
                     expenseRepository.find(expenseFilter.startDate, expenseFilter.endDate, expenseFilter.state!!)
