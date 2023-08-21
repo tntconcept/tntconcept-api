@@ -4,6 +4,8 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class ExpenseResponseDTO (
+    val id: Long,
+    val userId:Long,
     val date: LocalDateTime,
     val description: String,
     val amount: BigDecimal,

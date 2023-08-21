@@ -7,6 +7,8 @@ import jakarta.inject.Singleton
 @Singleton
 class ExpenseResponseConverter {
     fun toResponseDTO(expense: Expense) = ExpenseResponseDTO(
+        id= expense.id!!,
+        userId = expense.userId,
         date = expense.date,
         description = expense.description,
         amount = expense.amount,
