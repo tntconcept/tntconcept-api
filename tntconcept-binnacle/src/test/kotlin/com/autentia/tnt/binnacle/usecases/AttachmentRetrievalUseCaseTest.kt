@@ -2,8 +2,8 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
-import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -20,20 +20,17 @@ import java.util.*
 
 @TestInstance(PER_CLASS)
 class AttachmentRetrievalUseCaseTest {
-    private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
-    private val attachmentFileRepository = mock<AttachmentFileRepository>()
     private val securityService = mock<SecurityService>()
+    private val attachmentService = mock<AttachmentService>()
 
     private val sut = AttachmentRetrievalUseCase(
-            securityService,
-            attachmentInfoRepository,
-            attachmentFileRepository
+            securityService, attachmentService
     )
 
     @BeforeEach
     fun setUp() {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
-        reset(attachmentInfoRepository, attachmentFileRepository)
+        reset(attachmentService)
     }
 
     @Test
@@ -41,9 +38,7 @@ class AttachmentRetrievalUseCaseTest {
         // Given
         val existingAttachment = `an existing attachment`()
         val existingUUID = existingAttachment.info.id
-
-        whenever(attachmentInfoRepository.findById(existingUUID)).thenReturn(Optional.of(existingAttachment.info))
-        whenever(attachmentFileRepository.getAttachmentContent(existingAttachment.info)).thenReturn(existingAttachment.file)
+        doReturn(existingAttachment).whenever(attachmentService).findAttachment(existingUUID)
 
         // When
         val result = this.sut.getAttachment(existingUUID)
@@ -51,15 +46,15 @@ class AttachmentRetrievalUseCaseTest {
         // Then
         assertThat(result).isEqualTo(existingAttachment)
 
-        verify(attachmentInfoRepository).findById(existingUUID)
-        verify(attachmentFileRepository).getAttachmentContent(existingAttachment.info)
+        // Verify
+        verify(attachmentService).findAttachment(existingUUID)
     }
 
     @Test
     fun `throws AttachmentNotFoundException when get an attachment by id that doesnt exists`() {
         // Given
         val nonExistingUUID = UUID.randomUUID()
-        whenever(attachmentInfoRepository.findById(nonExistingUUID)).thenReturn(Optional.empty())
+        whenever(attachmentService.findAttachment(nonExistingUUID)).thenThrow(AttachmentNotFoundException())
 
         // When, Then
         assertThrows<AttachmentNotFoundException> {
@@ -67,8 +62,7 @@ class AttachmentRetrievalUseCaseTest {
         }
 
         // Verify
-        verify(attachmentInfoRepository).findById(nonExistingUUID)
-        verifyNoInteractions(attachmentFileRepository)
+        verify(attachmentService).findAttachment(nonExistingUUID)
     }
 
     private fun `an existing attachment`(): Attachment =

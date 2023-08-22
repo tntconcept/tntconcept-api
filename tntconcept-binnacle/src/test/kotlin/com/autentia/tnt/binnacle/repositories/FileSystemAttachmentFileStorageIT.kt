@@ -1,30 +1,26 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.services.FileSystemAttachmentFileStorage
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
-import com.autentia.tnt.binnacle.usecases.AttachmentRetrievalUseCaseTest
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import java.time.LocalDateTime
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class AttachmentFileRepositoryIT {
+internal class FileSystemAttachmentFileStorageIT {
 
     private val appProperties = AppProperties().apply {
         files.attachmentsPath = "src/test/resources/attachments_test/evidences"
     }
 
-    private val attachmentFileRepository: AttachmentFileRepository = AttachmentFileRepository(appProperties)
+    private val sut = FileSystemAttachmentFileStorage(appProperties)
 
     @Test
     fun `should return the stored attachment content`() {
@@ -32,7 +28,7 @@ internal class AttachmentFileRepositoryIT {
         val existingAttachment = `an existing attachment`()
 
         // When
-        val result = attachmentFileRepository.getAttachmentContent(existingAttachment.info)
+        val result = sut.retrieveAttachmentFile(existingAttachment.info.path)
 
         // Then
         assertThat(result.contentEquals(existingAttachment.file)).isTrue()
@@ -40,23 +36,29 @@ internal class AttachmentFileRepositoryIT {
 
     @Test
     fun `throws AttachmentNotFoundExceptionWhenAttachmentDoesNotExist`() {
-        val attachmentInfo = createAttachmentInfoEntityWithFilenameAndMimetype(
-                filename = "non.jpeg",
-                mimeType = "image/jpeg"
-        ).toDomain()
+        val attachmentInfo = AttachmentInfo(
+                id = UUID.randomUUID(),
+                userId = 1L,
+                path = "/non.jpg",
+                fileName = "non.jpf",
+                mimeType = "image/jpg",
+                uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+                isTemporary = true
+        )
 
         assertThrows<AttachmentNotFoundException> {
-            attachmentFileRepository.getAttachmentContent(attachmentInfo)
+            sut.retrieveAttachmentFile(attachmentInfo.path)
         }
     }
 
     @Test
     fun `should create a new attachment and store it with uuid name and extension`() {
         // Given
+        val id = UUID.randomUUID()
         val attachmentInfo = AttachmentInfo(
-                id = UUID.randomUUID(),
+                id = id,
                 userId = 1L,
-                path = "/",
+                path = "/2022/2/$id.jpeg",
                 fileName = "Evidence.jpeg",
                 mimeType = "image/jpeg",
                 uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
@@ -66,10 +68,10 @@ internal class AttachmentFileRepositoryIT {
         val attachment = Attachment(attachmentInfo, IMAGE_BYTEARRAY)
 
         // When
-        attachmentFileRepository.storeAttachment(attachment)
+        sut.storeAttachmentFile(attachment.info.path, attachment.file)
 
         // Then
-        val expectedEvidenceFilename = "${appProperties.files.attachmentsPath}/${attachmentInfo.id}.jpeg"
+        val expectedEvidenceFilename = "${appProperties.files.attachmentsPath}/${attachmentInfo.path}"
         val file = File(expectedEvidenceFilename)
         assertThat(file).exists()
 
@@ -88,7 +90,7 @@ internal class AttachmentFileRepositoryIT {
                             uploadDate = LocalDateTime.now(),
                             isTemporary = false,
                             userId = 1L,
-                            path = "/"
+                            path = "/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpeg"
                     ),
                     file = IMAGE_BYTEARRAY
             )
