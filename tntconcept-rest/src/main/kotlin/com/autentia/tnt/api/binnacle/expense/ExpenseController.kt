@@ -12,11 +12,11 @@ import javax.validation.Valid
 @Controller("/api/expense")
 @Validated
 @Tag(name = OpenApiTag.EXPENSE)
-internal class ExpenseController(private val expenseByFilterUseCase: ExpenseByFilterUseCase) {
+internal class ExpenseController(private val filterUseCase: ExpenseByFilterUseCase) {
 
-    @Get("{?expenseFilterRequest*}")
+    @Get("{?filterRequest*}")
     @Operation(summary = "Gets expense with specified filters")
-    internal fun get (@Valid expenseFilterRequest: ExpenseFilterRequest): List<ExpenseResponse>  {
-        return expenseByFilterUseCase.getExpenses(expenseFilterRequest.toDto()).map { ExpenseResponse.from(it) }
+    internal fun get (@Valid filterRequest: ExpenseFilterRequest): List<ExpenseResponse>  {
+        return filterUseCase.find(filterRequest.toDto()).map { ExpenseResponse.from(it) }
     }
 }

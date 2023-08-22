@@ -36,7 +36,7 @@ internal class ExpenseByFilterUseCaseTest {
             )
         ).thenReturn(listOf(expenseExpected))
 
-        val expenses = expenseByFilterUseCase.getExpenses(filterComplete)
+        val expenses = expenseByFilterUseCase.find(filterComplete)
 
         verify(expenseRepository).find(
             LocalDateTime.of(2023, 8, 23, 0, 0, 0),
@@ -58,7 +58,7 @@ internal class ExpenseByFilterUseCaseTest {
             )
         ).thenReturn(listOf(expenseExpected))
 
-        val expenses = expenseByFilterUseCase.getExpenses(filterWithOutState)
+        val expenses = expenseByFilterUseCase.find(filterWithOutState)
 
         verify(expenseRepository).find(
             LocalDateTime.of(2023, 8, 23, 0, 0, 0),
@@ -78,7 +78,7 @@ internal class ExpenseByFilterUseCaseTest {
             )
         ).thenReturn(listOf(expenseExpected))
 
-        val expenses = expenseByFilterUseCase.getExpenses(filterWithOutDateRange)
+        val expenses = expenseByFilterUseCase.find(filterWithOutDateRange)
 
         verify(expenseRepository).find(
             ApprovalState.PENDING,
@@ -96,7 +96,7 @@ internal class ExpenseByFilterUseCaseTest {
             )
         ).thenReturn(listOf(expenseExpected))
 
-        val expenses = expenseByFilterUseCase.getExpenses(filterWithOutDateRangeAndState)
+        val expenses = expenseByFilterUseCase.find(filterWithOutDateRangeAndState)
 
         verify(expenseRepository).find(
             1
@@ -114,7 +114,7 @@ internal class ExpenseByFilterUseCaseTest {
             )
         ).thenReturn(listOf(expenseExpected))
 
-        val expenses = expenseByFilterUseCase.getExpenses(filterDateRange)
+        val expenses = expenseByFilterUseCase.find(filterDateRange)
 
         verify(expenseRepository).find(
             LocalDateTime.of(2023, 8, 23, 0, 0, 0),
@@ -134,7 +134,7 @@ internal class ExpenseByFilterUseCaseTest {
             )
         ).thenReturn(listOf(expenseExpected))
 
-        val expenses = expenseByFilterUseCase.getExpenses(filterDateRangeAndState)
+        val expenses = expenseByFilterUseCase.find(filterDateRangeAndState)
 
         verify(expenseRepository).find(
             LocalDateTime.of(2023, 8, 23, 0, 0, 0),
@@ -153,7 +153,7 @@ internal class ExpenseByFilterUseCaseTest {
             )
         ).thenReturn(listOf(expenseExpected))
 
-        val expenses = expenseByFilterUseCase.getExpenses(filterState)
+        val expenses = expenseByFilterUseCase.find(filterState)
 
         verify(expenseRepository).find(
             ApprovalState.PENDING
@@ -165,7 +165,7 @@ internal class ExpenseByFilterUseCaseTest {
     @Test
     fun `find expenses without filters throw an exception`() {
         Assert.assertThrows(IllegalArgumentException::class.java) {
-            expenseByFilterUseCase.getExpenses(filterEmpty)
+            expenseByFilterUseCase.find(filterEmpty)
         }
 
         verify(expenseRepository, times(0)).find(

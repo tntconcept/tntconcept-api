@@ -48,7 +48,7 @@ internal class ExpenseControllerIT {
         val expenses = listOf(EXPENSE_RESPONSE)
 
         whenever(
-            expenseByFilterUseCase.getExpenses(
+            expenseByFilterUseCase.find(
                 ExpenseFilterDTO(
                     startDate = START_DATE, endDate = END_DATE
                 )
@@ -72,7 +72,7 @@ internal class ExpenseControllerIT {
         val expenses = listOf(EXPENSE_RESPONSE)
 
         whenever(
-            expenseByFilterUseCase.getExpenses(
+            expenseByFilterUseCase.find(
                 ExpenseFilterDTO(
                     state = ApprovalState.PENDING
                 )
@@ -96,7 +96,7 @@ internal class ExpenseControllerIT {
         val expenses = listOf(EXPENSE_RESPONSE)
 
         whenever(
-            expenseByFilterUseCase.getExpenses(
+            expenseByFilterUseCase.find(
                 ExpenseFilterDTO(
                     userId = 1
                 )
@@ -120,7 +120,7 @@ internal class ExpenseControllerIT {
         val expenses = listOf(EXPENSE_RESPONSE)
 
         whenever(
-            expenseByFilterUseCase.getExpenses(
+            expenseByFilterUseCase.find(
                 ExpenseFilterDTO(
                     startDate = START_DATE, endDate = END_DATE, userId = 1
                 )
@@ -144,7 +144,7 @@ internal class ExpenseControllerIT {
         val expenses = listOf(EXPENSE_RESPONSE)
 
         whenever(
-            expenseByFilterUseCase.getExpenses(
+            expenseByFilterUseCase.find(
                 ExpenseFilterDTO(
                     state = ApprovalState.PENDING,
                     userId = 1
@@ -169,7 +169,7 @@ internal class ExpenseControllerIT {
         val expenses = listOf(EXPENSE_RESPONSE)
 
         whenever(
-            expenseByFilterUseCase.getExpenses(
+            expenseByFilterUseCase.find(
                 ExpenseFilterDTO(
                     startDate = START_DATE, endDate = END_DATE, userId = 1, state = ApprovalState.PENDING
                 )
@@ -194,7 +194,7 @@ internal class ExpenseControllerIT {
 
 
         whenever(
-            expenseByFilterUseCase.getExpenses(
+            expenseByFilterUseCase.find(
                 ExpenseFilterDTO(
                     startDate = START_DATE, endDate = END_DATE, state = ApprovalState.PENDING
                 )
@@ -216,7 +216,7 @@ internal class ExpenseControllerIT {
     fun `get all expenses throw a bad request exception if the request has no filter`() {
 
         whenever(
-            expenseByFilterUseCase.getExpenses(
+            expenseByFilterUseCase.find(
                 ExpenseFilterDTO(
                     startDate = null, endDate = null, state = null
                 )

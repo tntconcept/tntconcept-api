@@ -11,50 +11,50 @@ import javax.transaction.Transactional
 
 @Singleton
 class ExpenseByFilterUseCase internal constructor(
-    private val expenseRepository: ExpenseRepository,
-    private val expenseResponseConverter: ExpenseResponseConverter
+    private val repository: ExpenseRepository,
+    private val responseConverter: ExpenseResponseConverter
 ) {
 
     @Transactional
     @ReadOnly
-    fun getExpenses(expenseFilter: ExpenseFilterDTO): List<ExpenseResponseDTO> {
-        val expenses = filterExpenses(expenseFilter)
-        return expenses.map { expenseResponseConverter.toResponseDTO(it) }
+    fun find(filter: ExpenseFilterDTO): List<ExpenseResponseDTO> {
+        val expenses = filterExpenses(filter)
+        return expenses.map { responseConverter.toResponseDTO(it) }
     }
 
-    private fun filterExpenses(expenseFilter: ExpenseFilterDTO): List<Expense> {
+    private fun filterExpenses(filter: ExpenseFilterDTO): List<Expense> {
         return when {
-            expenseFilter.userId != null -> {
-                if (expenseFilter.startDate != null && expenseFilter.endDate != null) {
-                    if (expenseFilter.state != null) {
-                        expenseRepository.find(
-                            expenseFilter.startDate,
-                            expenseFilter.endDate,
-                            expenseFilter.userId,
-                            expenseFilter.state!!
+            filter.userId != null -> {
+                if (filter.startDate != null && filter.endDate != null) {
+                    if (filter.state != null) {
+                        repository.find(
+                            filter.startDate,
+                            filter.endDate,
+                            filter.userId,
+                            filter.state!!
                         )
                     } else {
-                        expenseRepository.find(expenseFilter.startDate, expenseFilter.endDate, expenseFilter.userId)
+                        repository.find(filter.startDate, filter.endDate, filter.userId)
                     }
                 } else {
-                    if (expenseFilter.state != null) {
-                        expenseRepository.find(expenseFilter.state!!, expenseFilter.userId)
+                    if (filter.state != null) {
+                        repository.find(filter.state!!, filter.userId)
                     } else {
-                        expenseRepository.find(expenseFilter.userId)
+                        repository.find(filter.userId)
                     }
                 }
             }
 
-            expenseFilter.startDate != null && expenseFilter.endDate != null -> {
-                if (expenseFilter.state != null) {
-                    expenseRepository.find(expenseFilter.startDate, expenseFilter.endDate, expenseFilter.state!!)
+            filter.startDate != null && filter.endDate != null -> {
+                if (filter.state != null) {
+                    repository.find(filter.startDate, filter.endDate, filter.state!!)
                 } else {
-                    expenseRepository.find(expenseFilter.startDate, expenseFilter.endDate)
+                    repository.find(filter.startDate, filter.endDate)
                 }
             }
 
-            expenseFilter.state != null -> {
-                expenseRepository.find(expenseFilter.state!!)
+            filter.state != null -> {
+                repository.find(filter.state!!)
             }
 
             else -> {

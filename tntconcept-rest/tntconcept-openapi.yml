@@ -395,7 +395,7 @@ paths:
       summary: Gets expense with specified filters
       operationId: get$tntconcept_rest_3
       parameters:
-      - name: expenseFilterRequest
+      - name: filterRequest
         in: query
         required: true
         explode: true
