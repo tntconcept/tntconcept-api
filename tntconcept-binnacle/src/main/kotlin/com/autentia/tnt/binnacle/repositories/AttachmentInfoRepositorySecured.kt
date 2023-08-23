@@ -1,46 +1,72 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.entities.AttachmentInfo
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
 import com.autentia.tnt.security.application.canAccessAllAttachments
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
-import io.micronaut.context.annotation.Primary
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.util.*
 
 @Singleton
-@Primary
 internal class AttachmentInfoRepositorySecured(
-    private val securityService: SecurityService,
-    private val internalAttachmentRepository: InternalAttachmentRepository,
+        private val securityService: SecurityService,
+        private val attachmentInfoDao: AttachmentInfoDao,
 ) : AttachmentInfoRepository {
 
     override fun findById(id: UUID): Optional<AttachmentInfo> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllAttachments())
-            internalAttachmentRepository.findById(id)
+            attachmentInfoDao.findById(id).map { Mapper.toDomain(it) }
         else
-            internalAttachmentRepository.findByIdAndUserId(id, authentication.id())
+            attachmentInfoDao.findByIdAndUserId(id, authentication.id()).map { Mapper.toDomain(it) }
     }
 
-    override fun save(attachmentInfo: AttachmentInfo): AttachmentInfo {
+    override fun save(attachmentInfo: AttachmentInfo) {
         val authentication = securityService.checkAuthentication()
         require(attachmentInfo.userId == authentication.id()) { "User cannot upload attachment" }
 
-        return internalAttachmentRepository.save(attachmentInfo)
+        attachmentInfoDao.save(Mapper.toJpaEntity(attachmentInfo))
     }
 
     override fun isPresent(id: UUID): Boolean {
         val authentication = securityService.checkAuthentication()
 
         return if (authentication.canAccessAllAttachments())
-            internalAttachmentRepository.findById(id).isPresent
+            attachmentInfoDao.findById(id).isPresent
         else
-            internalAttachmentRepository.findByIdAndUserId(id, authentication.id()).isPresent
+            attachmentInfoDao.findByIdAndUserId(id, authentication.id()).isPresent
     }
 
     override fun updateIsTemporary(id: UUID, state: Boolean) {
-        internalAttachmentRepository.updateIsTemporary(id, state)
+        attachmentInfoDao.updateIsTemporary(id, state)
     }
+
+    object Mapper {
+        fun toJpaEntity(attachmentInfo: AttachmentInfo): com.autentia.tnt.binnacle.entities.AttachmentInfo = with(attachmentInfo) {
+            com.autentia.tnt.binnacle.entities.AttachmentInfo(
+                    id = id,
+                    userId = userId,
+                    path = path,
+                    fileName = fileName,
+                    mimeType = mimeType,
+                    uploadDate = uploadDate,
+                    isTemporary = isTemporary
+            )
+        }
+
+        fun toDomain(attachmentInfo: com.autentia.tnt.binnacle.entities.AttachmentInfo): AttachmentInfo = with(attachmentInfo) {
+            AttachmentInfo(
+                    id = id,
+                    userId = userId,
+                    path = path,
+                    fileName = fileName,
+                    mimeType = mimeType,
+                    uploadDate = uploadDate,
+                    isTemporary = isTemporary
+            )
+        }
+
+    }
+
 }

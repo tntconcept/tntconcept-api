@@ -18,7 +18,7 @@ import java.util.*
 
 @Controller("/api/attachment")
 @Validated
-@Tag(name = OpenApiTag.ACTIVITY)
+@Tag(name = OpenApiTag.ATTACHMENT)
 internal class AttachmentController(
     private val attachmentRetrievalUseCase: AttachmentRetrievalUseCase,
     private val attachmentCreationUseCase: AttachmentCreationUseCase,
@@ -42,9 +42,10 @@ internal class AttachmentController(
         attachmentFile: CompletedFileUpload,
     ): HttpResponse<AttachmentCreationResponse> {
         val attachmentRequest = AttachmentRequest.of(attachmentFile)
-        val createdAttachmentDto = attachmentCreationUseCase.storeAttachment(attachmentRequest.toDto())
 
-        return HttpResponse.ok(AttachmentCreationResponse(createdAttachmentDto.id!!.toString()))
+        val createdAttachmentDto = attachmentCreationUseCase.createAttachment(attachmentRequest.toAttachmentCreationRequestDTO())
+
+        return HttpResponse.ok(AttachmentCreationResponse(createdAttachmentDto.id.toString()))
     }
 
     @Error

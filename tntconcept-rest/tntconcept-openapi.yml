@@ -284,7 +284,7 @@ paths:
   /api/attachment:
     post:
       tags:
-      - activity
+      - attachment
       summary: Create an attachment
       operationId: createAttachment$tntconcept_rest
       requestBody:
@@ -309,7 +309,7 @@ paths:
   /api/attachment/{id}:
     get:
       tags:
-      - activity
+      - attachment
       summary: Retrieves an attachment
       operationId: getAttachment$tntconcept_rest
       parameters:
