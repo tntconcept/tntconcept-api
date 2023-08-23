@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.core.services
 
-internal interface AttachmentFileStorage {
+internal interface AttachmentStorage {
 
     fun storeAttachmentFile(filePath: String, file: ByteArray)
 

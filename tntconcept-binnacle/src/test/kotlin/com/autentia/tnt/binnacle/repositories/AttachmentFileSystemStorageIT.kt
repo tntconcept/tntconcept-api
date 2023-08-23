@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.repositories
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.services.FileSystemAttachmentFileStorage
+import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -14,13 +14,13 @@ import java.time.LocalDateTime
 import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class FileSystemAttachmentFileStorageIT {
+internal class AttachmentFileSystemStorageIT {
 
     private val appProperties = AppProperties().apply {
         files.attachmentsPath = "src/test/resources/attachments_test/evidences"
     }
 
-    private val sut = FileSystemAttachmentFileStorage(appProperties)
+    private val sut = AttachmentFileSystemStorage(appProperties)
 
     @Test
     fun `should return the stored attachment content`() {

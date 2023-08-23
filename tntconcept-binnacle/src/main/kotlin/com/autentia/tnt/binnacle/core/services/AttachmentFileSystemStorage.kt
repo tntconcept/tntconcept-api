@@ -9,7 +9,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 @Singleton
-internal class FileSystemAttachmentFileStorage(appProperties: AppProperties): AttachmentFileStorage {
+internal class AttachmentFileSystemStorage(appProperties: AppProperties): AttachmentStorage {
 
     private val attachmentsPath = appProperties.files.attachmentsPath
 

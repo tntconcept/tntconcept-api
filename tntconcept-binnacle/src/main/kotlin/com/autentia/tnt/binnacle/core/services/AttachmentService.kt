@@ -15,7 +15,7 @@ import java.util.*
 
 @Singleton
 internal class AttachmentService(
-        private val attachmentFileStorage: AttachmentFileStorage,
+        private val attachmentStorage: AttachmentStorage,
         private val attachmentInfoRepository: AttachmentInfoRepository,
         private val dateService: DateService,
         appProperties: AppProperties) {
@@ -33,7 +33,7 @@ internal class AttachmentService(
                 file = file,
                 userId = userId)
 
-        attachmentFileStorage.storeAttachmentFile(attachment.info.path, attachment.file)
+        attachmentStorage.storeAttachmentFile(attachment.info.path, attachment.file)
         attachmentInfoRepository.save(attachment.info)
 
         return attachment
@@ -41,7 +41,7 @@ internal class AttachmentService(
 
     fun findAttachment(id: UUID): Attachment {
         val attachmentInfo = attachmentInfoRepository.findById(id).orElseThrow { AttachmentNotFoundException() }
-        val attachmentFile = attachmentFileStorage.retrieveAttachmentFile(attachmentInfo.path)
+        val attachmentFile = attachmentStorage.retrieveAttachmentFile(attachmentInfo.path)
         return Attachment(attachmentInfo, attachmentFile)
     }
 

@@ -19,7 +19,7 @@ import java.util.*
 
 @TestInstance(PER_CLASS)
 class AttachmentServiceTest {
-    private val attachmentFileStorage = mock<AttachmentFileStorage>()
+    private val attachmentStorage = mock<AttachmentStorage>()
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
     private val dateService = mock<DateService>()
 
@@ -30,19 +30,19 @@ class AttachmentServiceTest {
     }
 
     private val sut = AttachmentService(
-            attachmentFileStorage, attachmentInfoRepository, dateService, appProperties
+            attachmentStorage, attachmentInfoRepository, dateService, appProperties
     )
 
     @BeforeEach
     fun setUp() {
-        reset(attachmentFileStorage, attachmentInfoRepository, dateService)
+        reset(attachmentStorage, attachmentInfoRepository, dateService)
     }
 
     @Test
     fun `create and persist an attachment with a supported mime type and use file storage to store it`() {
         // Given
         doReturn(SOME_DATE).whenever(this.dateService).getDateNow()
-        doNothing().whenever(this.attachmentFileStorage).storeAttachmentFile(any(), any())
+        doNothing().whenever(this.attachmentStorage).storeAttachmentFile(any(), any())
         doNothing().whenever(this.attachmentInfoRepository).save(any())
 
         val fileName = "some_image.jpg"
@@ -70,7 +70,7 @@ class AttachmentServiceTest {
         assertThat(result.info.path).isEqualTo(expectedPath)
 
         // Verify
-        verify(this.attachmentFileStorage).storeAttachmentFile(expectedPath, file)
+        verify(this.attachmentStorage).storeAttachmentFile(expectedPath, file)
         verify(this.attachmentInfoRepository).save(result.info)
         verify(this.dateService).getDateNow()
     }
@@ -122,7 +122,7 @@ class AttachmentServiceTest {
         )
 
         whenever(this.attachmentInfoRepository.findById(existingId)).thenReturn(Optional.of(existingInfo))
-        whenever(this.attachmentFileStorage.retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")).thenReturn(IMAGE_BYTEARRAY)
+        whenever(this.attachmentStorage.retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")).thenReturn(IMAGE_BYTEARRAY)
 
         // When
         val result = this.sut.findAttachment(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
@@ -137,7 +137,7 @@ class AttachmentServiceTest {
 
         // Verify
         verify(this.attachmentInfoRepository).findById(existingId)
-        verify(this.attachmentFileStorage).retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")
+        verify(this.attachmentStorage).retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")
     }
 
     @Test
@@ -154,7 +154,7 @@ class AttachmentServiceTest {
 
         // Verify
         verify(this.attachmentInfoRepository).findById(someId)
-        verifyNoInteractions(this.attachmentFileStorage)
+        verifyNoInteractions(this.attachmentStorage)
     }
 
     @Test
@@ -172,7 +172,7 @@ class AttachmentServiceTest {
         )
 
         whenever(this.attachmentInfoRepository.findById(someId)).thenReturn(Optional.of(existingInfo))
-        whenever(this.attachmentFileStorage.retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")).thenThrow(AttachmentNotFoundException())
+        whenever(this.attachmentStorage.retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")).thenThrow(AttachmentNotFoundException())
 
         // When, Then
         assertThatThrownBy {
@@ -181,7 +181,7 @@ class AttachmentServiceTest {
 
         // Verify
         verify(this.attachmentInfoRepository).findById(someId)
-        verify(this.attachmentFileStorage).retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")
+        verify(this.attachmentStorage).retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")
     }
 
     companion object {
