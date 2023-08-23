@@ -18,7 +18,7 @@ import java.util.*
 
 @Controller("/api/attachment")
 @Validated
-@Tag(name = OpenApiTag.ACTIVITY)
+@Tag(name = OpenApiTag.ATTACHMENT)
 internal class AttachmentController(
     private val attachmentRetrievalUseCase: AttachmentRetrievalUseCase,
     private val attachmentCreationUseCase: AttachmentCreationUseCase,
