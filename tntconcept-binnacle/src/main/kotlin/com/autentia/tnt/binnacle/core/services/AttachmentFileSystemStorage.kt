@@ -31,9 +31,11 @@ internal class AttachmentFileSystemStorage(appProperties: AppProperties): Attach
     }
 
     override fun deleteAttachmentFile(filePath: String) {
-        // TODO: check path corresponds to a file (not a directory)
         val absoluteFilePath = Path.of(attachmentsPath, filePath)
+        val attachmentFile = File(absoluteFilePath.toUri())
 
-        Files.deleteIfExists(absoluteFilePath)
+        if (FileUtils.isRegularFile(attachmentFile)) {
+            Files.deleteIfExists(absoluteFilePath)
+        }
     }
 }

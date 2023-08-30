@@ -107,6 +107,16 @@ internal class AttachmentFileSystemStorageIT {
         assertThat(file).doesNotExist()
     }
 
+    @Test
+    fun `should not delete a directory`() {
+        val attachmentFilename = appProperties.files.attachmentsPath
+
+        sut.deleteAttachmentFile(attachmentFilename)
+
+        val file = File(attachmentFilename)
+        assertThat(file).exists()
+    }
+
     private fun `an existing attachment`(): Attachment =
             Attachment(
                     info = AttachmentInfo(
