@@ -15,7 +15,7 @@ internal interface AttachmentInfoDao : CrudRepository<AttachmentInfo, UUID> {
     @Query("UPDATE AttachmentInfo SET isTemporary = :state WHERE id = :id")
     fun updateIsTemporary(id: UUID, state: Boolean)
 
-    @Query("DELETE FROM AttachmentInfo WHERE id IN (:temporaryAttachments)")
-    fun deleteTemporaryList(temporaryAttachments: List<UUID>)
+    @Query("DELETE FROM AttachmentInfo WHERE id IN (:attachmentsIds)")
+    fun delete(attachmentsIds: List<UUID>)
 
 }

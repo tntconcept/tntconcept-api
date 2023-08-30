@@ -11,9 +11,7 @@ data class Attachment (
         other as Attachment
 
         if (info != other.info) return false
-        if (!file.contentEquals(other.file)) return false
-
-        return true
+        return file.contentEquals(other.file)
     }
 
     override fun hashCode(): Int {

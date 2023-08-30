@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
@@ -9,7 +10,7 @@ import javax.transaction.Transactional
 @Singleton
 class TemporaryAttachmentsDeletionUseCase internal constructor(
     private val attachmentInfoRepository: AttachmentInfoRepository,
-    private val attachmentFileRepository: AttachmentFileRepository,
+    private val attachmentFileSystemStorage: AttachmentFileSystemStorage,
 ) {
 
     @Transactional
@@ -17,14 +18,13 @@ class TemporaryAttachmentsDeletionUseCase internal constructor(
         val temporaryAttachments = attachmentInfoRepository.findByIsTemporaryTrue()
 
         val temporaryAttachmentsLessThanOneDay =
-            temporaryAttachments.filter { isMoreThanOneDay(it) }.map { it.toDomain() }
+            temporaryAttachments.filter { isMoreThanOneDay(it) }
 
-        attachmentFileRepository.deleteActivityEvidence(temporaryAttachmentsLessThanOneDay)
-
-        attachmentInfoRepository.deleteTemporaryList(temporaryAttachmentsLessThanOneDay.map { it.id!! })
+        temporaryAttachmentsLessThanOneDay.forEach { attachmentFileSystemStorage.deleteAttachmentFile(it.path) }
+        attachmentInfoRepository.delete(temporaryAttachmentsLessThanOneDay.map { it.id })
     }
 
-    fun isMoreThanOneDay(temporaryAttachment: com.autentia.tnt.binnacle.entities.AttachmentInfo) =
+    fun isMoreThanOneDay(temporaryAttachment: AttachmentInfo) =
         LocalDateTime.now().minusDays(1).isAfter(temporaryAttachment.uploadDate)
 
 }

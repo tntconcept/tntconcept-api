@@ -1,11 +1,9 @@
 package com.autentia.tnt.binnacle.entities
 
-import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.Type
 import java.time.LocalDateTime
 import java.util.*
 import javax.persistence.Entity
-import javax.persistence.GeneratedValue
 import javax.persistence.Id
 import javax.persistence.Table
 
@@ -14,10 +12,8 @@ import javax.persistence.Table
 data class AttachmentInfo(
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Type(type = "uuid-char")
-    val id: UUID?,
+    var id: UUID,
 
     val userId: Long,
     val path: String,
@@ -40,14 +36,14 @@ data class AttachmentInfo(
         )
 
     companion object {
-        fun of(attachmentInfo: com.autentia.tnt.binnacle.core.domain.AttachmentInfo) = AttachmentInfo(
-            attachmentInfo.id,
-            attachmentInfo.userId,
-            attachmentInfo.path,
-            attachmentInfo.fileName,
-            attachmentInfo.mimeType,
-            attachmentInfo.uploadDate,
-            attachmentInfo.isTemporary
+        fun of(attachment: com.autentia.tnt.binnacle.core.domain.Attachment) = AttachmentInfo(
+            attachment.info.id,
+                attachment.info.userId,
+                attachment.info.path,
+                attachment.info.fileName,
+                attachment.info.mimeType,
+                attachment.info.uploadDate,
+                attachment.info.isTemporary
         )
     }
 }

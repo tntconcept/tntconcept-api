@@ -239,29 +239,10 @@ internal fun createActivityResponseDTO(
     approval = ApprovalDTO(approvalState)
 )
 
-internal fun createAttachmentInfoEntity() = AttachmentInfo(
-    id = UUID.randomUUID(),
-    userId = 1L,
-    path = "/",
-    fileName = "Evidence001",
-    mimeType = "application/png",
-    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
-    isTemporary = false
-)
-
 internal fun createAttachmentInfoEntityWithFilenameAndMimetype(filename: String, mimeType: String) = AttachmentInfo(
     id = UUID.randomUUID(),
     userId = 1L,
     path = "/",
-    fileName = filename,
-    mimeType = mimeType,
-    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
-    isTemporary = true
-)
-
-internal fun createAttachmentInfoDtoWithFileNameAndMimeType(filename: String, mimeType: String) = AttachmentInfoDTO(
-    null,
-    userId = 1L,
     fileName = filename,
     mimeType = mimeType,
     uploadDate = LocalDateTime.now().withSecond(0).withNano(0),

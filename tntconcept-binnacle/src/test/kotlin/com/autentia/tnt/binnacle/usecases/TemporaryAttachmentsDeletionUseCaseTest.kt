@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
-import com.autentia.tnt.binnacle.repositories.AttachmentFileRepository
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
+import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -14,27 +14,41 @@ import java.time.LocalDateTime
 class TemporaryAttachmentsDeletionUseCaseTest {
 
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
-    private val attachmentFileRepository = mock<AttachmentFileRepository>()
+    private val attachmentFileRepository = mock<AttachmentFileSystemStorage>()
     private val temporaryAttachmentsDeletionUseCase =
         TemporaryAttachmentsDeletionUseCase(attachmentInfoRepository, attachmentFileRepository)
 
     @Test
     fun `should filter the activities that are less than one day and call the repositories`() {
-        val outDatedAttachment = ATTACHMENT_INFO_LIST.get(2)
-        whenever(attachmentInfoRepository.findByIsTemporaryTrue()).thenReturn(ATTACHMENT_INFO_LIST)
+        val attachmentInfosDomain = ATTACHMENT_INFO_LIST.map { it.toDomain() }
+        val outDatedAttachment = attachmentInfosDomain[2]
+        whenever(attachmentInfoRepository.findByIsTemporaryTrue()).thenReturn(attachmentInfosDomain)
 
         temporaryAttachmentsDeletionUseCase.delete()
 
         verify(attachmentInfoRepository).findByIsTemporaryTrue()
-        verify(attachmentFileRepository).deleteActivityEvidence(listOf(outDatedAttachment).map { it.toDomain() })
-        verify(attachmentInfoRepository).deleteTemporaryList(listOf(outDatedAttachment).map { it.id!! })
+
+
+
+        verify(attachmentFileRepository).deleteAttachmentFile(outDatedAttachment.path)
+        verify(attachmentInfoRepository).delete(listOf(outDatedAttachment).map { it.id})
     }
 
     companion object {
+        private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
+        private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
+
         private val ATTACHMENT_INFO_LIST = listOf(
-            createAttachmentInfoEntity().copy(isTemporary = true),
-            createAttachmentInfoEntity().copy(isTemporary = true),
-            createAttachmentInfoEntity().copy(uploadDate = LocalDateTime.now().minusDays(5), isTemporary = true)
+            createAttachmentInfoEntityWithFilenameAndMimetype(IMAGE_SUPPORTED_FILENAME, IMAGE_SUPPORTED_MIMETYPE).copy(
+                isTemporary = true
+            ),
+            createAttachmentInfoEntityWithFilenameAndMimetype(IMAGE_SUPPORTED_FILENAME, IMAGE_SUPPORTED_MIMETYPE).copy(
+                isTemporary = true
+            ),
+            createAttachmentInfoEntityWithFilenameAndMimetype(IMAGE_SUPPORTED_FILENAME, IMAGE_SUPPORTED_MIMETYPE).copy(
+                uploadDate = LocalDateTime.now().minusDays(5),
+                isTemporary = true
+            )
         )
     }
 }
