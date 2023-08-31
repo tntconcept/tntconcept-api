@@ -4,6 +4,8 @@ import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
+import com.autentia.tnt.binnacle.services.DateService
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.mock
@@ -17,9 +19,15 @@ class TemporaryAttachmentsDeletionUseCaseTest {
 
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
     private val attachmentFileSystemStorage = mock<AttachmentFileSystemStorage>()
+    private val dateService = mock<DateService>()
     private val appProperties = AppProperties()
     private val temporaryAttachmentsDeletionUseCase =
-        TemporaryAttachmentsDeletionUseCase(attachmentInfoRepository, attachmentFileSystemStorage, appProperties)
+        TemporaryAttachmentsDeletionUseCase(attachmentInfoRepository, attachmentFileSystemStorage, dateService, appProperties)
+
+    @BeforeAll
+    fun setCurrentDate() {
+        whenever(dateService.getDateNow()).thenReturn(currentDate)
+    }
 
     @Test
     fun `should not delete temporary files if flag is not enabled`() {
@@ -47,6 +55,7 @@ class TemporaryAttachmentsDeletionUseCaseTest {
     }
 
     companion object {
+        private val currentDate = LocalDateTime.now()
         private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
         private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
 

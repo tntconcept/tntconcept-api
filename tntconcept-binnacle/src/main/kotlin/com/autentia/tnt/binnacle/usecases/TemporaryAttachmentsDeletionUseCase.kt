@@ -4,6 +4,7 @@ import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
 import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
+import com.autentia.tnt.binnacle.services.DateService
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
 import javax.transaction.Transactional
@@ -12,6 +13,7 @@ import javax.transaction.Transactional
 class TemporaryAttachmentsDeletionUseCase internal constructor(
     private val attachmentInfoRepository: AttachmentInfoRepository,
     private val attachmentFileSystemStorage: AttachmentFileSystemStorage,
+    private val dateService: DateService,
     private val appProperties: AppProperties,
 ) {
 
@@ -29,6 +31,6 @@ class TemporaryAttachmentsDeletionUseCase internal constructor(
     }
 
     fun isMoreThanOneDay(temporaryAttachment: AttachmentInfo) =
-        LocalDateTime.now().minusDays(1).isAfter(temporaryAttachment.uploadDate)
+        dateService.getDateNow().minusDays(1).isAfter(temporaryAttachment.uploadDate)
 
 }
