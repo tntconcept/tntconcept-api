@@ -7,5 +7,6 @@ internal interface AttachmentInfoRepository {
     fun findById(id: UUID): Optional<AttachmentInfo>
     fun save(attachmentInfo: AttachmentInfo)
     fun isPresent(id: UUID): Boolean
-    fun updateIsTemporary(id: UUID, state: Boolean)
+    fun findByIsTemporaryTrue(): List<AttachmentInfo>
+    fun delete(attachmentsIds: List<UUID>)
 }

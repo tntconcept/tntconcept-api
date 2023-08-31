@@ -81,6 +81,42 @@ internal class AttachmentFileSystemStorageIT {
         assertThat(file).doesNotExist()
     }
 
+    @Test
+    fun `should delete an attachment`() {
+        // Given
+        val id = UUID.randomUUID()
+        val attachmentInfo = AttachmentInfo(
+                id = id,
+                userId = 1L,
+                path = "/2022/2/$id.jpeg",
+                fileName = "Evidence.jpeg",
+                mimeType = "image/jpeg",
+                uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+                isTemporary = true
+        )
+
+        val attachment = Attachment(attachmentInfo, IMAGE_BYTEARRAY)
+
+        // When
+        sut.storeAttachmentFile(attachment.info.path, attachment.file)
+        sut.deleteAttachmentFile(attachment.info.path)
+
+         // Then
+        val attachmentFilename = "${appProperties.files.attachmentsPath}/${attachmentInfo.path}"
+        val file = File(attachmentFilename)
+        assertThat(file).doesNotExist()
+    }
+
+    @Test
+    fun `should not delete a directory`() {
+        val attachmentFilename = appProperties.files.attachmentsPath
+
+        sut.deleteAttachmentFile(attachmentFilename)
+
+        val file = File(attachmentFilename)
+        assertThat(file).exists()
+    }
+
     private fun `an existing attachment`(): Attachment =
             Attachment(
                     info = AttachmentInfo(

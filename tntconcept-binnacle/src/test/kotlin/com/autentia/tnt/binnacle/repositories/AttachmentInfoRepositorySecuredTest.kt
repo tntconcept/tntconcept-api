@@ -83,13 +83,18 @@ internal class AttachmentInfoRepositorySecuredTest {
     }
 
     @Test
-    fun `call updateIsTemporary without check authentication`() {
-        val state = true
-        attachmentInfoRepositorySecured.updateIsTemporary(attachmentId, state)
+    fun `call findByIsTemporaryTrue without check authentication`() {
+        attachmentInfoRepositorySecured.findByIsTemporaryTrue()
 
-        verify(attachmentInfoDao).updateIsTemporary(attachmentId, state)
+        verify(attachmentInfoDao).findByIsTemporaryTrue()
     }
 
+    @Test
+    fun `call deleteTemporaryList without check authentication`() {
+        attachmentInfoRepositorySecured.delete(listOf(SUPPORTED_ATTACHMENT_INFO.id!!))
+
+        verify(attachmentInfoDao).delete(listOf(SUPPORTED_ATTACHMENT_INFO.id!!))
+    }
 
     companion object {
         private val attachmentId = UUID.randomUUID()
@@ -101,7 +106,6 @@ internal class AttachmentInfoRepositorySecuredTest {
 
         private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
         private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
-
 
         private val SUPPORTED_ATTACHMENT_INFO = createAttachmentInfoEntityWithFilenameAndMimetype(
                 IMAGE_SUPPORTED_FILENAME,

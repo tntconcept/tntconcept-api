@@ -38,9 +38,11 @@ internal class AttachmentInfoRepositorySecured(
             attachmentInfoDao.findByIdAndUserId(id, authentication.id()).isPresent
     }
 
-    override fun updateIsTemporary(id: UUID, state: Boolean) {
-        attachmentInfoDao.updateIsTemporary(id, state)
-    }
+    override fun findByIsTemporaryTrue(): List<AttachmentInfo> =
+        attachmentInfoDao.findByIsTemporaryTrue().map { Mapper.toDomain(it) }
+
+    override fun delete(attachmentsIds: List<UUID>) =
+        attachmentInfoDao.delete(attachmentsIds)
 
     object Mapper {
         fun toJpaEntity(attachmentInfo: AttachmentInfo): com.autentia.tnt.binnacle.entities.AttachmentInfo = with(attachmentInfo) {

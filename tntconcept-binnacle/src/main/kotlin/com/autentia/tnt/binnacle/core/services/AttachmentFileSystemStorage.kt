@@ -29,4 +29,13 @@ internal class AttachmentFileSystemStorage(appProperties: AppProperties): Attach
 
         return FileUtils.readFileToByteArray(File(absoluteFilePath.toUri()))
     }
+
+    override fun deleteAttachmentFile(filePath: String) {
+        val absoluteFilePath = Path.of(attachmentsPath, filePath)
+        val attachmentFile = File(absoluteFilePath.toUri())
+
+        if (FileUtils.isRegularFile(attachmentFile)) {
+            Files.deleteIfExists(absoluteFilePath)
+        }
+    }
 }

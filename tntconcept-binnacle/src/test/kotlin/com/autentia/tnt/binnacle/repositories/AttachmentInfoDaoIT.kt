@@ -3,7 +3,8 @@ package com.autentia.tnt.binnacle.repositories
 import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -23,7 +24,7 @@ class AttachmentInfoDaoIT {
 
         val result = attachmentInfoDao.findById(savedAttachment.id)
 
-        Assertions.assertEquals(savedAttachment, result.get())
+        assertEquals(savedAttachment, result.get())
     }
 
     @Test
@@ -32,7 +33,7 @@ class AttachmentInfoDaoIT {
 
         val result = attachmentInfoDao.findByIdAndUserId(savedAttachment.id, savedAttachment.userId)
 
-        Assertions.assertEquals(savedAttachment, result.get())
+        assertEquals(savedAttachment, result.get())
     }
 
     @Test
@@ -42,6 +43,23 @@ class AttachmentInfoDaoIT {
         val result = attachmentInfoDao.findById(attachmentId).get()
 
         assertFalse(result.isTemporary)
+    }
+
+    @Test
+    fun `should find all temporary attachments`() {
+        val expectedSize = 1
+
+        val temporaryAttachments = attachmentInfoDao.findByIsTemporaryTrue()
+
+        assertEquals(expectedSize, temporaryAttachments.size)
+        assertEquals(attachmentId, temporaryAttachments.get(0).id)
+    }
+
+    @Test
+    fun `should delete all temporary attachments from a list`() {
+        attachmentInfoDao.delete(listOf(attachmentId))
+
+        assertThat(attachmentInfoDao.findById(attachmentId).isEmpty)
     }
 
     private fun createAttachmentInfoEntity() = AttachmentInfo(
