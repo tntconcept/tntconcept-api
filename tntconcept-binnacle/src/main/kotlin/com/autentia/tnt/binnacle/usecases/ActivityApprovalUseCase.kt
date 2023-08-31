@@ -9,7 +9,6 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.ApprovedActivityMailService
 import com.autentia.tnt.binnacle.services.DateService
-import com.autentia.tnt.binnacle.validators.ActivityValidator
 import com.autentia.tnt.security.application.checkActivityApprovalRole
 import com.autentia.tnt.security.application.id
 import io.micronaut.security.utils.SecurityService

@@ -4,13 +4,12 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class AttachmentInfo(
-    val id: UUID? = null,
-    val fileName: String,
-    val mimeType: String,
-    val uploadDate: LocalDateTime,
-    val isTemporary: Boolean,
-    val userId: Long,
-    val path: String,
-
-    )
+        val id: UUID,
+        val fileName: String,
+        val mimeType: String,
+        val uploadDate: LocalDateTime,
+        val isTemporary: Boolean,
+        val userId: Long,
+        val path: String
+)
 

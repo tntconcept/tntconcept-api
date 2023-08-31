@@ -34,6 +34,7 @@ internal class AppProperties {
 
     @ConfigurationProperties("binnacle")
     internal class BinnacleProperties {
+
         @Email
         var vacationsApprovers: List<String> = emptyList()
 
@@ -42,6 +43,8 @@ internal class AppProperties {
 
         var workSummary = WorkSummaryProperties()
         var missingEvidencesNotification = MissingEvidencesNotificationProperties()
+
+        var temporaryAttachments = TemporaryAttachmentsDeletionProperties()
 
         @ConfigurationProperties("work-summary")
         internal class WorkSummaryProperties {
@@ -87,5 +90,10 @@ internal class AppProperties {
             }
         }
 
+        @ConfigurationProperties("temporary-attachments")
+        internal class TemporaryAttachmentsDeletionProperties {
+            var enabled: Boolean = false
+            var cronExpression: String? = null
+        }
     }
 }
