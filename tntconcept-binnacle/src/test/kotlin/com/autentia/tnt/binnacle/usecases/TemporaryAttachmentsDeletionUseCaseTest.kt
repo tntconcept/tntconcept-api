@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
 
@@ -14,24 +16,34 @@ import java.time.LocalDateTime
 class TemporaryAttachmentsDeletionUseCaseTest {
 
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
-    private val attachmentFileRepository = mock<AttachmentFileSystemStorage>()
+    private val attachmentFileSystemStorage = mock<AttachmentFileSystemStorage>()
+    private val appProperties = AppProperties()
     private val temporaryAttachmentsDeletionUseCase =
-        TemporaryAttachmentsDeletionUseCase(attachmentInfoRepository, attachmentFileRepository)
+        TemporaryAttachmentsDeletionUseCase(attachmentInfoRepository, attachmentFileSystemStorage, appProperties)
+
+    @Test
+    fun `should not delete temporary files if flag is not enabled`() {
+        appProperties.binnacle.temporaryAttachments.enabled = false
+
+        temporaryAttachmentsDeletionUseCase.delete()
+
+        verifyNoInteractions(attachmentInfoRepository)
+        verifyNoInteractions(attachmentFileSystemStorage)
+    }
 
     @Test
     fun `should filter the activities that are less than one day and call the repositories`() {
+        appProperties.binnacle.temporaryAttachments.enabled = true
         val attachmentInfosDomain = ATTACHMENT_INFO_LIST.map { it.toDomain() }
         val outDatedAttachment = attachmentInfosDomain[2]
+
         whenever(attachmentInfoRepository.findByIsTemporaryTrue()).thenReturn(attachmentInfosDomain)
 
         temporaryAttachmentsDeletionUseCase.delete()
 
         verify(attachmentInfoRepository).findByIsTemporaryTrue()
-
-
-
-        verify(attachmentFileRepository).deleteAttachmentFile(outDatedAttachment.path)
-        verify(attachmentInfoRepository).delete(listOf(outDatedAttachment).map { it.id})
+        verify(attachmentFileSystemStorage).deleteAttachmentFile(outDatedAttachment.path)
+        verify(attachmentInfoRepository).delete(listOf(outDatedAttachment).map { it.id })
     }
 
     companion object {
