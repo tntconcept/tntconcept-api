@@ -90,7 +90,7 @@ internal class AppProperties {
             }
         }
 
-        @ConfigurationProperties("temporary-attachments-deletion")
+        @ConfigurationProperties("temporary-attachments")
         internal class TemporaryAttachmentsDeletionProperties {
             var enabled: Boolean = false
             var cronExpression: String? = null
