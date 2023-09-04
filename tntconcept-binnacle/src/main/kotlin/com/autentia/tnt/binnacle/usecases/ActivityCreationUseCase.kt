@@ -4,10 +4,13 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -23,13 +26,14 @@ import javax.validation.Valid
 class ActivityCreationUseCase internal constructor(
         private val projectRoleRepository: ProjectRoleRepository,
         private val activityRepository: ActivityRepository,
-        private val attachmentInfoService: AttachmentInfoService,
+        private val attachmentInfoRepository: AttachmentInfoRepository,
         private val activityCalendarService: ActivityCalendarService,
         private val userService: UserService,
         private val activityValidator: ActivityValidator,
         private val activityRequestBodyConverter: ActivityRequestBodyConverter,
         private val activityResponseConverter: ActivityResponseConverter,
         private val pendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase,
+        private val dateService: DateService
 ) {
 
     @Transactional
@@ -41,15 +45,12 @@ class ActivityCreationUseCase internal constructor(
                 ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
         )
 
-        val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole.toDomain(), user)
+        val activityToCreate = activityRequestBodyConverter
+                .toActivity(activityRequestBody, duration, dateService.getDateNow(), projectRole.toDomain(), user)
 
         activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
 
-        val activityEvidences = attachmentInfoService.getAttachments(activityToCreate.evidences).toMutableList()
-
-        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole, activityEvidences))
-
-        attachmentInfoService.markAttachmentsAsNonTemporary(activityToCreate.evidences)
+        val savedActivity = this.createAndSaveActivityEntity(activityToCreate, projectRole)
 
         val savedActivityDomain = savedActivity.toDomain()
 
@@ -58,6 +59,16 @@ class ActivityCreationUseCase internal constructor(
         }
 
         return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
+    }
+
+    private fun createAndSaveActivityEntity(activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity,
+                                            projectRole: ProjectRole): Activity {
+        val activityEvidences = attachmentInfoRepository.findByIds(activityToCreate.evidences)
+        val activityEntityToCreate = Activity.of(activityToCreate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
+        val activityEntity = activityRepository.save(activityEntityToCreate)
+        val updatedEvidences = activityEvidences.map { it.copy(isTemporary = false) }
+        attachmentInfoRepository.save(updatedEvidences)
+        return activityEntity
     }
 
     private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)

@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.converters.ActivityEvidenceResponseConverter
@@ -22,6 +22,7 @@ import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -35,18 +36,15 @@ import java.util.*
 
 @TestInstance(PER_CLASS)
 internal class ActivityCreationUseCaseTest {
-
     private val user = createDomainUser()
-
     private val projectRepository = mock<ProjectRepository>()
     private val activityService = mock<ActivityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityRepository = mock<ActivityRepository>()
-    private val attachmentInfoService = mock<AttachmentInfoService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
     private val userService = mock<UserService>()
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
-
+    private val dateService = mock<DateService>()
 
     private val activityValidator =
         ActivityValidator(
@@ -57,11 +55,10 @@ internal class ActivityCreationUseCaseTest {
 
     private val sendPendingApproveActivityMailUseCase = mock<SendPendingApproveActivityMailUseCase>()
 
-
     private val activityCreationUseCase = ActivityCreationUseCase(
         projectRoleRepository,
         activityRepository,
-        attachmentInfoService,
+            attachmentInfoRepository,
         activityCalendarService,
         userService,
         activityValidator,
@@ -69,7 +66,8 @@ internal class ActivityCreationUseCaseTest {
         ActivityResponseConverter(
             ActivityIntervalResponseConverter(),
             ActivityEvidenceResponseConverter()
-        ), sendPendingApproveActivityMailUseCase)
+        ), sendPendingApproveActivityMailUseCase,
+            dateService)
 
 
     @AfterEach
@@ -78,11 +76,16 @@ internal class ActivityCreationUseCaseTest {
             activityService,
             projectRoleRepository,
             activityRepository,
-            attachmentInfoService,
+                attachmentInfoRepository,
             activityCalendarService,
             userService,
                 sendPendingApproveActivityMailUseCase,
         )
+    }
+
+    @BeforeEach
+    fun setDate(){
+        whenever(this.dateService.getDateNow()).doReturn(TIME_NOW)
     }
 
     @Test
@@ -123,11 +126,9 @@ internal class ActivityCreationUseCaseTest {
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(attachmentInfo))
-        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(EVIDENCES)
 
         verify(sendPendingApproveActivityMailUseCase, times(0)).send(
                 activityDomain,
@@ -159,7 +160,6 @@ internal class ActivityCreationUseCaseTest {
         )
 
         whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
-        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
@@ -189,7 +189,6 @@ internal class ActivityCreationUseCaseTest {
         )
 
         whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
-        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val result = activityCreationUseCase.createActivity(ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO, Locale.ENGLISH)
 
@@ -211,11 +210,8 @@ internal class ActivityCreationUseCaseTest {
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
-        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         val activityCreated = activityCreationUseCase.createActivity(ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
-
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(EVIDENCES)
 
         verify(sendPendingApproveActivityMailUseCase, times(0)).send(
                 activityDomain,
@@ -242,7 +238,6 @@ internal class ActivityCreationUseCaseTest {
         whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
         whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(attachmentInfo))
-        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         // When
         val activityCreateRequest = ACTIVITY_WITH_EVIDENCE_DTO.copy(projectRoleId = projectRoleRequireEvidence.id)
@@ -250,7 +245,6 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_INFO.id.toString()), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
@@ -326,7 +320,6 @@ internal class ActivityCreationUseCaseTest {
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         whenever(attachmentInfoRepository.findById(any())).thenReturn(Optional.of(createAttachmentInfoEntity()))
-        whenever(attachmentInfoRepository.isPresent(any())).thenReturn(true)
 
         // When
         val activityCreateRequest = ACTIVITY_WITH_EVIDENCE_DTO.copy(projectRoleId = projectRoleRequireEvidence.id)
@@ -334,7 +327,6 @@ internal class ActivityCreationUseCaseTest {
         val activityCreated = activityCreationUseCase.createActivity(activityCreateRequest, Locale.ENGLISH)
 
         // Then
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(activityDomain, user.username, Locale.ENGLISH)
         val expectedResponseDTO = createActivityResponseDTO(userId = user.id, evidences = arrayListOf(ATTACHMENT_INFO.id.toString()), description = activityEntity.description)
                 .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
@@ -359,6 +351,7 @@ internal class ActivityCreationUseCaseTest {
     private fun `get role that requires approval but no evidence`() =
             PROJECT_ROLE_APPROVAL.copy(requireEvidence = RequireEvidence.NO, isApprovalRequired = true)
 
+    private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg").toDomain()
 
     private companion object {
         private val TIME_NOW = LocalDateTime.now()
@@ -369,7 +362,7 @@ internal class ActivityCreationUseCaseTest {
 
         private val TODAY = Date()
 
-        private val ATTACHMENT_INFO = createAttachmentInfoEntity()
+        private val ATTACHMENT_INFO = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg")
 
         private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
 
@@ -395,8 +388,6 @@ internal class ActivityCreationUseCaseTest {
 
         private val WORKABLE_DAYS_PROJECT_ROLE =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, true, TimeUnit.DAYS)
-
-
 
         private val EVIDENCES = arrayListOf(ATTACHMENT_ID_1, ATTACHMENT_ID_2)
 

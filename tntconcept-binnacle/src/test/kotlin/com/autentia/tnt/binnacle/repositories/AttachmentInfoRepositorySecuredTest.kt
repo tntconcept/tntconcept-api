@@ -1,6 +1,8 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.BeforeEach
@@ -33,7 +35,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.findById(attachmentId)
 
-        verify(attachmentInfoDao).findById(attachmentId)
+        verify(attachmentInfoDao).findById(attachmentId.value)
     }
 
     @Test
@@ -41,7 +43,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         attachmentInfoRepositorySecured.findById(attachmentId)
 
-        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
+        verify(attachmentInfoDao).findByIdAndUserId(attachmentId.value, userId)
     }
 
     @Test
@@ -49,7 +51,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.save(SUPPORTED_ATTACHMENT_INFO.copy(userId = 3L))
 
-        verify(attachmentInfoDao).save(SUPPORTED_ATTACHMENT_INFO_ENTITY.copy(id = SUPPORTED_ATTACHMENT_INFO.id, userId = 3L))
+        verify(attachmentInfoDao).save(SUPPORTED_ATTACHMENT_INFO_ENTITY.copy(id = SUPPORTED_ATTACHMENT_INFO.id.value, userId = 3L))
     }
 
     @Test
@@ -67,22 +69,6 @@ internal class AttachmentInfoRepositorySecuredTest {
     }
 
     @Test
-    fun `call isPresent when user is admin`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
-        attachmentInfoRepositorySecured.isPresent(attachmentId)
-
-        verify(attachmentInfoDao).findById(attachmentId)
-    }
-
-    @Test
-    fun `call isPresent when user is not admin`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
-        attachmentInfoRepositorySecured.isPresent(attachmentId)
-
-        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
-    }
-
-    @Test
     fun `call findByIsTemporaryTrue without check authentication`() {
         attachmentInfoRepositorySecured.findByIsTemporaryTrue()
 
@@ -91,13 +77,13 @@ internal class AttachmentInfoRepositorySecuredTest {
 
     @Test
     fun `call deleteTemporaryList without check authentication`() {
-        attachmentInfoRepositorySecured.delete(listOf(SUPPORTED_ATTACHMENT_INFO.id!!))
+        attachmentInfoRepositorySecured.delete(listOf(SUPPORTED_ATTACHMENT_INFO.id))
 
-        verify(attachmentInfoDao).delete(listOf(SUPPORTED_ATTACHMENT_INFO.id!!))
+        verify(attachmentInfoDao).delete(listOf(SUPPORTED_ATTACHMENT_INFO.id.value))
     }
 
     companion object {
-        private val attachmentId = UUID.randomUUID()
+        private val attachmentId = AttachmentInfoId(UUID.randomUUID())
         private const val userId = 1L
         private const val adminUserId = 3L
         private val authenticationAdmin =

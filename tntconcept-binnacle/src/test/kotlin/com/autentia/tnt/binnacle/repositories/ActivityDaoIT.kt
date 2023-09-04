@@ -619,7 +619,7 @@ internal class ActivityDaoIT {
     @Test
     fun `should save activity with attachment`() {
         val attachmentInfo = AttachmentInfo(
-            null,
+            UUID.randomUUID(),
             userId = 11,
             path = "path/to/file",
             fileName = "test.jpg",

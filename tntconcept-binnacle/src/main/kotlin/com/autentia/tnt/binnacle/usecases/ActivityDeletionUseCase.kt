@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.services.AttachmentInfoService
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import com.autentia.tnt.security.application.canAccessAllActivities
 import com.autentia.tnt.security.application.checkAuthentication
@@ -15,7 +15,7 @@ class ActivityDeletionUseCase internal constructor(
         private val activityRepository: ActivityRepository,
         private val activityValidator: ActivityValidator,
         private val securityService: SecurityService,
-        private val attachmentInfoService: AttachmentInfoService
+        private val attachmentInfoRepository: AttachmentInfoRepository
 ) {
 
     @Transactional
@@ -31,7 +31,9 @@ class ActivityDeletionUseCase internal constructor(
         }
 
         if (activityToDelete.hasEvidences()) {
-            attachmentInfoService.markAttachmentsAsTemporary(activityToDeleteDomain.evidences)
+            val attachments = attachmentInfoRepository.findByIds(activityToDeleteDomain.evidences)
+           val attachmentsUpdated =  attachments.map { it.copy(isTemporary = true) }
+            attachmentInfoRepository.save(attachmentsUpdated)
         }
         
         activityRepository.deleteById(id)

@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.entities
 
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
@@ -172,13 +173,8 @@ data class Activity(
             false, 0, null, ApprovalState.NA, null, null, arrayListOf()
         )
 
-        fun getAttachmentInfoIds(attachmentInfos: MutableList<AttachmentInfo>): List<UUID> {
-            val ids: MutableList<UUID> = mutableListOf()
-            for (attachmentInfo in attachmentInfos) {
-                attachmentInfo.id?.let { ids.add(it) }
-            }
-            return ids
-        }
+        fun getAttachmentInfoIds(attachmentInfos: MutableList<AttachmentInfo>): List<AttachmentInfoId> =
+                attachmentInfos.map {AttachmentInfoId(it.id)}
 
     }
 }

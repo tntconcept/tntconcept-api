@@ -32,7 +32,7 @@ class AttachmentCreationUseCase internal constructor(
 
     private fun convertToDto(attachment: Attachment): AttachmentCreationResponseDTO = with(attachment) {
         AttachmentCreationResponseDTO(
-                id = info.id,
+                id = info.id.value,
                 fileName = info.fileName,
                 mimeType = info.mimeType,
                 uploadDate = info.uploadDate,

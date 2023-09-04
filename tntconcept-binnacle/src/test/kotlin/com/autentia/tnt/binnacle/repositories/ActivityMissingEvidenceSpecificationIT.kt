@@ -11,6 +11,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
 
 
 @MicronautTest
@@ -611,7 +612,7 @@ class ActivityMissingEvidenceSpecificationIT {
 
     private fun createAttachmentInfo(): MutableList<AttachmentInfo> {
         val attachmentInfoForAct3 = AttachmentInfo(
-            null,
+            UUID.randomUUID(),
             userId = 11,
             path = "path/to/file",
             fileName = "test.jpg",

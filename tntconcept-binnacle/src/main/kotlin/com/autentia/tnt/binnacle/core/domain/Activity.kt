@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
@@ -20,7 +21,7 @@ data class Activity private constructor(
         val departmentId: Long?,
         var insertDate: LocalDateTime? = null,
         var approvalState: ApprovalState,
-        var evidences: List<UUID> = arrayListOf(),
+        var evidences: List<AttachmentInfoId> = arrayListOf(),
         val approvedByUserId: Long? = null,
         val approvalDate: LocalDateTime? = null,
 ) : ActivityTimeInterval(timeInterval, projectRole.getTimeUnit()) {
@@ -71,7 +72,7 @@ data class Activity private constructor(
                 departmentId: Long?,
                 insertDate: LocalDateTime?,
                 approvalState: ApprovalState,
-                evidences: List<UUID> = arrayListOf(),
+                evidences: List<AttachmentInfoId> = arrayListOf(),
                 approvedByUserId: Long? = null,
                 approvalDate: LocalDateTime? = null,
         ) = Activity(

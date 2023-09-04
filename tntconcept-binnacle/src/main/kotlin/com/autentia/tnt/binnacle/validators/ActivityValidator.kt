@@ -1,9 +1,6 @@
 package com.autentia.tnt.binnacle.validators
 
-import com.autentia.tnt.binnacle.core.domain.Activity
-import com.autentia.tnt.binnacle.core.domain.Calendar
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.core.domain.User
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
@@ -15,7 +12,6 @@ import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
-import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -80,14 +76,7 @@ internal class ActivityValidator(
         return activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
     }
 
-    private fun evidencesExist(evidencesIds: List<UUID>): Boolean {
-        for (evidenceId in evidencesIds) {
-            if (!attachmentInfoRepository.isPresent(evidenceId)) {
-                return false
-            }
-        }
-        return true
-    }
+    private fun evidencesExist(evidencesIds: List<AttachmentInfoId>) = attachmentInfoRepository.existsAllByIds(evidencesIds)
 
     private fun getTotalRegisteredDurationByProjectRole(
         activityToUpdate: Activity,

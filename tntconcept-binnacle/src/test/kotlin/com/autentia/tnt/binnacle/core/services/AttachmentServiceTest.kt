@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.core.services
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -43,7 +44,7 @@ class AttachmentServiceTest {
         // Given
         doReturn(SOME_DATE).whenever(this.dateService).getDateNow()
         doNothing().whenever(this.attachmentStorage).storeAttachmentFile(any(), any())
-        doNothing().whenever(this.attachmentInfoRepository).save(any())
+        doNothing().whenever(this.attachmentInfoRepository).save(any<AttachmentInfo>())
 
         val fileName = "some_image.jpg"
         val mimetype = "image/jpg"
@@ -66,7 +67,7 @@ class AttachmentServiceTest {
         assertThat(result.info.isTemporary).isTrue()
         assertThat(result.info.uploadDate).isEqualTo(SOME_DATE)
 
-        val expectedPath = "/2023/2/${result.info.id}.jpg"
+        val expectedPath = "/2023/2/${result.info.id.value}.jpg"
         assertThat(result.info.path).isEqualTo(expectedPath)
 
         // Verify
@@ -110,9 +111,9 @@ class AttachmentServiceTest {
     @Test
     fun `find existing attachment`() {
         // Given
-        val existingId = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")
+        val existingId = AttachmentInfoId(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
         val existingInfo = AttachmentInfo(
-                id = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"),
+                id = existingId,
                 fileName = "some_image.jpg",
                 mimeType = "application/jpg",
                 uploadDate = SOME_DATE,
@@ -125,7 +126,7 @@ class AttachmentServiceTest {
         whenever(this.attachmentStorage.retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")).thenReturn(IMAGE_BYTEARRAY)
 
         // When
-        val result = this.sut.findAttachment(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
+        val result = this.sut.findAttachment(existingId)
 
         // Then
         assertThat(result.info.fileName).isEqualTo("some_image.jpg")
@@ -143,13 +144,13 @@ class AttachmentServiceTest {
     @Test
     fun `find attachment results in AttachmentNotFoundException when attachment info is not found`() {
         // Given
-        val someId = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")
+        val someId = AttachmentInfoId(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
 
         whenever(this.attachmentInfoRepository.findById(someId)).thenReturn(Optional.empty())
 
         // When, Then
         assertThatThrownBy {
-            this.sut.findAttachment(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
+            this.sut.findAttachment(someId)
         }.isInstanceOf(AttachmentNotFoundException::class.java)
 
         // Verify
@@ -160,9 +161,9 @@ class AttachmentServiceTest {
     @Test
     fun `find attachment results in AttachmentNotFoundException when file is not found`() {
         // Given
-        val someId = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")
+        val someId = AttachmentInfoId(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
         val existingInfo = AttachmentInfo(
-                id = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"),
+                id = someId,
                 fileName = "some_image.jpg",
                 mimeType = "application/jpg",
                 uploadDate = SOME_DATE,
@@ -175,9 +176,7 @@ class AttachmentServiceTest {
         whenever(this.attachmentStorage.retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")).thenThrow(AttachmentNotFoundException())
 
         // When, Then
-        assertThatThrownBy {
-            this.sut.findAttachment(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
-        }.isInstanceOf(AttachmentNotFoundException::class.java)
+        assertThatThrownBy { this.sut.findAttachment(someId) }.isInstanceOf(AttachmentNotFoundException::class.java)
 
         // Verify
         verify(this.attachmentInfoRepository).findById(someId)

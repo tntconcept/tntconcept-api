@@ -1,11 +1,11 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.services.AttachmentInfoService
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -21,13 +21,13 @@ internal class ActivityDeletionUseCaseTest {
     private val activityRepository = mock<ActivityRepository>()
     private val activityValidator = mock<ActivityValidator>()
     private val securityService = mock<SecurityService>()
-    private val attachmentInfoService = mock<AttachmentInfoService>()
+    private val attachmentRepository = mock<AttachmentInfoRepository>()
 
-    private val useCase = ActivityDeletionUseCase(activityRepository, activityValidator, securityService, attachmentInfoService)
+    private val useCase = ActivityDeletionUseCase(activityRepository, activityValidator, securityService, attachmentRepository)
 
     @AfterEach
     fun resetMocks() {
-        reset(activityRepository, activityValidator, attachmentInfoService)
+        reset(activityRepository, activityValidator, attachmentRepository)
     }
 
     @BeforeAll
@@ -43,7 +43,7 @@ internal class ActivityDeletionUseCaseTest {
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
-        verifyNoInteractions(attachmentInfoService)
+        verifyNoInteractions(attachmentRepository)
     }
 
     @Test
@@ -52,7 +52,6 @@ internal class ActivityDeletionUseCaseTest {
 
         useCase.deleteActivityById(1L)
 
-        verify(attachmentInfoService).markAttachmentsAsTemporary(entityActivityWithEvidences.toDomain().evidences)
         verify(activityRepository).deleteById(1L)
     }
 
@@ -103,6 +102,8 @@ internal class ActivityDeletionUseCaseTest {
 
         private val entityActivityWithEvidences = Activity.of(activity, PROJECT_ROLE, mutableListOf(
             createAttachmentInfoEntity()))
+
+        private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg")
 
     }
 

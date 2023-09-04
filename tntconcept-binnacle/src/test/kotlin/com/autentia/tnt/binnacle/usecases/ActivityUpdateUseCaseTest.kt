@@ -1,11 +1,11 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.converters.ActivityEvidenceResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.ApprovalState.NA
 import com.autentia.tnt.binnacle.entities.ApprovalState.PENDING
@@ -14,6 +14,7 @@ import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -26,6 +27,7 @@ import org.mockito.kotlin.*
 import java.lang.IllegalArgumentException
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.*
 
 @TestInstance(PER_CLASS)
@@ -37,7 +39,7 @@ internal class ActivityUpdateUseCaseTest {
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val userService = mock<UserService>()
     private val sendPendingApproveActivityMailUseCase = mock<SendPendingApproveActivityMailUseCase>()
-    private val attachmentInfoService = mock<AttachmentInfoService>()
+    private val attachmentRepository = mock<AttachmentInfoRepository>()
 
     private val sut = ActivityUpdateUseCase(
             activityRepository,
@@ -51,7 +53,7 @@ internal class ActivityUpdateUseCaseTest {
                     ActivityEvidenceResponseConverter()
             ),
             sendPendingApproveActivityMailUseCase,
-            attachmentInfoService
+            attachmentRepository
     )
 
     @BeforeEach
@@ -66,7 +68,7 @@ internal class ActivityUpdateUseCaseTest {
 
     @AfterEach
     fun `reset mocks`() {
-        reset(activityRepository, activityValidator, attachmentInfoService,
+        reset(activityRepository, activityValidator, attachmentRepository,
                 userService, sendPendingApproveActivityMailUseCase, projectRoleRepository, activityCalendarService)
     }
 
@@ -84,6 +86,7 @@ internal class ActivityUpdateUseCaseTest {
 
         val request = `get activity update request with no evidence`(existingActivity, duration)
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(attachmentRepository.findByIds(updatedActivity.evidences.map { AttachmentInfoId(it.id) }))
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
         // Act
@@ -96,9 +99,6 @@ internal class ActivityUpdateUseCaseTest {
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
-        verify(attachmentInfoService).markAttachmentsAsTemporary(emptyList())
-        verify(attachmentInfoService).getAttachments(emptyList())
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(emptyList())
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
@@ -130,9 +130,6 @@ internal class ActivityUpdateUseCaseTest {
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
-        verify(attachmentInfoService).markAttachmentsAsTemporary(emptyList())
-        verify(attachmentInfoService).getAttachments(emptyList())
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(emptyList())
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
@@ -165,9 +162,6 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verify(attachmentInfoService).markAttachmentsAsTemporary(emptyList())
-        verify(attachmentInfoService).getAttachments(emptyList())
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(emptyList())
         verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -200,9 +194,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-        verify(attachmentInfoService).markAttachmentsAsTemporary(emptyList())
-        verify(attachmentInfoService).getAttachments(emptyList())
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(emptyList())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -224,7 +215,6 @@ internal class ActivityUpdateUseCaseTest {
         val request = `get activity update request with evidence`(existingActivity, duration)
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
-        whenever(attachmentInfoService.getAttachments(SAMPLE_EVIDENCES)).thenReturn(makeAttachmentInfos(request.evidences))
 
         // Act
         val result = sut.updateActivity(request, LOCALE)
@@ -234,9 +224,6 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verify(attachmentInfoService).markAttachmentsAsTemporary(emptyList())
-        verify(attachmentInfoService).getAttachments(SAMPLE_EVIDENCES)
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(SAMPLE_EVIDENCES)
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -260,7 +247,6 @@ internal class ActivityUpdateUseCaseTest {
         val request = `get activity update request with evidence`(existingActivity, duration)
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
-        whenever(attachmentInfoService.getAttachments(SAMPLE_EVIDENCES)).thenReturn(makeAttachmentInfos(request.evidences))
 
         // Act
         val result = sut.updateActivity(request, LOCALE)
@@ -270,9 +256,6 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verify(attachmentInfoService).markAttachmentsAsTemporary(emptyList())
-        verify(attachmentInfoService).getAttachments(SAMPLE_EVIDENCES)
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(SAMPLE_EVIDENCES)
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -296,7 +279,6 @@ internal class ActivityUpdateUseCaseTest {
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
         doNothing().whenever(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
-        whenever(attachmentInfoService.getAttachments(SAMPLE_EVIDENCES)).thenReturn(makeAttachmentInfos(request.evidences))
 
         // Act
         val result = sut.updateActivity(request, LOCALE)
@@ -306,9 +288,6 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verify(attachmentInfoService).markAttachmentsAsTemporary(emptyList())
-        verify(attachmentInfoService).getAttachments(SAMPLE_EVIDENCES)
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(SAMPLE_EVIDENCES)
         verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
@@ -342,9 +321,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-        verify(attachmentInfoService).markAttachmentsAsTemporary(arrayListOf(attachmentId))
-        verify(attachmentInfoService).getAttachments(emptyList())
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(emptyList())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -377,9 +353,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-        verify(attachmentInfoService).markAttachmentsAsTemporary(arrayListOf(attachmentId))
-        verify(attachmentInfoService).getAttachments(emptyList())
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(emptyList())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -412,9 +385,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-        verify(attachmentInfoService).markAttachmentsAsTemporary(arrayListOf(attachmentId))
-        verify(attachmentInfoService).getAttachments(emptyList())
-        verify(attachmentInfoService).markAttachmentsAsNonTemporary(emptyList())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -431,7 +401,7 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verify(userService).getAuthenticatedDomainUser()
-        verifyNoInteractions(activityRepository, activityValidator, attachmentInfoService, sendPendingApproveActivityMailUseCase, projectRoleRepository, activityCalendarService)
+        verifyNoInteractions(activityRepository, activityValidator, attachmentRepository, sendPendingApproveActivityMailUseCase, projectRoleRepository, activityCalendarService)
     }
 
     @Test
@@ -444,7 +414,7 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verify(projectRoleRepository).findById(SOME_ACTIVITY_REQUEST.projectRoleId)
-        verifyNoInteractions(activityRepository, activityValidator, attachmentInfoService, sendPendingApproveActivityMailUseCase, activityCalendarService)
+        verifyNoInteractions(activityRepository, activityValidator, attachmentRepository, sendPendingApproveActivityMailUseCase, activityCalendarService)
         verifyNoMoreInteractions(projectRoleRepository)
     }
 
@@ -474,7 +444,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(request.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityValidator).checkActivityIsValidForUpdate(updatedActivity.toDomain(), existingActivity.toDomain(), USER)
-        verifyNoInteractions(attachmentInfoService, sendPendingApproveActivityMailUseCase)
+        verifyNoInteractions(attachmentRepository, sendPendingApproveActivityMailUseCase)
         verifyNoMoreInteractions(projectRoleRepository, activityRepository, activityCalendarService)
     }
 
@@ -491,19 +461,19 @@ internal class ActivityUpdateUseCaseTest {
         // Verify
         verify(projectRoleRepository).findById(SOME_ACTIVITY_REQUEST.projectRoleId)
         verify(activityRepository).findById(SOME_ACTIVITY_REQUEST.id!!)
-        verifyNoInteractions(activityValidator, attachmentInfoService, activityCalendarService, sendPendingApproveActivityMailUseCase)
+        verifyNoInteractions(activityValidator, attachmentRepository, activityCalendarService, sendPendingApproveActivityMailUseCase)
         verifyNoMoreInteractions(projectRoleRepository, activityRepository)
     }
 
     private fun `get activity updated with request`(existingActivity: Activity, request: ActivityRequestDTO, duration: Int) =
-        existingActivity.copy(
-            duration = duration,
-            start = request.interval.start,
-            end = request.interval.end,
-            description = request.description,
-            billable = request.billable,
-            evidences = makeAttachmentInfos(request.evidences)
-        )
+            existingActivity.copy(
+                    duration = duration,
+                    start = request.interval.start,
+                    end = request.interval.end,
+                    description = request.description,
+                    billable = request.billable,
+                    evidences = makeAttachmentInfos(request.evidences)
+            )
 
 
     private fun makeAttachmentInfos(evidenceIds: List<UUID>): MutableList<AttachmentInfo> {
@@ -607,6 +577,16 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.evidences).containsExactlyInAnyOrderElementsOf(evidences)
         assertThat(result.projectRoleId).isEqualTo(request.projectRoleId)
     }
+
+    private fun createAttachmentInfoEntity() = AttachmentInfo(
+            id = UUID.randomUUID(),
+            userId = 1L,
+            path = "/",
+            fileName = "Evidence001",
+            mimeType = "application/png",
+            uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+            isTemporary = false
+    )
 
     private companion object {
         private val USER = createDomainUser()

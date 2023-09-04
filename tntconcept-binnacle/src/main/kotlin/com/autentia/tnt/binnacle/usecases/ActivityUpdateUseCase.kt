@@ -3,12 +3,16 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -27,7 +31,7 @@ class ActivityUpdateUseCase internal constructor(
         private val activityRequestBodyConverter: ActivityRequestBodyConverter,
         private val activityResponseConverter: ActivityResponseConverter,
         private val sendPendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase,
-        private val attachmentInfoService: AttachmentInfoService
+        private val attachmentInfoRepository: AttachmentInfoRepository
 ) {
 
     @Transactional
@@ -50,21 +54,33 @@ class ActivityUpdateUseCase internal constructor(
 
         activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
 
-        attachmentInfoService.markAttachmentsAsTemporary(currentActivity.evidences)
+        this.markOutdatedAttachments(currentActivity.evidences)
 
-        val activityEvidences = attachmentInfoService.getAttachments(activityToUpdate.evidences).toMutableList()
+        val updatedActivityEntity = this.updateActivityEntity(activityToUpdate, projectRoleEntity)
 
-        val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity, activityEvidences))
-
-        attachmentInfoService.markAttachmentsAsNonTemporary(activityToUpdate.evidences)
-
-        val updatedActivity = updatedActivityEntity.toDomain();
+        val updatedActivity = updatedActivityEntity.toDomain()
 
         if (updatedActivity.canBeApproved()) {
             sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
+    }
+
+    private fun updateActivityEntity(activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity,
+                                     projectRole: ProjectRole): Activity {
+        val activityEvidences = attachmentInfoRepository.findByIds(activityToUpdate.evidences)
+        val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
+        val activityEntity = activityRepository.save(activityEntityToCreate)
+        val updatedEvidences = activityEvidences.map { it.copy(isTemporary = false) }
+        attachmentInfoRepository.save(updatedEvidences)
+        return activityEntity
+    }
+
+    private fun markOutdatedAttachments(evidences: List<AttachmentInfoId>) {
+        val attachments = attachmentInfoRepository.findByIds(evidences)
+        val attachmentsUpdated = attachments.map { it.copy(isTemporary = true) }
+        attachmentInfoRepository.save(attachmentsUpdated)
     }
 
     private fun getProjectRoleEntity(projectRoleId: Long) =

@@ -9,6 +9,10 @@ import java.util.*
 @Repository
 internal interface AttachmentInfoDao : CrudRepository<AttachmentInfo, UUID> {
     fun findByIdAndUserId(id: UUID, userId: Long): Optional<AttachmentInfo>
+    fun findAllById(id: List<UUID>): List<AttachmentInfo>
+    fun findAllByIdAndUserId(ids: List<UUID>, userId: Long): List<AttachmentInfo>
+    fun existsAllById(id: List<UUID>): Boolean
+    fun existsAllByIdAndUserId(id: List<UUID>, userId: Long): Boolean
 
     fun findByIsTemporaryTrue(): List<AttachmentInfo>
 

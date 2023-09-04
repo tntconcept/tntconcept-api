@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createActivity
-import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
@@ -740,6 +740,9 @@ internal class ActivityRepositorySecuredTest {
 
         assertEquals(activities, result)
     }
+
+    private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg")
+
 
     private companion object {
         private const val userId = 1L

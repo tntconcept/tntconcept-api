@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.config.createActivity
-import com.autentia.tnt.binnacle.config.createAttachmentInfoEntity
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -15,8 +15,8 @@ class ActivityEvidenceResponseConverterTest {
         val attachmentInfo2 = createAttachmentInfoEntity()
         val evidences = mutableListOf(attachmentInfo1, attachmentInfo2)
 
-        val expectedUrl1 =  attachmentInfo1.id
-        val expectedUrl2 =  attachmentInfo2.id
+        val expectedUrl1 = attachmentInfo1.id
+        val expectedUrl2 = attachmentInfo2.id
 
         val activityWithEvidences = createActivity(evidences = evidences)
         val evidencesUrls = activityEvidenceResponseConverter.getEvidencesUUIDs(activityWithEvidences)
@@ -25,6 +25,7 @@ class ActivityEvidenceResponseConverterTest {
         assertTrue(evidencesUrls.contains(expectedUrl2.toString()))
 
     }
+
 
     @Test
     fun `given entity Activity without evidences should return empty evidences UUID's`() {
@@ -48,7 +49,6 @@ class ActivityEvidenceResponseConverterTest {
         assertTrue(evidencesUrls.isNotEmpty())
         assertTrue(evidencesUrls.contains(expectedUrl1.toString()))
         assertTrue(evidencesUrls.contains(expectedUrl2.toString()))
-
     }
 
     @Test
@@ -58,5 +58,6 @@ class ActivityEvidenceResponseConverterTest {
         assertTrue(evidencesUrls.isEmpty())
     }
 
+    private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg")
 
 }

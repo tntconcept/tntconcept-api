@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.repositories
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import org.assertj.core.api.Assertions.assertThat
@@ -37,7 +38,7 @@ internal class AttachmentFileSystemStorageIT {
     @Test
     fun `throws AttachmentNotFoundExceptionWhenAttachmentDoesNotExist`() {
         val attachmentInfo = AttachmentInfo(
-                id = UUID.randomUUID(),
+                id = AttachmentInfoId(UUID.randomUUID()),
                 userId = 1L,
                 path = "/non.jpg",
                 fileName = "non.jpf",
@@ -56,7 +57,7 @@ internal class AttachmentFileSystemStorageIT {
         // Given
         val id = UUID.randomUUID()
         val attachmentInfo = AttachmentInfo(
-                id = id,
+                id = AttachmentInfoId(id),
                 userId = 1L,
                 path = "/2022/2/$id.jpeg",
                 fileName = "Evidence.jpeg",
@@ -86,7 +87,7 @@ internal class AttachmentFileSystemStorageIT {
         // Given
         val id = UUID.randomUUID()
         val attachmentInfo = AttachmentInfo(
-                id = id,
+                id = AttachmentInfoId(id),
                 userId = 1L,
                 path = "/2022/2/$id.jpeg",
                 fileName = "Evidence.jpeg",
@@ -120,7 +121,7 @@ internal class AttachmentFileSystemStorageIT {
     private fun `an existing attachment`(): Attachment =
             Attachment(
                     info = AttachmentInfo(
-                            id = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"),
+                            id = AttachmentInfoId(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")),
                             fileName = "some_image.jpeg",
                             mimeType = "image/jpeg",
                             uploadDate = LocalDateTime.now(),

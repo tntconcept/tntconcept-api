@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.config
 
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
 import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
@@ -203,7 +204,7 @@ internal fun createDomainActivity(
     end: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
     duration: Int = 60,
     projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = createDomainProjectRole(),
-    evidences: List<UUID> = arrayListOf()
+    evidences: List<AttachmentInfoId> = arrayListOf()
 ) =
     com.autentia.tnt.binnacle.core.domain.Activity.of(
         1L,

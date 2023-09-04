@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.core.services
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -27,7 +28,7 @@ internal class AttachmentService(
             throw AttachmentMimeTypeNotSupportedException("Mime type $mimeType} is not supported")
 
         val attachment = this.createAttachment(
-                id = UUID.randomUUID(),
+                id = AttachmentInfoId(UUID.randomUUID()),
                 fileName = fileName,
                 mimeType = mimeType,
                 file = file,
@@ -39,7 +40,7 @@ internal class AttachmentService(
         return attachment
     }
 
-    fun findAttachment(id: UUID): Attachment {
+    fun findAttachment(id: AttachmentInfoId): Attachment {
         val attachmentInfo = attachmentInfoRepository.findById(id).orElseThrow { AttachmentNotFoundException() }
         val attachmentFile = attachmentStorage.retrieveAttachmentFile(attachmentInfo.path)
         return Attachment(attachmentInfo, attachmentFile)
@@ -48,7 +49,7 @@ internal class AttachmentService(
     private fun isMimeTypeSupported(mimeType: String, fileName: String): Boolean
         = supportedMimeExtensions.containsKey(mimeType) && supportedMimeExtensions[mimeType] == FilenameUtils.getExtension(fileName)
 
-    private fun createAttachment(id: UUID, fileName: String, mimeType: String, file: ByteArray, userId: Long): Attachment {
+    private fun createAttachment(id: AttachmentInfoId, fileName: String, mimeType: String, file: ByteArray, userId: Long): Attachment {
         val currentDate = this.dateService.getDateNow()
         val attachmentInfo = AttachmentInfo(
                 id = id,
@@ -63,8 +64,8 @@ internal class AttachmentService(
         return Attachment(attachmentInfo, file)
     }
 
-    private fun createPathForAttachment(id: UUID, currentDate: LocalDateTime, fileName: String): Path {
+    private fun createPathForAttachment(id: AttachmentInfoId, currentDate: LocalDateTime, fileName: String): Path {
         val fileExtension = FilenameUtils.getExtension(fileName)
-        return Path.of("/", "${currentDate.year}", "${currentDate.monthValue}", "$id.$fileExtension")
+        return Path.of("/", "${currentDate.year}", "${currentDate.monthValue}", "${id.value}.$fileExtension")
     }
 }
