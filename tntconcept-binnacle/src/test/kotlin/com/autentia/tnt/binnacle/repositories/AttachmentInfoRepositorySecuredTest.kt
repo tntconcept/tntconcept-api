@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
@@ -79,7 +78,7 @@ internal class AttachmentInfoRepositorySecuredTest {
     fun `call deleteTemporaryList without check authentication`() {
         attachmentInfoRepositorySecured.delete(listOf(SUPPORTED_ATTACHMENT_INFO.id))
 
-        verify(attachmentInfoDao).delete(listOf(SUPPORTED_ATTACHMENT_INFO.id.value))
+        verify(attachmentInfoDao).deleteByIdIn(listOf(SUPPORTED_ATTACHMENT_INFO.id.value))
     }
 
     companion object {

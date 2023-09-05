@@ -54,7 +54,9 @@ class ActivityUpdateUseCase internal constructor(
 
         activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
 
-        this.markOutdatedAttachments(currentActivity.evidences)
+        if (currentActivity.evidences.isNotEmpty()) {
+            this.markOutdatedAttachments(currentActivity.evidences)
+        }
 
         val updatedActivityEntity = this.updateActivityEntity(activityToUpdate, projectRoleEntity)
 
@@ -69,12 +71,16 @@ class ActivityUpdateUseCase internal constructor(
 
     private fun updateActivityEntity(activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity,
                                      projectRole: ProjectRole): Activity {
-        val activityEvidences = attachmentInfoRepository.findByIds(activityToUpdate.evidences)
-        val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
-        val activityEntity = activityRepository.update(activityEntityToCreate)
-        val updatedEvidences = activityEvidences.map { it.copy(isTemporary = false) }
-        attachmentInfoRepository.save(updatedEvidences)
-        return activityEntity
+        return if (activityToUpdate.evidences.isEmpty()) {
+            val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, mutableListOf())
+            activityRepository.update(activityEntityToCreate)
+        } else {
+            val activityEvidences = attachmentInfoRepository.findByIds(activityToUpdate.evidences)
+            val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
+            val activityEntity = activityRepository.update(activityEntityToCreate)
+            attachmentInfoRepository.save(activityEvidences.map { it.copy(isTemporary = false) })
+            activityEntity
+        }
     }
 
     private fun markOutdatedAttachments(evidences: List<AttachmentInfoId>) {

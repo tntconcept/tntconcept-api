@@ -1,6 +1,8 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
@@ -32,7 +34,7 @@ internal class ActivityDeletionUseCaseTest {
 
     @BeforeAll
     fun setAuthMock() {
-        val authenticatedUser = ClientAuthentication("id", mapOf("roles" to listOf("user")))
+        val authenticatedUser = ClientAuthentication("id", mapOf("roles" to listOf("activity-approval")))
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
     }
 
@@ -48,11 +50,19 @@ internal class ActivityDeletionUseCaseTest {
 
     @Test
     fun `call the repository and attachment service to mark the activities as temporary and delete activity`() {
-        whenever(activityRepository.findById(1L)).thenReturn(entityActivityWithEvidences)
+        val activity = entityActivityWithEvidences
+        val attachmentIds = activity.evidences.map { AttachmentInfoId(it.id) }
+
+        whenever(activityRepository.findById(1L)).thenReturn(activity)
+        whenever(attachmentRepository.findByIds(attachmentIds)).doReturn(activity.evidences.map { it.toDomain() })
+        doNothing().`when`(attachmentRepository).save(any<List<AttachmentInfo>>())
 
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
+        verify(attachmentRepository).findByIds(attachmentIds)
+        val attachmentTemporaryTrue = activity.evidences.map { it.toDomain().copy(isTemporary = true) }
+        verify(attachmentRepository).save(attachmentTemporaryTrue)
     }
 
     @Test
@@ -67,21 +77,21 @@ internal class ActivityDeletionUseCaseTest {
     private companion object {
         val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
         val PROJECT = Project(
-            1L,
-            "Dummy Project",
-            open = true,
-            billable = false,
-            LocalDate.now(),
-            null,
-            null,
-            projectRoles = listOf(),
-            organization = ORGANIZATION
+                1L,
+                "Dummy Project",
+                open = true,
+                billable = false,
+                LocalDate.now(),
+                null,
+                null,
+                projectRoles = listOf(),
+                organization = ORGANIZATION
         )
         val PROJECT_ROLE =
-            ProjectRole(
-                10L, "Dummy Project role", RequireEvidence.NO,
-                PROJECT, 0, 0, true, false, TimeUnit.MINUTES
-            )
+                ProjectRole(
+                        10L, "Dummy Project role", RequireEvidence.NO,
+                        PROJECT, 0, 0, true, false, TimeUnit.MINUTES
+                )
         private val TODAY = LocalDateTime.now()
 
         private val activity = com.autentia.tnt.binnacle.core.domain.Activity.of(
@@ -101,9 +111,9 @@ internal class ActivityDeletionUseCaseTest {
         private val entityActivityWithoutEvidences = Activity.of(activity, PROJECT_ROLE)
 
         private val entityActivityWithEvidences = Activity.of(activity, PROJECT_ROLE, mutableListOf(
-            createAttachmentInfoEntity()))
+                createAttachmentInfoEntity()))
 
-        private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg")
+        private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg").copy(isTemporary = false)
 
     }
 

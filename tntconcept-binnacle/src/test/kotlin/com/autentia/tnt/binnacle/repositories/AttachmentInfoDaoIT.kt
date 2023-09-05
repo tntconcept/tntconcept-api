@@ -4,62 +4,53 @@ import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDateTime
 import java.util.*
+import javax.persistence.PersistenceException
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AttachmentInfoDaoIT {
 
     @Inject
-    private lateinit var attachmentInfoDao: AttachmentInfoDao
+    private lateinit var sut: AttachmentInfoDao
 
     @Test
     fun `should save an attachment and find it by id`() {
-        val savedAttachment = attachmentInfoDao.save(createAttachmentInfoEntity())
-
-        val result = attachmentInfoDao.findById(savedAttachment.id)
-
-        assertEquals(savedAttachment, result.get())
+        val savedAttachment = sut.save(createAttachmentInfoEntity())
+        val result = sut.findById(savedAttachment.id)
+        assertThat(result).isPresent().contains(savedAttachment)
     }
 
     @Test
     fun `should find an attachment by id and user id`() {
-        val savedAttachment = attachmentInfoDao.save(createAttachmentInfoEntity())
-
-        val result = attachmentInfoDao.findByIdAndUserId(savedAttachment.id, savedAttachment.userId)
-
-        assertEquals(savedAttachment, result.get())
+        val savedAttachment = sut.save(createAttachmentInfoEntity())
+        val result = sut.findByIdAndUserId(savedAttachment.id, savedAttachment.userId)
+        assertThat(result).isPresent().contains(savedAttachment)
     }
 
-    @Test
-    fun `should change isTemporary to correct value`() {
-        attachmentInfoDao.updateIsTemporary(attachmentId, false)
-
-        val result = attachmentInfoDao.findById(attachmentId).get()
-
-        assertFalse(result.isTemporary)
-    }
 
     @Test
     fun `should find all temporary attachments`() {
-        val expectedSize = 1
-
-        val temporaryAttachments = attachmentInfoDao.findByIsTemporaryTrue()
-
-        assertEquals(expectedSize, temporaryAttachments.size)
-        assertEquals(attachmentId, temporaryAttachments.get(0).id)
+        val temporaryAttachments = sut.findByIsTemporaryTrue()
+        assertThat(temporaryAttachments).hasSize(1).allMatch { it.id == attachmentId }
     }
 
     @Test
-    fun `should delete all temporary attachments from a list`() {
-        attachmentInfoDao.delete(listOf(attachmentId))
+    fun `should delete an attachments`() {
+        val savedAttachment1 = sut.save(createAttachmentInfoEntity())
+        val savedAttachment2 = sut.save(createAttachmentInfoEntity())
+        val listOfIds = listOf(savedAttachment1.id, savedAttachment2.id)
+        sut.deleteByIdIn(listOfIds)
+        assertThat(sut.findByIdIn(listOfIds)).isEmpty()
+    }
 
-        assertThat(attachmentInfoDao.findById(attachmentId).isEmpty)
+    @Test
+    fun `wil fail when trying to delete attachments associated with activity_evidence`() {
+        assertThatThrownBy { sut.deleteByIdIn(listOf(attachmentId)) }.isInstanceOf(PersistenceException::class.java)
     }
 
     private fun createAttachmentInfoEntity() = AttachmentInfo(

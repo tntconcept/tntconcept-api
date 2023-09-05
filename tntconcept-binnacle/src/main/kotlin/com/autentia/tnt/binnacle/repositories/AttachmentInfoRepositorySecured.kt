@@ -26,17 +26,17 @@ internal class AttachmentInfoRepositorySecured(
     override fun findByIds(ids: List<AttachmentInfoId>): List<AttachmentInfo> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllAttachments())
-            attachmentInfoDao.findAllById(ids.map { it.value }).map { Mapper.toDomain(it) }
+            attachmentInfoDao.findByIdIn(ids.map { it.value }).map { Mapper.toDomain(it) }
         else
-            attachmentInfoDao.findAllByIdAndUserId(ids.map { it.value }, authentication.id()).map { Mapper.toDomain(it) }
+            attachmentInfoDao.findByIdInAndUserId(ids.map { it.value }, authentication.id()).map { Mapper.toDomain(it) }
     }
 
     override fun existsAllByIds(evidencesIds: List<AttachmentInfoId>): Boolean {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllAttachments())
-            attachmentInfoDao.existsAllById(evidencesIds.map { it.value })
+            attachmentInfoDao.existsByIdIn(evidencesIds.map { it.value })
         else
-            attachmentInfoDao.existsAllByIdAndUserId(evidencesIds.map { it.value }, authentication.id())
+            attachmentInfoDao.existsByIdInAndUserId(evidencesIds.map { it.value }, authentication.id())
     }
 
     override fun save(attachmentInfo: AttachmentInfo) {
@@ -54,7 +54,7 @@ internal class AttachmentInfoRepositorySecured(
             attachmentInfoDao.findByIsTemporaryTrue().map { Mapper.toDomain(it) }
 
     override fun delete(attachmentsIds: List<AttachmentInfoId>) =
-            attachmentInfoDao.delete(attachmentsIds.map { it.value })
+            attachmentInfoDao.deleteByIdIn(attachmentsIds.map { it.value })
 
     object Mapper {
         fun toJpaEntity(attachmentInfo: AttachmentInfo): com.autentia.tnt.binnacle.entities.AttachmentInfo = with(attachmentInfo) {
