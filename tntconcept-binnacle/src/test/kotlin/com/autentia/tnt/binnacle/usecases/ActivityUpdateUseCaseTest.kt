@@ -86,7 +86,7 @@ internal class ActivityUpdateUseCaseTest {
 
         val request = `get activity update request with no evidence`(existingActivity, duration)
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
-        whenever(attachmentRepository.findByIds(updatedActivity.evidences.map { AttachmentInfoId(it.id) }))
+        whenever(attachmentRepository.findByIds(any())).thenReturn(emptyList())
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
         // Act
@@ -476,15 +476,11 @@ internal class ActivityUpdateUseCaseTest {
             )
 
 
-    private fun makeAttachmentInfos(evidenceIds: List<UUID>): MutableList<AttachmentInfo> {
-        val evidences = mutableListOf<AttachmentInfo>()
+    private fun makeAttachmentInfos(evidenceIds: List<UUID>): MutableList<AttachmentInfo> =
+            evidenceIds.map { createAttachmentInfoEntity().copy(id = it) }.toMutableList()
 
-        for (evidenceId in evidenceIds) {
-            evidences.add(createAttachmentInfoEntity().copy(id = evidenceId))
-        }
-        return evidences
-    }
-
+    private fun makeAttachmentInfosDomain(evidenceIds: List<UUID>) =
+            evidenceIds.map { createAttachmentInfoEntity().copy(id = it).toDomain() }.toMutableList()
 
     private fun `get existing pending activity with no evidence`(role: ProjectRole) =
             Activity.emptyActivity(role).copy(
@@ -587,6 +583,7 @@ internal class ActivityUpdateUseCaseTest {
             uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
             isTemporary = false
     )
+
 
     private companion object {
         private val USER = createDomainUser()

@@ -71,7 +71,7 @@ class ActivityUpdateUseCase internal constructor(
                                      projectRole: ProjectRole): Activity {
         val activityEvidences = attachmentInfoRepository.findByIds(activityToUpdate.evidences)
         val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
-        val activityEntity = activityRepository.save(activityEntityToCreate)
+        val activityEntity = activityRepository.update(activityEntityToCreate)
         val updatedEvidences = activityEvidences.map { it.copy(isTemporary = false) }
         attachmentInfoRepository.save(updatedEvidences)
         return activityEntity

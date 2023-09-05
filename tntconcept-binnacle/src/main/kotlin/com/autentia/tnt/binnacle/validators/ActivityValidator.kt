@@ -76,7 +76,8 @@ internal class ActivityValidator(
         return activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
     }
 
-    private fun evidencesExist(evidencesIds: List<AttachmentInfoId>) = attachmentInfoRepository.existsAllByIds(evidencesIds)
+    private fun evidencesExist(evidencesIds: List<AttachmentInfoId>) = if (evidencesIds.isEmpty()) true
+        else attachmentInfoRepository.existsAllByIds(evidencesIds)
 
     private fun getTotalRegisteredDurationByProjectRole(
         activityToUpdate: Activity,

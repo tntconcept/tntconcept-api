@@ -63,12 +63,16 @@ class ActivityCreationUseCase internal constructor(
 
     private fun createAndSaveActivityEntity(activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity,
                                             projectRole: ProjectRole): Activity {
-        val activityEvidences = attachmentInfoRepository.findByIds(activityToCreate.evidences)
-        val activityEntityToCreate = Activity.of(activityToCreate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
-        val activityEntity = activityRepository.save(activityEntityToCreate)
-        val updatedEvidences = activityEvidences.map { it.copy(isTemporary = false) }
-        attachmentInfoRepository.save(updatedEvidences)
-        return activityEntity
+        return if (activityToCreate.evidences.isEmpty()) {
+            val activityEntityToCreate = Activity.of(activityToCreate, projectRole, mutableListOf())
+            activityRepository.save(activityEntityToCreate)
+        } else {
+            val activityEvidences = attachmentInfoRepository.findByIds(activityToCreate.evidences)
+            val activityEntityToCreate = Activity.of(activityToCreate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
+            val updatedEvidences = activityEvidences.map { it.copy(isTemporary = false) }
+            attachmentInfoRepository.save(updatedEvidences)
+            activityRepository.save(activityEntityToCreate)
+        }
     }
 
     private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)
