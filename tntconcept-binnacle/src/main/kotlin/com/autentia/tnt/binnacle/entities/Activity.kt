@@ -65,7 +65,7 @@ data class Activity(
 
 
     @OneToMany(fetch = LAZY)
-    @JoinTable(name="ActivityEvidence",
+    @JoinTable(name="ActivityAttachment",
         joinColumns = [JoinColumn(name = "activityId",
             referencedColumnName = "id")],
         inverseJoinColumns = [JoinColumn(name = "attachmentId",

@@ -125,5 +125,5 @@ VALUES (111, 11, '2023-08-02 09:00:00', 240, 1, 10, 'Permiso', 1, '2023-08-02 11
         '2023-08-02 13:00:00', 'NA', null, null);
 
 -- Activity evidence
-INSERT INTO ActivityEvidence (activityId, attachmentId, insertDate)
+INSERT INTO ActivityAttachment (activityId, attachmentId, insertDate)
 VALUES (111, '4d3cbe3f-369f-11ee-99c2-0242ac180003', NOW());

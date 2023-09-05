@@ -8,3 +8,5 @@ CREATE TABLE `ActivityAttachment` (
 ) ENGINE = innodb
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_spanish_ci;
+
+ALTER TABLE Activity MODIFY COLUMN hasEvidences TINYINT(1) DEFAULT 0 NOT NULL;
