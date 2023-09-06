@@ -55,14 +55,14 @@ internal class ActivityDeletionUseCaseTest {
 
         whenever(activityRepository.findById(1L)).thenReturn(activity)
         whenever(attachmentRepository.findByIds(attachmentIds)).doReturn(activity.evidences.map { it.toDomain() })
-        doNothing().`when`(attachmentRepository).save(any<List<AttachmentInfo>>())
+        doNothing().`when`(attachmentRepository).update(any<List<AttachmentInfo>>())
 
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
         verify(attachmentRepository).findByIds(attachmentIds)
         val attachmentTemporaryTrue = activity.evidences.map { it.toDomain().copy(isTemporary = true) }
-        verify(attachmentRepository).save(attachmentTemporaryTrue)
+        verify(attachmentRepository).update(attachmentTemporaryTrue)
     }
 
     @Test

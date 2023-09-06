@@ -11,7 +11,6 @@ import javax.persistence.Table
 @Entity
 @Table(name = "Attachment")
 data class AttachmentInfo(
-
     @Id
     @Type(type = "uuid-char")
     var id: UUID,
@@ -20,8 +19,8 @@ data class AttachmentInfo(
     val path: String,
     val fileName: String,
     val mimeType: String,
-    val uploadDate: LocalDateTime,
-    val isTemporary: Boolean,
+    var uploadDate: LocalDateTime,
+    var isTemporary: Boolean,
 
     ) {
 

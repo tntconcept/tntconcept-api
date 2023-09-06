@@ -10,6 +10,6 @@ internal interface AttachmentInfoRepository {
     fun findByIsTemporaryTrue(): List<AttachmentInfo>
     fun existsAllByIds(evidencesIds: List<AttachmentInfoId>): Boolean
     fun save(attachmentInfo: AttachmentInfo)
-    fun save(attachmentInfos: List<AttachmentInfo>)
+    fun update(attachmentInfos: List<AttachmentInfo>)
     fun delete(attachmentsIds: List<AttachmentInfoId>)
 }

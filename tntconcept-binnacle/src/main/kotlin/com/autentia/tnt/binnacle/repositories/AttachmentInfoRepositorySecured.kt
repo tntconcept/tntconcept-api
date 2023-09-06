@@ -46,8 +46,14 @@ internal class AttachmentInfoRepositorySecured(
         attachmentInfoDao.save(Mapper.toJpaEntity(attachmentInfo))
     }
 
-    override fun save(attachmentInfos: List<AttachmentInfo>) {
-        attachmentInfos.forEach { save(it) }
+    override fun update(attachmentInfos: List<AttachmentInfo>) {
+        val authentication = securityService.checkAuthentication()
+
+        attachmentInfos.forEach { attachmentInfo ->
+            require(attachmentInfo.userId == authentication.id()) { "User cannot update attachment" }
+            val jpaEntity = Mapper.toJpaEntity(attachmentInfo)
+            attachmentInfoDao.update(jpaEntity)
+        }
     }
 
     override fun findByIsTemporaryTrue(): List<AttachmentInfo> =

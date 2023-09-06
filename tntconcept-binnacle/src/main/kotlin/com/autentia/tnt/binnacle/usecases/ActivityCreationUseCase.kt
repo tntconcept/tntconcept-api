@@ -52,27 +52,28 @@ class ActivityCreationUseCase internal constructor(
 
         val savedActivity = this.createAndSaveActivityEntity(activityToCreate, projectRole)
 
-        val savedActivityDomain = savedActivity.toDomain()
-
-        if (savedActivityDomain.canBeApproved()) {
-            pendingApproveActivityMailUseCase.send(savedActivityDomain, user.username, locale)
+        if (savedActivity.canBeApproved()) {
+            pendingApproveActivityMailUseCase.send(savedActivity, user.username, locale)
         }
 
-        return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
+        return activityResponseConverter.toActivityResponseDTO(savedActivity)
     }
 
     private fun createAndSaveActivityEntity(activityToCreate: com.autentia.tnt.binnacle.core.domain.Activity,
-                                            projectRole: ProjectRole): Activity {
-        return if (activityToCreate.evidences.isEmpty()) {
+                                            projectRole: ProjectRole): com.autentia.tnt.binnacle.core.domain.Activity {
+        val activity: Activity
+        if (activityToCreate.evidences.isEmpty()) {
             val activityEntityToCreate = Activity.of(activityToCreate, projectRole, mutableListOf())
-            activityRepository.save(activityEntityToCreate)
+            activity = activityRepository.save(activityEntityToCreate)
         } else {
             val activityEvidences = attachmentInfoRepository.findByIds(activityToCreate.evidences)
             val activityEntityToCreate = Activity.of(activityToCreate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
             val updatedEvidences = activityEvidences.map { it.copy(isTemporary = false) }
-            attachmentInfoRepository.save(updatedEvidences)
-            activityRepository.save(activityEntityToCreate)
+            activity = activityRepository.save(activityEntityToCreate)
+            attachmentInfoRepository.update(updatedEvidences)
         }
+
+        return activity.toDomain()
     }
 
     private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)

@@ -78,7 +78,7 @@ class ActivityUpdateUseCase internal constructor(
             val activityEvidences = attachmentInfoRepository.findByIds(activityToUpdate.evidences)
             val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
             val activityEntity = activityRepository.update(activityEntityToCreate)
-            attachmentInfoRepository.save(activityEvidences.map { it.copy(isTemporary = false) })
+            attachmentInfoRepository.update(activityEvidences.map { it.copy(isTemporary = false) })
             activityEntity
         }
     }
@@ -86,7 +86,7 @@ class ActivityUpdateUseCase internal constructor(
     private fun markOutdatedAttachments(evidences: List<AttachmentInfoId>) {
         val attachments = attachmentInfoRepository.findByIds(evidences)
         val attachmentsUpdated = attachments.map { it.copy(isTemporary = true) }
-        attachmentInfoRepository.save(attachmentsUpdated)
+        attachmentInfoRepository.update(attachmentsUpdated)
     }
 
     private fun getProjectRoleEntity(projectRoleId: Long) =

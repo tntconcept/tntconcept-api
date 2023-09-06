@@ -214,7 +214,7 @@ internal class ActivityUpdateUseCaseTest {
 
         val request = `get activity update request with evidence`(existingActivity, duration)
         whenever(attachmentInfoRepository.findByIds(request.evidences.map { AttachmentInfoId(it) })).thenReturn(listOf(SAMPLE_EVIDENCE_1, SAMPLE_EVIDENCE_2))
-        doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+        doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
@@ -232,7 +232,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
-        verify(attachmentInfoRepository).save(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false), SAMPLE_EVIDENCE_2.copy(isTemporary = false)))
+        verify(attachmentInfoRepository).update(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false), SAMPLE_EVIDENCE_2.copy(isTemporary = false)))
         verify(attachmentInfoRepository).findByIds(request.evidences.map { AttachmentInfoId(it) })
         verifyNoMoreInteractions(attachmentInfoRepository)
     }
@@ -251,7 +251,7 @@ internal class ActivityUpdateUseCaseTest {
 
         val request = `get activity update request with evidence`(existingActivity, duration)
         whenever(attachmentInfoRepository.findByIds(SAMPLE_EVIDENCES_DOMAIN_IDS)).thenReturn(SAMPLE_EVIDENCES)
-        doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+        doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
@@ -271,7 +271,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).update(updatedActivity)
 
         verify(attachmentInfoRepository).findByIds(SAMPLE_EVIDENCES_DOMAIN_IDS)
-        verify(attachmentInfoRepository).save(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
+        verify(attachmentInfoRepository).update(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
         verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
@@ -291,7 +291,7 @@ internal class ActivityUpdateUseCaseTest {
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
         whenever(attachmentInfoRepository.findByIds(SAMPLE_EVIDENCES_DOMAIN_IDS)).thenReturn(SAMPLE_EVIDENCES)
-        doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+        doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
         doNothing().whenever(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
 
@@ -310,7 +310,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).update(updatedActivity)
 
         verify(attachmentInfoRepository).findByIds(SAMPLE_EVIDENCES_DOMAIN_IDS)
-        verify(attachmentInfoRepository).save(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
+        verify(attachmentInfoRepository).update(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
         verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
@@ -324,7 +324,7 @@ internal class ActivityUpdateUseCaseTest {
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
         val existingAttachmentIds = existingActivity.evidences.map { AttachmentInfoId(it.id) }
         whenever(attachmentInfoRepository.findByIds(existingAttachmentIds)).thenReturn(existingActivity.evidences.map { it.copy(isTemporary = false).toDomain() })
-        doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+        doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
@@ -347,7 +347,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
-        verify(attachmentInfoRepository).save(existingActivity.evidences.map { it.copy(isTemporary = true).toDomain() })
+        verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true).toDomain() })
         verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
@@ -361,7 +361,7 @@ internal class ActivityUpdateUseCaseTest {
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
         val existingAttachmentIds = existingActivity.evidences.map { AttachmentInfoId(it.id) }
         whenever(attachmentInfoRepository.findByIds(existingAttachmentIds)).thenReturn(existingActivity.evidences.map { it.copy(isTemporary = false).toDomain() })
-        doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+        doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
@@ -384,7 +384,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
-        verify(attachmentInfoRepository).save(existingActivity.evidences.map { it.copy(isTemporary = true).toDomain() })
+        verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true).toDomain() })
         verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
@@ -398,14 +398,14 @@ internal class ActivityUpdateUseCaseTest {
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
         val existingAttachmentIds = existingActivity.evidences.map { AttachmentInfoId(it.id) }
         whenever(attachmentInfoRepository.findByIds(existingAttachmentIds)).thenReturn(existingActivity.evidences.map { it.copy(isTemporary = false).toDomain() })
-        doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+        doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
         val request = `get activity update request with evidence`(existingActivity, duration)
         whenever(attachmentInfoRepository.findByIds(SAMPLE_EVIDENCES_DOMAIN_IDS)).thenReturn(SAMPLE_EVIDENCES)
-        doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+        doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
@@ -424,9 +424,9 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(SAMPLE_EVIDENCES_DOMAIN_IDS)
-        verify(attachmentInfoRepository).save(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
+        verify(attachmentInfoRepository).update(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
-        verify(attachmentInfoRepository).save(existingActivity.evidences.map { it.copy(isTemporary = true).toDomain() })
+        verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true).toDomain() })
         verifyNoMoreInteractions(attachmentInfoRepository)
     }
 

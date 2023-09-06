@@ -33,7 +33,7 @@ class ActivityDeletionUseCase internal constructor(
         if (activityToDelete.hasEvidences()) {
             val attachments = attachmentInfoRepository.findByIds(activityToDeleteDomain.evidences)
             val attachmentsUpdated = attachments.map { it.copy(isTemporary = true) }
-            attachmentInfoRepository.save(attachmentsUpdated)
+            attachmentInfoRepository.update(attachmentsUpdated)
         }
 
         activityRepository.deleteById(id)

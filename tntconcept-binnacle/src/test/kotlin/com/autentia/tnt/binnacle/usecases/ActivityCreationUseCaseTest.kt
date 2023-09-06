@@ -252,7 +252,7 @@ internal class ActivityCreationUseCaseTest {
             whenever(activityRepository.save(any())).thenReturn(activityEntity)
             whenever(attachmentInfoRepository.findByIds(request.evidences.map { AttachmentInfoId(it) }))
                     .thenReturn(listOf(attachmentInfo))
-            doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+            doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
             // When
             val activityCreated = sut.createActivity(request, Locale.ENGLISH)
@@ -270,7 +270,7 @@ internal class ActivityCreationUseCaseTest {
 
             // Verify
             verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-            verify(attachmentInfoRepository).save(listOf(attachmentInfo.copy(isTemporary = false)))
+            verify(attachmentInfoRepository).update(listOf(attachmentInfo.copy(isTemporary = false)))
         }
 
         @Test
@@ -298,7 +298,7 @@ internal class ActivityCreationUseCaseTest {
             whenever(activityRepository.save(any())).thenReturn(activityEntity)
             whenever(attachmentInfoRepository.findByIds(activityCreateRequest.evidences.map { AttachmentInfoId(it) }))
                     .thenReturn(listOf(attachmentInfo))
-            doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+            doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
             // When
             val activityCreated = sut.createActivity(activityCreateRequest, Locale.ENGLISH)
@@ -316,7 +316,7 @@ internal class ActivityCreationUseCaseTest {
 
             // Verify
             verify(sendPendingApproveActivityMailUseCase).send(activityEntity.toDomain(), user.username, Locale.ENGLISH)
-            verify(attachmentInfoRepository).save(listOf(attachmentInfo.copy(isTemporary = false)))
+            verify(attachmentInfoRepository).update(listOf(attachmentInfo.copy(isTemporary = false)))
         }
 
         @Test
@@ -395,7 +395,7 @@ internal class ActivityCreationUseCaseTest {
             whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
             whenever(activityRepository.save(any())).thenReturn(activityEntity)
             whenever(attachmentInfoRepository.findByIds(activityCreateRequest.evidences.map { AttachmentInfoId(it) })).thenReturn(listOf(attachmentInfo))
-            doNothing().`when`(attachmentInfoRepository).save(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+            doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
 
             // When
             val activityCreated = sut.createActivity(activityCreateRequest, Locale.ENGLISH)
@@ -411,7 +411,7 @@ internal class ActivityCreationUseCaseTest {
 
             // Verify
             verify(sendPendingApproveActivityMailUseCase).send(activityEntity.toDomain(), user.username, Locale.ENGLISH)
-            verify(attachmentInfoRepository).save(listOf(attachmentInfo.copy(isTemporary = false)))
+            verify(attachmentInfoRepository).update(listOf(attachmentInfo.copy(isTemporary = false)))
         }
 
         private fun `an activity with no approval and no evidences`() = ACTIVITY_NO_APPROVAL_REQUEST_BODY_DTO.copy(evidences = emptyList())
