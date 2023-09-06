@@ -50,7 +50,7 @@ internal class ActivityValidatorTest {
     inner class CheckActivityIsValidForCreation {
 
         @BeforeEach
-        fun setup(){
+        fun setup() {
             whenever(attachmentInfoRepository.existsAllByIds(any())).doReturn(true)
         }
 
@@ -586,6 +586,47 @@ internal class ActivityValidatorTest {
 
             assertEquals(projectRoleLimited.toDomain().getMaxTimeAllowedByYearInTimeUnits(), exception.maxAllowedTime)
             assertEquals(expectedRemainingHours, exception.remainingTime)
+        }
+
+        @Test
+        fun `throw AttachmentNotFoundException when activity has a invalid evidence id`() {
+            val attachmentID = UUID.randomUUID()
+            whenever(attachmentInfoRepository.existsAllByIds(listOf(attachmentID))).doReturn(false)
+
+            val activity = createActivity(
+                    start = todayDateTime,
+                    end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
+                    duration = (MINUTES_IN_HOUR * 9),
+                    evidences = arrayListOf(attachmentID)
+            ).copy(id = null)
+
+            doReturn(Optional.of(nonBlockedProject))
+                    .whenever(projectRepository)
+                    .findById(nonBlockedProject.id)
+
+
+            val exception = assertThrows<AttachmentNotFoundException> {
+                activityValidator.checkActivityIsValidForCreation(activity, user)
+            }
+
+            assertEquals("Attachment does not exist", exception.message)
+        }
+
+        @Test
+        fun `Allow when the attachments are correct`() {
+            val attachmentID = UUID.randomUUID()
+
+            val activity = newActivityWithEvidences(arrayListOf(attachmentID))
+
+            doReturn(Optional.of(vacationProject))
+                    .whenever(projectRepository)
+                    .findById(projectRole.project.id)
+
+            doReturn(true)
+                    .whenever(attachmentInfoRepository)
+                    .existsAllByIds(listOf(attachmentID))
+
+            activityValidator.checkActivityIsValidForCreation(activity, user)
         }
     }
 
@@ -1251,46 +1292,6 @@ internal class ActivityValidatorTest {
         }
     }
 
-    @Test
-    fun `throw AttachmentNotFoundException when activity has a invalid evidence id`() {
-        val attachmentID = UUID.randomUUID()
-
-        val activity = createActivity(
-                start = todayDateTime,
-                end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
-                duration = (MINUTES_IN_HOUR * 9),
-                evidences = arrayListOf(attachmentID)
-        ).copy(id = null)
-
-        doReturn(Optional.of(nonBlockedProject))
-                .whenever(projectRepository)
-                .findById(nonBlockedProject.id)
-
-
-        val exception = assertThrows<AttachmentNotFoundException> {
-            activityValidator.checkActivityIsValidForCreation(activity, user)
-        }
-
-        assertEquals("Attachment does not exist", exception.message)
-    }
-
-    @Test
-    fun `Do nothing when the attachments are correct`() {
-        val attachmentID = UUID.randomUUID()
-
-        val activity = newActivityWithEvidences(arrayListOf(attachmentID))
-
-        doReturn(Optional.of(vacationProject))
-                .whenever(projectRepository)
-                .findById(projectRole.project.id)
-
-        doReturn(true)
-                .whenever(attachmentInfoRepository)
-                .existsAllByIds(listOf(attachmentID))
-
-        activityValidator.checkActivityIsValidForCreation(activity, user)
-
-    }
 
     private companion object {
 
