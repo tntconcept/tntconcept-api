@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.BeforeEach
@@ -34,7 +33,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.findById(attachmentId)
 
-        verify(attachmentInfoDao).findById(attachmentId.value)
+        verify(attachmentInfoDao).findById(attachmentId)
     }
 
     @Test
@@ -42,7 +41,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
         attachmentInfoRepositorySecured.findById(attachmentId)
 
-        verify(attachmentInfoDao).findByIdAndUserId(attachmentId.value, userId)
+        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
     }
 
     @Test
@@ -50,7 +49,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.save(SUPPORTED_ATTACHMENT_INFO.copy(userId = 3L))
 
-        verify(attachmentInfoDao).save(SUPPORTED_ATTACHMENT_INFO_ENTITY.copy(id = SUPPORTED_ATTACHMENT_INFO.id.value, userId = 3L))
+        verify(attachmentInfoDao).save(SUPPORTED_ATTACHMENT_INFO.copy(id = SUPPORTED_ATTACHMENT_INFO.id, userId = 3L))
     }
 
     @Test
@@ -78,11 +77,11 @@ internal class AttachmentInfoRepositorySecuredTest {
     fun `call deleteTemporaryList without check authentication`() {
         attachmentInfoRepositorySecured.delete(listOf(SUPPORTED_ATTACHMENT_INFO.id))
 
-        verify(attachmentInfoDao).deleteByIdIn(listOf(SUPPORTED_ATTACHMENT_INFO.id.value))
+        verify(attachmentInfoDao).deleteByIdIn(listOf(SUPPORTED_ATTACHMENT_INFO.id))
     }
 
     companion object {
-        private val attachmentId = AttachmentInfoId(UUID.randomUUID())
+        private val attachmentId = UUID.randomUUID()
         private const val userId = 1L
         private const val adminUserId = 3L
         private val authenticationAdmin =
@@ -92,12 +91,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
         private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
 
-        private val SUPPORTED_ATTACHMENT_INFO = createAttachmentInfoEntityWithFilenameAndMimetype(
-                IMAGE_SUPPORTED_FILENAME,
-                IMAGE_SUPPORTED_MIMETYPE
-        ).toDomain()
-
-        private val SUPPORTED_ATTACHMENT_INFO_ENTITY = createAttachmentInfoEntityWithFilenameAndMimetype(
+        private val SUPPORTED_ATTACHMENT_INFO= createAttachmentInfoEntityWithFilenameAndMimetype(
                 IMAGE_SUPPORTED_FILENAME,
                 IMAGE_SUPPORTED_MIMETYPE
         )

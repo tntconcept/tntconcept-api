@@ -3,9 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -76,14 +74,14 @@ class ActivityUpdateUseCase internal constructor(
             activityRepository.update(activityEntityToCreate)
         } else {
             val activityEvidences = attachmentInfoRepository.findByIds(activityToUpdate.evidences)
-            val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
+            val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.toMutableList())
             val activityEntity = activityRepository.update(activityEntityToCreate)
             attachmentInfoRepository.update(activityEvidences.map { it.copy(isTemporary = false) })
             activityEntity
         }
     }
 
-    private fun markOutdatedAttachments(evidences: List<AttachmentInfoId>) {
+    private fun markOutdatedAttachments(evidences: List<UUID>) {
         val attachments = attachmentInfoRepository.findByIds(evidences)
         val attachmentsUpdated = attachments.map { it.copy(isTemporary = true) }
         attachmentInfoRepository.update(attachmentsUpdated)

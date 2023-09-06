@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.entities.dto.AttachmentCreationRequestDTO
 import io.micronaut.security.authentication.ClientAuthentication
@@ -31,14 +30,14 @@ class AttachmentCreationUseCaseTest {
     }
 
     private fun `attachment with a jpeg`(attachmentCreationRequestDTO: AttachmentCreationRequestDTO): Any {
-        val id = AttachmentInfoId(UUID.randomUUID())
+        val id = UUID.randomUUID()
         return Attachment(
                 info = AttachmentInfo(
                         id = id,
                         fileName = attachmentCreationRequestDTO.fileName,
                         mimeType = attachmentCreationRequestDTO.mimeType,
                         uploadDate = DATE,
-                        path = "/2023/2/${id.value}.jpeg",
+                        path = "/2023/2/$id.jpeg",
                         isTemporary = true,
                         userId = USER_ID
                 ),

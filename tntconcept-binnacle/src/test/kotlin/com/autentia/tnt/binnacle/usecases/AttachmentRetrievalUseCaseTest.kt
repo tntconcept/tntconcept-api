@@ -2,10 +2,8 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
-import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.assertj.core.api.Assertions.assertThat
@@ -42,7 +40,7 @@ class AttachmentRetrievalUseCaseTest {
         doReturn(existingAttachment).whenever(attachmentService).findAttachment(existingUUID)
 
         // When
-        val result = this.sut.getAttachment(existingUUID.value)
+        val result = this.sut.getAttachment(existingUUID)
 
         // Then
         assertThat(result).isEqualTo(existingAttachment)
@@ -54,12 +52,12 @@ class AttachmentRetrievalUseCaseTest {
     @Test
     fun `throws AttachmentNotFoundException when get an attachment by id that doesnt exists`() {
         // Given
-        val nonExistingUUID = AttachmentInfoId(UUID.randomUUID())
+        val nonExistingUUID = UUID.randomUUID()
         whenever(attachmentService.findAttachment(nonExistingUUID)).thenThrow(AttachmentNotFoundException())
 
         // When, Then
         assertThrows<AttachmentNotFoundException> {
-            sut.getAttachment(nonExistingUUID.value)
+            sut.getAttachment(nonExistingUUID)
         }
 
         // Verify
@@ -69,7 +67,7 @@ class AttachmentRetrievalUseCaseTest {
     private fun `an existing attachment`(): Attachment =
             Attachment(
                     info = AttachmentInfo(
-                            id = AttachmentInfoId(UUID.randomUUID()),
+                            id = UUID.randomUUID(),
                             fileName = "some_image.jpeg",
                             mimeType = "image/jpeg",
                             uploadDate = LocalDateTime.now(),

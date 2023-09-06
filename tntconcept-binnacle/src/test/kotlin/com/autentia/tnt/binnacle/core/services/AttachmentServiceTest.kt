@@ -1,8 +1,7 @@
 package com.autentia.tnt.binnacle.core.services
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -67,12 +66,12 @@ class AttachmentServiceTest {
         assertThat(result.info.isTemporary).isTrue()
         assertThat(result.info.uploadDate).isEqualTo(SOME_DATE)
 
-        val expectedPath = "/2023/2/${result.info.id.value}.jpg"
+        val expectedPath = "/2023/2/${result.info.id}.jpg"
         assertThat(result.info.path).isEqualTo(expectedPath)
 
         // Verify
         verify(this.attachmentStorage).storeAttachmentFile(expectedPath, file)
-        verify(this.attachmentInfoRepository).save(result.info)
+        verify(this.attachmentInfoRepository).save(any<AttachmentInfo>())
         verify(this.dateService).getDateNow()
     }
 
@@ -111,7 +110,7 @@ class AttachmentServiceTest {
     @Test
     fun `find existing attachment`() {
         // Given
-        val existingId = AttachmentInfoId(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
+        val existingId = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")
         val existingInfo = AttachmentInfo(
                 id = existingId,
                 fileName = "some_image.jpg",
@@ -144,7 +143,7 @@ class AttachmentServiceTest {
     @Test
     fun `find attachment results in AttachmentNotFoundException when attachment info is not found`() {
         // Given
-        val someId = AttachmentInfoId(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
+        val someId = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")
 
         whenever(this.attachmentInfoRepository.findById(someId)).thenReturn(Optional.empty())
 
@@ -161,7 +160,7 @@ class AttachmentServiceTest {
     @Test
     fun `find attachment results in AttachmentNotFoundException when file is not found`() {
         // Given
-        val someId = AttachmentInfoId(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
+        val someId = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")
         val existingInfo = AttachmentInfo(
                 id = someId,
                 fileName = "some_image.jpg",

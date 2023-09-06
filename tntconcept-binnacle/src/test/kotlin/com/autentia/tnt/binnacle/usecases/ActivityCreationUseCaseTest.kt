@@ -7,7 +7,6 @@ import com.autentia.tnt.binnacle.converters.ActivityEvidenceResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.*
@@ -236,7 +235,7 @@ internal class ActivityCreationUseCaseTest {
                     "New activity wit",
                     false,
                     projectRole.id,
-                    listOf(attachmentInfo.id.value)
+                    listOf(attachmentInfo.id)
             )
 
             val activityEntity = createActivity(
@@ -246,13 +245,12 @@ internal class ActivityCreationUseCaseTest {
                     description = request.description,
                     billable = request.billable,
                     projectRole = projectRole,
-                    evidences = mutableListOf(AttachmentInfo.of(attachmentInfo)))
+                    evidences = mutableListOf(attachmentInfo))
 
             whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
             whenever(activityRepository.save(any())).thenReturn(activityEntity)
-            whenever(attachmentInfoRepository.findByIds(request.evidences.map { AttachmentInfoId(it) }))
-                    .thenReturn(listOf(attachmentInfo))
-            doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+            whenever(attachmentInfoRepository.findByIds(request.evidences)).thenReturn(listOf(attachmentInfo))
+            doNothing().`when`(attachmentInfoRepository).update(any<List<AttachmentInfo>>())
 
             // When
             val activityCreated = sut.createActivity(request, Locale.ENGLISH)
@@ -264,7 +262,7 @@ internal class ActivityCreationUseCaseTest {
                     description = request.description,
                     billable = request.billable,
                     projectRoleId = projectRole.id,
-                    evidences = mutableListOf(attachmentInfo.id.value.toString()))
+                    evidences = mutableListOf(attachmentInfo.id.toString()))
 
             Assertions.assertThat(activityCreated).usingRecursiveComparison().isEqualTo(expectedResponseDTO)
 
@@ -286,19 +284,19 @@ internal class ActivityCreationUseCaseTest {
                     "New activity wit",
                     false,
                     projectRoleRequireEvidence.id,
-                    listOf(attachmentInfo.id.value)
+                    listOf(attachmentInfo.id)
             )
 
             val activityEntity = createActivity(description = activityCreateRequest.description, userId = user.id,
-                    projectRole = projectRoleRequireEvidence, evidences = mutableListOf(AttachmentInfo.of(attachmentInfo)),
+                    projectRole = projectRoleRequireEvidence, evidences = mutableListOf(attachmentInfo),
                     approvalState = ApprovalState.PENDING, billable = false,
                     start = activityCreateRequest.interval.start, end = activityCreateRequest.interval.end)
 
             whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
             whenever(activityRepository.save(any())).thenReturn(activityEntity)
-            whenever(attachmentInfoRepository.findByIds(activityCreateRequest.evidences.map { AttachmentInfoId(it) }))
+            whenever(attachmentInfoRepository.findByIds(activityCreateRequest.evidences))
                     .thenReturn(listOf(attachmentInfo))
-            doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+            doNothing().`when`(attachmentInfoRepository).update(any<List<AttachmentInfo>>())
 
             // When
             val activityCreated = sut.createActivity(activityCreateRequest, Locale.ENGLISH)
@@ -306,7 +304,7 @@ internal class ActivityCreationUseCaseTest {
             // Then
             val expectedResponseDTO = createActivityResponseDTO(
                     userId = user.id,
-                    evidences = arrayListOf(attachmentInfo.id.value.toString()),
+                    evidences = arrayListOf(attachmentInfo.id.toString()),
                     description = activityEntity.description)
                     .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
@@ -385,24 +383,24 @@ internal class ActivityCreationUseCaseTest {
                     "New activity wit",
                     false,
                     projectRoleRequireEvidence.id,
-                    listOf(attachmentInfo.id.value)
+                    listOf(attachmentInfo.id)
             )
             val activityEntity = createActivity(description = activityCreateRequest.description, userId = user.id,
-                    projectRole = projectRoleRequireEvidence, evidences = mutableListOf(AttachmentInfo.of(attachmentInfo)),
+                    projectRole = projectRoleRequireEvidence, evidences = mutableListOf(attachmentInfo),
                     approvalState = ApprovalState.PENDING, billable = false,
                     start = activityCreateRequest.interval.start, end = activityCreateRequest.interval.end)
 
             whenever(projectRoleRepository.findById(projectRoleRequireEvidence.id)).thenReturn(projectRoleRequireEvidence)
             whenever(activityRepository.save(any())).thenReturn(activityEntity)
-            whenever(attachmentInfoRepository.findByIds(activityCreateRequest.evidences.map { AttachmentInfoId(it) })).thenReturn(listOf(attachmentInfo))
-            doNothing().`when`(attachmentInfoRepository).update(any<List<com.autentia.tnt.binnacle.core.domain.AttachmentInfo>>())
+            whenever(attachmentInfoRepository.findByIds(activityCreateRequest.evidences)).thenReturn(listOf(attachmentInfo))
+            doNothing().`when`(attachmentInfoRepository).update(any<List<AttachmentInfo>>())
 
             // When
             val activityCreated = sut.createActivity(activityCreateRequest, Locale.ENGLISH)
 
             // Then
             val expectedResponseDTO = createActivityResponseDTO(userId = user.id,
-                    evidences = arrayListOf(attachmentInfo.id.value.toString()), description = activityEntity.description)
+                    evidences = arrayListOf(attachmentInfo.id.toString()), description = activityEntity.description)
                     .copy(approval = ApprovalDTO(state = ApprovalState.PENDING, canBeApproved = true))
 
             Assertions.assertThat(activityCreated)
@@ -428,7 +426,7 @@ internal class ActivityCreationUseCaseTest {
     private fun `get role that requires approval but no evidence`() =
             PROJECT_ROLE_APPROVAL.copy(requireEvidence = RequireEvidence.NO, isApprovalRequired = true)
 
-    private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg").toDomain()
+    private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg")
 
     private companion object {
         private val TIME_NOW = LocalDateTime.now()

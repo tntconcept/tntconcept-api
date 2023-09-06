@@ -226,7 +226,7 @@ class ActivityTest {
 
         private fun `get activity with evidence with status pending and role requiring evidence`() =
                 createDomainActivity().copy(approvalState = ApprovalState.PENDING, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.ONCE),
-                    evidences = arrayListOf(AttachmentInfoId(UUID.randomUUID())))
+                    evidences = arrayListOf(UUID.randomUUID()))
 
         private fun `get activity with evidence with status pending and role not requiring evidence`() =
                 createDomainActivity().copy(approvalState = ApprovalState.PENDING, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.NO))

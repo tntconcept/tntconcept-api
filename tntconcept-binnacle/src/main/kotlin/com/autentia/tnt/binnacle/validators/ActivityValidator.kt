@@ -12,6 +12,7 @@ import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -76,7 +77,7 @@ internal class ActivityValidator(
         return activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
     }
 
-    private fun evidencesExist(evidencesIds: List<AttachmentInfoId>) = if (evidencesIds.isEmpty()) true
+    private fun evidencesExist(evidencesIds: List<UUID>) = if (evidencesIds.isEmpty()) true
         else attachmentInfoRepository.existsAllByIds(evidencesIds)
 
     private fun getTotalRegisteredDurationByProjectRole(

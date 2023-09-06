@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -67,7 +66,7 @@ class ActivityCreationUseCase internal constructor(
             activity = activityRepository.save(activityEntityToCreate)
         } else {
             val activityEvidences = attachmentInfoRepository.findByIds(activityToCreate.evidences)
-            val activityEntityToCreate = Activity.of(activityToCreate, projectRole, activityEvidences.map { AttachmentInfo.of(it) }.toMutableList())
+            val activityEntityToCreate = Activity.of(activityToCreate, projectRole, activityEvidences.toMutableList())
             val updatedEvidences = activityEvidences.map { it.copy(isTemporary = false) }
             activity = activityRepository.save(activityEntityToCreate)
             attachmentInfoRepository.update(updatedEvidences)

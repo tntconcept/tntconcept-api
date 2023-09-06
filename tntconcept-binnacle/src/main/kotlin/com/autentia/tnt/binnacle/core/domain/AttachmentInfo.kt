@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class AttachmentInfo(
-        val id: AttachmentInfoId,
+        val id: UUID,
         val fileName: String,
         val mimeType: String,
         val uploadDate: LocalDateTime,
@@ -12,6 +12,3 @@ data class AttachmentInfo(
         val userId: Long,
         val path: String
 )
-
-@JvmInline
-value class AttachmentInfoId(val value: UUID)

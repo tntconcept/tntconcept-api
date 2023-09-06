@@ -23,7 +23,7 @@ class TemporaryAttachmentsDeletionUseCase internal constructor(
             val temporaryAttachments = attachmentInfoRepository.findByIsTemporaryTrue()
 
             val temporaryAttachmentsLessThanOneDay =
-                temporaryAttachments.filter { isMoreThanOneDay(it) }
+                temporaryAttachments.filter { isMoreThanOneDay(it.toDomain()) }
 
             temporaryAttachmentsLessThanOneDay.forEach { attachmentFileSystemStorage.deleteAttachmentFile(it.path) }
             attachmentInfoRepository.delete(temporaryAttachmentsLessThanOneDay.map { it.id })

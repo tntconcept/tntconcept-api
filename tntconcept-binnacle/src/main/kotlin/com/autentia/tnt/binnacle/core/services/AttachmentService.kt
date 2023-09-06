@@ -2,8 +2,7 @@ package com.autentia.tnt.binnacle.core.services
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.Attachment
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -25,32 +24,10 @@ internal class AttachmentService(
 
     fun createAttachment(fileName: String, mimeType: String, file: ByteArray, userId: Long): Attachment {
         if (!isMimeTypeSupported(mimeType, fileName))
-            throw AttachmentMimeTypeNotSupportedException("Mime type $mimeType} is not supported")
+            throw AttachmentMimeTypeNotSupportedException("Mime type $mimeType is not supported")
 
-        val attachment = this.createAttachment(
-                id = AttachmentInfoId(UUID.randomUUID()),
-                fileName = fileName,
-                mimeType = mimeType,
-                file = file,
-                userId = userId)
-
-        attachmentStorage.storeAttachmentFile(attachment.info.path, attachment.file)
-        attachmentInfoRepository.save(attachment.info)
-
-        return attachment
-    }
-
-    fun findAttachment(id: AttachmentInfoId): Attachment {
-        val attachmentInfo = attachmentInfoRepository.findById(id).orElseThrow { AttachmentNotFoundException() }
-        val attachmentFile = attachmentStorage.retrieveAttachmentFile(attachmentInfo.path)
-        return Attachment(attachmentInfo, attachmentFile)
-    }
-
-    private fun isMimeTypeSupported(mimeType: String, fileName: String): Boolean
-        = supportedMimeExtensions.containsKey(mimeType) && supportedMimeExtensions[mimeType] == FilenameUtils.getExtension(fileName)
-
-    private fun createAttachment(id: AttachmentInfoId, fileName: String, mimeType: String, file: ByteArray, userId: Long): Attachment {
         val currentDate = this.dateService.getDateNow()
+        val id = UUID.randomUUID()
         val attachmentInfo = AttachmentInfo(
                 id = id,
                 fileName = fileName,
@@ -61,11 +38,24 @@ internal class AttachmentService(
                 path = this.createPathForAttachment(id, currentDate, fileName).toString()
         )
 
-        return Attachment(attachmentInfo, file)
+        val attachment = Attachment(attachmentInfo.toDomain(), file)
+
+        attachmentStorage.storeAttachmentFile(attachment.info.path, attachment.file)
+        attachmentInfoRepository.save(attachmentInfo)
+
+        return attachment
     }
 
-    private fun createPathForAttachment(id: AttachmentInfoId, currentDate: LocalDateTime, fileName: String): Path {
+    fun findAttachment(id: UUID): Attachment {
+        val attachmentInfo = attachmentInfoRepository.findById(id).orElseThrow { AttachmentNotFoundException() }
+        val attachmentFile = attachmentStorage.retrieveAttachmentFile(attachmentInfo.path)
+        return Attachment(attachmentInfo.toDomain(), attachmentFile)
+    }
+
+    private fun isMimeTypeSupported(mimeType: String, fileName: String): Boolean = supportedMimeExtensions.containsKey(mimeType) && supportedMimeExtensions[mimeType] == FilenameUtils.getExtension(fileName)
+
+    private fun createPathForAttachment(id: UUID, currentDate: LocalDateTime, fileName: String): Path {
         val fileExtension = FilenameUtils.getExtension(fileName)
-        return Path.of("/", "${currentDate.year}", "${currentDate.monthValue}", "${id.value}.$fileExtension")
+        return Path.of("/", "${currentDate.year}", "${currentDate.monthValue}", "$id.$fileExtension")
     }
 }

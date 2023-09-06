@@ -1,8 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
@@ -51,17 +49,17 @@ internal class ActivityDeletionUseCaseTest {
     @Test
     fun `call the repository and attachment service to mark the activities as temporary and delete activity`() {
         val activity = entityActivityWithEvidences
-        val attachmentIds = activity.evidences.map { AttachmentInfoId(it.id) }
+        val attachmentIds = activity.evidences.map { it.id }
 
         whenever(activityRepository.findById(1L)).thenReturn(activity)
-        whenever(attachmentRepository.findByIds(attachmentIds)).doReturn(activity.evidences.map { it.toDomain() })
+        whenever(attachmentRepository.findByIds(attachmentIds)).doReturn(activity.evidences)
         doNothing().`when`(attachmentRepository).update(any<List<AttachmentInfo>>())
 
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
         verify(attachmentRepository).findByIds(attachmentIds)
-        val attachmentTemporaryTrue = activity.evidences.map { it.toDomain().copy(isTemporary = true) }
+        val attachmentTemporaryTrue = activity.evidences.map { it.copy(isTemporary = true) }
         verify(attachmentRepository).update(attachmentTemporaryTrue)
     }
 

@@ -21,7 +21,7 @@ data class Activity private constructor(
         val departmentId: Long?,
         var insertDate: LocalDateTime? = null,
         var approvalState: ApprovalState,
-        var evidences: List<AttachmentInfoId> = arrayListOf(),
+        var evidences: List<UUID> = arrayListOf(),
         val approvedByUserId: Long? = null,
         val approvalDate: LocalDateTime? = null,
 ) : ActivityTimeInterval(timeInterval, projectRole.getTimeUnit()) {
@@ -72,7 +72,7 @@ data class Activity private constructor(
                 departmentId: Long?,
                 insertDate: LocalDateTime?,
                 approvalState: ApprovalState,
-                evidences: List<AttachmentInfoId> = arrayListOf(),
+                evidences: List<UUID> = arrayListOf(),
                 approvedByUserId: Long? = null,
                 approvalDate: LocalDateTime? = null,
         ) = Activity(

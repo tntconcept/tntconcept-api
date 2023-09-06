@@ -6,7 +6,7 @@ import jakarta.inject.Singleton
 class ActivityEvidenceResponseConverter {
 
     fun getEvidencesUUIDs(activity: com.autentia.tnt.binnacle.core.domain.Activity) : List<String> {
-        return activity.evidences.map { it.value.toString() }
+        return activity.evidences.map { it.toString() }
     }
 
     fun getEvidencesUUIDs(activity: com.autentia.tnt.binnacle.entities.Activity) : List<String> {

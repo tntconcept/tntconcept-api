@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.entities
 
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.core.utils.toLocalDateTime
@@ -89,7 +88,7 @@ data class Activity(
             departmentId,
             toLocalDateTime(insertDate),
             approvalState,
-            getAttachmentInfoIds(evidences),
+            evidences.map {it.id},
             approvedByUserId,
             approvalDate
         )
@@ -172,9 +171,5 @@ data class Activity(
             0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
             false, 0, null, ApprovalState.NA, null, null, arrayListOf()
         )
-
-        fun getAttachmentInfoIds(attachmentInfos: MutableList<AttachmentInfo>): List<AttachmentInfoId> =
-                attachmentInfos.map {AttachmentInfoId(it.id)}
-
     }
 }

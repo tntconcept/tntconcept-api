@@ -1253,7 +1253,7 @@ internal class ActivityValidatorTest {
 
     @Test
     fun `throw AttachmentNotFoundException when activity has a invalid evidence id`() {
-        val attachmentID = AttachmentInfoId(UUID.randomUUID())
+        val attachmentID = UUID.randomUUID()
 
         val activity = createActivity(
                 start = todayDateTime,
@@ -1276,7 +1276,7 @@ internal class ActivityValidatorTest {
 
     @Test
     fun `Do nothing when the attachments are correct`() {
-        val attachmentID = AttachmentInfoId(UUID.randomUUID())
+        val attachmentID = UUID.randomUUID()
 
         val activity = newActivityWithEvidences(arrayListOf(attachmentID))
 
@@ -1693,7 +1693,7 @@ internal class ActivityValidatorTest {
                 arrayListOf()
         )
 
-        private fun newActivityWithEvidences(evidences: List<AttachmentInfoId>) = com.autentia.tnt.binnacle.core.domain.Activity.of(
+        private fun newActivityWithEvidences(evidences: List<UUID>) = com.autentia.tnt.binnacle.core.domain.Activity.of(
                 null,
                 TimeInterval.of(
                         LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
@@ -1838,7 +1838,7 @@ internal class ActivityValidatorTest {
                 description: String = "",
                 projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = projectRoleLimitedByYear.toDomain(),
                 billable: Boolean = false,
-                evidences: List<AttachmentInfoId> = arrayListOf()
+                evidences: List<UUID> = arrayListOf()
         ) = createDomainActivity(start, end, duration, projectRole, evidences).copy(
                 description = description,
                 billable = billable,

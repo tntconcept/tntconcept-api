@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.security.application.canAccessAllAttachments
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
@@ -15,35 +14,35 @@ internal class AttachmentInfoRepositorySecured(
         private val attachmentInfoDao: AttachmentInfoDao,
 ) : AttachmentInfoRepository {
 
-    override fun findById(id: AttachmentInfoId): Optional<AttachmentInfo> {
+    override fun findById(id: UUID): Optional<AttachmentInfo> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllAttachments())
-            attachmentInfoDao.findById(id.value).map { Mapper.toDomain(it) }
+            attachmentInfoDao.findById(id)
         else
-            attachmentInfoDao.findByIdAndUserId(id.value, authentication.id()).map { Mapper.toDomain(it) }
+            attachmentInfoDao.findByIdAndUserId(id, authentication.id())
     }
 
-    override fun findByIds(ids: List<AttachmentInfoId>): List<AttachmentInfo> {
+    override fun findByIds(ids: List<UUID>): List<AttachmentInfo> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllAttachments())
-            attachmentInfoDao.findByIdIn(ids.map { it.value }).map { Mapper.toDomain(it) }
+            attachmentInfoDao.findByIdIn(ids)
         else
-            attachmentInfoDao.findByIdInAndUserId(ids.map { it.value }, authentication.id()).map { Mapper.toDomain(it) }
+            attachmentInfoDao.findByIdInAndUserId(ids, authentication.id())
     }
 
-    override fun existsAllByIds(evidencesIds: List<AttachmentInfoId>): Boolean {
+    override fun existsAllByIds(evidencesIds: List<UUID>): Boolean {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllAttachments())
-            attachmentInfoDao.existsByIdIn(evidencesIds.map { it.value })
+            attachmentInfoDao.existsByIdIn(evidencesIds)
         else
-            attachmentInfoDao.existsByIdInAndUserId(evidencesIds.map { it.value }, authentication.id())
+            attachmentInfoDao.existsByIdInAndUserId(evidencesIds, authentication.id())
     }
 
     override fun save(attachmentInfo: AttachmentInfo) {
         val authentication = securityService.checkAuthentication()
         require(attachmentInfo.userId == authentication.id()) { "User cannot upload attachment" }
 
-        attachmentInfoDao.save(Mapper.toJpaEntity(attachmentInfo))
+        attachmentInfoDao.save(attachmentInfo)
     }
 
     override fun update(attachmentInfos: List<AttachmentInfo>) {
@@ -51,42 +50,13 @@ internal class AttachmentInfoRepositorySecured(
 
         attachmentInfos.forEach { attachmentInfo ->
             require(attachmentInfo.userId == authentication.id()) { "User cannot update attachment" }
-            val jpaEntity = Mapper.toJpaEntity(attachmentInfo)
-            attachmentInfoDao.update(jpaEntity)
+            attachmentInfoDao.update(attachmentInfo)
         }
     }
 
-    override fun findByIsTemporaryTrue(): List<AttachmentInfo> =
-            attachmentInfoDao.findByIsTemporaryTrue().map { Mapper.toDomain(it) }
+    override fun findByIsTemporaryTrue(): List<AttachmentInfo> = attachmentInfoDao.findByIsTemporaryTrue()
 
-    override fun delete(attachmentsIds: List<AttachmentInfoId>) =
-            attachmentInfoDao.deleteByIdIn(attachmentsIds.map { it.value })
+    override fun delete(attachmentsIds: List<UUID>) = attachmentInfoDao.deleteByIdIn(attachmentsIds)
 
-    object Mapper {
-        fun toJpaEntity(attachmentInfo: AttachmentInfo): com.autentia.tnt.binnacle.entities.AttachmentInfo = with(attachmentInfo) {
-            com.autentia.tnt.binnacle.entities.AttachmentInfo(
-                    id = id.value,
-                    userId = userId,
-                    path = path,
-                    fileName = fileName,
-                    mimeType = mimeType,
-                    uploadDate = uploadDate,
-                    isTemporary = isTemporary
-            )
-        }
-
-        fun toDomain(attachmentInfo: com.autentia.tnt.binnacle.entities.AttachmentInfo): AttachmentInfo = with(attachmentInfo) {
-            AttachmentInfo(
-                    id = AttachmentInfoId(id),
-                    userId = userId,
-                    path = path,
-                    fileName = fileName,
-                    mimeType = mimeType,
-                    uploadDate = uploadDate,
-                    isTemporary = isTemporary
-            )
-        }
-
-    }
 
 }

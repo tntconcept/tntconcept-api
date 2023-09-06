@@ -3,7 +3,6 @@ package com.autentia.tnt.api.binnacle.attachment
 import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.entities.dto.AttachmentCreationRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.AttachmentCreationResponseDTO
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
@@ -160,7 +159,7 @@ class AttachmentControllerIT {
         )
         private val SUPPORTED_ATTACHMENT = Attachment(
                 info = AttachmentInfo(
-                        id = AttachmentInfoId(ATTACHMENT_UUID),
+                        id = ATTACHMENT_UUID,
                         fileName = SUPPORTED_ATTACHMENT_FILENAME,
                         mimeType = SUPPORTED_ATTACHMENT_MIME_TYPE,
                         uploadDate = LocalDateTime.now().withSecond(0).withNano(0),

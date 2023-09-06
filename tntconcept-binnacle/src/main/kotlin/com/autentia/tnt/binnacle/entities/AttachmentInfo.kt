@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.entities
 
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import org.hibernate.annotations.Type
 import java.time.LocalDateTime
 import java.util.*
@@ -26,7 +25,7 @@ data class AttachmentInfo(
 
     fun toDomain() =
         com.autentia.tnt.binnacle.core.domain.AttachmentInfo(
-            AttachmentInfoId(id),
+            id,
             fileName,
             mimeType,
             uploadDate,
@@ -37,7 +36,7 @@ data class AttachmentInfo(
 
     companion object {
         fun of(attachmentInfo: com.autentia.tnt.binnacle.core.domain.AttachmentInfo) = AttachmentInfo(
-                attachmentInfo.id.value,
+                attachmentInfo.id,
                 attachmentInfo.userId,
                 attachmentInfo.path,
                 attachmentInfo.fileName,

@@ -1,7 +1,6 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.ProjectRole
@@ -32,7 +31,7 @@ class ActivityRequestBodyConverter {
             user.departmentId,
             insertDate,
             projectRole.getApprovalState(),
-            activityRequestBody.evidences.map { AttachmentInfoId(it) }
+            activityRequestBody.evidences
         )
 
     fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =

@@ -1,15 +1,14 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfoId
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import java.util.*
 
 internal interface AttachmentInfoRepository {
-    fun findById(id: AttachmentInfoId): Optional<AttachmentInfo>
-    fun findByIds(ids: List<AttachmentInfoId>): List<AttachmentInfo>
+    fun findById(id: UUID): Optional<AttachmentInfo>
+    fun findByIds(ids: List<UUID>): List<AttachmentInfo>
     fun findByIsTemporaryTrue(): List<AttachmentInfo>
-    fun existsAllByIds(evidencesIds: List<AttachmentInfoId>): Boolean
+    fun existsAllByIds(evidencesIds: List<UUID>): Boolean
     fun save(attachmentInfo: AttachmentInfo)
     fun update(attachmentInfos: List<AttachmentInfo>)
-    fun delete(attachmentsIds: List<AttachmentInfoId>)
+    fun delete(attachmentsIds: List<UUID>)
 }

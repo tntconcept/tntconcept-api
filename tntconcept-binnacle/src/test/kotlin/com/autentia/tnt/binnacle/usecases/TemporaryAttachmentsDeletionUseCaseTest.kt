@@ -42,7 +42,7 @@ class TemporaryAttachmentsDeletionUseCaseTest {
     @Test
     fun `should filter the activities that are less than one day and call the repositories`() {
         appProperties.binnacle.temporaryAttachments.enabled = true
-        val attachmentInfosDomain = ATTACHMENT_INFO_LIST.map { it.toDomain() }
+        val attachmentInfosDomain = ATTACHMENT_INFO_LIST
         val outDatedAttachment = attachmentInfosDomain[2]
 
         whenever(attachmentInfoRepository.findByIsTemporaryTrue()).thenReturn(attachmentInfosDomain)
