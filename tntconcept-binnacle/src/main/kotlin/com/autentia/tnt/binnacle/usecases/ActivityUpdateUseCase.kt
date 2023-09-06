@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
+import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
@@ -54,7 +55,7 @@ class ActivityUpdateUseCase internal constructor(
 
         val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
 
-        val updatedActivity = updatedActivityEntity.toDomain();
+        val updatedActivity = updatedActivityEntity.toDomain().copy(evidence = activityToUpdate.evidence);
 
         if (activityToUpdate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(
@@ -71,16 +72,29 @@ class ActivityUpdateUseCase internal constructor(
             )
         }
 
-        if (updatedActivity.canBeApproved()) {
+        if (shouldSendMailWhenActivityCanBeApprovedMail(currentActivity, updatedActivity)) {
             sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
         }
 
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
 
+    private fun shouldSendMailWhenActivityCanBeApprovedMail(originalActivity: com.autentia.tnt.binnacle.core.domain.Activity, updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity): Boolean {
+        val isValidActivityUpdateOperation = updatedActivity.evidence !== null && (originalActivity.evidence === null || originalActivity.evidence != updatedActivity.evidence)
+        return updatedActivity.canBeApproved() && isValidActivityUpdateOperation
+    }
+
     private fun getProjectRoleEntity(projectRoleId: Long) =
             projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)
 
-    private fun getActivity(activityId: Long) =
-            Optional.ofNullable(activityRepository.findById(activityId)).orElseThrow { ActivityNotFoundException(activityId) }.toDomain()
+    private fun getActivity(activityId: Long): com.autentia.tnt.binnacle.core.domain.Activity {
+        val activity = Optional.ofNullable(activityRepository.findById(activityId))
+            .orElseThrow { ActivityNotFoundException(activityId) }.toDomain()
+        if (activity.hasEvidences) {
+            val evidence =
+                activityEvidenceService.getActivityEvidence(activityId, toDate(activity.insertDate)!!).toDomain()
+            return activity.copy(evidence = evidence)
+        }
+        return activity
+    }
 }
