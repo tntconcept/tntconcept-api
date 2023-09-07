@@ -326,6 +326,40 @@ internal class ActivityUpdateUseCaseTest {
     }
 
     @Test
+    fun `should update an existing activity with the same evidence to another role that requires evidence and approval`() {
+        // Arrange
+        val role = `get role that requires evidence and approval`()
+        val originRole = `get role that does not require evidence nor approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingActivity = `get existing pending activity with no evidence`(originRole)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration).copy(projectRole = role)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+        doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(PENDING)
+
+        // Verify
+        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain().copy(evidence = SAMPLE_EVIDENCE), USER.username, LOCALE)
+        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+    }
+
+    @Test
     fun `should update an existing activity with evidence and remove the evidence in a role that does not require evidence nor approval`() {
         // Arrange
         val role = `get role that does not require evidence nor approval`()
