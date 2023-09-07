@@ -72,7 +72,7 @@ class ActivityUpdateUseCase internal constructor(
             )
         }
 
-        if (shouldSendMailWhenActivityCanBeApprovedMail(currentActivity, updatedActivity)) {
+        if (projectRole.requireEvidence() && shouldSendMailWhenActivityCanBeApprovedMail(currentActivity, updatedActivity)) {
             sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
         }
 
@@ -80,8 +80,8 @@ class ActivityUpdateUseCase internal constructor(
     }
 
     private fun shouldSendMailWhenActivityCanBeApprovedMail(originalActivity: com.autentia.tnt.binnacle.core.domain.Activity, updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity): Boolean {
-        val isValidActivityUpdateOperation = updatedActivity.evidence !== null && (originalActivity.evidence === null || originalActivity.evidence != updatedActivity.evidence)
-        return updatedActivity.canBeApproved() && isValidActivityUpdateOperation
+        val attachedEvidenceHasChanged = updatedActivity.evidence !== null && (originalActivity.evidence === null || originalActivity.evidence != updatedActivity.evidence)
+        return updatedActivity.canBeApproved() && attachedEvidenceHasChanged
     }
 
     private fun getProjectRoleEntity(projectRoleId: Long) =

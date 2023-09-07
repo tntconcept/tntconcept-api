@@ -47,6 +47,8 @@ data class ProjectRole(
     }
     fun getApprovalState() = if (isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
 
+    fun requireEvidence() = RequireEvidence.isRequired(requireEvidence)
+
     private fun getRemaining(calendar: Calendar, activities: List<Activity>) =
         if (timeInfo.getMaxTimeAllowedByYear() == 0) {
             0

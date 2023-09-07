@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.ApprovalState.NA
 import com.autentia.tnt.binnacle.entities.ApprovalState.PENDING
@@ -75,7 +74,7 @@ internal class ActivityUpdateUseCaseTest {
         val role = `get role that does not require evidence nor approval`()
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val existingActivity = `get existing activity with no evidence`(role)
+        val existingActivity = `get existing activity with no evidence`(role, NA)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
         val duration = 60
@@ -106,7 +105,7 @@ internal class ActivityUpdateUseCaseTest {
         val role = `get role that requires evidence`()
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val existingActivity = `get existing activity with no evidence`(role)
+        val existingActivity = `get existing activity with no evidence`(role, NA)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
         val duration = 60
@@ -199,7 +198,7 @@ internal class ActivityUpdateUseCaseTest {
         val role = `get role that does not require evidence nor approval`()
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val existingActivity = `get existing activity with no evidence`(role)
+        val existingActivity = `get existing activity with no evidence`(role, NA)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
         val duration = 60
@@ -226,6 +225,39 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).update(updatedActivity)
     }
 
+    @Test
+    fun `should update an existing activity with new evidence in a role that not requires evidence but requires approval`() {
+        // Arrange
+        val role = `get role that requires approval`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingActivity = `get existing activity with no evidence`(role, PENDING)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with evidence`(existingActivity, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+        doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(PENDING)
+
+        // Verify
+        verifyNoInteractions(sendPendingApproveActivityMailUseCase)
+        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+    }
+
 
     @Test
     fun `should update an existing activity with new evidence in a role that requires evidence`() {
@@ -233,7 +265,7 @@ internal class ActivityUpdateUseCaseTest {
         val role = `get role that requires evidence`()
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val existingActivity = `get existing activity with no evidence`(role)
+        val existingActivity = `get existing activity with no evidence`(role, NA)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
         val duration = 60
@@ -431,7 +463,7 @@ internal class ActivityUpdateUseCaseTest {
         val role = PROJECT_ROLE
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val existingActivity = `get existing activity with no evidence`(role)
+        val existingActivity = `get existing activity with no evidence`(role, NA)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
         val duration = 60
@@ -554,12 +586,12 @@ internal class ActivityUpdateUseCaseTest {
     private fun `get role that requires evidence and approval`() =
             PROJECT_ROLE.copy(isApprovalRequired = true, requireEvidence = ONCE, timeUnit = TimeUnit.MINUTES)
 
-    private fun `get existing activity with no evidence`(role: ProjectRole) =
+    private fun `get existing activity with no evidence`(role: ProjectRole, approvalState: ApprovalState) =
             Activity.emptyActivity(role).copy(
                     id = 1L,
                     userId = USER.id,
                     hasEvidences = false,
-                    approvalState = NA,
+                    approvalState = approvalState,
                     start = LocalDate.now().atTime(8, 0),
                     end = LocalDate.now().atTime(12, 0),
                     insertDate = Date.from(Instant.now()),
