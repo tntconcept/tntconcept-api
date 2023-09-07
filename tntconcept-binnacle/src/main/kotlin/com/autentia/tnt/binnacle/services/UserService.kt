@@ -23,12 +23,7 @@ class UserService internal constructor(
     fun getActiveUsersWithoutSecurity(): List<User> =
         userRepository.findWithoutSecurity()
 
-    fun getActiveUsers(): List<User> =
-        userRepository.find()
-
     fun getByUserName(userName: String): User =
         userRepository.findByUsername(userName) ?: error("User is not found")
 
-    fun getById(userId: Long): User =
-        userRepository.find(userId) ?: error("User is not found")
 }

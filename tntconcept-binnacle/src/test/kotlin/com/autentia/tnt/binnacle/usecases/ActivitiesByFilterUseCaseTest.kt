@@ -6,10 +6,12 @@ import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalStateActivityFilter
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.predicates.*
-import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -17,14 +19,14 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
-import java.util.Optional
+import java.util.*
 
 internal class ActivitiesByFilterUseCaseTest {
-    private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
     private val securityService = mock<SecurityService>()
     private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
     private val activitiesByFilterUseCase =
-        ActivitiesByFilterUseCase(activityService, securityService, activityResponseConverter)
+        ActivitiesByFilterUseCase(activityRepository, securityService, activityResponseConverter)
 
     @BeforeEach
     fun setUp() {
@@ -32,31 +34,48 @@ internal class ActivitiesByFilterUseCaseTest {
     }
 
     @Test
-    fun `get activities by approval state`() {
+    fun `get pending activities by approval state`() {
         val activityFilterDTO = ActivityFilterDTO(
-            approvalState = ApprovalState.PENDING,
+            approvalState = ApprovalStateActivityFilter.PENDING,
         )
-        val compositedSpecification = ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!)
+        val compositedSpecification = ActivityApprovalStateSpecification(ApprovalState.valueOf(activityFilterDTO.approvalState!!.name))
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
+    }
+
+    @Test
+    fun `get all activities by approval state`() {
+        val activityFilterDTO = ActivityFilterDTO(
+            approvalState = ApprovalStateActivityFilter.ALL,
+        )
+
+        val compositedSpecification =
+            PredicateBuilder.or(
+                ActivityApprovalStateSpecification(ApprovalState.PENDING),
+                ActivityApprovalStateSpecification(ApprovalState.ACCEPTED)
+        )
+
+        activitiesByFilterUseCase.getActivities(activityFilterDTO)
+
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
     fun `get activities by approval state and role id`() {
         val activityFilterDTO = ActivityFilterDTO(
-            approvalState = ApprovalState.PENDING,
+            approvalState = ApprovalStateActivityFilter.PENDING,
             roleId = 1L
         )
         val compositedSpecification = PredicateBuilder.and(
-            ActivityApprovalStateSpecification(activityFilterDTO.approvalState!!),
+            ActivityApprovalStateSpecification(ApprovalState.valueOf(activityFilterDTO.approvalState!!.name)),
             ActivityRoleIdSpecification(activityFilterDTO.roleId!!)
         )
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -70,14 +89,17 @@ internal class ActivitiesByFilterUseCaseTest {
             ActivityEndDateGreaterOrEqualSpecification(activityFilterDTO.startDate!!)
         )
 
-        whenever(activityService.getActivities(compositedSpecification)).thenReturn(listOf(activity))
+        whenever(activityRepository.findAll(compositedSpecification)).thenReturn(listOf(activity))
 
         val activities = activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        val expectedActivity = activityResponseConverter.toActivityResponseDTO(activity)
+        val expectedActivity = activityResponseConverter.toActivityResponseDTO(activity.toDomain())
 
-        verify(activityService).getActivities(compositedSpecification)
-        assertThat(activities).containsExactly(expectedActivity)
+        verify(activityRepository).findAll(compositedSpecification)
+
+        assertThat(activities[0])
+            .usingRecursiveComparison()
+            .isEqualTo(expectedActivity)
     }
 
     @Test
@@ -90,7 +112,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -102,7 +124,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -119,7 +141,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     @Test
@@ -145,7 +167,7 @@ internal class ActivitiesByFilterUseCaseTest {
 
         activitiesByFilterUseCase.getActivities(activityFilterDTO)
 
-        verify(activityService).getActivities(compositedSpecification)
+        verify(activityRepository).findAll(compositedSpecification)
     }
 
     private companion object {
@@ -171,7 +193,6 @@ internal class ActivitiesByFilterUseCaseTest {
                 null,
                 false,
                 approvalState = ApprovalState.PENDING
-            ).toDomain()
-
+            )
     }
 }

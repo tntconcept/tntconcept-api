@@ -1,44 +1,58 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.config.createDomainActivity
-import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
-import com.autentia.tnt.binnacle.services.ActivityService
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.doReturn
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 internal class ActivityRetrievalByIdUseCaseTest {
 
-    private val activityService = mock<ActivityService>()
+    private val activityRepository = mock<ActivityRepository>()
+
 
     private val activityRetrievalByIdUseCase =
         ActivityRetrievalByIdUseCase(
-            activityService,
+            activityRepository,
             ActivityResponseConverter(
                 ActivityIntervalResponseConverter()
             )
         )
 
     @Test
-    fun `return the activity`() {
-        doReturn(yesterdayActivity).whenever(activityService).getActivityById(2L)
+    fun `get activity by id`() {
+        whenever(activityRepository.findById(activityToRetrieveFromRepository.id!!)).thenReturn(
+            activityToRetrieveFromRepository
+        )
 
-        assertEquals(yesterdayActivityResponseDTO, activityRetrievalByIdUseCase.getActivityById(2L))
+        val actual = activityRetrievalByIdUseCase.getActivityById(activityToRetrieveFromRepository.id!!)
+
+        assertThat(actual)
+            .usingRecursiveComparison()
+            .isEqualTo(activityResponseDTO)
     }
 
+    @Test
+    fun `fail when the activity was not found by id`() {
+        assertThrows<ActivityNotFoundException> {
+            activityRetrievalByIdUseCase.getActivityById(notFoundActivityId)
+        }
+    }
 
-    private companion object{
-        private val USER = createUser()
-        private val YESTERDAY = LocalDate.now().minusDays(1)
+    private companion object {
+
         private val PROJECT_ROLE = ProjectRole(
             10L,
             "Dummy Project role",
@@ -55,43 +69,51 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 listOf(),
             ),
             0,
+            0,
             true,
             false,
             TimeUnit.MINUTES
         )
 
-        private val PROJECT_ROLE_RESPONSE_DTO = ProjectRoleUserDTO(
-            10L,
-            "Dummy Project role",
-            PROJECT_ROLE.project.organization.id,
-            PROJECT_ROLE.project.id,
-            PROJECT_ROLE.maxAllowed,
-            PROJECT_ROLE.maxAllowed,
-            PROJECT_ROLE.timeUnit,
-            PROJECT_ROLE.requireEvidence,
-            PROJECT_ROLE.isApprovalRequired,
-            USER.id
-        )
-
-        val yesterdayActivity = createDomainActivity(
-            YESTERDAY.atStartOfDay(),
-            YESTERDAY.atStartOfDay().plusMinutes(540L),
-            540
-        ).copy(projectRole = PROJECT_ROLE.toDomain())
-
-        val yesterdayActivityResponseDTO = ActivityResponseDTO(
-            true,
-            "Description",
+        private val ACTIVITY = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            1L,
+            TimeInterval.of(
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
+        ),
+            60,
+            "Dummy description",
+            PROJECT_ROLE.toDomain(),
+            1L,
             false,
             1L,
-            PROJECT_ROLE_RESPONSE_DTO.id,
-            IntervalResponseDTO(
-                YESTERDAY.atStartOfDay(),
-                YESTERDAY.atStartOfDay().plusMinutes(540L), 540, PROJECT_ROLE.timeUnit
-            ),
-            USER.id,
-            approvalState = ApprovalState.NA
+            null,
+            false,
+            ApprovalState.NA,
+            null
         )
 
+        private const val notFoundActivityId = 1L
+
+        private val activityToRetrieveFromRepository = Activity.of(
+            ACTIVITY,
+            PROJECT_ROLE
+        )
+
+        private val activityResponseDTO = ActivityResponseDTO(
+            false,
+            "Dummy description",
+            false,
+            1L,
+            PROJECT_ROLE.id,
+            IntervalResponseDTO(
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
+                LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60),
+                60,
+                TimeUnit.MINUTES
+            ),
+            1L,
+            ApprovalDTO(ApprovalState.NA)
+        )
     }
 }

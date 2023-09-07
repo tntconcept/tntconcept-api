@@ -1,11 +1,12 @@
 package com.autentia.tnt.api.binnacle.project
 
 import com.autentia.tnt.api.binnacle.*
+import com.autentia.tnt.api.binnacle.projectrole.MaxTimeAllowedResponse
+import com.autentia.tnt.api.binnacle.projectrole.ProjectRoleUserResponse
+import com.autentia.tnt.api.binnacle.projectrole.TimeInfoResponse
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectRoleUserDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
@@ -76,21 +77,14 @@ internal class ProjectControllerIT {
     @Test
     fun `return the correct project`() {
         // setup
-        val projectRequestBody = ProjectResponseDTO(
-            1L,
-            "Vacaciones",
-            true,
-            true,
-            1L,
-            startDate = LocalDate.now(),
-        )
+        val projectRequestBody = PROJECT_RESPONSE_DTO
 
         doReturn(projectRequestBody).whenever(projectByIdUseCase).get(projectRequestBody.id)
 
-        val response = client.exchangeObject<ProjectResponseDTO>(GET("/api/project/${projectRequestBody.id}"))
+        val response = client.exchangeObject<ProjectResponse>(GET("/api/project/${projectRequestBody.id}"))
 
         assertEquals(OK, response.status)
-        assertEquals(projectRequestBody, response.body.get())
+        assertEquals(PROJECT_RESPONSE, response.body.get())
 
     }
 
@@ -100,25 +94,27 @@ internal class ProjectControllerIT {
         val projectId = 3L
         val year = 2023
 
-        val projectRoleUser = ProjectRoleUserDTO(
-            1L,
-            "Vacaciones",
-            2L,
-            3L,
-            960,
-            480,
-            TimeUnit.MINUTES,
-            RequireEvidence.NO,
-            true,
-            4L
-        )
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, year, null)
 
-        doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId, year)
-
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project/$projectId/role?year=$year"))
+        val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project/$projectId/role?year=$year"))
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(projectRoleUser), response.body.get())
+        assertEquals(listOf(PROJECT_ROLE_USER_RESPONSE), response.body.get())
+    }
+
+    @Test
+    fun `return all project roles by project id of requested user`() {
+
+        val projectId = 3L
+        val year = 2023
+        val userId = 2L
+
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, year, userId)
+
+        val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project/$projectId/role?year=$year&userId=$userId"))
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(PROJECT_ROLE_USER_RESPONSE), response.body.get())
     }
 
     @Test
@@ -126,25 +122,12 @@ internal class ProjectControllerIT {
 
         val projectId = 3L
 
-        val projectRoleUser = ProjectRoleUserDTO(
-            1L,
-            "Vacaciones",
-            2L,
-            3L,
-            960,
-            480,
-            TimeUnit.MINUTES,
-            RequireEvidence.NO,
-            true,
-            4L
-        )
+        doReturn(listOf(PROJECT_ROLE_USER_DTO)).whenever(projectRoleByProjectIdUseCase).get(projectId, null, null)
 
-        doReturn(listOf(projectRoleUser)).whenever(projectRoleByProjectIdUseCase).get(projectId, null)
-
-        val response = client.exchangeList<ProjectRoleUserDTO>(GET("/api/project/$projectId/role"))
+        val response = client.exchangeList<ProjectRoleUserResponse>(GET("/api/project/$projectId/role"))
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(projectRoleUser), response.body.get())
+        assertEquals(listOf(PROJECT_ROLE_USER_RESPONSE), response.body.get())
     }
 
 
@@ -162,7 +145,7 @@ internal class ProjectControllerIT {
     ) {
 
         val projectId = 1L
-        val blockProjectRequest = BlockProjectRequestDTO(blockDate = LocalDate.of(2023, 5, 5))
+        val blockProjectRequest = BlockProjectRequest(blockDate = LocalDate.of(2023, 5, 5))
 
         doThrow(exception).whenever(blockProjectByIdUseCase).blockProject(projectId, blockProjectRequest.blockDate)
 
@@ -197,28 +180,28 @@ internal class ProjectControllerIT {
     @Test
     fun `block project by id`() {
         val projectId = 1L
-        val blockProjectRequest = BlockProjectRequestDTO(blockDate = LocalDate.of(2023, 5, 5))
-        val projectResponseDTO = createProjectResponseDTO()
+        val blockProjectRequest = BlockProjectRequest(blockDate = LocalDate.of(2023, 5, 5))
+        val projectResponseDTO = PROJECT_RESPONSE_DTO
         whenever(blockProjectByIdUseCase.blockProject(projectId, blockProjectRequest.blockDate)).thenReturn(
             projectResponseDTO
         )
 
         val response =
-            client.exchangeObject<ProjectResponseDTO>(POST("/api/project/$projectId/block", blockProjectRequest))
+            client.exchangeObject<ProjectResponse>(POST("/api/project/$projectId/block", blockProjectRequest))
 
         assertThat(response.status).isEqualTo(OK)
-        assertThat(response.getBody<ProjectResponseDTO>().get()).isEqualTo(projectResponseDTO)
+        assertThat(response.getBody<ProjectResponse>().get()).isEqualTo(PROJECT_RESPONSE)
     }
 
     @Test
     fun `unblock project by id`() {
         val projectId = 1L
-        val projectResponseDTO = createProjectResponseDTO()
+        val projectResponseDTO = PROJECT_RESPONSE_DTO
         whenever(unblockProjectByIdUseCase.unblockProject(projectId)).thenReturn(projectResponseDTO)
-        val response = client.exchangeObject<ProjectResponseDTO>(POST("/api/project/$projectId/unblock", ""))
+        val response = client.exchangeObject<ProjectResponse>(POST("/api/project/$projectId/unblock", ""))
 
         assertThat(response.status).isEqualTo(OK)
-        assertThat(response.getBody<ProjectResponseDTO>().get()).isEqualTo(projectResponseDTO)
+        assertThat(response.getBody<ProjectResponse>().get()).isEqualTo(PROJECT_RESPONSE)
     }
 
     @ParameterizedTest
@@ -234,7 +217,7 @@ internal class ProjectControllerIT {
         doThrow(exception).whenever(projectByIdUseCase).get(projectId)
 
         val ex = assertThrows<HttpClientResponseException> {
-            client.exchangeObject<Any>(GET("/api/projects/$projectId"))
+            client.exchangeObject<Any>(GET("/api/project/$projectId"))
         }
 
         assertEquals(expectedResponseStatus, ex.status)
@@ -244,25 +227,69 @@ internal class ProjectControllerIT {
 
     @Test
     fun `return all filtered projects`() {
-        val projectRequestBody = ProjectResponseDTO(
-            1L,
-            "Vacaciones",
-            true,
-            true,
-            1L,
-            startDate = LocalDate.now().minusMonths(2L),
-        )
+        val projectRequestBody = PROJECT_RESPONSE_DTO
+
         val projectFilter = ProjectFilterDTO(1, false)
         whenever(projectByFilterUseCase.getProjects(projectFilter)).thenReturn(listOf(projectRequestBody))
 
-        val response = client.exchangeList<ProjectResponseDTO>(GET("/api/project?organizationId=1&open=false"))
+        val response = client.exchangeList<ProjectResponse>(GET("/api/project?organizationId=1&open=false"))
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(projectRequestBody), response.body())
+        assertEquals(listOf(PROJECT_RESPONSE), response.body())
     }
 
     private fun getFailProvider() = arrayOf(
         arrayOf(ProjectNotFoundException(1), NOT_FOUND, "RESOURCE_NOT_FOUND"),
     )
 
+    private companion object {
+
+        private val PROJECT_RESPONSE = ProjectResponse(
+            1L,
+            "Dummy Project",
+            false,
+            false,
+            1L,
+            startDate = LocalDate.now(),
+        )
+
+        private val MAX_TIME_ALLOWED_RESPONSE = MaxTimeAllowedResponse(
+            960, 0
+        )
+
+        private val REMAINING_TIME_INFO_RESPONSE = TimeInfoResponse(
+            MAX_TIME_ALLOWED_RESPONSE, TimeUnit.MINUTES, 480
+        )
+
+        private val PROJECT_ROLE_USER_RESPONSE = ProjectRoleUserResponse(
+            1L,
+            "Vacaciones",
+            2L,
+            3L,
+            REMAINING_TIME_INFO_RESPONSE,
+            RequireEvidence.NO,
+            true,
+            4L
+        )
+
+        private val PROJECT_ROLE_USER_DTO = ProjectRoleUserDTO(
+            1L,
+            "Vacaciones",
+            2L,
+            3L,
+            RequireEvidence.NO,
+            true,
+            4L,
+            TimeInfoDTO(MaxTimeAllowedDTO(960,0), TimeUnit.MINUTES, 480)
+        )
+
+        private val PROJECT_RESPONSE_DTO = ProjectResponseDTO(
+            1L,
+            "Dummy Project",
+            false,
+            false,
+            1L,
+            LocalDate.now(),
+        )
+    }
 }

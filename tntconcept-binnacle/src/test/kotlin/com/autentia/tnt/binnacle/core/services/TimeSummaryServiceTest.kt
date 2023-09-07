@@ -5,8 +5,8 @@ import com.autentia.tnt.binnacle.converters.TimeSummaryConverter
 import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.core.utils.toBigDecimalHours
 import com.autentia.tnt.binnacle.entities.VacationState
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.HolidayService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -21,8 +21,8 @@ internal class TimeSummaryServiceTest {
 
     private val targetWorkService = TargetWorkService()
     private val timeWorkableService = TimeWorkableService()
-    private val holidayService = mock<HolidayService>()
-    private val calendarFactory = CalendarFactory(holidayService)
+    private val holidayRepository = mock<HolidayRepository>()
+    private val calendarFactory = CalendarFactory(holidayRepository)
     private val activityCalendarService =
         ActivityCalendarService(calendarFactory, ActivitiesCalendarFactory(calendarFactory))
     private val workedTimeService = WorkedTimeService(activityCalendarService)

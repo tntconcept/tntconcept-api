@@ -4,7 +4,9 @@ import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
-import com.autentia.tnt.security.application.*
+import com.autentia.tnt.security.application.canAccessAllActivities
+import com.autentia.tnt.security.application.checkAuthentication
+import com.autentia.tnt.security.application.id
 import io.micronaut.context.annotation.Primary
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
@@ -14,12 +16,12 @@ import java.time.LocalDateTime
 @Singleton
 @Primary
 internal class ActivityRepositorySecured(
-    private val internalActivityRepository: InternalActivityRepository,
-    private val securityService: SecurityService,
+        private val internalActivityRepository: InternalActivityRepository,
+        private val securityService: SecurityService,
 ) : ActivityRepository {
 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
-        internalActivityRepository.findAll(addUserFilterIfNecessary(activitySpecification))
+            internalActivityRepository.findAll(addUserFilterIfNecessary(activitySpecification))
 
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
@@ -69,10 +71,10 @@ internal class ActivityRepositorySecured(
     }
 
     override fun findByProjectId(
-        start: LocalDateTime,
-        end: LocalDateTime,
-        projectId: Long,
-        userId: Long
+            start: LocalDateTime,
+            end: LocalDateTime,
+            projectId: Long,
+            userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
         if (!authentication.canAccessAllActivities()) {
@@ -84,9 +86,9 @@ internal class ActivityRepositorySecured(
 
     @Deprecated("Use findIntervals function instead")
     override fun findWorkedMinutes(
-        startDate: LocalDateTime,
-        endDate: LocalDateTime,
-        userId: Long
+            startDate: LocalDateTime,
+            endDate: LocalDateTime,
+            userId: Long
     ): List<ActivityTimeOnly> {
         val authentication = securityService.checkAuthentication()
         if (!authentication.canAccessAllActivities()) {
@@ -104,10 +106,10 @@ internal class ActivityRepositorySecured(
     }
 
     override fun findByProjectRoleIds(
-        start: LocalDateTime,
-        end: LocalDateTime,
-        projectRoleIds: List<Long>,
-        userId: Long
+            start: LocalDateTime,
+            end: LocalDateTime,
+            projectRoleIds: List<Long>,
+            userId: Long
     ): List<Activity> {
         val authentication = securityService.checkAuthentication()
         if (!authentication.canAccessAllActivities()) {
@@ -142,7 +144,10 @@ internal class ActivityRepositorySecured(
         val activityToDelete = internalActivityRepository.findById(id)
 
         require(activityToDelete != null) { "Activity with id $id does not exist" }
-        require(activityToDelete.userId == authentication.id()) { "User cannot delete activity" }
+
+        if (!authentication.canAccessAllActivities()) {
+            require(activityToDelete.userId == authentication.id()) { "User cannot delete activity" }
+        }
 
         internalActivityRepository.deleteById(id)
     }

@@ -4,7 +4,7 @@ import com.autentia.tnt.binnacle.config.createDomainProjectRole
 import com.autentia.tnt.binnacle.core.utils.myDatesUntil
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.services.HolidayService
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -13,8 +13,8 @@ import java.time.LocalDateTime
 
 class ActivitiesCalendarTest {
 
-    private val holidayService: HolidayService = mock<HolidayService>()
-    private val calendarFactory = CalendarFactory(holidayService)
+    private val holidayRepository = mock<HolidayRepository>()
+    private val calendarFactory = CalendarFactory(holidayRepository)
     private val date = LocalDate.of(2023, 3, 1)
     private val datePlusWeek = date.plusWeeks(1)
 
@@ -23,7 +23,7 @@ class ActivitiesCalendarTest {
     private val dateTimePlusTwoDays = dateTimePlusOneHour.plusDays(2)
 
     private val projectRoleInMinutes = createDomainProjectRole()
-    private val projectRoleInDays = projectRoleInMinutes.copy(timeUnit = TimeUnit.DAYS)
+    private val projectRoleInDays = projectRoleInMinutes.copy(timeInfo = TimeInfo(MaxTimeAllowed(projectRoleInMinutes.getMaxTimeAllowedByYear(), projectRoleInMinutes.getMaxTimeAllowedByActivity()), TimeUnit.DAYS))
     private val activityInMinutes = Activity.of(
         1L,
         TimeInterval.of(dateTime, dateTimePlusOneHour),
@@ -35,7 +35,10 @@ class ActivitiesCalendarTest {
         null,
         LocalDateTime.now(),
         false,
-        ApprovalState.NA
+        ApprovalState.NA,
+        null,
+        null,
+        null
     )
     private val activityInDays =
         activityInMinutes.copy(

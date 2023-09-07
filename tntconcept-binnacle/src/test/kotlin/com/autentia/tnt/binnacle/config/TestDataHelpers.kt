@@ -1,13 +1,14 @@
 package com.autentia.tnt.binnacle.config
 
+import com.autentia.tnt.binnacle.core.domain.MaxTimeAllowed
+import com.autentia.tnt.binnacle.core.domain.TimeInfo
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
+import java.util.*
 
 internal fun createUser(): User = createUser(LocalDate.of(2020, Month.JANUARY, 1))
 internal fun createUser(hiringDate: LocalDate, id: Long = 1L, name: String = "John Doe"): User = User(
@@ -56,7 +57,7 @@ internal fun getHolidaysFrom2022(): List<LocalDate> = listOf<LocalDate>(
 internal fun getVacationsInOneMonth2022(): List<LocalDate> {
     val vacationsEnjoyed = mutableListOf<LocalDate>()
     for (i in 1..31) {
-          vacationsEnjoyed.add(LocalDate.of(2022, Month.JANUARY, i))
+        vacationsEnjoyed.add(LocalDate.of(2022, Month.JANUARY, i))
     }
     return vacationsEnjoyed
 }
@@ -107,17 +108,25 @@ internal fun createBlockedProject(id: Long = 1L) = Project(
     open = true,
     billable = false,
     LocalDate.now(),
-    blockDate = LocalDate.of(2000,1,1),
+    blockDate = LocalDate.of(2000, 1, 1),
     null,
     projectRoles = listOf(),
     organization = createOrganization()
 )
+
+internal fun createProjectRoleTimeInfo(
+    maxTimeAllowedByYear: Int = 0,
+    maxTimeAllowedByActivity: Int = 0,
+    timeUnit: TimeUnit = TimeUnit.MINUTES,
+) =
+    TimeInfo(MaxTimeAllowed(maxTimeAllowedByYear, maxTimeAllowedByActivity), timeUnit)
 
 internal fun createProjectRole(id: Long = 1L): ProjectRole = ProjectRole(
     id,
     "Dummy Project role",
     RequireEvidence.WEEKLY,
     createProject(),
+    0,
     0,
     true,
     false,
@@ -130,9 +139,22 @@ internal fun createProjectRole(id: Long = 1L, project: Project): ProjectRole = P
     RequireEvidence.WEEKLY,
     project,
     0,
+    0,
     true,
     false,
     TimeUnit.MINUTES
+)
+
+internal fun createProjectRoleWithTimeUnit(id: Long = 1L, timeUnit: TimeUnit): ProjectRole = ProjectRole(
+    id,
+    "Dummy Project role in days",
+    RequireEvidence.NO,
+    createProject(),
+    0,
+    0,
+    true,
+    false,
+    timeUnit
 )
 
 internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = ApprovalState.NA) = Activity(
@@ -147,7 +169,7 @@ internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = Approv
     1L,
     null,
     false,
-   approvalState
+    approvalState
 )
 
 internal fun createActivity(projectRole: ProjectRole) = Activity(
@@ -169,7 +191,7 @@ internal fun createDomainActivity(
     start: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     end: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
     duration: Int = 60,
-    projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = createDomainProjectRole()
+    projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = createDomainProjectRole(),
 ) =
     com.autentia.tnt.binnacle.core.domain.Activity.of(
         1L,
@@ -185,8 +207,10 @@ internal fun createDomainActivity(
         null,
         null,
         false,
-        ApprovalState.NA
-
+        ApprovalState.NA,
+        null,
+        null,
+        null
     )
 
 internal fun createDomainProjectRole() = createProjectRole().toDomain()
@@ -194,7 +218,7 @@ internal fun createDomainProjectRole() = createProjectRole().toDomain()
 internal fun createDomainUser(
     id: Long = 1L,
     name: String = "John Doe",
-    hiringDate: LocalDate = LocalDate.of(2020, Month.JANUARY, 1)
+    hiringDate: LocalDate = LocalDate.of(2020, Month.JANUARY, 1),
 ) =
     createUser(hiringDate, id, name).toDomain()
 
@@ -203,14 +227,24 @@ internal fun createActivityResponseDTO(
     start: LocalDateTime,
     end: LocalDateTime,
     hasEvidences: Boolean,
-    approvalState: ApprovalState = ApprovalState.NA
+    approvalState: ApprovalState = ApprovalState.NA,
 ) = ActivityResponseDTO(
     billable = true,
     description = "Dummy description",
     hasEvidences = hasEvidences,
     id = id,
     projectRoleId = 1L,
-    interval = IntervalResponseDTO(start, end,45, TimeUnit.MINUTES),
+    interval = IntervalResponseDTO(start, end, 45, TimeUnit.MINUTES),
     userId = 1L,
-    approvalState = approvalState
+    approval = ApprovalDTO(approvalState)
+)
+
+internal fun createAttachmentInfoEntityWithFilenameAndMimetype(filename: String, mimeType: String) = AttachmentInfo(
+    id = UUID.randomUUID(),
+    userId = 1L,
+    path = "/",
+    fileName = filename,
+    mimeType = mimeType,
+    uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
+    isTemporary = true
 )

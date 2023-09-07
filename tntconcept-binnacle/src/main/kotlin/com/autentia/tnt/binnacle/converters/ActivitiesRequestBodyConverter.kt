@@ -14,18 +14,6 @@ import java.util.*
 @Singleton
 class ActivitiesRequestBodyConverter() {
 
-    fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivitiesRequestBodyDTO) =
-        ActivitiesRequestBody(
-            activityRequestBodyDTO.id,
-            activityRequestBodyDTO.startDate,
-            activityRequestBodyDTO.duration,
-            activityRequestBodyDTO.description,
-            activityRequestBodyDTO.billable,
-            activityRequestBodyDTO.projectRoleId,
-            activityRequestBodyDTO.hasImage,
-            activityRequestBodyDTO.imageFile
-        )
-
 
     fun mapActivityRequestBodyToActivity(
         activityRequestBody: ActivitiesRequestBody,
@@ -46,18 +34,6 @@ class ActivitiesRequestBodyConverter() {
             insertDate,
             activityRequestBody.hasImage,
             ApprovalState.NA
-        )
-
-    fun mapActivityRequestBodyToActivityRequestDTO(activityRequestBody: ActivitiesRequestBody) =
-        ActivitiesRequestBodyDTO(
-            activityRequestBody.id,
-            activityRequestBody.startDate,
-            activityRequestBody.duration,
-            activityRequestBody.description,
-            activityRequestBody.billable,
-            activityRequestBody.projectRoleId,
-            activityRequestBody.hasImage,
-            activityRequestBody.imageFile
         )
 
     private fun setEndTime(startDate: LocalDateTime, duration: Int): LocalDateTime{

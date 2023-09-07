@@ -10,6 +10,7 @@ import kotlin.time.Duration
 
 @Singleton
 class TimeSummaryConverter {
+
     fun toTimeSummaryDTO(timeSummary: TimeSummary): TimeSummaryDTO {
         val annualBalanceDTO = AnnualBalanceDTO(
             timeSummary.year.current.worked.toBigDecimalHours(),

@@ -1,7 +1,5 @@
 package com.autentia.tnt.binnacle.entities.dto
 
-import com.autentia.tnt.binnacle.entities.ApprovalState
-
 data class ActivityResponseDTO(
         val billable: Boolean,
         val description: String,
@@ -10,5 +8,5 @@ data class ActivityResponseDTO(
         val projectRoleId: Long,
         val interval: IntervalResponseDTO,
         val userId: Long,
-        val approvalState: ApprovalState
-) {}
+        val approval: ApprovalDTO
+)

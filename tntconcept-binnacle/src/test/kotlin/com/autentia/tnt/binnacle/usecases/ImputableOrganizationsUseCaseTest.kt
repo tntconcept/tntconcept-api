@@ -33,7 +33,7 @@ internal class ImputableOrganizationsUseCaseTest {
     private companion object {
 
         private fun buildProjectRole(id: Long): ProjectRole {
-            return ProjectRole(id, "Project Role ID $id", RequireEvidence.NO, mock(Project::class.java), 0, true, false, TimeUnit.MINUTES)
+            return ProjectRole(id, "Project Role ID $id", RequireEvidence.NO, mock(Project::class.java), 0, 0, true, false, TimeUnit.MINUTES)
         }
 
         private fun buildProject(id: Long, open: Boolean, roles: List<ProjectRole>): Project {

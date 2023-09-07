@@ -18,7 +18,7 @@ internal class AppProperties {
     @ConfigurationProperties("files")
     internal class FilesProperties {
         @NotBlank
-        var evidencesPath: String = ""
+        var attachmentsPath: String = ""
 
         @NotEmpty
         var supportedMimeTypes: Map<String, String> = emptyMap()
@@ -34,6 +34,7 @@ internal class AppProperties {
 
     @ConfigurationProperties("binnacle")
     internal class BinnacleProperties {
+
         @Email
         var vacationsApprovers: List<String> = emptyList()
 
@@ -43,6 +44,7 @@ internal class AppProperties {
         var workSummary = WorkSummaryProperties()
         var missingEvidencesNotification = MissingEvidencesNotificationProperties()
 
+        var temporaryAttachments = TemporaryAttachmentsDeletionProperties()
 
         @ConfigurationProperties("work-summary")
         internal class WorkSummaryProperties {
@@ -74,8 +76,24 @@ internal class AppProperties {
         @ConfigurationProperties("missing-evidences-notification")
         internal class MissingEvidencesNotificationProperties {
             var enabled: Boolean = false
-            var cronExpression: String? = null
+            var weekly = WeeklyProperties()
+            var once = OnceProperties()
+
+            @ConfigurationProperties("weekly")
+            internal class WeeklyProperties {
+                var cronExpression: String? = null
+            }
+
+            @ConfigurationProperties("once")
+            internal class OnceProperties {
+                var cronExpression: String? = null
+            }
         }
 
+        @ConfigurationProperties("temporary-attachments")
+        internal class TemporaryAttachmentsDeletionProperties {
+            var enabled: Boolean = false
+            var cronExpression: String? = null
+        }
     }
 }

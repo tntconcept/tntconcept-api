@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.core.utils.takeMonth
 import com.autentia.tnt.binnacle.core.utils.takeYear
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
@@ -21,7 +22,7 @@ internal class ActivityEvidenceService(
     private val supportedMimeExtensions: Map<String, String>
 
     init {
-        evidencesPath = appProperties.files.evidencesPath
+        evidencesPath = appProperties.files.attachmentsPath
         supportedMimeExtensions = appProperties.files.supportedMimeTypes
     }
 
@@ -52,11 +53,11 @@ internal class ActivityEvidenceService(
     }
 
 
-    fun storeActivityEvidence(activityId: Long, evidenceDTO: EvidenceDTO, insertDate: Date) {
-        require(isMimeTypeSupported(evidenceDTO.mediaType)) { "Mime type ${evidenceDTO.mediaType} is not supported" }
+    fun storeActivityEvidence(activityId: Long, evidence: Evidence, insertDate: Date) {
+        require(isMimeTypeSupported(evidence.mediaType)) { "Mime type ${evidence.mediaType} is not supported" }
 
-        val evidenceFile = getEvidenceFile(evidenceDTO, insertDate, activityId)
-        val decodedFileContent = Base64.getDecoder().decode(evidenceDTO.base64data)
+        val evidenceFile = getEvidenceFile(evidence, insertDate, activityId)
+        val decodedFileContent = Base64.getDecoder().decode(evidence.base64data)
         FileUtils.writeByteArrayToFile(evidenceFile, decodedFileContent)
     }
 
@@ -72,11 +73,11 @@ internal class ActivityEvidenceService(
     }
 
     private fun getEvidenceFile(
-        evidenceDTO: EvidenceDTO,
+        evidence: Evidence,
         insertDate: Date,
-        activityId: Long
+        activityId: Long,
     ): File {
-        val fileExtension = getExtensionForMimeType(evidenceDTO.mediaType)
+        val fileExtension = getExtensionForMimeType(evidence.mediaType)
         val fileName = getFilePath(insertDate, activityId, fileExtension)
         return File(fileName.toUri())
     }

@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.core.domain
 
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
@@ -18,5 +17,5 @@ data class ActivityResponse(
     val organization: Organization,
     val project: Project,
     val hasEvidences: Boolean?,
-    val approvalState: ApprovalState
+    val approval: Approval
 ) {}

@@ -2,24 +2,28 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.converters.ProjectRoleResponseConverter
+import com.autentia.tnt.binnacle.entities.dto.MaxTimeAllowedDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectRoleDTO
-import com.autentia.tnt.binnacle.services.ProjectRoleService
+import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
+import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
+import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
 internal class ProjectRoleByIdUseCaseTest {
 
     private val id = 1L
-    private val projectRoleService = mock<ProjectRoleService>()
+    private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val projectRoleByIdUseCase =
-        ProjectRoleByIdUseCase(projectRoleService, ProjectRoleResponseConverter())
+        ProjectRoleByIdUseCase(projectRoleRepository, ProjectRoleResponseConverter())
 
     @Test
     fun `find project role by id`() {
-        val projectRole = createProjectRole().toDomain()
-        whenever(projectRoleService.getByProjectRoleId(id)).thenReturn(projectRole)
+        val projectRole = createProjectRole()
+        whenever(projectRoleRepository.findById(id)).thenReturn(projectRole)
 
         assertEquals(
             ProjectRoleDTO(
@@ -27,12 +31,19 @@ internal class ProjectRoleByIdUseCaseTest {
                 projectRole.name,
                 projectRole.project.organization.id,
                 projectRole.project.id,
-                projectRole.maxAllowed,
+                TimeInfoDTO(MaxTimeAllowedDTO(projectRole.maxTimeAllowedByYear, projectRole.maxTimeAllowedByActivity), projectRole.timeUnit),
                 projectRole.isWorkingTime,
-                projectRole.timeUnit,
                 projectRole.requireEvidence,
                 projectRole.isApprovalRequired
             ), projectRoleByIdUseCase.get(id)
         )
+    }
+
+    @Test
+    fun `find project role by id should throw exception`(){
+        whenever(projectRoleRepository.findById(id)).thenReturn(null)
+
+        assertThrows<ProjectRoleNotFoundException> { projectRoleByIdUseCase.get(id) }
+
     }
 }

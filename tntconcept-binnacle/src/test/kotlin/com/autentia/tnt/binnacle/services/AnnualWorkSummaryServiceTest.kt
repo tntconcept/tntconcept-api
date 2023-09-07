@@ -16,7 +16,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
 import java.time.LocalDate
-import java.time.Month.DECEMBER
 import java.util.*
 import kotlin.time.Duration
 import kotlin.time.DurationUnit.HOURS
@@ -27,7 +26,7 @@ import com.autentia.tnt.binnacle.entities.AnnualWorkSummary as AnnualWorkSummary
 internal class AnnualWorkSummaryServiceTest {
 
     private val annualWorkSummaryRepository = mock<AnnualWorkSummaryRepository>()
-    private val holidayService = mock<HolidayService>()
+
     private val vacationService = mock<VacationService>()
     private val timeWorkableService = mock<TimeWorkableService>()
     private val annualWorkSummaryConverter = mock<AnnualWorkSummaryConverter>()
@@ -51,12 +50,6 @@ internal class AnnualWorkSummaryServiceTest {
         val year = 2021
         val vacationsTaken = consumedVacations.filter { VacationState.ACCEPT === it.state }.flatMap { it.days }.size
         whenever(annualWorkSummaryRepository.findById(AnnualWorkSummaryId(user.id, year))).thenReturn(summaryEntity)
-        whenever(
-            holidayService.findAllBetweenDate(
-                LocalDate.ofYearDay(year, 1),
-                LocalDate.of(year, DECEMBER, 31)
-            )
-        ).thenReturn(EMPTY_HOLIDAYS)
         whenever(vacationService.getVacationsByChargeYear(year, user)).thenReturn(consumedVacations)
         whenever(timeWorkableService.getEarnedVacationsSinceHiringDate(user, year)).thenReturn(EARNED_VACATIONS)
         whenever(
@@ -113,13 +106,6 @@ internal class AnnualWorkSummaryServiceTest {
         )
 
         appProperties.binnacle.workSummary.persistenceEnabled = saveSummary
-
-        whenever(
-            holidayService.findAllBetweenDate(
-                LocalDate.ofYearDay(year, 1),
-                LocalDate.of(year, DECEMBER, 31)
-            )
-        ).thenReturn(EMPTY_HOLIDAYS)
         whenever(vacationService.getVacationsByChargeYear(year, user)).thenReturn(consumedVacations)
         whenever(timeWorkableService.getEarnedVacationsSinceHiringDate(user, year)).thenReturn(EARNED_VACATIONS)
         whenever(

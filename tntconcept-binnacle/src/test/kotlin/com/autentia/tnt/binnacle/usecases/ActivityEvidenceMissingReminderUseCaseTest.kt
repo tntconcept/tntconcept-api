@@ -3,8 +3,6 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.config.*
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
-import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.services.ActivityEvidenceMissingMailService
 import com.autentia.tnt.binnacle.services.UserService
 import org.junit.jupiter.api.*
@@ -33,11 +31,11 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
     @Test
     fun `No activities for user-role without evidence should not call email service`() {
         // Given: No activities for user-role without evidence
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
         doReturn(emptyList<Activity>()).whenever(activityRepository).findAll(any())
 
         // When: Use case is called
-        activityEvidenceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.WEEKLY)
 
         // Then: Verify no email is sent
         verifyNoInteractions(activityEvidenceMissingMailService)
@@ -46,7 +44,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
     @Test
     fun `Activity found for user-role without evidence should call email service`() {
         // Given: One activity for user-role without evidence
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
         val act1 =
             createActivitySameDay(
                 "Activity 1",
@@ -58,7 +56,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
         doReturn(listOf(act1)).whenever(activityRepository).findAll(any())
 
         // When: Use case is called
-        activityEvidenceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.WEEKLY)
 
         // Then: Verify email is sent
         verify(activityEvidenceMissingMailService).sendEmail(
@@ -66,15 +64,46 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly.name),
             eq(projectARoleWeekly.requireEvidence),
+            eq(act1.start),
+            eq(userFirst.email),
+            any(),
+        )
+    }
+
+    @Test
+    fun `Activity found for user-role without once type evidence should call email service`() {
+        // Given: One activity for user-role without evidence
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
+        val act1 =
+            createActivitySameDay(
+                "Activity 1",
+                userFirst,
+                projectARoleOnce,
+                LocalDateTime.now().minusDays(1).withHour(8),
+                3
+            )
+
+        doReturn(listOf(act1)).whenever(activityRepository).findAll(any())
+
+        // When: Use case is called
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.ONCE)
+
+        // Then: Verify email is sent
+        verify(activityEvidenceMissingMailService).sendEmail(
+            eq(projectA.organization.name),
+            eq(projectA.name),
+            eq(projectARoleOnce.name),
+            eq(projectARoleOnce.requireEvidence),
+            eq(act1.start),
             eq(userFirst.email),
             any()
         )
     }
 
     @Test
-    fun `Activities same role found for user-role without evidence should call once email service`(){
+    fun `Activities same role found for user-role without weekly type evidence should call once email service`(){
         // Given: Activities for same role without evidence
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
         val act1 =
             createActivitySameDay(
                 "Activity 1",
@@ -96,7 +125,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
         doReturn(listOf(act1, act2)).whenever(activityRepository).findAll(any())
 
         // When: Use case is called
-        activityEvidenceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.WEEKLY)
 
         // Then: Verify only one email is sent
         verify(activityEvidenceMissingMailService).sendEmail(
@@ -104,15 +133,16 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly.name),
             eq(projectARoleWeekly.requireEvidence),
+            eq(act1.start),
             eq(userFirst.email),
             any()
         )
     }
 
     @Test
-    fun `Activities for different roles found for role-user without evidence should call email service each evidence`(){
+    fun `Activities for different roles found for role-user without weekly type evidence should call email service each evidence`(){
         // Given: Activities for different roles and different require evidence without registered evidence
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
         val act1 =
             createActivitySameDay(
                 "Activity 1",
@@ -129,19 +159,11 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
                 LocalDateTime.now().minusDays(1).withHour(16),
                 3
             )
-        val act3 =
-            createActivityInterval(
-                "Activity 3",
-                userFirst,
-                projectARoleOnce,
-                LocalDateTime.now().minusDays(1).withHour(16),
-                LocalDateTime.now().plusDays(3).withHour(16)
-            )
 
-        doReturn(listOf(act1, act2, act3)).whenever(activityRepository).findAll(any())
+        doReturn(listOf(act1, act2)).whenever(activityRepository).findAll(any())
 
         // When: Use case is called
-        activityEvidenceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.WEEKLY)
 
         // Then: Verify emails are sent
         verify(activityEvidenceMissingMailService).sendEmail(
@@ -149,23 +171,16 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly.name),
             eq(projectARoleWeekly.requireEvidence),
-            eq(userFirst.email),
-            any()
-        )
-        verify(activityEvidenceMissingMailService).sendEmail(
-            eq(projectA.organization.name),
-            eq(projectA.name),
-            eq(projectARoleOnce.name),
-            eq(projectARoleOnce.requireEvidence),
+            eq(act1.start),
             eq(userFirst.email),
             any()
         )
     }
 
     @Test
-    fun `Activities for same project and different role found for roles-user same required evidence without evidence should call twice email service`(){
+    fun `Activities for same project and different role found for roles-user same required weekly type evidence without evidence should call twice email service`(){
         // Given: Activities for two roles same project without evidence
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
         val act1 =
             createActivitySameDay(
                 "Activity 1",
@@ -186,7 +201,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
         doReturn(listOf(act1, act2)).whenever(activityRepository).findAll(any())
 
         // When: Use case is called
-        activityEvidenceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.WEEKLY)
 
         // Then: Verify emails are sent
         verify(activityEvidenceMissingMailService).sendEmail(
@@ -194,6 +209,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly.name),
             eq(projectARoleWeekly.requireEvidence),
+            eq(act1.start),
             eq(userFirst.email),
             any()
         )
@@ -202,15 +218,16 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly2.name),
             eq(projectARoleWeekly2.requireEvidence),
+            eq(act2.start),
             eq(userSecond.email),
             any()
         )
     }
 
     @Test
-    fun `Activities found for different roles-user in same organization without evidence should call twice email service`(){
+    fun `Activities found for different roles-user in same organization without weekly type evidence should call twice email service`(){
         // Given: One activity for user-role without evidence
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
         val act1 =
             createActivitySameDay(
                 "Activity 1",
@@ -231,7 +248,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
         doReturn(listOf(act1, act2)).whenever(activityRepository).findAll(any())
 
         // When: Use case is called
-        activityEvidenceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.WEEKLY)
 
         // Then: Verify email is sent
         verify(activityEvidenceMissingMailService).sendEmail(
@@ -239,6 +256,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly.name),
             eq(projectARoleWeekly.requireEvidence),
+            eq(act1.start),
             eq(userFirst.email),
             any()
         )
@@ -247,15 +265,16 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectB.name),
             eq(projectBRoleWeekly.name),
             eq(projectBRoleWeekly.requireEvidence),
+            eq(act2.start),
             eq(userFirst.email),
             any()
         )
     }
 
     @Test
-    fun `Activities found for different roles-user in different organization without evidence should call twice email service`() {
+    fun `Activities found for different roles-user in different organization without weekly type evidence should call twice email service`() {
         // Given: One activity for user-role without evidence
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
         val act1 =
             createActivitySameDay(
                 "Activity 1",
@@ -276,7 +295,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
         doReturn(listOf(act1, act2)).whenever(activityRepository).findAll(any())
 
         // When: Use case is called
-        activityEvidenceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.WEEKLY)
 
         // Then: Verify email is sent
         verify(activityEvidenceMissingMailService).sendEmail(
@@ -284,6 +303,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly.name),
             eq(projectARoleWeekly.requireEvidence),
+            eq(act1.start),
             eq(userFirst.email),
             any()
         )
@@ -292,15 +312,16 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectC.name),
             eq(projectCRoleWeeklyOrganizationB.name),
             eq(projectCRoleWeeklyOrganizationB.requireEvidence),
+            eq(act2.start),
             eq(userFirst.email),
             any()
         )
     }
 
     @Test
-    fun `Activities without evidences for multiple users in same project role`() {
+    fun `Activities without weekly type evidences for multiple users in same project role`() {
         // Given: Activities for same role without evidence
-        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any())
+        doNothing().whenever(activityEvidenceMissingMailService).sendEmail(any(), any(), any(), any(), any(), any(), any())
         val act11 =
             createActivitySameDay(
                 "Activity 1 usf",
@@ -316,15 +337,6 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
                 projectARoleWeekly,
                 LocalDateTime.now().minusDays(1).withHour(16),
                 3
-            )
-
-        val act13 =
-            createActivityInterval(
-                "Activity 2 usf",
-                userFirst,
-                projectARoleOnce,
-                LocalDateTime.now().minusDays(4).withHour(16),
-                LocalDateTime.now().minusDays(1).withHour(16),
             )
 
         val act21 =
@@ -344,10 +356,10 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
                 3
             )
 
-        doReturn(listOf(act11, act12, act13, act21, act22)).whenever(activityRepository).findAll(any())
+        doReturn(listOf(act11, act12, act21, act22)).whenever(activityRepository).findAll(any())
 
         // When: Use case is called
-        activityEvidenceMissingReminderUseCase.sendReminders()
+        activityEvidenceMissingReminderUseCase.sendReminders(NotificationType.WEEKLY)
 
         // Then: Verify email is sent for each user
         verify(activityEvidenceMissingMailService).sendEmail(
@@ -355,15 +367,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly.name),
             eq(projectARoleWeekly.requireEvidence),
-            eq(userFirst.email),
-            any()
-        )
-
-        verify(activityEvidenceMissingMailService).sendEmail(
-            eq(projectA.organization.name),
-            eq(projectA.name),
-            eq(projectARoleOnce.name),
-            eq(projectARoleOnce.requireEvidence),
+            eq(act11.start),
             eq(userFirst.email),
             any()
         )
@@ -373,6 +377,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             eq(projectA.name),
             eq(projectARoleWeekly.name),
             eq(projectARoleWeekly.requireEvidence),
+            eq(act21.start),
             eq(userSecond.email),
             any()
         )
@@ -400,7 +405,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.WEEKLY,
             project = projectA,
             isApprovalRequired = true,
-            maxAllowed = 2,
+            maxTimeAllowedByYear = 2,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -411,7 +416,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.WEEKLY,
             project = projectA,
             isApprovalRequired = true,
-            maxAllowed = 2,
+            maxTimeAllowedByYear = 2,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -422,7 +427,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.ONCE,
             project = projectA,
             isApprovalRequired = true,
-            maxAllowed = 10,
+            maxTimeAllowedByYear = 10,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -433,7 +438,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.WEEKLY,
             project = projectB,
             isApprovalRequired = true,
-            maxAllowed = 2,
+            maxTimeAllowedByYear = 2,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -443,7 +448,7 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             requireEvidence = RequireEvidence.WEEKLY,
             project = projectC,
             isApprovalRequired = true,
-            maxAllowed = 2,
+            maxTimeAllowedByYear = 2,
             timeUnit = TimeUnit.DAYS,
             isWorkingTime = true
         )
@@ -489,19 +494,8 @@ internal class ActivityEvidenceMissingReminderUseCaseTest {
             )
         }
 
-
-        private fun buildActivitiesPredicate(allUserIds: List<Long>) = PredicateBuilder.and(
-            PredicateBuilder.and(
-                ActivityPredicates.hasNotEvidence(),
-                ActivityPredicates.projectRoleRequiresEvidence(RequireEvidence.ONCE)
-            ), ActivityPredicates.belongsToUsers(allUserIds)
-        )
-
         private fun getListOfActiveUsers(): List<User> {
             return listOf(userFirst, userSecond, userThird)
         }
-
     }
-
-
 }

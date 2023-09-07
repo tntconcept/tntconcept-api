@@ -3,21 +3,22 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
 import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
-import com.autentia.tnt.binnacle.services.HolidayService
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.given
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.Month
 
 internal class VacationValidatorTest {
 
-    private val vacationRepository = mock(VacationRepository::class.java)
-    private val holidayService = mock(HolidayService::class.java)
-    private val calendarFactory = CalendarFactory(holidayService)
-    private val user = mock(User::class.java)
+    private val vacationRepository = mock<VacationRepository>()
+    private val holidayRepository = mock<HolidayRepository>()
+    private val calendarFactory = CalendarFactory(holidayRepository)
+    private val user = mock<User>()
 
     private val vacationValidator =
         VacationValidator(vacationRepository, calendarFactory)
@@ -34,9 +35,9 @@ internal class VacationValidatorTest {
         val holidays = emptyList<Holiday>()
 
         given(
-            holidayService.findAllBetweenDate(
-                requestVacation.startDate,
-                requestVacation.endDate
+            holidayRepository.findAllByDateBetween(
+                requestVacation.startDate.atTime(LocalTime.MIN),
+                requestVacation.endDate.atTime(23, 59, 59)
             )
         ).willReturn(holidays)
 
@@ -54,6 +55,27 @@ internal class VacationValidatorTest {
 
         Assertions.assertThat(result)
             .isEqualTo(CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.INVALID_DATE_RANGE))
+    }
+
+    @Test
+    fun `should not create due to empty period`() {
+        val startDate = LocalDate.of(2023, 7, 1)
+        val requestVacation = RequestVacation(null, startDate, startDate.plusDays(2), "description")
+        val user = createUser()
+        val holidays = listOf(
+            Holiday(1, "Holiday", startDate.plusDays(2).atStartOfDay())
+        )
+
+        given(
+            holidayRepository.findAllByDateBetween(
+                requestVacation.startDate.atTime(LocalTime.MIN),
+                requestVacation.endDate.atTime(23, 59, 59)
+            )
+        ).willReturn(holidays)
+
+        val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
+
+        Assertions.assertThat(result).isEqualTo(CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY))
     }
 
     @Test
@@ -155,9 +177,9 @@ internal class VacationValidatorTest {
         val holidays = emptyList<Holiday>()
 
         given(
-            holidayService.findAllBetweenDate(
-                requestVacation.startDate,
-                requestVacation.endDate
+            holidayRepository.findAllByDateBetween(
+                requestVacation.startDate.atTime(LocalTime.MIN),
+                requestVacation.endDate.atTime(23, 59, 59)
             )
         ).willReturn(holidays)
 
@@ -185,9 +207,9 @@ internal class VacationValidatorTest {
         val holidays = emptyList<Holiday>()
 
         given(
-            holidayService.findAllBetweenDate(
-                requestVacation.startDate,
-                requestVacation.endDate
+            holidayRepository.findAllByDateBetween(
+                requestVacation.startDate.atTime(LocalTime.MIN),
+                requestVacation.endDate.atTime(23, 59, 59)
             )
         ).willReturn(holidays)
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
@@ -385,9 +407,9 @@ internal class VacationValidatorTest {
         val holidays = emptyList<Holiday>()
 
         given(
-            holidayService.findAllBetweenDate(
-                requestVacation.startDate,
-                requestVacation.endDate
+            holidayRepository.findAllByDateBetween(
+                requestVacation.startDate.atTime(LocalTime.MIN),
+                requestVacation.endDate.atTime(23, 59, 59)
             )
         ).willReturn(holidays)
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
