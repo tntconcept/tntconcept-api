@@ -2,38 +2,42 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
+import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.mockito.Mockito.doNothing
 import org.mockito.kotlin.*
+
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(PER_CLASS)
 internal class ActivityDeletionUseCaseTest {
 
     private val activityRepository = mock<ActivityRepository>()
     private val activityValidator = mock<ActivityValidator>()
     private val securityService = mock<SecurityService>()
-    private val attachmentRepository = mock<AttachmentInfoRepository>()
+    private val attachmentService = mock<AttachmentService>()
 
-    private val useCase = ActivityDeletionUseCase(activityRepository, activityValidator, securityService, attachmentRepository)
+    private val useCase = ActivityDeletionUseCase(activityRepository, activityValidator, securityService, attachmentService)
 
     @AfterEach
     fun resetMocks() {
-        reset(activityRepository, activityValidator, attachmentRepository)
+        reset(activityRepository, activityValidator, attachmentService)
     }
 
-    @BeforeAll
-    fun setAuthMock() {
-        val authenticatedUser = ClientAuthentication("id", mapOf("roles" to listOf("activity-approval")))
+    @BeforeEach
+    fun setUp() {
+        val authenticatedUser = ClientAuthentication("id", mapOf("roles" to listOf("user")))
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+        doNothing().`when`(activityValidator).checkActivityIsValidForDeletion(any())
     }
 
     @Test
@@ -43,7 +47,7 @@ internal class ActivityDeletionUseCaseTest {
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
-        verifyNoInteractions(attachmentRepository)
+        verifyNoInteractions(attachmentService)
     }
 
     @Test
@@ -52,15 +56,12 @@ internal class ActivityDeletionUseCaseTest {
         val attachmentIds = activity.evidences.map { it.id }
 
         whenever(activityRepository.findById(1L)).thenReturn(activity)
-        whenever(attachmentRepository.findByIds(attachmentIds)).doReturn(activity.evidences)
-        doNothing().`when`(attachmentRepository).update(any<List<AttachmentInfo>>())
+        doNothing().`when`(attachmentService).removeAttachment(attachmentIds)
 
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
-        verify(attachmentRepository).findByIds(attachmentIds)
-        val attachmentTemporaryTrue = activity.evidences.map { it.copy(isTemporary = true) }
-        verify(attachmentRepository).update(attachmentTemporaryTrue)
+        verify(attachmentService).removeAttachment(attachmentIds)
     }
 
     @Test
@@ -70,6 +71,23 @@ internal class ActivityDeletionUseCaseTest {
         assertThrows<ActivityNotFoundException> {
             useCase.deleteActivityById(1L)
         }
+    }
+
+    @Test
+    fun `check all access in validator if user has all access to activities`() {
+        val activity = entityActivityWithEvidences
+        val attachmentIds = activity.evidences.map { it.id }
+
+        val authenticatedUser = ClientAuthentication("id", mapOf("roles" to listOf("activity-approval")))
+        whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
+        whenever(activityRepository.findById(1L)).thenReturn(activity)
+        doNothing().`when`(attachmentService).removeAttachment(attachmentIds)
+
+        useCase.deleteActivityById(1L)
+
+        verify(activityRepository).deleteById(1L)
+        verify(attachmentService).removeAttachment(attachmentIds)
+        verify(activityValidator).checkAllAccessActivityIsValidForDeletion(activity.toDomain())
     }
 
     private companion object {

@@ -182,6 +182,43 @@ class AttachmentServiceTest {
         verify(this.attachmentStorage).retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")
     }
 
+    @Test
+    fun `will not remove attachments when ids are empty`() {
+        this.sut.removeAttachment(emptyList())
+        verifyNoInteractions(this.attachmentStorage, this.attachmentInfoRepository)
+    }
+
+    @Test
+    fun `remove an existing attachment`() {
+        val listOfEvidences = listOf(`get evidence for current user`(), `get evidence for current user`())
+        val evidenceIds = listOfEvidences.map { it.id }
+
+        whenever(this.attachmentInfoRepository.findByIds(evidenceIds)).thenReturn(listOfEvidences)
+        whenever(this.attachmentStorage.retrieveAttachmentFile(any())).thenReturn(IMAGE_BYTEARRAY)
+        doNothing().`when`(this.attachmentStorage).deleteAttachmentFile(any())
+
+        sut.removeAttachment(evidenceIds)
+
+        verify(attachmentInfoRepository).findByIds(evidenceIds)
+        verify(attachmentInfoRepository).delete(evidenceIds)
+        listOfEvidences.forEach {
+            verify(attachmentStorage).deleteAttachmentFile(it.path)
+        }
+    }
+
+    private fun `get evidence for current user`(): AttachmentInfo {
+        val id = UUID.randomUUID()
+        return AttachmentInfo(
+                id = id,
+                fileName = "some_image.jpg",
+                mimeType = "application/jpg",
+                uploadDate = SOME_DATE,
+                userId = CURRENT_USER,
+                path = "/2023/2/$id.jpg",
+                isTemporary = false
+        )
+    }
+
     companion object {
         private val SOME_DATE = LocalDateTime.of(2023, 2, 1, 10, 0)
 

@@ -52,6 +52,18 @@ internal class AttachmentService(
         return Attachment(attachmentInfo.toDomain(), attachmentFile)
     }
 
+    fun removeAttachment(ids: List<UUID>) {
+        if (ids.isEmpty()) return
+
+        val listOfAttachmentInfo = attachmentInfoRepository.findByIds(ids)
+
+        listOfAttachmentInfo.forEach {
+            attachmentStorage.deleteAttachmentFile(it.path)
+        }
+
+        attachmentInfoRepository.delete(ids)
+    }
+
     private fun isMimeTypeSupported(mimeType: String, fileName: String): Boolean = supportedMimeExtensions.containsKey(mimeType) && supportedMimeExtensions[mimeType] == FilenameUtils.getExtension(fileName)
 
     private fun createPathForAttachment(id: UUID, currentDate: LocalDateTime, fileName: String): Path {
