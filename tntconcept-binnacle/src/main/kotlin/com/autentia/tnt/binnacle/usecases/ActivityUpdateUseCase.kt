@@ -89,10 +89,11 @@ class ActivityUpdateUseCase internal constructor(
         val attachedEvidenceHasChanged = updatedActivity.evidence !== null && (originalActivity.evidence === null || originalActivity.evidence != updatedActivity.evidence)
         val projectRoleHasChanged = originalActivity.projectRole != updatedActivity.projectRole
 
-        if (projectRole.requireEvidence() && updatedActivity.canBeApproved() && (attachedEvidenceHasChanged || projectRoleHasChanged)
-        ) {
-            sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
-        } else if (!projectRole.requireEvidence() && updatedActivity.canBeApproved() && projectRoleHasChanged) {
+        val projectRequiresEvidenceAndActivityCanBeApproved =
+            projectRole.requireEvidence() && updatedActivity.canBeApproved() && (attachedEvidenceHasChanged || projectRoleHasChanged)
+        val projectDoesNotRequireEvidenceAndActivityCanBeApproved = !projectRole.requireEvidence() && updatedActivity.canBeApproved() && projectRoleHasChanged
+
+        if (projectRequiresEvidenceAndActivityCanBeApproved || projectDoesNotRequireEvidenceAndActivityCanBeApproved){
             sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
         }
     }
