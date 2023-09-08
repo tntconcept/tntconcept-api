@@ -363,7 +363,7 @@ internal class ActivityUpdateUseCaseTest {
     }
 
     @Test
-    fun `should update an existing activity with the same evidence to another role that not requires evidence and approval`() {
+    fun `should update an existing activity with the same evidence to another role that not requires evidence but approval`() {
         // Arrange
         val role = `get role that does not require evidence but approval`()
         val originRole = `get role that does not require evidence nor approval`()
