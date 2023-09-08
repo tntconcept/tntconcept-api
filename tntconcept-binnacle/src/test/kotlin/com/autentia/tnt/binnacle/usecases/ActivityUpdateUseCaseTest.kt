@@ -363,6 +363,43 @@ internal class ActivityUpdateUseCaseTest {
     }
 
     @Test
+    fun `should update an existing activity with the same evidence to another role that not requires evidence and approval`() {
+        // Arrange
+        val role = `get role that does not require evidence but approval`()
+        val originRole = `get role that does not require evidence nor approval`()
+        val evidenceDTO = EVIDENCE.toDomain()
+
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingActivity = `get existing pending activity with evidence`(originRole)
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+        whenever(activityEvidenceService.getActivityEvidence(existingActivity.id!!, existingActivity.insertDate!!)).thenReturn(
+            EVIDENCE)
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with evidence`(existingActivity, duration).copy(evidence = EVIDENCE)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration).copy(projectRole = role)
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(PENDING)
+
+        // Verify
+        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain().copy(evidence = evidenceDTO), USER.username, LOCALE)
+        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(evidenceDTO), any())
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+    }
+
+    @Test
     fun `should update an existing activity with evidence and remove the evidence in a role that does not require evidence nor approval`() {
         // Arrange
         val role = `get role that does not require evidence nor approval`()
@@ -616,6 +653,9 @@ internal class ActivityUpdateUseCaseTest {
 
     private fun `get role that does not require evidence nor approval`() =
             PROJECT_ROLE.copy(isApprovalRequired = false, requireEvidence = NO, timeUnit = TimeUnit.MINUTES)
+
+    private fun `get role that does not require evidence but approval`() =
+            PROJECT_ROLE.copy(isApprovalRequired = true, requireEvidence = NO, timeUnit = TimeUnit.MINUTES)
 
     private fun `get role that requires evidence`() =
             PROJECT_ROLE.copy(isApprovalRequired = false, requireEvidence = WEEKLY, timeUnit = TimeUnit.MINUTES)

@@ -3,6 +3,8 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
+import com.autentia.tnt.binnacle.core.domain.ProjectRole
+import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
@@ -72,17 +74,27 @@ class ActivityUpdateUseCase internal constructor(
             )
         }
 
-        if (projectRole.requireEvidence() && shouldSendMailWhenActivityCanBeApprovedMail(currentActivity, updatedActivity)) {
-            sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
-        }
+        sendActivityPendingOfApprovalEmailIfNeeded(projectRole, currentActivity, updatedActivity, user, locale)
 
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
 
-    private fun shouldSendMailWhenActivityCanBeApprovedMail(originalActivity: com.autentia.tnt.binnacle.core.domain.Activity, updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity): Boolean {
+    private fun sendActivityPendingOfApprovalEmailIfNeeded(
+        projectRole: ProjectRole,
+        originalActivity: com.autentia.tnt.binnacle.core.domain.Activity,
+        updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity,
+        user: User,
+        locale: Locale
+    ) {
         val attachedEvidenceHasChanged = updatedActivity.evidence !== null && (originalActivity.evidence === null || originalActivity.evidence != updatedActivity.evidence)
         val projectRoleHasChanged = originalActivity.projectRole != updatedActivity.projectRole
-        return updatedActivity.canBeApproved() && (attachedEvidenceHasChanged || projectRoleHasChanged)
+
+        if (projectRole.requireEvidence() && updatedActivity.canBeApproved() && (attachedEvidenceHasChanged || projectRoleHasChanged)
+        ) {
+            sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
+        } else if (!projectRole.requireEvidence() && updatedActivity.canBeApproved() && projectRoleHasChanged) {
+            sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
+        }
     }
 
     private fun getProjectRoleEntity(projectRoleId: Long) =
