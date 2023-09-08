@@ -337,7 +337,6 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(request.evidences)
         verify(attachmentInfoRepository).update(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
-        verify(attachmentInfoRepository, times(2)).findByIds(emptyList())
     }
 
     @Test
@@ -374,9 +373,6 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
-
-        verify(attachmentInfoRepository).findByIds(existingEvidenceIds)
-        verify(attachmentInfoRepository, times(2)).findByIds(emptyList())
     }
 
     @Test
@@ -412,7 +408,6 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
-        verify(attachmentInfoRepository, times(2)).findByIds(emptyList())
     }
 
     @Test
@@ -488,6 +483,42 @@ internal class ActivityUpdateUseCaseTest {
     }
 
     @Test
+    fun `should update an existing activity with evidence and keep the current evidence the previous evidence`() {
+        // Arrange
+        val role = `get role that requires evidence`()
+        whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
+
+        val existingEvidence = createAttachmentInfoEntity().copy(isTemporary = false)
+        val existingActivity = `get existing activity with evidence`(role, mutableListOf(existingEvidence))
+
+        whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+        whenever(attachmentInfoRepository.findByIds(listOf(existingEvidence.id, SAMPLE_EVIDENCE_1.id))).thenReturn(listOf(existingEvidence, SAMPLE_EVIDENCE_1))
+
+        val duration = 60
+        whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
+
+        val request = `get activity update request with evidence`(existingActivity, duration, listOf(existingEvidence.id, SAMPLE_EVIDENCE_1.id))
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration, mutableListOf(existingEvidence, SAMPLE_EVIDENCE_1.copy(isTemporary = false) ) )
+        whenever(activityRepository.update(any())).thenReturn(updatedActivity)
+
+        // Act
+        val result = sut.updateActivity(request, LOCALE)
+
+        // Assert
+        assertThatUpdatedActivityIsEquivalent(result, request)
+        assertThat(result.approval.state).isEqualTo(NA)
+
+        // Verify
+        verifyNoInteractions(sendPendingApproveActivityMailUseCase)
+        verify(projectRoleRepository).findById(role.id)
+        verify(activityRepository).findById(existingActivity.id!!)
+        verify(activityCalendarService).getDurationByCountingWorkingDays(any())
+        verify(activityRepository).update(updatedActivity)
+
+        verify(attachmentInfoRepository).update(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false)))
+    }
+
+    @Test
     fun `should update an existing activity with evidence and mark previous evidence as temporary in a role that requires evidence and approval`() {
         // Arrange
         val role = `get role that requires evidence and approval`()
@@ -496,8 +527,8 @@ internal class ActivityUpdateUseCaseTest {
         val existingActivity = `get existing pending activity with evidence`(role)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
 
-        val existingAttachmentIds = existingActivity.evidences.map { it.id }
-        whenever(attachmentInfoRepository.findByIds(existingAttachmentIds)).thenReturn(existingActivity.evidences.map { it.copy(isTemporary = false) })
+        val existingAttachmentIds =  existingActivity.evidences.map { it.id }
+        whenever(attachmentInfoRepository.findByIds(existingAttachmentIds + SAMPLE_EVIDENCE_1.id)).thenReturn(existingActivity.evidences.map { it.copy(isTemporary = false) } + SAMPLE_EVIDENCE_1)
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
@@ -521,9 +552,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
-        verify(attachmentInfoRepository).findByIds(request.evidences)
         verify(attachmentInfoRepository).update(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false)))
-        verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
         verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true) })
     }
 
@@ -636,11 +665,11 @@ internal class ActivityUpdateUseCaseTest {
                     departmentId = 1L,
             )
 
-    private fun `get existing activity with evidence`(role: ProjectRole) =
+    private fun `get existing activity with evidence`(role: ProjectRole, evidences: MutableList<AttachmentInfo> = mutableListOf(createAttachmentInfoEntity())) =
             Activity.emptyActivity(role).copy(
                     id = 1L,
                     userId = USER.id,
-                    evidences = mutableListOf(createAttachmentInfoEntity()),
+                    evidences = evidences,
                     approvalState = NA,
                     start = LocalDate.now().atTime(8, 0),
                     end = LocalDate.now().atTime(12, 0),

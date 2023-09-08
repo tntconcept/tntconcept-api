@@ -64,12 +64,15 @@ class ActivityUpdateUseCase internal constructor(
     private fun updateActivityEntityWithEvidences(currentActivity: com.autentia.tnt.binnacle.core.domain.Activity,
                                                   activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity,
                                                   projectRole: ProjectRole): Activity {
+        val allEvidences = attachmentInfoRepository.findByIds((currentActivity.evidences union activityToUpdate.evidences).toList())
+
         val idsToMarkAsTemporary = currentActivity.evidences.filterNot { activityToUpdate.evidences.contains(it) }
         val idsToKeep = (activityToUpdate.evidences.toSet() intersect currentActivity.evidences.toSet()).toList()
         val idsToMarkAsNonTemporary = activityToUpdate.evidences.filterNot { currentActivity.evidences.contains(it) }
-        val evidencesToMarkAsTemporary = attachmentInfoRepository.findByIds(idsToMarkAsTemporary).map { it.copy(isTemporary = true) }
-        val evidencesToKeep = attachmentInfoRepository.findByIds(idsToKeep)
-        val evidencesToMarkAsNonTemporary = attachmentInfoRepository.findByIds(idsToMarkAsNonTemporary).map { it.copy(isTemporary = false) }
+
+        val evidencesToMarkAsTemporary = allEvidences.filter { it.id in idsToMarkAsTemporary }.map { it.copy(isTemporary = true) }
+        val evidencesToKeep = allEvidences.filter { it.id in idsToKeep }
+        val evidencesToMarkAsNonTemporary = allEvidences.filter { it.id in idsToMarkAsNonTemporary }.map { it.copy(isTemporary = false) }
 
         attachmentInfoRepository.update(evidencesToMarkAsNonTemporary)
         attachmentInfoRepository.update(evidencesToMarkAsTemporary)
