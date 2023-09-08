@@ -97,7 +97,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verifyNoInteractions(sendPendingApproveActivityMailUseCase, attachmentInfoRepository)
+        verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -159,7 +159,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verifyNoInteractions(attachmentInfoRepository, sendPendingApproveActivityMailUseCase)
+        verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -190,7 +190,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verifyNoInteractions(sendPendingApproveActivityMailUseCase, attachmentInfoRepository)
+        verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -209,11 +209,10 @@ internal class ActivityUpdateUseCaseTest {
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration)
-        whenever(attachmentInfoRepository.findByIds(request.evidences)).thenReturn(listOf(SAMPLE_EVIDENCE_1, SAMPLE_EVIDENCE_2))
-        doNothing().`when`(attachmentInfoRepository).update(any<List<AttachmentInfo>>())
+        val request = `get activity update request with evidence`(existingActivity, duration, SAMPLE_EVIDENCES_IDS)
+        whenever(attachmentInfoRepository.findByIds(SAMPLE_EVIDENCES_IDS)).thenReturn(SAMPLE_EVIDENCES)
 
-        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration, SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) }.toMutableList())
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
         // Act
@@ -229,9 +228,9 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
+
         verify(attachmentInfoRepository).update(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false), SAMPLE_EVIDENCE_2.copy(isTemporary = false)))
         verify(attachmentInfoRepository).findByIds(request.evidences)
-        verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
     @Test
@@ -246,8 +245,9 @@ internal class ActivityUpdateUseCaseTest {
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration)
-        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        val request = `get activity update request with evidence`(existingActivity, duration, listOf(SAMPLE_EVIDENCE_1.id))
+        whenever(attachmentInfoRepository.findByIds(listOf(SAMPLE_EVIDENCE_1.id))).thenReturn(listOf(SAMPLE_EVIDENCE_1))
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration, mutableListOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false)))
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
         // Act
@@ -263,6 +263,8 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
+        verify(attachmentInfoRepository).update(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false)))
+        verify(attachmentInfoRepository).findByIds(request.evidences)
     }
 
 
@@ -278,11 +280,11 @@ internal class ActivityUpdateUseCaseTest {
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration)
+        val request = `get activity update request with evidence`(existingActivity, duration, SAMPLE_EVIDENCES_IDS)
         whenever(attachmentInfoRepository.findByIds(SAMPLE_EVIDENCES_IDS)).thenReturn(SAMPLE_EVIDENCES)
         doNothing().`when`(attachmentInfoRepository).update(any<List<AttachmentInfo>>())
 
-        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration, SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) }.toMutableList())
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
         // Act
@@ -301,7 +303,6 @@ internal class ActivityUpdateUseCaseTest {
 
         verify(attachmentInfoRepository).findByIds(SAMPLE_EVIDENCES_IDS)
         verify(attachmentInfoRepository).update(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
-        verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
     @Test
@@ -316,13 +317,10 @@ internal class ActivityUpdateUseCaseTest {
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration)
-        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        val request = `get activity update request with evidence`(existingActivity, duration, SAMPLE_EVIDENCES_IDS)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration, SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) }.toMutableList())
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
         whenever(attachmentInfoRepository.findByIds(SAMPLE_EVIDENCES_IDS)).thenReturn(SAMPLE_EVIDENCES)
-        doNothing().`when`(attachmentInfoRepository).update(any<List<AttachmentInfo>>())
-
-        doNothing().whenever(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
 
         // Act
         val result = sut.updateActivity(request, LOCALE)
@@ -337,10 +335,9 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
-
-        verify(attachmentInfoRepository).findByIds(SAMPLE_EVIDENCES_IDS)
+        verify(attachmentInfoRepository).findByIds(request.evidences)
         verify(attachmentInfoRepository).update(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
-        verifyNoMoreInteractions(attachmentInfoRepository)
+        verify(attachmentInfoRepository, times(2)).findByIds(emptyList())
     }
 
     @Test
@@ -352,13 +349,16 @@ internal class ActivityUpdateUseCaseTest {
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
         val existingActivity = `get existing pending activity with evidence`(originRole)
+        val existingEvidenceIds = existingActivity.evidences.map { it.id }
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+        whenever(attachmentInfoRepository.findByIds(existingEvidenceIds)).thenReturn(existingActivity.evidences.map { it.copy(isTemporary = false) })
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration).copy(evidences = existingActivity.evidences.map { it.id })
-        val updatedActivity = `get activity updated with request`(existingActivity, request, duration).copy(projectRole = role)
+        val request = `get activity update request with evidence`(existingActivity, duration, existingEvidenceIds).copy(projectRoleId = role.id)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration,
+                existingActivity.evidences.map { it.copy(isTemporary = false) }.toMutableList()).copy(projectRole = role)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
         // Act
@@ -370,11 +370,13 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
-        verifyNoInteractions(attachmentInfoRepository)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
+
+        verify(attachmentInfoRepository).findByIds(existingEvidenceIds)
+        verify(attachmentInfoRepository, times(2)).findByIds(emptyList())
     }
 
     @Test
@@ -386,13 +388,15 @@ internal class ActivityUpdateUseCaseTest {
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
         val existingActivity = `get existing pending activity with evidence`(originRole)
+        val existingEvidenceIds = existingActivity.evidences.map { it.id }
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+        whenever(attachmentInfoRepository.findByIds(existingEvidenceIds)).thenReturn(existingActivity.evidences)
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration).copy(evidences = existingActivity.evidences.map { it.id })
-        val updatedActivity = `get activity updated with request`(existingActivity, request, duration).copy(projectRole = role)
+        val request = `get activity update request with evidence`(existingActivity, duration, existingEvidenceIds).copy(projectRoleId = role.id)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration, existingActivity.evidences).copy(projectRole = role)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
         // Act
@@ -408,7 +412,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
-        verifyNoInteractions(attachmentInfoRepository)
+        verify(attachmentInfoRepository, times(2)).findByIds(emptyList())
     }
 
     @Test
@@ -445,7 +449,6 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
         verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true) })
-        verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
     @Test
@@ -482,11 +485,10 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
         verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true) })
-        verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
     @Test
-    fun `should update an existing activity with evidence and remove the evidence in a role that requires evidence and approval`() {
+    fun `should update an existing activity with evidence and mark previous evidence as temporary in a role that requires evidence and approval`() {
         // Arrange
         val role = `get role that requires evidence and approval`()
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
@@ -496,16 +498,14 @@ internal class ActivityUpdateUseCaseTest {
 
         val existingAttachmentIds = existingActivity.evidences.map { it.id }
         whenever(attachmentInfoRepository.findByIds(existingAttachmentIds)).thenReturn(existingActivity.evidences.map { it.copy(isTemporary = false) })
-        doNothing().`when`(attachmentInfoRepository).update(any<List<AttachmentInfo>>())
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration)
-        whenever(attachmentInfoRepository.findByIds(SAMPLE_EVIDENCES_IDS)).thenReturn(SAMPLE_EVIDENCES)
-        doNothing().`when`(attachmentInfoRepository).update(any<List<AttachmentInfo>>())
+        val request = `get activity update request with evidence`(existingActivity, duration, listOf(SAMPLE_EVIDENCE_1.id))
+        whenever(attachmentInfoRepository.findByIds(listOf(SAMPLE_EVIDENCE_1.id))).thenReturn(listOf(SAMPLE_EVIDENCE_1))
 
-        val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
+        val updatedActivity = `get activity updated with request`(existingActivity, request, duration, mutableListOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false)))
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
         // Act
@@ -521,11 +521,10 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
-        verify(attachmentInfoRepository).findByIds(SAMPLE_EVIDENCES_IDS)
-        verify(attachmentInfoRepository).update(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
+        verify(attachmentInfoRepository).findByIds(request.evidences)
+        verify(attachmentInfoRepository).update(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false)))
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
         verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true) })
-        verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
     @Test
@@ -602,14 +601,15 @@ internal class ActivityUpdateUseCaseTest {
         verifyNoMoreInteractions(projectRoleRepository, activityRepository)
     }
 
-    private fun `get activity updated with request`(existingActivity: Activity, request: ActivityRequestDTO, duration: Int) =
+    private fun `get activity updated with request`(existingActivity: Activity, request: ActivityRequestDTO, duration: Int,
+                                                    evidences: MutableList<AttachmentInfo> = mutableListOf()) =
             existingActivity.copy(
                     duration = duration,
                     start = request.interval.start,
                     end = request.interval.end,
                     description = request.description,
                     billable = request.billable,
-                    evidences = if (request.evidences.isEmpty()) mutableListOf() else SAMPLE_EVIDENCES
+                    evidences = evidences
             )
 
 
@@ -659,7 +659,7 @@ internal class ActivityUpdateUseCaseTest {
                     evidences = arrayListOf()
             )
 
-    private fun `get activity update request with evidence`(existingActivity: Activity, duration: Int) =
+    private fun `get activity update request with evidence`(existingActivity: Activity, duration: Int, evidenceIds: List<UUID>) =
             ActivityRequestDTO(
                     id = existingActivity.id!!,
                     start = TODAY,
@@ -667,7 +667,7 @@ internal class ActivityUpdateUseCaseTest {
                     description = existingActivity.description + " updated",
                     billable = existingActivity.billable,
                     projectRoleId = existingActivity.projectRole.id,
-                    evidences = SAMPLE_EVIDENCES_IDS
+                    evidences = evidenceIds
             )
 
     private fun `get role that requires approval`() =

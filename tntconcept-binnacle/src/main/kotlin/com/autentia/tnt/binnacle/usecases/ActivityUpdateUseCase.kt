@@ -53,8 +53,7 @@ class ActivityUpdateUseCase internal constructor(
 
         activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
 
-        val updatedActivityEntity = this.updateActivityEntity(activityToUpdate, projectRoleEntity)
-
+        val updatedActivityEntity = this.updateActivityEntityWithEvidences(currentActivity, activityToUpdate, projectRoleEntity)
         val updatedActivity = updatedActivityEntity.toDomain()
 
         sendActivityPendingOfApprovalEmailIfNeeded(projectRole, currentActivity, updatedActivity, user, locale)
@@ -62,18 +61,23 @@ class ActivityUpdateUseCase internal constructor(
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
 
-    private fun updateActivityEntity(activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity,
-                                     projectRole: ProjectRole): Activity {
-        return if (activityToUpdate.evidences.isEmpty()) {
-            val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, mutableListOf())
-            activityRepository.update(activityEntityToCreate)
-        } else {
-            val activityEvidences = attachmentInfoRepository.findByIds(activityToUpdate.evidences)
-            val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.toMutableList())
-            val activityEntity = activityRepository.update(activityEntityToCreate)
-            attachmentInfoRepository.update(activityEvidences.map { it.copy(isTemporary = false) })
-            activityEntity
-        }
+    private fun updateActivityEntityWithEvidences(currentActivity: com.autentia.tnt.binnacle.core.domain.Activity,
+                                                  activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity,
+                                                  projectRole: ProjectRole): Activity {
+        val idsToMarkAsTemporary = currentActivity.evidences.filterNot { activityToUpdate.evidences.contains(it) }
+        val idsToKeep = (activityToUpdate.evidences.toSet() intersect currentActivity.evidences.toSet()).toList()
+        val idsToMarkAsNonTemporary = activityToUpdate.evidences.filterNot { currentActivity.evidences.contains(it) }
+        val evidencesToMarkAsTemporary = attachmentInfoRepository.findByIds(idsToMarkAsTemporary).map { it.copy(isTemporary = true) }
+        val evidencesToKeep = attachmentInfoRepository.findByIds(idsToKeep)
+        val evidencesToMarkAsNonTemporary = attachmentInfoRepository.findByIds(idsToMarkAsNonTemporary).map { it.copy(isTemporary = false) }
+
+        attachmentInfoRepository.update(evidencesToMarkAsNonTemporary)
+        attachmentInfoRepository.update(evidencesToMarkAsTemporary)
+
+        val evidencesForUpdatedActivity = evidencesToKeep union evidencesToMarkAsNonTemporary
+        val activityEntityToUpdate = Activity.of(activityToUpdate, projectRole, evidencesForUpdatedActivity.toMutableList())
+
+        return activityRepository.update(activityEntityToUpdate)
     }
 
     private fun sendActivityPendingOfApprovalEmailIfNeeded(
@@ -90,7 +94,7 @@ class ActivityUpdateUseCase internal constructor(
                 projectRole.requireEvidence() && updatedActivity.canBeApproved() && (attachedEvidenceHasChanged || projectRoleHasChanged)
         val projectDoesNotRequireEvidenceAndActivityCanBeApproved = !projectRole.requireEvidence() && updatedActivity.canBeApproved() && projectRoleHasChanged
 
-        if (projectRequiresEvidenceAndActivityCanBeApproved || projectDoesNotRequireEvidenceAndActivityCanBeApproved){
+        if (projectRequiresEvidenceAndActivityCanBeApproved || projectDoesNotRequireEvidenceAndActivityCanBeApproved) {
             sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
         }
     }
