@@ -25,6 +25,7 @@ class ActivitiesResponseConverter(
         project = activity.projectRole.project,
         projectRole = activity.projectRole,
         duration = activity.duration,
+        hasImage = false
     )
 
     fun toActivityResponseDTO(activityResponse: ActivitiesResponse) =

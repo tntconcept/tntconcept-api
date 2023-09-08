@@ -27,6 +27,8 @@ data class ActivityRequest(
             billable,
             projectRoleId,
             userName,
+                hasImage,
+                imageFile,
         )
 
 }

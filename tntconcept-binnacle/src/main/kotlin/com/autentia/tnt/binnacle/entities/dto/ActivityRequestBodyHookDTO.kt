@@ -14,4 +14,6 @@ data class ActivityRequestBodyHookDTO(
     val billable: Boolean,
     val projectRoleId: Long,
     val userName: String,
+    val hasImage: Boolean,
+    val imageFile: String? = null,
 )

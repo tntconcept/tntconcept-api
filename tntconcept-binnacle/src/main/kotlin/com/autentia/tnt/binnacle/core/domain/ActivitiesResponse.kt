@@ -15,4 +15,5 @@ data class ActivitiesResponse(
     val billable: Boolean,
     val organization: Organization,
     val project: Project,
+    val hasImage: Boolean?
 ) {}
