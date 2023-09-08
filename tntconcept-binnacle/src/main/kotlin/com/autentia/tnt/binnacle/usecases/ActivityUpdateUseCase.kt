@@ -3,9 +3,9 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
-import com.autentia.tnt.binnacle.core.domain.ProjectRole
 import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
@@ -77,7 +77,7 @@ class ActivityUpdateUseCase internal constructor(
     }
 
     private fun sendActivityPendingOfApprovalEmailIfNeeded(
-            projectRole: ProjectRole,
+            projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole,
             originalActivity: com.autentia.tnt.binnacle.core.domain.Activity,
             updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity,
             user: User,

@@ -151,8 +151,6 @@ internal class ActivityUpdateUseCaseTest {
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
-        doNothing().whenever(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
-
         // Act
         val result = sut.updateActivity(request, LOCALE)
 
@@ -161,8 +159,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
-        verifyNoInteractions(attachmentInfoRepository)
+        verifyNoInteractions(attachmentInfoRepository, sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -351,19 +348,16 @@ internal class ActivityUpdateUseCaseTest {
         // Arrange
         val role = `get role that requires evidence and approval`()
         val originRole = `get role that does not require evidence nor approval`()
-        val evidenceDTO = EVIDENCE.toDomain()
 
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
         val existingActivity = `get existing pending activity with evidence`(originRole)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
-        whenever(activityEvidenceService.getActivityEvidence(existingActivity.id!!, existingActivity.insertDate!!)).thenReturn(
-            EVIDENCE)
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration).copy(evidence = EVIDENCE)
+        val request = `get activity update request with evidence`(existingActivity, duration).copy(evidences = existingActivity.evidences.map { it.id })
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration).copy(projectRole = role)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
@@ -375,8 +369,8 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain().copy(evidence = evidenceDTO), USER.username, LOCALE)
-        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(evidenceDTO), any())
+        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
+        verifyNoInteractions(attachmentInfoRepository)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -388,19 +382,16 @@ internal class ActivityUpdateUseCaseTest {
         // Arrange
         val role = `get role that does not require evidence but approval`()
         val originRole = `get role that does not require evidence nor approval`()
-        val evidenceDTO = EVIDENCE.toDomain()
 
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
         val existingActivity = `get existing pending activity with evidence`(originRole)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
-        whenever(activityEvidenceService.getActivityEvidence(existingActivity.id!!, existingActivity.insertDate!!)).thenReturn(
-            EVIDENCE)
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration).copy(evidence = EVIDENCE)
+        val request = `get activity update request with evidence`(existingActivity, duration).copy(evidences = existingActivity.evidences.map { it.id })
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration).copy(projectRole = role)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
 
@@ -412,12 +403,12 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain().copy(evidence = evidenceDTO), USER.username, LOCALE)
-        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(evidenceDTO), any())
+        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain(), USER.username, LOCALE)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
+        verifyNoInteractions(attachmentInfoRepository)
     }
 
     @Test
