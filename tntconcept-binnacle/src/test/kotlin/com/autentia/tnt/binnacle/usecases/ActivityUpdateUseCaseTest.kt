@@ -330,18 +330,21 @@ internal class ActivityUpdateUseCaseTest {
         // Arrange
         val role = `get role that requires evidence and approval`()
         val originRole = `get role that does not require evidence nor approval`()
+        val evidenceDTO = EVIDENCE.toDomain()
+
         whenever(projectRoleRepository.findById(role.id)).thenReturn(role)
 
-        val existingActivity = `get existing pending activity with no evidence`(originRole)
+        val existingActivity = `get existing pending activity with evidence`(originRole)
         whenever(activityRepository.findById(existingActivity.id!!)).thenReturn(existingActivity)
+        whenever(activityEvidenceService.getActivityEvidence(existingActivity.id!!, existingActivity.insertDate!!)).thenReturn(
+            EVIDENCE)
 
         val duration = 60
         whenever(activityCalendarService.getDurationByCountingWorkingDays(any())).thenReturn(duration)
 
-        val request = `get activity update request with evidence`(existingActivity, duration)
+        val request = `get activity update request with evidence`(existingActivity, duration).copy(evidence = EVIDENCE)
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration).copy(projectRole = role)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
-        doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
 
         // Act
         val result = sut.updateActivity(request, LOCALE)
@@ -351,8 +354,8 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(PENDING)
 
         // Verify
-        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain().copy(evidence = SAMPLE_EVIDENCE), USER.username, LOCALE)
-        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
+        verify(sendPendingApproveActivityMailUseCase).send(updatedActivity.toDomain().copy(evidence = evidenceDTO), USER.username, LOCALE)
+        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(evidenceDTO), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
