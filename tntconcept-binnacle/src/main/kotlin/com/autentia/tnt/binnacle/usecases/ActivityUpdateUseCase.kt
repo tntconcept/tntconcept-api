@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
-import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
@@ -53,18 +52,6 @@ class ActivityUpdateUseCase internal constructor(
 
         activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
 
-        val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
-
-        val updatedActivity = updatedActivityEntity.toDomain().copy(evidence = activityToUpdate.evidence);
-
-        if (activityToUpdate.hasEvidences) {
-            activityEvidenceService.storeActivityEvidence(
-                    updatedActivityEntity.id!!,
-                    activityToUpdate.evidence!!,
-                    updatedActivityEntity.insertDate!!
-            )
-        }
-
         val updatedActivityEntity = this.updateActivityEntity(activityToUpdate, projectRoleEntity)
 
         val updatedActivity = updatedActivityEntity.toDomain()
@@ -76,22 +63,30 @@ class ActivityUpdateUseCase internal constructor(
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
 
+    private fun updateActivityEntity(activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity,
+                                     projectRole: ProjectRole): Activity {
+        return if (activityToUpdate.evidences.isEmpty()) {
+            val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, mutableListOf())
+            activityRepository.update(activityEntityToCreate)
+        } else {
+            val activityEvidences = attachmentInfoRepository.findByIds(activityToUpdate.evidences)
+            val activityEntityToCreate = Activity.of(activityToUpdate, projectRole, activityEvidences.toMutableList())
+            val activityEntity = activityRepository.update(activityEntityToCreate)
+            attachmentInfoRepository.update(activityEvidences.map { it.copy(isTemporary = false) })
+            activityEntity
+        }
+    }
+
     private fun shouldSendMailWhenActivityCanBeApprovedMail(originalActivity: com.autentia.tnt.binnacle.core.domain.Activity, updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity): Boolean {
-        val attachedEvidenceHasChanged = updatedActivity.evidence !== null && (originalActivity.evidence === null || originalActivity.evidence != updatedActivity.evidence)
+        val attachedEvidenceHasChanged = updatedActivity.evidences.isNotEmpty() && (!originalActivity.evidences.containsAll(updatedActivity.evidences))
         return updatedActivity.canBeApproved() && attachedEvidenceHasChanged
     }
 
     private fun getProjectRoleEntity(projectRoleId: Long) =
             projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)
 
-    private fun getActivity(activityId: Long): com.autentia.tnt.binnacle.core.domain.Activity {
-        val activity = Optional.ofNullable(activityRepository.findById(activityId))
-            .orElseThrow { ActivityNotFoundException(activityId) }.toDomain()
-        if (activity.hasEvidences) {
-            val evidence =
-                activityEvidenceService.getActivityEvidence(activityId, toDate(activity.insertDate)!!).toDomain()
-            return activity.copy(evidence = evidence)
-        }
-        return activity
-    }
+    private fun getActivity(activityId: Long): com.autentia.tnt.binnacle.core.domain.Activity =
+            Optional.ofNullable(activityRepository.findById(activityId))
+                    .orElseThrow { ActivityNotFoundException(activityId) }.toDomain()
+
 }

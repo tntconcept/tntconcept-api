@@ -128,7 +128,7 @@ internal class ActivityUpdateUseCaseTest {
         assertThat(result.approval.state).isEqualTo(NA)
 
         // Verify
-        verifyNoInteractions(activityEvidenceService, sendPendingApproveActivityMailUseCase)
+        verifyNoInteractions(sendPendingApproveActivityMailUseCase)
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -252,7 +252,6 @@ internal class ActivityUpdateUseCaseTest {
         val request = `get activity update request with evidence`(existingActivity, duration)
         val updatedActivity = `get activity updated with request`(existingActivity, request, duration)
         whenever(activityRepository.update(any())).thenReturn(updatedActivity)
-        doNothing().whenever(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
 
         // Act
         val result = sut.updateActivity(request, LOCALE)
@@ -263,7 +262,6 @@ internal class ActivityUpdateUseCaseTest {
 
         // Verify
         verifyNoInteractions(sendPendingApproveActivityMailUseCase)
-        verify(activityEvidenceService).storeActivityEvidence(eq(updatedActivity.id!!), eq(SAMPLE_EVIDENCE), any())
         verify(projectRoleRepository).findById(role.id)
         verify(activityRepository).findById(existingActivity.id!!)
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
@@ -461,7 +459,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(attachmentInfoRepository).findByIds(SAMPLE_EVIDENCES_IDS)
         verify(attachmentInfoRepository).update(SAMPLE_EVIDENCES.map { it.copy(isTemporary = false) })
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
-        verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true)})
+        verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true) })
         verifyNoMoreInteractions(attachmentInfoRepository)
     }
 
@@ -619,11 +617,11 @@ internal class ActivityUpdateUseCaseTest {
     private fun `get role that requires evidence and approval`() =
             PROJECT_ROLE.copy(isApprovalRequired = true, requireEvidence = ONCE, timeUnit = TimeUnit.MINUTES)
 
-    private fun `get existing activity with no evidence`(role: ProjectRole) =
+    private fun `get existing activity with no evidence`(role: ProjectRole, approvalState: ApprovalState = NA) =
             Activity.emptyActivity(role).copy(
                     id = 1L,
                     userId = USER.id,
-                    approvalState = NA,
+                    approvalState = approvalState,
                     start = LocalDate.now().atTime(8, 0),
                     end = LocalDate.now().atTime(12, 0),
                     insertDate = Date.from(Instant.now()),

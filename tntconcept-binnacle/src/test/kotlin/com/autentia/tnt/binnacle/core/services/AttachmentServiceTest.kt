@@ -25,7 +25,7 @@ class AttachmentServiceTest {
 
     private val appProperties = AppProperties().apply {
         files.supportedMimeTypes = mapOf(
-                Pair("image/jpg", "jpg"),
+                Pair("image/jpg", "jpg,jpeg"),
         )
     }
 
@@ -67,6 +67,43 @@ class AttachmentServiceTest {
         assertThat(result.info.uploadDate).isEqualTo(SOME_DATE)
 
         val expectedPath = "/2023/2/${result.info.id}.jpg"
+        assertThat(result.info.path).isEqualTo(expectedPath)
+
+        // Verify
+        verify(this.attachmentStorage).storeAttachmentFile(expectedPath, file)
+        verify(this.attachmentInfoRepository).save(any<AttachmentInfo>())
+        verify(this.dateService).getDateNow()
+    }
+
+    @Test
+    fun `create and persist an attachment with a supported mime type and extension  and use file storage to store it`() {
+        // Given
+        doReturn(SOME_DATE).whenever(this.dateService).getDateNow()
+        doNothing().whenever(this.attachmentStorage).storeAttachmentFile(any(), any())
+        doNothing().whenever(this.attachmentInfoRepository).save(any<AttachmentInfo>())
+
+        val fileName = "some_image.jpeg"
+        val mimetype = "image/jpg"
+        val file = IMAGE_BYTEARRAY
+        val userId = CURRENT_USER
+
+        // When
+        val result = this.sut.createAttachment(
+                fileName = fileName,
+                mimeType = mimetype,
+                file = file,
+                userId = userId
+        )
+
+        // Then
+        assertThat(result.info.fileName).isEqualTo(fileName)
+        assertThat(result.info.mimeType).isEqualTo(mimetype)
+        assertThat(result.info.userId).isEqualTo(userId)
+        assertThat(result.file.contentEquals(file)).isTrue()
+        assertThat(result.info.isTemporary).isTrue()
+        assertThat(result.info.uploadDate).isEqualTo(SOME_DATE)
+
+        val expectedPath = "/2023/2/${result.info.id}.jpeg"
         assertThat(result.info.path).isEqualTo(expectedPath)
 
         // Verify

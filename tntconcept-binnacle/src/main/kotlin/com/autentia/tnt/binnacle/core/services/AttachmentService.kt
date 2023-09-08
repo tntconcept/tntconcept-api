@@ -20,11 +20,13 @@ internal class AttachmentService(
         private val dateService: DateService,
         appProperties: AppProperties) {
 
-    private val supportedMimeExtensions: Map<String, String> = appProperties.files.supportedMimeTypes
+    private val supportedMimeExtensions: Map<String, List<String>> = appProperties.files.supportedMimeTypes.mapValues { entry ->
+        entry.value.split(",").map { it.trim() }
+    }
 
     fun createAttachment(fileName: String, mimeType: String, file: ByteArray, userId: Long): Attachment {
         if (!isMimeTypeSupported(mimeType, fileName))
-            throw AttachmentMimeTypeNotSupportedException("Mime type $mimeType is not supported")
+            throw AttachmentMimeTypeNotSupportedException("Mime type $mimeType with extension ${FilenameUtils.getExtension(fileName)} is not supported")
 
         val currentDate = this.dateService.getDateNow()
         val id = UUID.randomUUID()
@@ -64,9 +66,10 @@ internal class AttachmentService(
         attachmentInfoRepository.delete(ids)
     }
 
-    private fun isMimeTypeSupported(mimeType: String, fileName: String): Boolean = supportedMimeExtensions.containsKey(mimeType) && supportedMimeExtensions[mimeType] == FilenameUtils.getExtension(fileName)
+    private fun isMimeTypeSupported(mimeType: String, fileName: String): Boolean = supportedMimeExtensions.containsKey(mimeType)
+            && supportedMimeExtensions[mimeType]?.contains(FilenameUtils.getExtension(fileName)) ?: false
 
-    private fun createPathForAttachment(id: UUID, currentDate: LocalDateTime, fileName: String): Path {
+    fun createPathForAttachment(id: UUID, currentDate: LocalDateTime, fileName: String): Path {
         val fileExtension = FilenameUtils.getExtension(fileName)
         return Path.of("/", "${currentDate.year}", "${currentDate.monthValue}", "$id.$fileExtension")
     }
