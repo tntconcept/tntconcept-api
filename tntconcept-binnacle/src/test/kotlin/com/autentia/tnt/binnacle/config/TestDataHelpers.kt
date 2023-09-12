@@ -63,24 +63,27 @@ internal fun getVacationsInOneMonth2022(): List<LocalDate> {
 }
 
 
-internal fun createVacationRequestDTO(startDate: LocalDate, endDate: LocalDate) = RequestVacationDTO(
+internal fun createVacationRequestDTO(startDate: LocalDate, endDate: LocalDate, chargeYear: Int = startDate.year) = RequestVacationDTO(
     id = null,
     startDate = startDate,
     endDate = endDate,
+    chargeYear = chargeYear,
     description = "Lorem ipsum..."
 )
 
-internal fun createVacationUpdateDTO(startDate: LocalDate, endDate: LocalDate) = RequestVacationDTO(
+internal fun createVacationUpdateDTO(startDate: LocalDate, endDate: LocalDate, chargeYear: Int = startDate.year) = RequestVacationDTO(
     id = 20,
     startDate = startDate,
     endDate = endDate,
+    chargeYear = chargeYear,
     description = "Lorem ipsum..."
 )
 
-internal fun createVacationUpdateDTO(id: Long, startDate: LocalDate, endDate: LocalDate) = RequestVacationDTO(
+internal fun createVacationUpdateDTO(id: Long, startDate: LocalDate, endDate: LocalDate, chargeYear: Int = startDate.year) = RequestVacationDTO(
     id = id,
     startDate = startDate,
     endDate = endDate,
+    chargeYear = chargeYear,
     description = "Lorem ipsum..."
 )
 

@@ -157,15 +157,15 @@ internal class PrivateHolidayPeriodCreateUseCaseTest {
             )
         ).toMutableList()
 
-        private val invalidVacationRange = RequestVacationDTO(startDate = AFTER_TOMORROW, endDate = TODAY)
+        private val invalidVacationRange = RequestVacationDTO(startDate = AFTER_TOMORROW, endDate = TODAY, chargeYear = TODAY.year)
         private val vacationForRangeClosed =
-            RequestVacationDTO(startDate = TODAY_TWO_YEARS_AGO, endDate = TOMORROW_TWO_YEARS_AGO)
+            RequestVacationDTO(startDate = TODAY_TWO_YEARS_AGO, endDate = TOMORROW_TWO_YEARS_AGO, chargeYear = TODAY.year)
         private val vacationRequestBeforeHiringDate =
-            RequestVacationDTO(startDate = USER.hiringDate.minusDays(3), endDate = USER.hiringDate.minusDays(2))
-        private val emptyVacation = RequestVacationDTO(startDate = TODAY, endDate = TODAY)
-        private val overlappingVacation = RequestVacationDTO(startDate = TODAY, endDate = TOMORROW)
+            RequestVacationDTO(startDate = USER.hiringDate.minusDays(3), endDate = USER.hiringDate.minusDays(2), chargeYear = TODAY.year)
+        private val emptyVacation = RequestVacationDTO(startDate = TODAY, endDate = TODAY, chargeYear = TODAY.year)
+        private val overlappingVacation = RequestVacationDTO(startDate = TODAY, endDate = TOMORROW, chargeYear = TODAY.year)
         private val moreThanFiveDaysNextYearVacation =
-            RequestVacationDTO(startDate = TODAY_NEXT_YEAR, endDate = SIX_DAYS_NEXT_YEAR)
+            RequestVacationDTO(startDate = TODAY_NEXT_YEAR, endDate = SIX_DAYS_NEXT_YEAR, chargeYear = TODAY.year)
 
     }
 

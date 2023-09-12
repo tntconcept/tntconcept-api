@@ -30,7 +30,7 @@ internal class VacationValidatorTest {
 
     @Test
     fun `should create valid request`() {
-        val requestVacation = RequestVacation(null, today, today.plusDays(1), "description")
+        val requestVacation = RequestVacation(null, today, today.plusDays(1), today.year, "description")
         val user = createUser()
         val holidays = emptyList<Holiday>()
 
@@ -49,7 +49,7 @@ internal class VacationValidatorTest {
 
     @Test
     fun `should not create invalid dates`() {
-        val requestVacation = RequestVacation(null, today, yesterday, "description")
+        val requestVacation = RequestVacation(null, today, yesterday, today.year, "description")
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
@@ -60,7 +60,7 @@ internal class VacationValidatorTest {
     @Test
     fun `should not create due to empty period`() {
         val startDate = LocalDate.of(2023, 7, 1)
-        val requestVacation = RequestVacation(null, startDate, startDate.plusDays(2), "description")
+        val requestVacation = RequestVacation(null, startDate, startDate.plusDays(2), startDate.year, "description")
         val user = createUser()
         val holidays = listOf(
             Holiday(1, "Holiday", startDate.plusDays(2).atStartOfDay())
@@ -84,6 +84,7 @@ internal class VacationValidatorTest {
             null,
             today.minusYears(2),
             today.minusYears(2).plusDays(1),
+            today.year,
             "description"
         )
 
@@ -100,6 +101,7 @@ internal class VacationValidatorTest {
             null,
             LocalDate.of(user.hiringDate.year, user.hiringDate.month.minus(1), 4),
             LocalDate.of(user.hiringDate.year, user.hiringDate.month.minus(1), 5),
+            today.year,
             "description"
         )
 
@@ -116,6 +118,7 @@ internal class VacationValidatorTest {
             null,
             LocalDate.of(today.year, Month.MARCH, 15),
             LocalDate.of(today.year, Month.MARCH, 20),
+            today.year,
             "description"
         )
         val userId = 2L
@@ -172,6 +175,7 @@ internal class VacationValidatorTest {
             null,
             LocalDate.of(2023, Month.MARCH, 11),
             LocalDate.of(2023, Month.MARCH, 11),
+            today.year,
             "description"
         )
         val holidays = emptyList<Holiday>()
@@ -192,7 +196,7 @@ internal class VacationValidatorTest {
     @Test
     fun `should update valid request`() {
         val user = createUser()
-        val requestVacation = RequestVacation(1L, today, tomorrow, "description")
+        val requestVacation = RequestVacation(1L, today, tomorrow, today.year, "description")
         val vacationDb = Vacation(
             requestVacation.id,
             requestVacation.startDate,
@@ -219,7 +223,7 @@ internal class VacationValidatorTest {
 
     @Test
     fun `should not update invalid dates`() {
-        val requestVacation = RequestVacation(1L, today, yesterday, "description")
+        val requestVacation = RequestVacation(1L, today, yesterday, today.year, "description")
 
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
 
@@ -229,7 +233,7 @@ internal class VacationValidatorTest {
 
     @Test
     fun `should not update not found vacation`() {
-        val requestVacation = RequestVacation(1L, today, tomorrow, "description")
+        val requestVacation = RequestVacation(1L, today, tomorrow, today.year, "description")
 
         given(vacationRepository.findById(1L)).willReturn(null)
 
@@ -242,7 +246,7 @@ internal class VacationValidatorTest {
     @Test
     fun `should not update not pending vacations`() {
         given(user.id).willReturn(1L)
-        val requestVacation = RequestVacation(1L, today, tomorrow, "description")
+        val requestVacation = RequestVacation(1L, today, tomorrow, today.year, "description")
         val vacationDb = Vacation(
             requestVacation.id,
             requestVacation.startDate,
@@ -266,6 +270,7 @@ internal class VacationValidatorTest {
             1,
             today.minusYears(2),
             today.minusYears(2).plusDays(1),
+            today.year,
             "description"
         )
         val vacationDb = Vacation(
@@ -291,6 +296,7 @@ internal class VacationValidatorTest {
             1,
             LocalDate.of(user.hiringDate.year, user.hiringDate.month.minus(1), 4),
             LocalDate.of(user.hiringDate.year, user.hiringDate.month.minus(1), 5),
+            today.year,
             "description"
         )
         val vacationDb = Vacation(
@@ -317,6 +323,7 @@ internal class VacationValidatorTest {
             3L,
             LocalDate.of(today.year, Month.MARCH, 15),
             LocalDate.of(today.year, Month.MARCH, 20),
+            today.year,
             "description"
         )
         val vacationDb = Vacation(
@@ -391,6 +398,7 @@ internal class VacationValidatorTest {
             1,
             startDate = LocalDate.of(2023, Month.MARCH, 11),
             endDate = LocalDate.of(2023, Month.MARCH, 11),
+            today.year,
             "description"
         )
         val vacationDb = Vacation(

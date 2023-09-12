@@ -229,8 +229,7 @@ internal class VacationControllerIT {
 
         private val EN_LOCALE = Locale.ENGLISH
 
-        private val REQUEST_VACATION_DTO = RequestVacationDTO(null, TODAY, TODAY, "Description")
-
+        private val REQUEST_VACATION_DTO = RequestVacationDTO(null, TODAY, TODAY, TODAY.year, "Description")
 
         private val CREATE_VACATION_RESPONSE_DTO =
             CreateVacationResponseDTO(
@@ -288,6 +287,7 @@ internal class VacationControllerIT {
                 null,
                 TODAY,
                 TODAY,
+                TODAY.year,
                 "Description",
             )
     }

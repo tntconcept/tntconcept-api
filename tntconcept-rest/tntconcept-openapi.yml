@@ -1043,6 +1043,7 @@ components:
           format: date
     CreateVacationRequest:
       required:
+      - chargeYear
       - endDate
       - startDate
       type: object
@@ -1057,6 +1058,9 @@ components:
         endDate:
           type: string
           format: date
+        chargeYear:
+          type: integer
+          format: int32
         description:
           maxLength: 1024
           type: string

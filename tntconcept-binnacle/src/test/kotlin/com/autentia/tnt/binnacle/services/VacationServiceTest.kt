@@ -57,8 +57,6 @@ internal class VacationServiceTest {
         doReturn(listOf(vacation)).whenever(vacationRepository)
             .find(FIRST_DAY_2020, END_DATE)
 
-
-
         doReturn(holidays2020).whenever(holidayRepository).findAllByDateBetween(FIRST_DAY_2020.atTime(LocalTime.MIN), JAN_TENTH_2020.atTime(23, 59, 59))
         val vacationsBetweenDates =
             vacationService.getVacationsBetweenDates(beginDate = FIRST_DAY_2020, finalDate = END_DATE)
@@ -80,8 +78,6 @@ internal class VacationServiceTest {
     fun `return all vacations by charge year`() {
         doReturn(vacations2020).whenever(vacationRepository)
             .findBetweenChargeYears(FIRST_DAY_2020, FIRST_DAY_2020)
-
-
 
         doReturn(holidays2020).whenever(holidayRepository).findAllByDateBetween(FIRST_DAY_2020.atTime(LocalTime.MIN), FOURTH_FEB_2020.atTime(23, 59, 59))
         val vacations = vacationService.getVacationsByChargeYear(YEAR_2020)
@@ -165,7 +161,6 @@ internal class VacationServiceTest {
             0,
             0,
             23,
-
             listOf(
                 CreateVacationResponse(START_DATE, START_DATE.plusDays(7), 5, CURRENT_YEAR + 1)
             )
@@ -185,7 +180,6 @@ internal class VacationServiceTest {
             -5,
             2,
             22,
-
             // Using BINNACLE the user request 2 days and will be charged in this year
             listOf(
                 CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR)
@@ -249,20 +243,18 @@ internal class VacationServiceTest {
         expectedResult: List<CreateVacationResponse>
     ) {
 
-
         doReturn(NEW_YEAR_CURRENT_HOLIDAYS).whenever(holidayRepository)
             .findAllByDateBetween(LAST_YEAR_FIRST_DAY.atTime(LocalTime.MIN), NEXT_YEAR_LAST_DAY.atTime(23, 59, 59))
         doReturn(remainingVacationsLastYear)
             .whenever(myVacationsDetailService).getRemainingVacations(eq(LAST_YEAR.year), any(), eq(USER))
         doReturn(remainingVacationsThisYear)
             .whenever(myVacationsDetailService).getRemainingVacations(eq(CURRENT_YEAR), any(), eq(USER))
-
         doReturn(remainingVacationsNextYear)
             .whenever(myVacationsDetailService).getRemainingVacations(eq(NEXT_YEAR.year), any(), eq(USER))
 
         doReturn(listOf<Vacation>()).whenever(vacationRepository).findBetweenChargeYears(any(), any())
 
-        val requestVacation = RequestVacation(null, startDate, endDate, "Lorem ipsum...")
+        val requestVacation = RequestVacation(null, startDate, endDate, startDate.year, "Lorem ipsum...")
 
         val actual = vacationService.createVacationPeriod(requestVacation, USER)
 
@@ -276,7 +268,6 @@ internal class VacationServiceTest {
 
     @Test
     fun `throw max days of next year request vacation`() {
-
 
         doReturn(holidaysBetweenLastYearAndCurrent).whenever(holidayRepository)
             .findAllByDateBetween(LAST_YEAR_FIRST_DAY.atTime(LocalTime.MIN), NEXT_YEAR_LAST_DAY.atTime(23, 59, 59))
@@ -308,6 +299,7 @@ internal class VacationServiceTest {
             id = null,
             startDate = LocalDate.of(CURRENT_YEAR, JANUARY, 1),
             endDate = LocalDate.of(CURRENT_YEAR, JANUARY, 4),
+            chargeYear = CURRENT_YEAR,
             description = "Lorem ipsum..."
         )
 
@@ -330,9 +322,9 @@ internal class VacationServiceTest {
             id = VACATION_ID,
             startDate = SEPT_FOURTEENTH_CURRENT,
             endDate = SEPT_FOURTEENTH_CURRENT.plusDays(1),
+            chargeYear = SEPT_FOURTEENTH_CURRENT.year,
             description = "asdasd"
         )
-
 
         doReturn(listOf<Holiday>()).whenever(holidayRepository).findAllByDateBetween(
             LocalDate.of(SEPT_FOURTEENTH_LAST, JANUARY, 1).atTime(LocalTime.MIN), LocalDate.of(
@@ -360,6 +352,7 @@ internal class VacationServiceTest {
             id = VACATION_ID,
             startDate = JAN_SECOND_CURRENT,
             endDate = JAN_SECOND_CURRENT.plusDays(1),
+            chargeYear = JAN_SECOND_CURRENT.year,
             description = null
         )
         val vacation = Vacation(
@@ -374,7 +367,6 @@ internal class VacationServiceTest {
             chargeYear = LocalDate.now()
         )
 
-
         doReturn(vacation).whenever(vacationRepository).update(eq(vacation))
         doReturn(listOf<Holiday>()).whenever(holidayRepository).findAllByDateBetween(
             LocalDate.of(LAST_YEAR.year, JANUARY, 1).atTime(LocalTime.MIN),
@@ -385,7 +377,6 @@ internal class VacationServiceTest {
 
         assertThat(holidays).hasSize(1)
     }
-
 
     // MUST BE a companion object with @JvmStatic, DO NOT REFACTOR
     // https://blog.oio.de/2018/11/13/how-to-use-junit-5-methodsource-parameterized-tests-with-kotlin/
@@ -439,7 +430,6 @@ internal class VacationServiceTest {
             )
         )
 
-
         private val NEW_YEAR_CURRENT_DATE =
             LocalDate.of(CURRENT_YEAR, JANUARY, 1).with(TemporalAdjusters.firstInMonth(MONDAY))
                 .plusDays(1)
@@ -456,6 +446,7 @@ internal class VacationServiceTest {
             id = null,
             startDate = LocalDate.of(CURRENT_YEAR, JANUARY, 1),
             endDate = LocalDate.of(CURRENT_YEAR, JANUARY, 10),
+            chargeYear = CURRENT_YEAR,
             description = "Lorem ipsum..."
         )
         private val JAN_SECOND_CURRENT =
