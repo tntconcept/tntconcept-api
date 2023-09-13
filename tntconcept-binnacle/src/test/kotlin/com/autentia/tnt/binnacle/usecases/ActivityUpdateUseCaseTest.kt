@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.converters.ActivityEvidenceResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.ApprovalState.NA
 import com.autentia.tnt.binnacle.entities.ApprovalState.PENDING
@@ -44,6 +45,8 @@ internal class ActivityUpdateUseCaseTest {
             ActivityIntervalResponseConverter(),
             ActivityEvidenceResponseConverter()
     )
+    private val attachmentService = mock<AttachmentService>()
+
 
     private val sut = ActivityUpdateUseCase(
             activityRepository,
@@ -54,7 +57,8 @@ internal class ActivityUpdateUseCaseTest {
             activityRequestBodyConverter,
             activityResponseConverter,
             sendPendingApproveActivityMailUseCase,
-            attachmentInfoRepository
+            attachmentInfoRepository,
+            attachmentService
     )
 
     @BeforeEach
@@ -443,7 +447,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
-        verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true) })
+        verify(attachmentService).removeAttachment(existingActivity.evidences.map { it.id })
     }
 
     @Test
@@ -479,7 +483,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
-        verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true) })
+        verify(attachmentService).removeAttachment(existingActivity.evidences.map { it.id })
     }
 
     @Test
@@ -553,7 +557,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).update(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false)))
-        verify(attachmentInfoRepository).update(existingActivity.evidences.map { it.copy(isTemporary = true) })
+        verify(attachmentService).removeAttachment(existingActivity.evidences.map { it.id })
     }
 
     @Test

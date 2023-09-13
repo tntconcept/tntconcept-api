@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.core.domain.User
+import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
@@ -22,15 +23,16 @@ import javax.transaction.Transactional
 
 @Singleton
 class ActivityUpdateUseCase internal constructor(
-        private val activityRepository: ActivityRepository,
-        private val activityCalendarService: ActivityCalendarService,
-        private val projectRoleRepository: ProjectRoleRepository,
-        private val userService: UserService,
-        private val activityValidator: ActivityValidator,
-        private val activityRequestBodyConverter: ActivityRequestBodyConverter,
-        private val activityResponseConverter: ActivityResponseConverter,
-        private val sendPendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase,
-        private val attachmentInfoRepository: AttachmentInfoRepository
+    private val activityRepository: ActivityRepository,
+    private val activityCalendarService: ActivityCalendarService,
+    private val projectRoleRepository: ProjectRoleRepository,
+    private val userService: UserService,
+    private val activityValidator: ActivityValidator,
+    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
+    private val activityResponseConverter: ActivityResponseConverter,
+    private val sendPendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase,
+    private val attachmentInfoRepository: AttachmentInfoRepository,
+    private val attachmentService: AttachmentService
 ) {
 
     @Transactional
@@ -41,19 +43,21 @@ class ActivityUpdateUseCase internal constructor(
         val currentActivity = this.getActivity(activityRequest.id!!)
 
         val duration = activityCalendarService.getDurationByCountingWorkingDays(
-                ActivityTimeInterval.of(activityRequest.interval.toDomain(), projectRole.getTimeUnit()))
+            ActivityTimeInterval.of(activityRequest.interval.toDomain(), projectRole.getTimeUnit())
+        )
 
         val activityToUpdate = activityRequestBodyConverter.toActivity(
-                activityRequest,
-                duration,
-                currentActivity.insertDate,
-                projectRole,
-                user
+            activityRequest,
+            duration,
+            currentActivity.insertDate,
+            projectRole,
+            user
         )
 
         activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
 
-        val updatedActivityEntity = this.updateActivityEntityWithEvidences(currentActivity, activityToUpdate, projectRoleEntity)
+        val updatedActivityEntity =
+            this.updateActivityEntityWithEvidences(currentActivity, activityToUpdate, projectRoleEntity)
         val updatedActivity = updatedActivityEntity.toDomain()
 
         sendActivityPendingOfApprovalEmailIfNeeded(projectRole, currentActivity, updatedActivity, user, locale)
@@ -61,41 +65,48 @@ class ActivityUpdateUseCase internal constructor(
         return activityResponseConverter.toActivityResponseDTO(updatedActivity)
     }
 
-    private fun updateActivityEntityWithEvidences(currentActivity: com.autentia.tnt.binnacle.core.domain.Activity,
-                                                  activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity,
-                                                  projectRole: ProjectRole): Activity {
-        val allEvidences = attachmentInfoRepository.findByIds((currentActivity.evidences union activityToUpdate.evidences).toList())
+    private fun updateActivityEntityWithEvidences(
+        currentActivity: com.autentia.tnt.binnacle.core.domain.Activity,
+        activityToUpdate: com.autentia.tnt.binnacle.core.domain.Activity,
+        projectRole: ProjectRole
+    ): Activity {
+        val allEvidences =
+            attachmentInfoRepository.findByIds((currentActivity.evidences union activityToUpdate.evidences).toList())
 
-        val idsToMarkAsTemporary = currentActivity.evidences.filterNot { activityToUpdate.evidences.contains(it) }
+        val idsToDelete = currentActivity.evidences.filterNot { activityToUpdate.evidences.contains(it) }
         val idsToKeep = (activityToUpdate.evidences.toSet() intersect currentActivity.evidences.toSet()).toList()
         val idsToMarkAsNonTemporary = activityToUpdate.evidences.filterNot { currentActivity.evidences.contains(it) }
 
-        val evidencesToMarkAsTemporary = allEvidences.filter { it.id in idsToMarkAsTemporary }.map { it.copy(isTemporary = true) }
         val evidencesToKeep = allEvidences.filter { it.id in idsToKeep }
-        val evidencesToMarkAsNonTemporary = allEvidences.filter { it.id in idsToMarkAsNonTemporary }.map { it.copy(isTemporary = false) }
-
-        attachmentInfoRepository.update(evidencesToMarkAsNonTemporary)
-        attachmentInfoRepository.update(evidencesToMarkAsTemporary)
+        val evidencesToMarkAsNonTemporary =
+            allEvidences.filter { it.id in idsToMarkAsNonTemporary }.map { it.copy(isTemporary = false) }
 
         val evidencesForUpdatedActivity = evidencesToKeep union evidencesToMarkAsNonTemporary
-        val activityEntityToUpdate = Activity.of(activityToUpdate, projectRole, evidencesForUpdatedActivity.toMutableList())
+        val activityEntityToUpdate =
+            Activity.of(activityToUpdate, projectRole, evidencesForUpdatedActivity.toMutableList())
+        val activity = activityRepository.update(activityEntityToUpdate)
 
-        return activityRepository.update(activityEntityToUpdate)
+        attachmentInfoRepository.update(evidencesToMarkAsNonTemporary)
+        attachmentService.removeAttachment(idsToDelete)
+
+        return activity
     }
 
     private fun sendActivityPendingOfApprovalEmailIfNeeded(
-            projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole,
-            originalActivity: com.autentia.tnt.binnacle.core.domain.Activity,
-            updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity,
-            user: User,
-            locale: Locale
+        projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole,
+        originalActivity: com.autentia.tnt.binnacle.core.domain.Activity,
+        updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity,
+        user: User,
+        locale: Locale
     ) {
-        val attachedEvidenceHasChanged = updatedActivity.evidences.isNotEmpty() && (!originalActivity.evidences.containsAll(updatedActivity.evidences))
+        val attachedEvidenceHasChanged =
+            updatedActivity.evidences.isNotEmpty() && (!originalActivity.evidences.containsAll(updatedActivity.evidences))
         val projectRoleHasChanged = originalActivity.projectRole != updatedActivity.projectRole
 
         val projectRequiresEvidenceAndActivityCanBeApproved =
-                projectRole.requireEvidence() && updatedActivity.canBeApproved() && (attachedEvidenceHasChanged || projectRoleHasChanged)
-        val projectDoesNotRequireEvidenceAndActivityCanBeApproved = !projectRole.requireEvidence() && updatedActivity.canBeApproved() && projectRoleHasChanged
+            projectRole.requireEvidence() && updatedActivity.canBeApproved() && (attachedEvidenceHasChanged || projectRoleHasChanged)
+        val projectDoesNotRequireEvidenceAndActivityCanBeApproved =
+            !projectRole.requireEvidence() && updatedActivity.canBeApproved() && projectRoleHasChanged
 
         if (projectRequiresEvidenceAndActivityCanBeApproved || projectDoesNotRequireEvidenceAndActivityCanBeApproved) {
             sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
@@ -103,10 +114,10 @@ class ActivityUpdateUseCase internal constructor(
     }
 
     private fun getProjectRoleEntity(projectRoleId: Long) =
-            projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)
+        projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)
 
     private fun getActivity(activityId: Long): com.autentia.tnt.binnacle.core.domain.Activity =
-            Optional.ofNullable(activityRepository.findById(activityId))
-                    .orElseThrow { ActivityNotFoundException(activityId) }.toDomain()
+        Optional.ofNullable(activityRepository.findById(activityId))
+            .orElseThrow { ActivityNotFoundException(activityId) }.toDomain()
 
 }
