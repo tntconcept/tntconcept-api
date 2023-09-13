@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
+import com.autentia.tnt.binnacle.core.utils.isWeekend
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.Role
 import com.autentia.tnt.binnacle.entities.User
@@ -52,6 +53,13 @@ internal class VacationValidatorTest {
         )
 
         doReturn(23).whenever(remainingVacationService).getRemainingVacations(eq(today.year), eq(user))
+
+        val selected = mutableListOf<LocalDate>()
+        repeat(2) { selected.add(requestVacation.startDate.plusDays(it.toLong())) }
+        val selectedDays = selected.dropWhile { it.isWeekend() }
+
+        doReturn(selectedDays).whenever(remainingVacationService)
+            .getRequestedVacationsSelectedYear(eq(requestVacation))
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
@@ -213,14 +221,13 @@ internal class VacationValidatorTest {
             requestVacation.endDate.atTime(23, 59, 59)
         )
 
-        val selectedDays = listOf(
-            FIRST_MONDAY,
-            FIRST_MONDAY.plusDays(1),
-            FIRST_MONDAY.plusDays(2),
-            FIRST_MONDAY.plusDays(3) )
-
         doReturn(2).whenever(remainingVacationService)
             .getRemainingVacations(eq(today.year), eq(user))
+
+        val selected = mutableListOf<LocalDate>()
+        repeat(4) { selected.add(requestVacation.startDate.plusDays(it.toLong())) }
+        val selectedDays = selected.dropWhile { it.isWeekend() }
+
         doReturn(selectedDays).whenever(remainingVacationService)
             .getRequestedVacationsSelectedYear(eq(requestVacation))
 
@@ -247,12 +254,21 @@ internal class VacationValidatorTest {
 
         val holidays = emptyList<Holiday>()
 
-        given(
-            holidayRepository.findAllByDateBetween(
-                requestVacation.startDate.atTime(LocalTime.MIN),
-                requestVacation.endDate.atTime(23, 59, 59)
-            )
-        ).willReturn(holidays)
+        doReturn(holidays).whenever(holidayRepository).findAllByDateBetween(
+            requestVacation.startDate.atTime(LocalTime.MIN),
+            requestVacation.endDate.atTime(23, 59, 59)
+        )
+
+        doReturn(10).whenever(remainingVacationService)
+            .getRemainingVacations(eq(today.year), eq(user))
+
+        val selected = mutableListOf<LocalDate>()
+        repeat(2) { selected.add(requestVacation.startDate.plusDays(it.toLong())) }
+        val selectedDays = selected.dropWhile { it.isWeekend() }
+
+        doReturn(selectedDays).whenever(remainingVacationService)
+            .getRequestedVacationsSelectedYear(eq(requestVacation))
+
         val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)
 
         Assertions.assertThat(result).isEqualTo(UpdateVacationValidation.Success(vacationDb))

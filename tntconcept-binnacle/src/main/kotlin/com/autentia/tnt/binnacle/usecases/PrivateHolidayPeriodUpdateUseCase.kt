@@ -34,8 +34,8 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
 
         when (val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)) {
             is UpdateVacationValidation.Success -> {
-                val holidays = vacationService.updateVacationPeriod(requestVacation, user, result.vacationDb)
-                holidays.forEach {
+                val vacations = vacationService.updateVacationPeriod(requestVacation, user, result.vacationDb)
+                vacations.forEach {
                     vacationMailService.sendRequestVacationsMail(
                         user.username,
                         it.startDate,
@@ -44,7 +44,7 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
                         locale
                     )
                 }
-                return holidays.map { createVacationResponseConverter.toCreateVacationResponseDTO(it) }
+                return vacations.map { createVacationResponseConverter.toCreateVacationResponseDTO(it) }
             }
 
             is UpdateVacationValidation.Failure ->

@@ -13,7 +13,6 @@ import com.autentia.tnt.binnacle.services.RemainingVacationService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
-import java.time.Month
 import javax.transaction.Transactional
 
 @Singleton
@@ -49,19 +48,35 @@ internal class VacationValidator(
     }
 
     private fun areThereEnoughDaysInYear(requestVacation: RequestVacation, user: User): Boolean {
-        val currentYearRemainingVacations = remainingVacationService
-            .getRemainingVacations(requestVacation.chargeYear, user)
+        val currentYearRemainingVacations = remainingVacations(requestVacation, user)
+        val selectedDays = daysRequested(requestVacation)
 
-        val selectedDays = remainingVacationService
-            .getRequestedVacationsSelectedYear(requestVacation)
-
-        if (selectedDays.isNotEmpty() &&
-            currentYearRemainingVacations < selectedDays.size) {
-            return false
-        }
-
-        return true
+        return (selectedDays in 1..currentYearRemainingVacations)
     }
+
+    private fun areThereEnoughDaysInYearForUpdate(
+        requestVacation: RequestVacation,
+        user: User,
+        vacationDb: Vacation
+    ): Boolean {
+        val currentYearRemainingVacations = remainingVacations(requestVacation, user)
+        val selectedDays = daysRequested(requestVacation)
+
+        val calendar = calendarFactory.create(DateInterval.of(vacationDb.startDate, vacationDb.endDate))
+        val oldCorrespondingDays = calendar.getWorkableDays(DateInterval.of(vacationDb.startDate, vacationDb.endDate)).size
+
+        return selectedDays > 0 && (currentYearRemainingVacations + oldCorrespondingDays >= selectedDays)
+    }
+
+    private fun daysRequested(requestVacation: RequestVacation) =
+        remainingVacationService
+            .getRequestedVacationsSelectedYear(requestVacation).size
+
+    private fun remainingVacations(
+        requestVacation: RequestVacation,
+        user: User
+    ) = remainingVacationService
+        .getRemainingVacations(requestVacation.chargeYear, user)
 
     private fun isRequestEmpty(startDate: LocalDate, endDate: LocalDate) =
         calendarFactory.create(DateInterval.of(startDate, endDate)).workableDays.isEmpty()
@@ -77,7 +92,6 @@ internal class VacationValidator(
     private fun isPastAndAcceptedVacation(startDate: LocalDate, state: VacationState): Boolean {
         return ((startDate <= LocalDate.now()) && (state == ACCEPT))
     }
-
 
     private fun isVacationOverlaps(startDate: LocalDate, endDate: LocalDate, id: Long?): Boolean {
         return vacationRepository.find(startDate, endDate)
@@ -113,6 +127,9 @@ internal class VacationValidator(
                         requestVacation.startDate,
                         requestVacation.endDate
                     ) -> UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY)
+
+                    !areThereEnoughDaysInYearForUpdate(requestVacation, user, vacationDb) ->
+                        UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR)
 
                     else -> UpdateVacationValidation.Success(vacationDb)
                 }

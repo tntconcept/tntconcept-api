@@ -162,19 +162,6 @@ internal class VacationService(
         return vacationPeriods
     }
 
-    fun cantRequestPeriodUsingVacationDaysOfNextYear(
-        selectedDays: Int,
-        nextYearRemainingHolidays: Int,
-        holidaysQuantity: Int
-    ): Boolean {
-        val maxVacationDaysOfNextYearToCharge = 5
-        val alreadyRequested5DaysInNextYear =
-            nextYearRemainingHolidays <= holidaysQuantity - maxVacationDaysOfNextYearToCharge
-        val days = nextYearRemainingHolidays - (holidaysQuantity - maxVacationDaysOfNextYearToCharge)
-
-        return alreadyRequested5DaysInNextYear || selectedDays > days
-    }
-
     fun chargeDaysIntoYear(
         selectedDays: List<LocalDate>,
         year: Int,
