@@ -38,8 +38,16 @@ internal class VacationValidator(
                 CreateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY
             )
 
+            // TODO Add check for enough days in charge year
+            !isRequestedDaysGreaterThanVacationsLeftInYear(requestVacation, user) ->
+                CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR)
+
             else -> CreateVacationValidation.Success
         }
+    }
+
+    private fun isRequestedDaysGreaterThanVacationsLeftInYear(requestVacation: RequestVacation, user: User): Boolean {
+        return false
     }
 
     private fun isRequestEmpty(startDate: LocalDate, endDate: LocalDate) =
@@ -130,7 +138,8 @@ sealed class CreateVacationValidation {
         VACATION_RANGE_CLOSED,
         VACATION_BEFORE_HIRING_DATE,
         VACATION_REQUEST_OVERLAPS,
-        VACATION_REQUEST_EMPTY
+        VACATION_REQUEST_EMPTY,
+        NO_MORE_DAYS_LEFT_IN_YEAR
     }
 }
 
@@ -145,7 +154,8 @@ sealed class UpdateVacationValidation {
         VACATION_RANGE_CLOSED,
         VACATION_BEFORE_HIRING_DATE,
         VACATION_REQUEST_OVERLAPS,
-        VACATION_REQUEST_EMPTY
+        VACATION_REQUEST_EMPTY,
+        NO_MORE_DAYS_LEFT_IN_YEAR
     }
 }
 

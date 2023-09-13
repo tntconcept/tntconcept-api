@@ -63,6 +63,7 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
                     UpdateVacationValidation.FailureReason.VACATION_BEFORE_HIRING_DATE -> throw VacationBeforeHiringDateException()
                     UpdateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS -> throw VacationRequestOverlapsException()
                     UpdateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY -> throw VacationRequestEmptyException()
+                    UpdateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR -> throw NoMoreDaysLeftInYearException()
                 }
         }
     }

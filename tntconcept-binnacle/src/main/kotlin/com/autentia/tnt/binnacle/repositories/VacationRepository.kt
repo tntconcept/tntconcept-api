@@ -20,6 +20,10 @@ internal interface VacationRepository {
         endYear: LocalDate
     ): List<Vacation>
 
+    fun findByChargeYear(
+        chargeYear: LocalDate
+    ): List<Vacation>
+
     fun findBetweenChargeYearsWithoutSecurity(
         startYear: LocalDate,
         endYear: LocalDate,

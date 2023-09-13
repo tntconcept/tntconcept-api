@@ -7,7 +7,6 @@ import com.autentia.tnt.binnacle.core.utils.minDate
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
-import com.autentia.tnt.binnacle.exception.MaxNextYearRequestVacationException
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -79,58 +78,27 @@ internal class VacationService(
     @Transactional
     fun createVacationPeriod(requestVacation: RequestVacation, user: User): MutableList<CreateVacationResponse> {
 
-        val currentYear = LocalDate.now().year
+        val currentYear = requestVacation.chargeYear
         val lastYear = currentYear - 1
         val nextYear = currentYear + 1
 
         val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
         val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
 
-        val vacationsByYear: Map<Int, List<VacationDomain>> =
-            getVacationsByYear(lastYearFirstDay, nextYearLastDay)
+        val vacations: List<VacationDomain> =
+            getVacationsByChargeYear(LocalDate.of(currentYear, Month.JANUARY, 1))
 
-        val lastYearRemainingVacations = myVacationsDetailService
-            .getRemainingVacations(lastYear, vacationsByYear.getOrElse(lastYear) { listOf() }, user)
         val currentYearRemainingVacations = myVacationsDetailService
-            .getRemainingVacations(currentYear, vacationsByYear.getOrElse(currentYear) { listOf() }, user)
-        val nextYearRemainingVacations = myVacationsDetailService
-            .getRemainingVacations(nextYear, vacationsByYear.getOrElse(nextYear) { listOf() }, user)
+            .getRemainingVacations(currentYear, vacations, user)
 
-        var selectedDays = getRequestedVacationsSelectedYear(lastYearFirstDay, nextYearLastDay, requestVacation)
-
-        val remainingHolidaysLastAndCurrentYear = lastYearRemainingVacations + currentYearRemainingVacations
+        val selectedDays = getRequestedVacationsSelectedYear(lastYearFirstDay, nextYearLastDay, requestVacation)
 
         val vacationPeriods = mutableListOf<CreateVacationResponse>()
 
-        when {
-            remainingHolidaysLastAndCurrentYear >= selectedDays.size -> {
-                if (lastYearRemainingVacations > 0) {
-                    vacationPeriods += chargeDaysIntoYear(selectedDays, lastYear, lastYearRemainingVacations)
-                    selectedDays = selectedDays.drop(lastYearRemainingVacations)
-                }
-
-                if (currentYearRemainingVacations > 0 && selectedDays.isNotEmpty()) {
-                    vacationPeriods += chargeDaysIntoYear(selectedDays, currentYear, currentYearRemainingVacations)
-                }
-            }
-
-            else -> {
-                if (currentYearRemainingVacations > 0) {
-                    vacationPeriods += chargeDaysIntoYear(selectedDays, currentYear, currentYearRemainingVacations)
-                    selectedDays = selectedDays.drop(currentYearRemainingVacations)
-                }
-
-                if (cantRequestPeriodUsingVacationDaysOfNextYear(
-                        selectedDays.size,
-                        nextYearRemainingVacations,
-                        user.getAgreementTermsByYear(nextYear).vacation
-                    )
-                ) {
-                    throw MaxNextYearRequestVacationException("You can't charge more than 5 days of the next year vacations in the current year")
-                } else if (nextYearRemainingVacations > 0 && selectedDays.isNotEmpty()) {
-                    vacationPeriods += chargeDaysIntoYear(selectedDays, nextYear, nextYearRemainingVacations)
-                }
-            }
+        if (currentYearRemainingVacations > 0 &&
+            currentYearRemainingVacations >= selectedDays.size) {
+            // TODO no cambiar el periodo, ni hacer calculos
+            vacationPeriods += chargeDaysIntoYear(selectedDays, currentYear, currentYearRemainingVacations)
         }
 
         val vacationsToSave = vacationPeriods.map {
@@ -161,12 +129,11 @@ internal class VacationService(
         return calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate))
     }
 
-    private fun getVacationsByYear(
-        lastYearFirstDay: LocalDate,
-        nextYearLastDay: LocalDate
-    ): Map<Int, List<com.autentia.tnt.binnacle.core.domain.Vacation>> {
-        val vacations = vacationRepository.findBetweenChargeYears(lastYearFirstDay, nextYearLastDay)
-        return getVacationsWithWorkableDays(vacations).groupBy { it.chargeYear.year }
+    private fun getVacationsByChargeYear(
+        chargeYear: LocalDate
+    ): List<VacationDomain> {
+        val vacations = vacationRepository.findByChargeYear(chargeYear)
+        return getVacationsWithWorkableDays(vacations)
     }
 
     @Transactional

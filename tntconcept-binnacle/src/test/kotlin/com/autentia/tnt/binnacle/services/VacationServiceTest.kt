@@ -109,61 +109,53 @@ internal class VacationServiceTest {
 
     private fun vacationPeriodProvider() = arrayOf(
         arrayOf(
-            // Using remaining days from LAST year
+            // You can not take days from previous year that current
             START_DATE,
             START_DATE.plusDays(2),
-            2,
-            22,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR - 1)
-            )
-        ),
-        arrayOf(
-            // Using the remaining days from LAST year and CURRENT year
-            START_DATE,
-            START_DATE.plusDays(10),
-            2,
-            22,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR - 1),
-                CreateVacationResponse(START_DATE.plusDays(3), START_DATE.plusDays(10), 6, CURRENT_YEAR)
-            )
+            23,
+            0,
+            0,
+            emptyList<CreateVacationResponse>()
         ),
         arrayOf(
             // Using the remaining days from CURRENT year
             START_DATE,
             START_DATE.plusDays(10),
-            0,
-            18,
+            23,
             22,
+            23,
             listOf(
                 CreateVacationResponse(START_DATE, START_DATE.plusDays(10), 8, CURRENT_YEAR)
             )
         ),
         arrayOf(
-            // Using the remaining days from CURRENT year and NEXT YEAR
+            // Using the remaining days from CURRENT
+            START_DATE,
+            START_DATE.plusDays(9),
+            0,
+            13,
+            0,
+            listOf(
+                CreateVacationResponse(START_DATE, START_DATE.plusDays(9), 7, CURRENT_YEAR),
+            )
+        ),
+        arrayOf(
+            // No enough days for current year
             START_DATE,
             START_DATE.plusDays(5),
             0,
             3,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(3), 3, CURRENT_YEAR),
-                CreateVacationResponse(START_DATE.plusDays(4), START_DATE.plusDays(4), 1, CURRENT_YEAR + 1)
-            )
+            0,
+            emptyList<CreateVacationResponse>()
         ),
         arrayOf(
-            // Using the NEXT year vacation days if the days quantity is max 5
+            // You can not take days from next year that current
             START_DATE,
             START_DATE.plusDays(7),
             0,
             0,
             23,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(7), 5, CURRENT_YEAR + 1)
-            )
+            emptyList<CreateVacationResponse>()
         ),
 
         arrayOf(
@@ -212,24 +204,8 @@ internal class VacationServiceTest {
             22,
             // Using BINNACLE the user request 2 days and will be charged in the NEXT year, because
             // the user already charged all vacation days of the last and current year.
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR + 1)
-            )
-        ),
-        arrayOf(
-            // TNT BUGFIX description:
-            // When requesting vacation days in the current year charged to the past year and a holiday is present,
-            // the holiday shouldn't be counted towards the number of total days.
-            START_DATE,
-            START_DATE.plusDays(4),
-            1,
-            22,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE, 1, CURRENT_YEAR - 1),
-                CreateVacationResponse(START_DATE.plusDays(2), START_DATE.plusDays(4), 3, CURRENT_YEAR),
-            )
-        ),
+            emptyList<CreateVacationResponse>()
+        )
     )
 
     @ParameterizedTest
@@ -258,11 +234,13 @@ internal class VacationServiceTest {
 
         val actual = vacationService.createVacationPeriod(requestVacation, USER)
 
+        assertEquals(expectedResult.size, actual.size)
+
         actual.forEachIndexed { index, result ->
-            assertEquals(result.startDate, expectedResult[index].startDate)
-            assertEquals(result.endDate, expectedResult[index].endDate)
-            assertEquals(result.days, expectedResult[index].days)
-            assertEquals(result.chargeYear, expectedResult[index].chargeYear)
+            assertEquals(expectedResult[index].startDate, result.startDate)
+            assertEquals(expectedResult[index].endDate, result.endDate)
+            assertEquals(expectedResult[index].days, result.days)
+            assertEquals(expectedResult[index].chargeYear, result.chargeYear)
         }
     }
 

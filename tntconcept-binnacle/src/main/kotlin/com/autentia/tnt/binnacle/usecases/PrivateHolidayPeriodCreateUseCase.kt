@@ -34,8 +34,8 @@ class PrivateHolidayPeriodCreateUseCase internal constructor(
 
         when (val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)) {
             is CreateVacationValidation.Success -> {
-                val holidays = vacationService.createVacationPeriod(requestVacation, user)
-                holidays.forEach {
+                val vacations = vacationService.createVacationPeriod(requestVacation, user)
+                vacations.forEach {
                     vacationMailService.sendRequestVacationsMail(
                         user.username,
                         it.startDate,
@@ -44,7 +44,7 @@ class PrivateHolidayPeriodCreateUseCase internal constructor(
                         locale
                     )
                 }
-                return holidays.map { createVacationResponseConverter.toCreateVacationResponseDTO(it) }
+                return vacations.map { createVacationResponseConverter.toCreateVacationResponseDTO(it) }
             }
 
             is CreateVacationValidation.Failure ->
@@ -58,6 +58,7 @@ class PrivateHolidayPeriodCreateUseCase internal constructor(
                     CreateVacationValidation.FailureReason.VACATION_BEFORE_HIRING_DATE -> throw VacationBeforeHiringDateException()
                     CreateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS -> throw VacationRequestOverlapsException()
                     CreateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY -> throw VacationRequestEmptyException()
+                    CreateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR -> throw NoMoreDaysLeftInYearException()
                 }
         }
     }
