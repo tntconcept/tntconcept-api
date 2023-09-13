@@ -213,14 +213,6 @@ internal class VacationValidatorTest {
             requestVacation.endDate.atTime(23, 59, 59)
         )
 
-        // TODO Is this last and next years calcs necessary?
-        val currentYear = requestVacation.chargeYear
-        val lastYear = currentYear - 1
-        val nextYear = currentYear + 1
-
-        val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
-        val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
-
         val selectedDays = listOf(
             FIRST_MONDAY,
             FIRST_MONDAY.plusDays(1),
@@ -230,7 +222,7 @@ internal class VacationValidatorTest {
         doReturn(2).whenever(remainingVacationService)
             .getRemainingVacations(eq(today.year), eq(user))
         doReturn(selectedDays).whenever(remainingVacationService)
-            .getRequestedVacationsSelectedYear(eq(lastYearFirstDay), eq(nextYearLastDay), eq(requestVacation))
+            .getRequestedVacationsSelectedYear(eq(requestVacation))
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 

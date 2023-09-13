@@ -49,19 +49,11 @@ internal class VacationValidator(
     }
 
     private fun areThereEnoughDaysInYear(requestVacation: RequestVacation, user: User): Boolean {
-        // TODO Is this last and next years calcs necessary?
-        val currentYear = requestVacation.chargeYear
-        val lastYear = currentYear - 1
-        val nextYear = currentYear + 1
-
-        val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
-        val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
-        
         val currentYearRemainingVacations = remainingVacationService
             .getRemainingVacations(requestVacation.chargeYear, user)
 
         val selectedDays = remainingVacationService
-            .getRequestedVacationsSelectedYear(lastYearFirstDay, nextYearLastDay, requestVacation)
+            .getRequestedVacationsSelectedYear(requestVacation)
 
         if (selectedDays.isNotEmpty() &&
             currentYearRemainingVacations < selectedDays.size) {

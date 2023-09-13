@@ -10,6 +10,7 @@ import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import jakarta.inject.Singleton
 import java.time.LocalDate
+import java.time.Month
 
 @Singleton
 internal class RemainingVacationService(
@@ -51,10 +52,15 @@ internal class RemainingVacationService(
     }
 
     fun getRequestedVacationsSelectedYear(
-        lastYearFirstDay: LocalDate,
-        nextYearLastDay: LocalDate,
         requestVacation: RequestVacation
     ): List<LocalDate> {
+        val currentYear = requestVacation.chargeYear
+        val lastYear = currentYear - 1
+        val nextYear = currentYear + 1
+
+        val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
+        val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
+
         val calendar = calendarFactory.create(DateInterval.of(lastYearFirstDay, nextYearLastDay))
         return calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate))
     }

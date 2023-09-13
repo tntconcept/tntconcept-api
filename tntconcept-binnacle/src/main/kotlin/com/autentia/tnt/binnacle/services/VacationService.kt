@@ -79,18 +79,12 @@ internal class VacationService(
     @Transactional
     fun createVacationPeriod(requestVacation: RequestVacation, user: User): MutableList<CreateVacationResponse> {
 
-        // TODO Is this last and next years calcs necessary?
         val currentYear = requestVacation.chargeYear
-        val lastYear = currentYear - 1
-        val nextYear = currentYear + 1
-
-        val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
-        val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
 
         val currentYearRemainingVacations = remainingVacationService
             .getRemainingVacations(requestVacation.chargeYear, user)
 
-        val selectedDays = getRequestedVacationsSelectedYear(lastYearFirstDay, nextYearLastDay, requestVacation)
+        val selectedDays = remainingVacationService.getRequestedVacationsSelectedYear(requestVacation)
 
         val vacationPeriods = mutableListOf<CreateVacationResponse>()
 
@@ -99,7 +93,6 @@ internal class VacationService(
             throw NoMoreDaysLeftInYearException()
         }
 
-        // TODO no cambiar el periodo, ni hacer calculos
         vacationPeriods += chargeDaysIntoYear(selectedDays, currentYear, currentYearRemainingVacations)
 
         // TODO Deshacer array
@@ -120,22 +113,6 @@ internal class VacationService(
         vacationRepository.saveAll(vacationsToSave)
 
         return vacationPeriods
-    }
-
-    private fun getRequestedVacationsSelectedYear(
-        lastYearFirstDay: LocalDate,
-        nextYearLastDay: LocalDate,
-        requestVacation: RequestVacation
-    ): List<LocalDate> {
-        val calendar = calendarFactory.create(DateInterval.of(lastYearFirstDay, nextYearLastDay))
-        return calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate))
-    }
-
-    private fun getVacationsByChargeYear(
-        chargeYear: LocalDate
-    ): List<VacationDomain> {
-        val vacations = vacationRepository.findByChargeYear(chargeYear)
-        return getVacationsWithWorkableDays(vacations)
     }
 
     @Transactional
@@ -203,21 +180,12 @@ internal class VacationService(
         year: Int,
         remainingHolidays: Int
     ): CreateVacationResponse {
-        return if (remainingHolidays > selectedDays.size) {
-            CreateVacationResponse(
-                startDate = selectedDays[0],
-                endDate = selectedDays[selectedDays.size - 1],
+        return CreateVacationResponse(
+                startDate = selectedDays.first(),
+                endDate = selectedDays.last(),
                 days = selectedDays.size,
                 chargeYear = year
             )
-        } else {
-            CreateVacationResponse(
-                startDate = selectedDays[0],
-                endDate = selectedDays[remainingHolidays - 1],
-                days = remainingHolidays,
-                chargeYear = year
-            )
-        }
     }
 
 }
