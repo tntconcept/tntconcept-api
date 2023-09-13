@@ -9,15 +9,18 @@ import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.repositories.VacationRepository
+import com.autentia.tnt.binnacle.services.RemainingVacationService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
+import java.time.Month
 import javax.transaction.Transactional
 
 @Singleton
 internal class VacationValidator(
     private val vacationRepository: VacationRepository,
-    private val calendarFactory: CalendarFactory
+    private val calendarFactory: CalendarFactory,
+    private val remainingVacationService: RemainingVacationService
 ) {
 
     fun canCreateVacationPeriod(requestVacation: RequestVacation, user: User): CreateVacationValidation {
@@ -38,16 +41,34 @@ internal class VacationValidator(
                 CreateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY
             )
 
-            // TODO Add check for enough days in charge year
-            !isRequestedDaysGreaterThanVacationsLeftInYear(requestVacation, user) ->
+            !areThereEnoughDaysInYear(requestVacation, user) ->
                 CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR)
 
             else -> CreateVacationValidation.Success
         }
     }
 
-    private fun isRequestedDaysGreaterThanVacationsLeftInYear(requestVacation: RequestVacation, user: User): Boolean {
-        return false
+    private fun areThereEnoughDaysInYear(requestVacation: RequestVacation, user: User): Boolean {
+        // TODO Is this last and next years calcs necessary?
+        val currentYear = requestVacation.chargeYear
+        val lastYear = currentYear - 1
+        val nextYear = currentYear + 1
+
+        val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
+        val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
+        
+        val currentYearRemainingVacations = remainingVacationService
+            .getRemainingVacations(requestVacation.chargeYear, user)
+
+        val selectedDays = remainingVacationService
+            .getRequestedVacationsSelectedYear(lastYearFirstDay, nextYearLastDay, requestVacation)
+
+        if (selectedDays.isNotEmpty() &&
+            currentYearRemainingVacations < selectedDays.size) {
+            return false
+        }
+
+        return true
     }
 
     private fun isRequestEmpty(startDate: LocalDate, endDate: LocalDate) =

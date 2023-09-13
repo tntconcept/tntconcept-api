@@ -2,26 +2,38 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Holiday
+import com.autentia.tnt.binnacle.entities.Role
+import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.entities.Vacation
+import com.autentia.tnt.binnacle.entities.VacationState
+import com.autentia.tnt.binnacle.entities.WorkingAgreement
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
+import com.autentia.tnt.binnacle.services.RemainingVacationService
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.given
+import org.mockito.kotlin.whenever
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
+import java.time.temporal.TemporalAdjusters
 
 internal class VacationValidatorTest {
 
     private val vacationRepository = mock<VacationRepository>()
     private val holidayRepository = mock<HolidayRepository>()
     private val calendarFactory = CalendarFactory(holidayRepository)
+    private val remainingVacationService = mock<RemainingVacationService>()
     private val user = mock<User>()
 
     private val vacationValidator =
-        VacationValidator(vacationRepository, calendarFactory)
+        VacationValidator(vacationRepository, calendarFactory, remainingVacationService)
 
     // Characterized use cases objects
     private val today = LocalDate.now()
@@ -34,17 +46,16 @@ internal class VacationValidatorTest {
         val user = createUser()
         val holidays = emptyList<Holiday>()
 
-        given(
-            holidayRepository.findAllByDateBetween(
-                requestVacation.startDate.atTime(LocalTime.MIN),
-                requestVacation.endDate.atTime(23, 59, 59)
-            )
-        ).willReturn(holidays)
+        doReturn(holidays).whenever(holidayRepository).findAllByDateBetween(
+            requestVacation.startDate.atTime(LocalTime.MIN),
+            requestVacation.endDate.atTime(23, 59, 59)
+        )
+
+        doReturn(23).whenever(remainingVacationService).getRemainingVacations(eq(today.year), eq(user))
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
         Assertions.assertThat(result).isEqualTo(CreateVacationValidation.Success)
-
     }
 
     @Test
@@ -66,12 +77,10 @@ internal class VacationValidatorTest {
             Holiday(1, "Holiday", startDate.plusDays(2).atStartOfDay())
         )
 
-        given(
-            holidayRepository.findAllByDateBetween(
-                requestVacation.startDate.atTime(LocalTime.MIN),
-                requestVacation.endDate.atTime(23, 59, 59)
-            )
-        ).willReturn(holidays)
+        doReturn(holidays).whenever(holidayRepository).findAllByDateBetween(
+            requestVacation.startDate.atTime(LocalTime.MIN),
+            requestVacation.endDate.atTime(23, 59, 59)
+        )
 
         val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
 
@@ -192,6 +201,42 @@ internal class VacationValidatorTest {
         Assertions.assertThat(result)
             .isEqualTo(CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY))
     }
+
+    @Test
+    fun `should not create where user request more days than days left`() {
+        val requestVacation = RequestVacation(null, FIRST_MONDAY, FIRST_MONDAY.plusDays(3), FIRST_MONDAY.year, "description")
+        val user = createUser()
+        val holidays = emptyList<Holiday>()
+
+        doReturn(holidays).whenever(holidayRepository).findAllByDateBetween(
+            requestVacation.startDate.atTime(LocalTime.MIN),
+            requestVacation.endDate.atTime(23, 59, 59)
+        )
+
+        // TODO Is this last and next years calcs necessary?
+        val currentYear = requestVacation.chargeYear
+        val lastYear = currentYear - 1
+        val nextYear = currentYear + 1
+
+        val lastYearFirstDay = LocalDate.of(lastYear, Month.JANUARY, 1)
+        val nextYearLastDay = LocalDate.of(nextYear, Month.DECEMBER, 31)
+
+        val selectedDays = listOf(
+            FIRST_MONDAY,
+            FIRST_MONDAY.plusDays(1),
+            FIRST_MONDAY.plusDays(2),
+            FIRST_MONDAY.plusDays(3) )
+
+        doReturn(2).whenever(remainingVacationService)
+            .getRemainingVacations(eq(today.year), eq(user))
+        doReturn(selectedDays).whenever(remainingVacationService)
+            .getRequestedVacationsSelectedYear(eq(lastYearFirstDay), eq(nextYearLastDay), eq(requestVacation))
+
+        val result = vacationValidator.canCreateVacationPeriod(requestVacation, user)
+
+        Assertions.assertThat(result).isEqualTo(CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR))
+    }
+
 
     @Test
     fun `should update valid request`() {
@@ -629,6 +674,11 @@ internal class VacationValidatorTest {
             agreement = WorkingAgreement(1L, emptySet()),
             active = true
         )
+    }
+
+    companion object {
+        private val FIRST_MONDAY = LocalDate.of(LocalDate.now().year, Month.JANUARY, 1)
+            .with(TemporalAdjusters.firstInMonth(DayOfWeek.MONDAY))
     }
 
 }

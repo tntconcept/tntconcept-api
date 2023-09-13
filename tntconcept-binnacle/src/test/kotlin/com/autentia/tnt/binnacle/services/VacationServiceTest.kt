@@ -10,7 +10,7 @@ import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
-import com.autentia.tnt.binnacle.exception.MaxNextYearRequestVacationException
+import com.autentia.tnt.binnacle.exception.NoMoreDaysLeftInYearException
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -39,14 +39,14 @@ import java.time.temporal.TemporalAdjusters
 internal class VacationServiceTest {
 
     private val holidayRepository = mock<HolidayRepository>()
-    private val myVacationsDetailService = mock<MyVacationsDetailService>()
     private val vacationRepository = mock<VacationRepository>()
     private val vacationConverter = VacationConverter()
+    private val remainingVacationService = mock<RemainingVacationService>()
 
     private val calendarFactory = CalendarFactory(holidayRepository)
 
     private val vacationService = VacationService(
-        vacationRepository, myVacationsDetailService, vacationConverter, calendarFactory
+        vacationRepository, vacationConverter, calendarFactory, remainingVacationService
     )
 
     @Test
@@ -109,15 +109,6 @@ internal class VacationServiceTest {
 
     private fun vacationPeriodProvider() = arrayOf(
         arrayOf(
-            // You can not take days from previous year that current
-            START_DATE,
-            START_DATE.plusDays(2),
-            23,
-            0,
-            0,
-            emptyList<CreateVacationResponse>()
-        ),
-        arrayOf(
             // Using the remaining days from CURRENT year
             START_DATE,
             START_DATE.plusDays(10),
@@ -129,7 +120,7 @@ internal class VacationServiceTest {
             )
         ),
         arrayOf(
-            // Using the remaining days from CURRENT
+            // Using the remaining days from CURRENT year
             START_DATE,
             START_DATE.plusDays(9),
             0,
@@ -139,25 +130,6 @@ internal class VacationServiceTest {
                 CreateVacationResponse(START_DATE, START_DATE.plusDays(9), 7, CURRENT_YEAR),
             )
         ),
-        arrayOf(
-            // No enough days for current year
-            START_DATE,
-            START_DATE.plusDays(5),
-            0,
-            3,
-            0,
-            emptyList<CreateVacationResponse>()
-        ),
-        arrayOf(
-            // You can not take days from next year that current
-            START_DATE,
-            START_DATE.plusDays(7),
-            0,
-            0,
-            23,
-            emptyList<CreateVacationResponse>()
-        ),
-
         arrayOf(
             // TNT BUGFIX description:
             // Sometimes the user, by mistake, using old TNT request 2 vacation days of 2018 CHARGED in 2019,
@@ -192,20 +164,20 @@ internal class VacationServiceTest {
                 CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR)
             )
         ),
-        arrayOf(
-            // TNT BUGFIX: using negative remaining days from CURRENT YEAR
-            START_DATE,
-            START_DATE.plusDays(2),
-            // Using the OLD TNT the user by mistake:
-            // - Charged in this year the remaining vacation days of last year
-            // - And requested ALL vacation days of this year too
-            2,
-            -2,
-            22,
-            // Using BINNACLE the user request 2 days and will be charged in the NEXT year, because
-            // the user already charged all vacation days of the last and current year.
-            emptyList<CreateVacationResponse>()
-        )
+//        arrayOf(
+//            // TNT BUGFIX: using negative remaining days from CURRENT YEAR
+//            START_DATE,
+//            START_DATE.plusDays(2),
+//            // Using the OLD TNT the user by mistake:
+//            // - Charged in this year the remaining vacation days of last year
+//            // - And requested ALL vacation days of this year too
+//            2,
+//            -2,
+//            22,
+//            // Using BINNACLE the user request 2 days and will be charged in the NEXT year, because
+//            // the user already charged all vacation days of the last and current year.
+//            emptyList<CreateVacationResponse>()
+//        )
     )
 
     @ParameterizedTest
@@ -222,11 +194,11 @@ internal class VacationServiceTest {
         doReturn(NEW_YEAR_CURRENT_HOLIDAYS).whenever(holidayRepository)
             .findAllByDateBetween(LAST_YEAR_FIRST_DAY.atTime(LocalTime.MIN), NEXT_YEAR_LAST_DAY.atTime(23, 59, 59))
         doReturn(remainingVacationsLastYear)
-            .whenever(myVacationsDetailService).getRemainingVacations(eq(LAST_YEAR.year), any(), eq(USER))
+            .whenever(remainingVacationService).getRemainingVacations(eq(LAST_YEAR.year), eq(USER))
         doReturn(remainingVacationsThisYear)
-            .whenever(myVacationsDetailService).getRemainingVacations(eq(CURRENT_YEAR), any(), eq(USER))
+            .whenever(remainingVacationService).getRemainingVacations(eq(CURRENT_YEAR), eq(USER))
         doReturn(remainingVacationsNextYear)
-            .whenever(myVacationsDetailService).getRemainingVacations(eq(NEXT_YEAR.year), any(), eq(USER))
+            .whenever(remainingVacationService).getRemainingVacations(eq(NEXT_YEAR.year), eq(USER))
 
         doReturn(listOf<Vacation>()).whenever(vacationRepository).findBetweenChargeYears(any(), any())
 
@@ -249,27 +221,18 @@ internal class VacationServiceTest {
 
         doReturn(holidaysBetweenLastYearAndCurrent).whenever(holidayRepository)
             .findAllByDateBetween(LAST_YEAR_FIRST_DAY.atTime(LocalTime.MIN), NEXT_YEAR_LAST_DAY.atTime(23, 59, 59))
-        doReturn(0).whenever(myVacationsDetailService).getRemainingVacations(eq(LAST_YEAR.year), any(), eq(USER))
-        doReturn(0).whenever(myVacationsDetailService).getRemainingVacations(eq(CURRENT_YEAR), any(), eq(USER))
-
-        // First time the user request a vacation period using the vacation days of the next year
-        doReturn(22).whenever(myVacationsDetailService).getRemainingVacations(eq(NEXT_YEAR.year), any(), eq(USER))
+        doReturn(0).whenever(remainingVacationService).getRemainingVacations(eq(CURRENT_YEAR), eq(USER))
 
         doReturn(listOf<Vacation>()).whenever(vacationRepository).findBetweenChargeYears(any(), any())
 
-        assertThrows<MaxNextYearRequestVacationException> {
+        assertThrows<NoMoreDaysLeftInYearException> {
             vacationService.createVacationPeriod(JANUARY_CURRENT_YEAR_VACATIONS, USER)
         }
     }
 
     @Test
     fun `throw max days of next year request vacation 2`() {
-        doReturn(0).whenever(myVacationsDetailService).getRemainingVacations(eq(LAST_YEAR.year), any(), eq(USER))
-
-        doReturn(0).whenever(myVacationsDetailService).getRemainingVacations(eq(CURRENT_YEAR), any(), eq(USER))
-
-        // The user already requested a period before and when he tries again, he can't request a new period.
-        doReturn(17).whenever(myVacationsDetailService).getRemainingVacations(eq(NEXT_YEAR.year), any(), eq(USER))
+        doReturn(2).whenever(remainingVacationService).getRemainingVacations(eq(CURRENT_YEAR), eq(USER))
 
         doReturn(listOf<Vacation>()).whenever(vacationRepository).findBetweenChargeYears(any(), any())
 
@@ -281,7 +244,7 @@ internal class VacationServiceTest {
             description = "Lorem ipsum..."
         )
 
-        assertThrows<MaxNextYearRequestVacationException> {
+        assertThrows<NoMoreDaysLeftInYearException> {
             vacationService.createVacationPeriod(requestVacation, USER)
         }
     }
