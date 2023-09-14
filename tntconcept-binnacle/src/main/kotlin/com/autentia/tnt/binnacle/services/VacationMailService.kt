@@ -26,7 +26,6 @@ internal class VacationMailService(
             return
         }
 
-        // TODO Include charge year in email
         val body = messageSource
             .getMessage(
                 "mail.request.vacations.template",
