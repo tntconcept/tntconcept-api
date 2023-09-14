@@ -10,7 +10,6 @@ import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
-import com.autentia.tnt.binnacle.exception.NoMoreDaysLeftInYearException
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
-import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
@@ -120,28 +118,6 @@ internal class VacationServiceTest {
     }
 
     @Test
-    fun `throw no more days left in year exception when left 0 days`() {
-        doReturn(0).whenever(remainingVacationService).getRemainingVacations(eq(CURRENT_YEAR), eq(USER))
-
-        mockRequestVacation(REQUEST_8_DAYS_IN_JANUARY)
-
-        assertThrows<NoMoreDaysLeftInYearException> {
-            vacationService.createVacationPeriod(REQUEST_8_DAYS_IN_JANUARY, USER)
-        }
-    }
-
-    @Test
-    fun `throw no more days left in year exception when left less days than requested`() {
-        doReturn(2).whenever(remainingVacationService).getRemainingVacations(eq(CURRENT_YEAR), eq(USER))
-
-        mockRequestVacation(REQUEST_8_DAYS_IN_JANUARY)
-
-        assertThrows<NoMoreDaysLeftInYearException> {
-            vacationService.createVacationPeriod(REQUEST_8_DAYS_IN_JANUARY, USER)
-        }
-    }
-
-    @Test
     fun `update vacation period when the new corresponding days quantity IS EQUAL to old corresponding days quantity`() {
         val vacation = createVacation(
             id = VACATION_ID,
@@ -209,39 +185,6 @@ internal class VacationServiceTest {
         assertEquals(requestVacation.startDate, vacationSaved.startDate)
         assertEquals(requestVacation.endDate, vacationSaved.endDate)
         assertEquals(requestVacation.chargeYear, vacationSaved.chargeYear)
-    }
-
-    @Test
-    fun `update vacation period without days left in this year`() {
-        val requestVacation = RequestVacation(
-            id = VACATION_ID,
-            startDate = JAN_SECOND_CURRENT,
-            endDate = JAN_SECOND_CURRENT.plusDays(3),
-            chargeYear = JAN_SECOND_CURRENT.year,
-            description = null
-        )
-        val vacation = Vacation(
-            id = VACATION_ID,
-            startDate = JAN_SECOND_CURRENT,
-            endDate = JAN_SECOND_CURRENT.plusDays(1),
-            state = PENDING,
-            userId = USER.id,
-            observations = "",
-            departmentId = null,
-            description = "",
-            chargeYear = JAN_SECOND_CURRENT.withDayOfYear(1)
-        )
-
-        doReturn(vacation).whenever(vacationRepository).update(eq(vacation))
-
-        doReturn(1)
-            .whenever(remainingVacationService).getRemainingVacations(eq(CURRENT_YEAR), eq(USER))
-
-        mockRequestVacation(requestVacation)
-
-        assertThrows<NoMoreDaysLeftInYearException> {
-            vacationService.updateVacationPeriod(requestVacation, USER, vacation)
-        }
     }
 
     private fun mockRequestVacation(requestVacation: RequestVacation): List<LocalDate> {

@@ -7,7 +7,6 @@ import com.autentia.tnt.binnacle.core.utils.minDate
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
-import com.autentia.tnt.binnacle.exception.NoMoreDaysLeftInYearException
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -79,19 +78,14 @@ internal class VacationService(
     @Transactional
     fun createVacationPeriod(requestVacation: RequestVacation, user: User): CreateVacationResponse {
 
-        val currentYear = requestVacation.chargeYear
-
-        val currentYearRemainingVacations = remainingVacationService
-            .getRemainingVacations(requestVacation.chargeYear, user)
-
         val selectedDays = remainingVacationService.getRequestedVacationsSelectedYear(requestVacation)
 
-        if (selectedDays.isNotEmpty() &&
-            currentYearRemainingVacations < selectedDays.size) {
-            throw NoMoreDaysLeftInYearException()
-        }
-
-        val vacationPeriod = chargeDaysIntoYear(selectedDays, currentYear, currentYearRemainingVacations)
+        val vacationPeriod = CreateVacationResponse(
+            startDate = selectedDays.first(),
+            endDate = selectedDays.last(),
+            days = selectedDays.size,
+            chargeYear = requestVacation.chargeYear
+        )
 
         val vacationToSave = Vacation(
             id = null,
@@ -149,19 +143,6 @@ internal class VacationService(
         vacationRepository.deleteById(vacation.id!!)
 
         return createVacationPeriod(requestVacation, user)
-    }
-
-    fun chargeDaysIntoYear(
-        selectedDays: List<LocalDate>,
-        year: Int,
-        remainingHolidays: Int
-    ): CreateVacationResponse {
-        return CreateVacationResponse(
-                startDate = selectedDays.first(),
-                endDate = selectedDays.last(),
-                days = selectedDays.size,
-                chargeYear = year
-            )
     }
 
 }
