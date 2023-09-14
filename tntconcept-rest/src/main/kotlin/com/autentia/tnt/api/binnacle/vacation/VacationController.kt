@@ -49,16 +49,16 @@ internal class VacationController(
     internal fun createPrivateHolidayPeriod(
         @Body @Valid createVacationRequest: CreateVacationRequest,
         locale: Locale,
-    ): List<CreateVacationResponse> =
-        privateHolidayPeriodCreateUseCase.create(createVacationRequest.toDto(), locale).map { CreateVacationResponse.from(it) }
+    ): CreateVacationResponse =
+        CreateVacationResponse.from(privateHolidayPeriodCreateUseCase.create(createVacationRequest.toDto(), locale))
 
     @Put
     @Operation(summary = "Updates a holiday period.")
     internal fun updatePrivateHolidayPeriod(
         @Body @Valid createVacationRequest: CreateVacationRequest,
         locale: Locale,
-    ): List<CreateVacationResponse> =
-        privateHolidayPeriodUpdateUseCase.update(createVacationRequest.toDto(), locale).map { CreateVacationResponse.from(it) }
+    ): CreateVacationResponse =
+        CreateVacationResponse.from(privateHolidayPeriodUpdateUseCase.update(createVacationRequest.toDto(), locale))
 
     @Delete("/{id}")
     @Operation(summary = "Deletes a holiday period by a given ID.")

@@ -14,7 +14,6 @@ import com.autentia.tnt.binnacle.exception.NoMoreDaysLeftInYearException
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.BDDAssertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -114,12 +113,10 @@ internal class VacationServiceTest {
 
         val actual = vacationService.createVacationPeriod(REQUEST_8_DAYS_IN_JANUARY, USER)
 
-        assertEquals(1, actual.size)
-
-        assertEquals(selectedDays.first(), actual[0].startDate)
-        assertEquals(selectedDays.last(), actual[0].endDate)
-        assertEquals(selectedDays.size, actual[0].days)
-        assertEquals(CURRENT_YEAR, actual[0].chargeYear)
+        assertEquals(selectedDays.first(), actual.startDate)
+        assertEquals(selectedDays.last(), actual.endDate)
+        assertEquals(selectedDays.size, actual.days)
+        assertEquals(CURRENT_YEAR, actual.chargeYear)
     }
 
     @Test
@@ -170,11 +167,13 @@ internal class VacationServiceTest {
 
         doReturn(newPrivateHoliday).whenever(vacationRepository).update(newPrivateHoliday)
 
-        val vacations = vacationService.updateVacationPeriod(requestVacation, USER, vacation)
+        val vacationSaved = vacationService.updateVacationPeriod(requestVacation, USER, vacation)
 
         verify(vacationRepository).update(newPrivateHoliday)
 
-        BDDAssertions.then(vacations).hasSize(1)
+        assertEquals(requestVacation.startDate, vacationSaved.startDate)
+        assertEquals(requestVacation.endDate, vacationSaved.endDate)
+        assertEquals(requestVacation.chargeYear, vacationSaved.chargeYear)
     }
 
     @Test
@@ -205,9 +204,11 @@ internal class VacationServiceTest {
 
         mockRequestVacation(requestVacation)
 
-        val vacations = vacationService.updateVacationPeriod(requestVacation, USER, vacation)
+        val vacationSaved = vacationService.updateVacationPeriod(requestVacation, USER, vacation)
 
-        assertThat(vacations).hasSize(1)
+        assertEquals(requestVacation.startDate, vacationSaved.startDate)
+        assertEquals(requestVacation.endDate, vacationSaved.endDate)
+        assertEquals(requestVacation.chargeYear, vacationSaved.chargeYear)
     }
 
     @Test

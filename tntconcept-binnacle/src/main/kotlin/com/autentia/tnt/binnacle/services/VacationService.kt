@@ -77,7 +77,7 @@ internal class VacationService(
         }
 
     @Transactional
-    fun createVacationPeriod(requestVacation: RequestVacation, user: User): MutableList<CreateVacationResponse> {
+    fun createVacationPeriod(requestVacation: RequestVacation, user: User): CreateVacationResponse {
 
         val currentYear = requestVacation.chargeYear
 
@@ -86,33 +86,28 @@ internal class VacationService(
 
         val selectedDays = remainingVacationService.getRequestedVacationsSelectedYear(requestVacation)
 
-        val vacationPeriods = mutableListOf<CreateVacationResponse>()
-
         if (selectedDays.isNotEmpty() &&
             currentYearRemainingVacations < selectedDays.size) {
             throw NoMoreDaysLeftInYearException()
         }
 
-        vacationPeriods += chargeDaysIntoYear(selectedDays, currentYear, currentYearRemainingVacations)
+        val vacationPeriod = chargeDaysIntoYear(selectedDays, currentYear, currentYearRemainingVacations)
 
-        // TODO Deshacer array
-        val vacationsToSave = vacationPeriods.map {
-            Vacation(
-                id = null,
-                startDate = it.startDate,
-                endDate = it.endDate,
-                description = requestVacation.description.orEmpty(),
-                state = VacationState.PENDING,
-                userId = user.id,
-                departmentId = user.departmentId,
-                observations = "",
-                chargeYear = LocalDate.of(it.chargeYear, Month.JANUARY, 1)
-            )
-        }
+        val vacationToSave = Vacation(
+            id = null,
+            startDate = vacationPeriod.startDate,
+            endDate = vacationPeriod.endDate,
+            description = requestVacation.description.orEmpty(),
+            state = VacationState.PENDING,
+            userId = user.id,
+            departmentId = user.departmentId,
+            observations = "",
+            chargeYear = LocalDate.of(vacationPeriod.chargeYear, Month.JANUARY, 1)
+        )
 
-        vacationRepository.saveAll(vacationsToSave)
+        vacationRepository.save(vacationToSave)
 
-        return vacationPeriods
+        return vacationPeriod
     }
 
     @Transactional
@@ -120,7 +115,7 @@ internal class VacationService(
         requestVacation: RequestVacation,
         user: User,
         vacation: Vacation
-    ): MutableList<CreateVacationResponse> {
+    ): CreateVacationResponse {
 
         val calendar = calendarFactory.create(
             DateInterval.of(
@@ -133,8 +128,6 @@ internal class VacationService(
         val newCorrespondingDays =
             calendar.getWorkableDays(DateInterval.of(requestVacation.startDate, requestVacation.endDate)).size
 
-        var vacationPeriods = mutableListOf<CreateVacationResponse>()
-
         if (oldCorrespondingDays == newCorrespondingDays) {
             val newPeriod = vacation.copy(
                 startDate = requestVacation.startDate,
@@ -144,22 +137,18 @@ internal class VacationService(
 
             val savedPeriod = vacationRepository.update(newPeriod)
 
-            vacationPeriods.plusAssign(
-                CreateVacationResponse(
+            return CreateVacationResponse(
                     startDate = savedPeriod.startDate,
                     endDate = savedPeriod.endDate,
                     days = oldCorrespondingDays,
                     chargeYear = savedPeriod.chargeYear.year
-                )
             )
-        } else {
-            // Delete the request period first
-            vacationRepository.deleteById(vacation.id!!)
-
-            vacationPeriods = createVacationPeriod(requestVacation, user)
         }
 
-        return vacationPeriods
+        // Delete the request period first
+        vacationRepository.deleteById(vacation.id!!)
+
+        return createVacationPeriod(requestVacation, user)
     }
 
     fun chargeDaysIntoYear(

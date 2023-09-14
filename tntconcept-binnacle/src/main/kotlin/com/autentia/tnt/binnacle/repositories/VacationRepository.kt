@@ -32,6 +32,7 @@ internal interface VacationRepository {
 
 
     fun findById(vacationId: Long): Vacation?
+    fun save(vacation: Vacation): Vacation
     fun saveAll(vacations: Iterable<Vacation>): Iterable<Vacation>
     fun update(vacation: Vacation): Vacation
     fun deleteById(vacationId: Long)

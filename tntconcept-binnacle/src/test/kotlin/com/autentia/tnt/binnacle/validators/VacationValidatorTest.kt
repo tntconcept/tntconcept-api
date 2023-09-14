@@ -71,7 +71,7 @@ internal class VacationValidatorTest {
     }
 
     @Test
-    fun `should not create due to empty period due weekend days`() {
+    fun `should not create due to empty period on weekend days`() {
         val requestVacation = RequestVacation(null, FIRST_SATURDAY, FIRST_SUNDAY, CURRENT_YEAR, "description")
         val user = createUser()
 

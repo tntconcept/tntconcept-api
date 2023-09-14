@@ -51,6 +51,12 @@ internal class VacationRepositorySecured(
         }
     }
 
+    override fun save(vacation: Vacation): Vacation {
+        val authentication = securityService.checkAuthentication()
+        require(vacation.userId == authentication.id()) { "User cannot save vacation" }
+        return vacationDao.save(vacation)
+    }
+
     override fun saveAll(vacations: Iterable<Vacation>): Iterable<Vacation> {
         val authentication = securityService.checkAuthentication()
         vacations.forEach { require(it.userId == authentication.id()) { "User cannot save vacation" } }
