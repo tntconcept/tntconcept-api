@@ -20,6 +20,7 @@ private const val VACATION_RANGE_CLOSED = "VACATION_RANGE_CLOSED"
 private const val VACATION_BEFORE_HIRING_DATE = "VACATION_BEFORE_HIRING_DATE"
 private const val VACATION_REQUEST_OVERLAPS = "VACATION_REQUEST_OVERLAPS"
 private const val VACATION_REQUEST_EMPTY = "VACATION_REQUEST_EMPTY"
+private const val NO_MORE_DAYS_LEFT_IN_YEAR = "NO_MORE_DAYS_LEFT_IN_YEAR"
 
 @Controller("/api/vacations")
 @Validated
@@ -48,16 +49,16 @@ internal class VacationController(
     internal fun createPrivateHolidayPeriod(
         @Body @Valid createVacationRequest: CreateVacationRequest,
         locale: Locale,
-    ): List<CreateVacationResponse> =
-        privateHolidayPeriodCreateUseCase.create(createVacationRequest.toDto(), locale).map { CreateVacationResponse.from(it) }
+    ): CreateVacationResponse =
+        CreateVacationResponse.from(privateHolidayPeriodCreateUseCase.create(createVacationRequest.toDto(), locale))
 
     @Put
     @Operation(summary = "Updates a holiday period.")
     internal fun updatePrivateHolidayPeriod(
         @Body @Valid createVacationRequest: CreateVacationRequest,
         locale: Locale,
-    ): List<CreateVacationResponse> =
-        privateHolidayPeriodUpdateUseCase.update(createVacationRequest.toDto(), locale).map { CreateVacationResponse.from(it) }
+    ): CreateVacationResponse =
+        CreateVacationResponse.from(privateHolidayPeriodUpdateUseCase.update(createVacationRequest.toDto(), locale))
 
     @Delete("/{id}")
     @Operation(summary = "Deletes a holiday period by a given ID.")
@@ -98,5 +99,9 @@ internal class VacationController(
     @Error
     internal fun onVacationRequestEmpty(request: HttpRequest<*>, e: VacationRequestEmptyException) =
         HttpResponse.badRequest(ErrorResponse(VACATION_REQUEST_EMPTY, e.message))
+
+    @Error
+    internal fun onVacationRequestEmpty(request: HttpRequest<*>, e: NoMoreDaysLeftInYearException) =
+        HttpResponse.badRequest(ErrorResponse(NO_MORE_DAYS_LEFT_IN_YEAR, e.message))
 
 }

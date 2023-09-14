@@ -3,27 +3,21 @@ package com.autentia.tnt.binnacle.services
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.VacationConverter
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.core.domain.CreateVacationResponse
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.core.domain.RequestVacation
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
-import com.autentia.tnt.binnacle.exception.MaxNextYearRequestVacationException
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.BDDAssertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
-import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -39,14 +33,14 @@ import java.time.temporal.TemporalAdjusters
 internal class VacationServiceTest {
 
     private val holidayRepository = mock<HolidayRepository>()
-    private val myVacationsDetailService = mock<MyVacationsDetailService>()
     private val vacationRepository = mock<VacationRepository>()
     private val vacationConverter = VacationConverter()
+    private val remainingVacationService = mock<RemainingVacationService>()
 
     private val calendarFactory = CalendarFactory(holidayRepository)
 
     private val vacationService = VacationService(
-        vacationRepository, myVacationsDetailService, vacationConverter, calendarFactory
+        vacationRepository, vacationConverter, calendarFactory, remainingVacationService
     )
 
     @Test
@@ -56,8 +50,6 @@ internal class VacationServiceTest {
 
         doReturn(listOf(vacation)).whenever(vacationRepository)
             .find(FIRST_DAY_2020, END_DATE)
-
-
 
         doReturn(holidays2020).whenever(holidayRepository).findAllByDateBetween(FIRST_DAY_2020.atTime(LocalTime.MIN), JAN_TENTH_2020.atTime(23, 59, 59))
         val vacationsBetweenDates =
@@ -80,8 +72,6 @@ internal class VacationServiceTest {
     fun `return all vacations by charge year`() {
         doReturn(vacations2020).whenever(vacationRepository)
             .findBetweenChargeYears(FIRST_DAY_2020, FIRST_DAY_2020)
-
-
 
         doReturn(holidays2020).whenever(holidayRepository).findAllByDateBetween(FIRST_DAY_2020.atTime(LocalTime.MIN), FOURTH_FEB_2020.atTime(23, 59, 59))
         val vacations = vacationService.getVacationsByChargeYear(YEAR_2020)
@@ -111,234 +101,40 @@ internal class VacationServiceTest {
         assertEquals(vacationsBetweenDates[0].days[0], APR_NINTH_2020)
     }
 
-    private fun vacationPeriodProvider() = arrayOf(
-        arrayOf(
-            // Using remaining days from LAST year
-            START_DATE,
-            START_DATE.plusDays(2),
-            2,
-            22,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR - 1)
-            )
-        ),
-        arrayOf(
-            // Using the remaining days from LAST year and CURRENT year
-            START_DATE,
-            START_DATE.plusDays(10),
-            2,
-            22,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR - 1),
-                CreateVacationResponse(START_DATE.plusDays(3), START_DATE.plusDays(10), 6, CURRENT_YEAR)
-            )
-        ),
-        arrayOf(
-            // Using the remaining days from CURRENT year
-            START_DATE,
-            START_DATE.plusDays(10),
-            0,
-            18,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(10), 8, CURRENT_YEAR)
-            )
-        ),
-        arrayOf(
-            // Using the remaining days from CURRENT year and NEXT YEAR
-            START_DATE,
-            START_DATE.plusDays(5),
-            0,
-            3,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(3), 3, CURRENT_YEAR),
-                CreateVacationResponse(START_DATE.plusDays(4), START_DATE.plusDays(4), 1, CURRENT_YEAR + 1)
-            )
-        ),
-        arrayOf(
-            // Using the NEXT year vacation days if the days quantity is max 5
-            START_DATE,
-            START_DATE.plusDays(7),
-            0,
-            0,
-            23,
-
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(7), 5, CURRENT_YEAR + 1)
-            )
-        ),
-
-        arrayOf(
-            // TNT BUGFIX description:
-            // Sometimes the user, by mistake, using old TNT request 2 vacation days of 2018 CHARGED in 2019,
-            // instead of 2018, that leads to negative remaining vacations days in 2019
-            // after all vacations days of 2019 are requested.
-            // In this example, 2018 will still have 2 remaining days and 2019 will have -2 days.
-            // These tests check that if that case happens in BINNACLE, the result is correct.
-            START_DATE,
-            START_DATE.plusDays(2),
-            // Using the OLD TNT the user by mistake:
-            // - Charged in the last year the remaining days of the previous year
-            -5,
-            2,
-            22,
-
-            // Using BINNACLE the user request 2 days and will be charged in this year
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR)
-            )
-        ),
-        arrayOf(
-            // TNT BUGFIX: using negative remaining days from LAST YEAR
-            START_DATE,
-            START_DATE.plusDays(2),
-            // Using the OLD TNT the user by mistake:
-            // - Charged in the last year the remaining days of the previous year
-            // - And has only two days in this year
-            -2,
-            2,
-            22,
-            // Using BINNACLE the user request 2 days and will be charged in this year
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR)
-            )
-        ),
-        arrayOf(
-            // TNT BUGFIX: using negative remaining days from CURRENT YEAR
-            START_DATE,
-            START_DATE.plusDays(2),
-            // Using the OLD TNT the user by mistake:
-            // - Charged in this year the remaining vacation days of last year
-            // - And requested ALL vacation days of this year too
-            2,
-            -2,
-            22,
-            // Using BINNACLE the user request 2 days and will be charged in the NEXT year, because
-            // the user already charged all vacation days of the last and current year.
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE.plusDays(2), 2, CURRENT_YEAR + 1)
-            )
-        ),
-        arrayOf(
-            // TNT BUGFIX description:
-            // When requesting vacation days in the current year charged to the past year and a holiday is present,
-            // the holiday shouldn't be counted towards the number of total days.
-            START_DATE,
-            START_DATE.plusDays(4),
-            1,
-            22,
-            22,
-            listOf(
-                CreateVacationResponse(START_DATE, START_DATE, 1, CURRENT_YEAR - 1),
-                CreateVacationResponse(START_DATE.plusDays(2), START_DATE.plusDays(4), 3, CURRENT_YEAR),
-            )
-        ),
-    )
-
-    @ParameterizedTest
-    @MethodSource("vacationPeriodProvider")
-    fun createVacationPeriod(
-        startDate: LocalDate,
-        endDate: LocalDate,
-        remainingVacationsLastYear: Int,
-        remainingVacationsThisYear: Int,
-        remainingVacationsNextYear: Int,
-        expectedResult: List<CreateVacationResponse>
-    ) {
-
-
-        doReturn(NEW_YEAR_CURRENT_HOLIDAYS).whenever(holidayRepository)
-            .findAllByDateBetween(LAST_YEAR_FIRST_DAY.atTime(LocalTime.MIN), NEXT_YEAR_LAST_DAY.atTime(23, 59, 59))
-        doReturn(remainingVacationsLastYear)
-            .whenever(myVacationsDetailService).getRemainingVacations(eq(LAST_YEAR.year), any(), eq(USER))
-        doReturn(remainingVacationsThisYear)
-            .whenever(myVacationsDetailService).getRemainingVacations(eq(CURRENT_YEAR), any(), eq(USER))
-
-        doReturn(remainingVacationsNextYear)
-            .whenever(myVacationsDetailService).getRemainingVacations(eq(NEXT_YEAR.year), any(), eq(USER))
-
-        doReturn(listOf<Vacation>()).whenever(vacationRepository).findBetweenChargeYears(any(), any())
-
-        val requestVacation = RequestVacation(null, startDate, endDate, "Lorem ipsum...")
-
-        val actual = vacationService.createVacationPeriod(requestVacation, USER)
-
-        actual.forEachIndexed { index, result ->
-            assertEquals(result.startDate, expectedResult[index].startDate)
-            assertEquals(result.endDate, expectedResult[index].endDate)
-            assertEquals(result.days, expectedResult[index].days)
-            assertEquals(result.chargeYear, expectedResult[index].chargeYear)
-        }
-    }
-
     @Test
-    fun `throw max days of next year request vacation`() {
+    fun `create a valid vacation period`() {
 
+        doReturn(23)
+            .whenever(remainingVacationService).getRemainingVacations(eq(CURRENT_YEAR), eq(USER))
 
-        doReturn(holidaysBetweenLastYearAndCurrent).whenever(holidayRepository)
-            .findAllByDateBetween(LAST_YEAR_FIRST_DAY.atTime(LocalTime.MIN), NEXT_YEAR_LAST_DAY.atTime(23, 59, 59))
-        doReturn(0).whenever(myVacationsDetailService).getRemainingVacations(eq(LAST_YEAR.year), any(), eq(USER))
-        doReturn(0).whenever(myVacationsDetailService).getRemainingVacations(eq(CURRENT_YEAR), any(), eq(USER))
+        val selectedDays = mockRequestVacation(REQUEST_8_DAYS_IN_JANUARY)
 
-        // First time the user request a vacation period using the vacation days of the next year
-        doReturn(22).whenever(myVacationsDetailService).getRemainingVacations(eq(NEXT_YEAR.year), any(), eq(USER))
+        val actual = vacationService.createVacationPeriod(REQUEST_8_DAYS_IN_JANUARY, USER)
 
-        doReturn(listOf<Vacation>()).whenever(vacationRepository).findBetweenChargeYears(any(), any())
-
-        assertThrows<MaxNextYearRequestVacationException> {
-            vacationService.createVacationPeriod(JANUARY_CURRENT_YEAR_VACATIONS, USER)
-        }
-    }
-
-    @Test
-    fun `throw max days of next year request vacation 2`() {
-        doReturn(0).whenever(myVacationsDetailService).getRemainingVacations(eq(LAST_YEAR.year), any(), eq(USER))
-
-        doReturn(0).whenever(myVacationsDetailService).getRemainingVacations(eq(CURRENT_YEAR), any(), eq(USER))
-
-        // The user already requested a period before and when he tries again, he can't request a new period.
-        doReturn(17).whenever(myVacationsDetailService).getRemainingVacations(eq(NEXT_YEAR.year), any(), eq(USER))
-
-        doReturn(listOf<Vacation>()).whenever(vacationRepository).findBetweenChargeYears(any(), any())
-
-        val requestVacation = RequestVacation(
-            id = null,
-            startDate = LocalDate.of(CURRENT_YEAR, JANUARY, 1),
-            endDate = LocalDate.of(CURRENT_YEAR, JANUARY, 4),
-            description = "Lorem ipsum..."
-        )
-
-        assertThrows<MaxNextYearRequestVacationException> {
-            vacationService.createVacationPeriod(requestVacation, USER)
-        }
+        assertEquals(selectedDays.first(), actual.startDate)
+        assertEquals(selectedDays.last(), actual.endDate)
+        assertEquals(selectedDays.size, actual.days)
+        assertEquals(CURRENT_YEAR, actual.chargeYear)
     }
 
     @Test
     fun `update vacation period when the new corresponding days quantity IS EQUAL to old corresponding days quantity`() {
         val vacation = createVacation(
             id = VACATION_ID,
-            startDate = SEPT_FOURTEENTH_CURRENT.plusDays(7),
-            endDate = SEPT_FOURTEENTH_CURRENT.plusDays(8),
+            startDate = FIRST_MONDAY.plusDays(2),
+            endDate = FIRST_MONDAY.plusDays(3),
             userId = USER.id,
-            chargeYear = SEPT_FOURTEENTH_CURRENT.withDayOfYear(1)
+            chargeYear = FIRST_MONDAY.withDayOfYear(1)
         )
 
         val requestVacation = RequestVacation(
             id = VACATION_ID,
-            startDate = SEPT_FOURTEENTH_CURRENT,
-            endDate = SEPT_FOURTEENTH_CURRENT.plusDays(1),
+            startDate = FIRST_MONDAY,
+            endDate = FIRST_MONDAY.plusDays(1),
+            chargeYear = CURRENT_YEAR,
             description = "asdasd"
         )
 
-
-        doReturn(listOf<Holiday>()).whenever(holidayRepository).findAllByDateBetween(
-            LocalDate.of(SEPT_FOURTEENTH_LAST, JANUARY, 1).atTime(LocalTime.MIN), LocalDate.of(
-                SEPT_FOURTEENTH_NEXT, DECEMBER, 31
-            ).atTime(23, 59, 59)
-        )
         val newPrivateHoliday = vacation.copy(
             startDate = requestVacation.startDate,
             endDate = requestVacation.endDate,
@@ -347,19 +143,22 @@ internal class VacationServiceTest {
 
         doReturn(newPrivateHoliday).whenever(vacationRepository).update(newPrivateHoliday)
 
-        val holidays = vacationService.updateVacationPeriod(requestVacation, USER, vacation)
+        val vacationSaved = vacationService.updateVacationPeriod(requestVacation, USER, vacation)
 
         verify(vacationRepository).update(newPrivateHoliday)
 
-        BDDAssertions.then(holidays).hasSize(1)
+        assertEquals(requestVacation.startDate, vacationSaved.startDate)
+        assertEquals(requestVacation.endDate, vacationSaved.endDate)
+        assertEquals(requestVacation.chargeYear, vacationSaved.chargeYear)
     }
 
     @Test
-    fun `request new vacation period when the new corresponding days quantity IS NOT EQUAL to old corresponding days quantity`() {
-        val domain = RequestVacation(
+    fun `update vacation period when the new corresponding days quantity IS NOT EQUAL to old corresponding days quantity`() {
+        val requestVacation = RequestVacation(
             id = VACATION_ID,
             startDate = JAN_SECOND_CURRENT,
-            endDate = JAN_SECOND_CURRENT.plusDays(1),
+            endDate = JAN_SECOND_CURRENT.plusDays(3),
+            chargeYear = JAN_SECOND_CURRENT.year,
             description = null
         )
         val vacation = Vacation(
@@ -371,21 +170,40 @@ internal class VacationServiceTest {
             observations = "",
             departmentId = null,
             description = "",
-            chargeYear = LocalDate.now()
+            chargeYear = JAN_SECOND_CURRENT.withDayOfYear(1)
         )
-
 
         doReturn(vacation).whenever(vacationRepository).update(eq(vacation))
-        doReturn(listOf<Holiday>()).whenever(holidayRepository).findAllByDateBetween(
-            LocalDate.of(LAST_YEAR.year, JANUARY, 1).atTime(LocalTime.MIN),
-            LocalDate.of(NEXT_YEAR.year, DECEMBER, 31).atTime(23, 59, 59)
-        )
 
-        val holidays = vacationService.updateVacationPeriod(domain, USER, vacation)
+        doReturn(21)
+            .whenever(remainingVacationService).getRemainingVacations(eq(CURRENT_YEAR), eq(USER))
 
-        assertThat(holidays).hasSize(1)
+        mockRequestVacation(requestVacation)
+
+        val vacationSaved = vacationService.updateVacationPeriod(requestVacation, USER, vacation)
+
+        assertEquals(requestVacation.startDate, vacationSaved.startDate)
+        assertEquals(requestVacation.endDate, vacationSaved.endDate)
+        assertEquals(requestVacation.chargeYear, vacationSaved.chargeYear)
     }
 
+    private fun mockRequestVacation(requestVacation: RequestVacation): List<LocalDate> {
+        val selectedDays = getSelectedDaysFrom(
+            requestVacation.startDate,
+            requestVacation.endDate
+        )
+
+        doReturn(selectedDays).whenever(remainingVacationService)
+            .getRequestedVacationsSelectedYear(eq(requestVacation))
+
+        return selectedDays
+    }
+
+    private fun getSelectedDaysFrom(startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
+        val dateInterval = DateInterval.of(startDate, endDate)
+        val calendar = calendarFactory.create(dateInterval)
+        return calendar.getWorkableDays(dateInterval)
+    }
 
     // MUST BE a companion object with @JvmStatic, DO NOT REFACTOR
     // https://blog.oio.de/2018/11/13/how-to-use-junit-5-methodsource-parameterized-tests-with-kotlin/
@@ -409,7 +227,7 @@ internal class VacationServiceTest {
         private val JAN_FOURTH_2021 = LocalDate.of(2021, JANUARY, 4)
 
 
-        private val START_DATE = LocalDate.of(CURRENT_YEAR, JANUARY, 1).with(TemporalAdjusters.firstInMonth(MONDAY))
+        private val FIRST_MONDAY = LocalDate.of(CURRENT_YEAR, JANUARY, 1).with(TemporalAdjusters.firstInMonth(MONDAY))
         private val END_DATE = LocalDate.of(YEAR_2020, 1, 31)
 
         private val FOURTH_FEB_2020 = LocalDate.of(YEAR_2020, 2, 4)
@@ -439,7 +257,6 @@ internal class VacationServiceTest {
             )
         )
 
-
         private val NEW_YEAR_CURRENT_DATE =
             LocalDate.of(CURRENT_YEAR, JANUARY, 1).with(TemporalAdjusters.firstInMonth(MONDAY))
                 .plusDays(1)
@@ -452,10 +269,11 @@ internal class VacationServiceTest {
             createHoliday(1, "Holiday 2019", LocalDate.of(LAST_YEAR.year, DECEMBER, 31)),
             createHoliday(2, "Holiday 2020", LocalDate.of(CURRENT_YEAR, JANUARY, 1))
         )
-        private val JANUARY_CURRENT_YEAR_VACATIONS = RequestVacation(
+        private val REQUEST_8_DAYS_IN_JANUARY = RequestVacation(
             id = null,
-            startDate = LocalDate.of(CURRENT_YEAR, JANUARY, 1),
-            endDate = LocalDate.of(CURRENT_YEAR, JANUARY, 10),
+            startDate = FIRST_MONDAY,
+            endDate = FIRST_MONDAY.plusDays(10),
+            chargeYear = CURRENT_YEAR,
             description = "Lorem ipsum..."
         )
         private val JAN_SECOND_CURRENT =
