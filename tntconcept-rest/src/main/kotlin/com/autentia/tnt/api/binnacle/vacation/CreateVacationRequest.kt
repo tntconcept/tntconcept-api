@@ -16,6 +16,9 @@ data class CreateVacationRequest(
     @field:NotNull
     val endDate: LocalDate,
 
+    @field:NotNull
+    val chargeYear: Int,
+
     @field:Size(max = 1024, message = "Description must not exceed 1024 characters")
     var description: String? = null
 ) {
@@ -23,6 +26,7 @@ data class CreateVacationRequest(
         id,
         startDate,
         endDate,
+        chargeYear,
         description,
     )
 }

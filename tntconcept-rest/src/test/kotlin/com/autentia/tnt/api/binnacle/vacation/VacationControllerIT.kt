@@ -104,15 +104,15 @@ internal class VacationControllerIT {
 
     @Test
     fun `post a new vacation period`() {
-        doReturn(listOf(CREATE_VACATION_RESPONSE_DTO))
+        doReturn(CREATE_VACATION_RESPONSE_DTO)
             .whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
-        val response = client.exchangeList<CreateVacationResponse>(
+        val response = client.exchangeObject<CreateVacationResponse>(
             POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(CREATE_VACATION_RESPONSE), response.body.get())
+        assertEquals(CREATE_VACATION_RESPONSE, response.body.get())
     }
 
     private fun postFailProvider() = arrayOf(
@@ -145,11 +145,11 @@ internal class VacationControllerIT {
 
     @Test
     fun `update a vacation period`() {
-        val createVacationResponseDTOs = listOf(CREATE_VACATION_RESPONSE_DTO)
+        val createVacationResponseDTOs = CREATE_VACATION_RESPONSE_DTO
         doReturn(createVacationResponseDTOs)
             .whenever(privateHolidayPeriodUpdateUseCase).update(REQUEST_VACATION_DTO, EN_LOCALE)
 
-        val response = client.exchangeList<CreateVacationResponseDTO>(
+        val response = client.exchangeObject<CreateVacationResponseDTO>(
             PUT("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
         )
 
@@ -229,8 +229,7 @@ internal class VacationControllerIT {
 
         private val EN_LOCALE = Locale.ENGLISH
 
-        private val REQUEST_VACATION_DTO = RequestVacationDTO(null, TODAY, TODAY, "Description")
-
+        private val REQUEST_VACATION_DTO = RequestVacationDTO(null, TODAY, TODAY, TODAY.year, "Description")
 
         private val CREATE_VACATION_RESPONSE_DTO =
             CreateVacationResponseDTO(
@@ -288,6 +287,7 @@ internal class VacationControllerIT {
                 null,
                 TODAY,
                 TODAY,
+                TODAY.year,
                 "Description",
             )
     }

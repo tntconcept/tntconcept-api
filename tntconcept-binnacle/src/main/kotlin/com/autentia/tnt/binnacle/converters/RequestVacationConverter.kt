@@ -12,6 +12,7 @@ class RequestVacationConverter {
             id = requestVacationDTO.id,
             startDate = requestVacationDTO.startDate,
             endDate = requestVacationDTO.endDate,
+            chargeYear = requestVacationDTO.chargeYear,
             description = requestVacationDTO.description
         )
 

@@ -20,6 +20,7 @@ internal class RequestVacationConverterTest {
             1,
             LocalDate.of(2020, 12, 21),
             LocalDate.of(2020, 12, 23),
+            2020,
             "Description..."
         )
 
@@ -28,6 +29,7 @@ internal class RequestVacationConverterTest {
         assertEquals(requestVacationDTO.id, requestVacation.id)
         assertEquals(requestVacationDTO.startDate, requestVacation.startDate)
         assertEquals(requestVacationDTO.endDate, requestVacation.endDate)
+        assertEquals(requestVacationDTO.chargeYear, requestVacation.chargeYear)
         assertEquals(requestVacationDTO.description, requestVacation.description)
     }
 }

@@ -24,4 +24,10 @@ internal interface VacationDao : CrudRepository<Vacation, Long> {
         endYear: LocalDate,
         userId: Long
     ): List<Vacation>
+
+    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND h.chargeYear = :chargeYear")
+    fun findByChargeYear(
+        chargeYear: LocalDate,
+        userId: Long
+    ): List<Vacation>
 }
