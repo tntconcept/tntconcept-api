@@ -139,8 +139,6 @@ class UserRepositorySecuredTest {
             ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin", "activity-approval")))
         private val activityApprovalAuth =
             ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("activity-approval")))
-        private val projectBlockerAuth =
-            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("project-blocker")))
         private val userAuth = ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 }
