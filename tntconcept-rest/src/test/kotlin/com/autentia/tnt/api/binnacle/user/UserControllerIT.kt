@@ -77,11 +77,47 @@ internal class UserControllerIT {
     }
 
     @Test
-    fun `get all active users`() {
-        whenever(usersRetrievalUseCase.getAllActiveUsers()).thenReturn(listOf(USER_RESPONSE_DTO))
+    fun `get all active users if no user ids are requested and no active param requested `() {
+        whenever(usersRetrievalUseCase.getUsers(null, null)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
             HttpRequest.GET("/api/user"),
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(UserResponse.from(USER_RESPONSE_DTO)), response.body.get())
+    }
+
+    @Test
+    fun `get all active users if no user ids are requested and active param is true`() {
+        whenever(usersRetrievalUseCase.getUsers(null, true)).thenReturn(listOf(USER_RESPONSE_DTO))
+
+        val response = client.exchangeList<UserResponse>(
+            HttpRequest.GET("/api/user?active=true"),
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(UserResponse.from(USER_RESPONSE_DTO)), response.body.get())
+    }
+
+    @Test
+    fun `get all users requested by param ids and no active param requested`() {
+        whenever(usersRetrievalUseCase.getUsers(listOf(1,2,3), null)).thenReturn(listOf(USER_RESPONSE_DTO))
+
+        val response = client.exchangeList<UserResponse>(
+            HttpRequest.GET("/api/user?ids=1,2,3"),
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(UserResponse.from(USER_RESPONSE_DTO)), response.body.get())
+    }
+
+    @Test
+    fun `get all users requested by param ids and active param is false`() {
+        whenever(usersRetrievalUseCase.getUsers(listOf(1,2,3), false)).thenReturn(listOf(USER_RESPONSE_DTO))
+
+        val response = client.exchangeList<UserResponse>(
+            HttpRequest.GET("/api/user?ids=1,2,3&active=false"),
         )
 
         assertEquals(OK, response.status)
