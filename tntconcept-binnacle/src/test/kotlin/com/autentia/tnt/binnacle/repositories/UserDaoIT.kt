@@ -104,7 +104,7 @@ internal class UserDaoIT {
     }
 
     @Test
-    fun `should find all user listed`(){
+    fun `should find all user listed`() {
 
         val predicate = UserPredicates.ALL
 
@@ -115,8 +115,8 @@ internal class UserDaoIT {
     }
 
     @Test
-    fun `should find all active users`(){
-        val predicate = PredicateBuilder.and(UserPredicates.ALL,UserPredicates.isActive(true))
+    fun `should find all active users`() {
+        val predicate = PredicateBuilder.and(UserPredicates.ALL, UserPredicates.isActive(true))
 
         val result = userDao.findAll(predicate)
 
@@ -127,8 +127,8 @@ internal class UserDaoIT {
     }
 
     @Test
-    fun `should find all not active users`(){
-        val predicate = PredicateBuilder.and(UserPredicates.ALL,UserPredicates.isActive(false))
+    fun `should find all not active users`() {
+        val predicate = PredicateBuilder.and(UserPredicates.ALL, UserPredicates.isActive(false))
 
         val result = userDao.findAll(predicate)
 
@@ -138,8 +138,8 @@ internal class UserDaoIT {
     }
 
     @Test
-    fun `should find requested users`(){
-        val predicate = PredicateBuilder.and(UserPredicates.ALL,UserPredicates.fromUserIds(listOf(11,12)))
+    fun `should find requested users`() {
+        val predicate = PredicateBuilder.and(UserPredicates.ALL, UserPredicates.fromUserIds(listOf(11, 12)))
 
         val result = userDao.findAll(predicate)
         val userIds = result.map { it.id }

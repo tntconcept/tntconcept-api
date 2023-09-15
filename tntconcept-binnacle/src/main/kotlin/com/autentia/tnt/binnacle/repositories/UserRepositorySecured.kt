@@ -43,8 +43,8 @@ internal class UserRepositorySecured(
         val authentication = securityService.checkAuthentication()
 
         return if (authentication.canAccessAllUsers()) {
-             userDao.findAll(userPredicate)
-        }else{
+            userDao.findAll(userPredicate)
+        } else {
             val predicate = PredicateBuilder.and(userPredicate, UserPredicates.userId((authentication.id())))
             userDao.findAll(predicate)
         }

@@ -6,7 +6,7 @@ import io.micronaut.data.jpa.repository.JpaSpecificationExecutor
 import io.micronaut.data.repository.CrudRepository
 
 @Repository
-internal interface UserDao : CrudRepository<User, Long> , JpaSpecificationExecutor<User>{
+internal interface UserDao : CrudRepository<User, Long>, JpaSpecificationExecutor<User> {
 
     fun findByUsername(username: String): User?
 

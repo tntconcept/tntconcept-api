@@ -18,7 +18,7 @@ internal object UserPredicates {
     internal fun userId(id: Long) = UserIdSpecification(id)
 }
 
-class UserIdSpecification(private val id: Long): Specification<User> {
+class UserIdSpecification(private val id: Long) : Specification<User> {
 
     override fun toPredicate(
         root: Root<User>,
@@ -43,7 +43,7 @@ class UserIdSpecification(private val id: Long): Specification<User> {
 
 }
 
-class UserFromUserIdsSpecification(private val userIds: List<Long>): Specification<User> {
+class UserFromUserIdsSpecification(private val userIds: List<Long>) : Specification<User> {
     override fun toPredicate(
         root: Root<User>,
         query: CriteriaQuery<*>,
@@ -63,7 +63,7 @@ class UserFromUserIdsSpecification(private val userIds: List<Long>): Specificati
     }
 }
 
-class UserActiveSpecification(private val active: Boolean): Specification<User> {
+class UserActiveSpecification(private val active: Boolean) : Specification<User> {
     override fun toPredicate(
         root: Root<User>,
         query: CriteriaQuery<*>,

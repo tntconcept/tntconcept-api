@@ -102,7 +102,7 @@ internal class UserControllerIT {
 
     @Test
     fun `get all users requested by param ids and no active param requested`() {
-        whenever(usersRetrievalUseCase.getUsers(listOf(1,2,3), null)).thenReturn(listOf(USER_RESPONSE_DTO))
+        whenever(usersRetrievalUseCase.getUsers(listOf(1, 2, 3), null)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
             HttpRequest.GET("/api/user?ids=1,2,3"),
@@ -114,7 +114,7 @@ internal class UserControllerIT {
 
     @Test
     fun `get all users requested by param ids and active param is false`() {
-        whenever(usersRetrievalUseCase.getUsers(listOf(1,2,3), false)).thenReturn(listOf(USER_RESPONSE_DTO))
+        whenever(usersRetrievalUseCase.getUsers(listOf(1, 2, 3), false)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
             HttpRequest.GET("/api/user?ids=1,2,3&active=false"),

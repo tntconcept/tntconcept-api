@@ -45,9 +45,9 @@ internal class UsersRetrievalUseCaseTest {
 
     @Test
     fun `should return list of given users`() {
-        whenever(userRepository.findAll(UserPredicates.fromUserIds(listOf(1,2,3)))).thenReturn(listOf(createUser()))
+        whenever(userRepository.findAll(UserPredicates.fromUserIds(listOf(1, 2, 3)))).thenReturn(listOf(createUser()))
 
-        val actual = usersRetrievalUseCase.getUsers(listOf(1,2,3), null)
+        val actual = usersRetrievalUseCase.getUsers(listOf(1, 2, 3), null)
 
         assertEquals(listOf(userResponseDTO), actual)
     }
@@ -56,12 +56,12 @@ internal class UsersRetrievalUseCaseTest {
     fun `should return list of active users given a list of users`() {
         val compositedSpecification =
             PredicateBuilder.and(
-                UserPredicates.fromUserIds(listOf(1,2,3)) ,
+                UserPredicates.fromUserIds(listOf(1, 2, 3)),
                 UserPredicates.isActive(true)
             )
         whenever(userRepository.findAll(compositedSpecification)).thenReturn(listOf(createUser()))
 
-        val actual = usersRetrievalUseCase.getUsers(listOf(1,2,3), true)
+        val actual = usersRetrievalUseCase.getUsers(listOf(1, 2, 3), true)
 
         assertEquals(listOf(userResponseDTO), actual)
     }
@@ -70,12 +70,12 @@ internal class UsersRetrievalUseCaseTest {
     fun `should return list of not active users given a list of users`() {
         val compositedSpecification =
             PredicateBuilder.and(
-                UserPredicates.fromUserIds(listOf(1,2,3)) ,
+                UserPredicates.fromUserIds(listOf(1, 2, 3)),
                 UserPredicates.isActive(false)
             )
         whenever(userRepository.findAll(compositedSpecification)).thenReturn(listOf(createUser()))
 
-        val actual = usersRetrievalUseCase.getUsers(listOf(1,2,3), false)
+        val actual = usersRetrievalUseCase.getUsers(listOf(1, 2, 3), false)
 
         assertEquals(listOf(userResponseDTO), actual)
     }
