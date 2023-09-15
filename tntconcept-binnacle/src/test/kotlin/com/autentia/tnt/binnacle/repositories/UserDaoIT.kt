@@ -4,6 +4,8 @@ import com.autentia.tnt.binnacle.entities.Role
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
 import com.autentia.tnt.binnacle.entities.WorkingAgreementTerms
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.*
@@ -99,5 +101,52 @@ internal class UserDaoIT {
 
         val result = userDao.findByActiveTrue()
         assertEquals(user, result.first())
+    }
+
+    @Test
+    fun `should find all user listed`(){
+
+        val predicate = UserPredicates.ALL
+
+        val result = userDao.findAll(predicate)
+
+        assertEquals(3, result.size)
+
+    }
+
+    @Test
+    fun `should find all active users`(){
+        val predicate = PredicateBuilder.and(UserPredicates.ALL,UserPredicates.isActive(true))
+
+        val result = userDao.findAll(predicate)
+
+        assertEquals(2, result.size)
+        assertTrue(result[0].active)
+        assertTrue(result[1].active)
+
+    }
+
+    @Test
+    fun `should find all not active users`(){
+        val predicate = PredicateBuilder.and(UserPredicates.ALL,UserPredicates.isActive(false))
+
+        val result = userDao.findAll(predicate)
+
+        assertEquals(1, result.size)
+        assertFalse(result[0].active)
+
+    }
+
+    @Test
+    fun `should find requested users`(){
+        val predicate = PredicateBuilder.and(UserPredicates.ALL,UserPredicates.fromUserIds(listOf(11,12)))
+
+        val result = userDao.findAll(predicate)
+        val userIds = result.map { it.id }
+
+        assertEquals(2, result.size)
+        assertTrue(userIds.contains(11))
+        assertTrue(userIds.contains(12))
+
     }
 }

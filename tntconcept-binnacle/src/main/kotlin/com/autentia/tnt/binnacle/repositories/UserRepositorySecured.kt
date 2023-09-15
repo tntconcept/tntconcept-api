@@ -1,9 +1,12 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.User
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import com.autentia.tnt.security.application.canAccessAllUsers
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
 import java.util.*
@@ -36,14 +39,14 @@ internal class UserRepositorySecured(
         return userDao.findByActiveTrue()
     }
 
-    override fun find(): List<User> {
+    override fun findAll(userPredicate: Specification<User>): List<User> {
         val authentication = securityService.checkAuthentication()
+
         return if (authentication.canAccessAllUsers()) {
-            userDao.findByActiveTrue()
-        } else {
-            val user = userDao.findById(authentication.id())
-            check(user.isPresent) { "Authenticated user not found" }
-            listOf(user.get())
+             userDao.findAll(userPredicate)
+        }else{
+            val predicate = PredicateBuilder.and(userPredicate, UserPredicates.userId((authentication.id())))
+            userDao.findAll(predicate)
         }
     }
 
