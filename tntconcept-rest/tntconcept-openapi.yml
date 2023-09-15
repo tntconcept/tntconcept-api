@@ -713,9 +713,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CreateVacationResponse'
+                $ref: '#/components/schemas/CreateVacationResponse'
     post:
       summary: Creates a holiday period.
       operationId: createPrivateHolidayPeriod$tntconcept_rest
@@ -737,9 +735,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CreateVacationResponse'
+                $ref: '#/components/schemas/CreateVacationResponse'
   /api/vacations/details:
     get:
       summary: Retrieves details for a holiday within a given charge year.
@@ -1057,6 +1053,7 @@ components:
           format: date
     CreateVacationRequest:
       required:
+      - chargeYear
       - endDate
       - startDate
       type: object
@@ -1071,6 +1068,9 @@ components:
         endDate:
           type: string
           format: date
+        chargeYear:
+          type: integer
+          format: int32
         description:
           maxLength: 1024
           type: string

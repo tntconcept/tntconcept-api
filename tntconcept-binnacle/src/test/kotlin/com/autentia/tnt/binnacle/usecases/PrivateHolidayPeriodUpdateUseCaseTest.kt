@@ -59,10 +59,8 @@ internal class PrivateHolidayPeriodUpdateUseCaseTest {
 
         doReturn(Success(vacationToUpdate)).whenever(vacationValidator).canUpdateVacationPeriod(any(), eq(USER))
 
-        doReturn(CREATE_VACATION_RESPONSE).whenever(vacationService).updateVacationPeriod(
-            any(), eq(USER), eq(
-                vacationToUpdate
-            )
+        doReturn(vacationFromTodayUntilAfterTomorrow).whenever(vacationService).updateVacationPeriod(
+            any(), eq(USER), eq(vacationToUpdate)
         )
 
         privateHolidayPeriodUpdateUseCase.update(REQUEST_VACATION_DTO, Locale.ENGLISH)
@@ -162,14 +160,13 @@ internal class PrivateHolidayPeriodUpdateUseCaseTest {
         private val TODAY_TWO_YEARS_AGO = LocalDate.now().minusYears(2)
         private val TOMORROW_TWO_YEARS_AGO = LocalDate.now().minusYears(2).plusDays(1)
 
-        private val CREATE_VACATION_RESPONSE = listOf(
-            CreateVacationResponse(
-                startDate = TODAY,
-                endDate = AFTER_TOMORROW,
-                days = 1,
-                chargeYear = CURRENT_YEAR
-            )
-        ).toMutableList()
+        val vacationFromTodayUntilAfterTomorrow = CreateVacationResponse(
+            startDate = TODAY,
+            endDate = AFTER_TOMORROW,
+            days = 1,
+            chargeYear = CURRENT_YEAR
+        )
+        private val CREATE_VACATION_RESPONSE = listOf(vacationFromTodayUntilAfterTomorrow)
 
         private const val INVALID_ID = 20L
         private val vacationToUpdate = Vacation(
