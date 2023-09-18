@@ -1,21 +1,21 @@
 -- User
-INSERT INTO User(id, name, login, password, passwordExpireDate, roleId, categoryId, startDate, workingInClient, email,
+INSERT INTO User(id, name, login, password, passwordExpireDate, roleId, active, categoryId, startDate, workingInClient, email,
                  photo, married, childrenNumber, dayDuration, agreementId, nif, academicQualification, phone, mobile,
                  street, city,
                  postalCode, drivenLicenseType, vehicleType, licensePlate, socialSecurityNumber, bank, account,
                  travelAvailability,
                  genre, salary, salaryExtras, securityCard, healthInsurance, notes, contractObservations)
-VALUES (11, 'Usuario de prueba 1', 'usuario.prueba1', 'BMS0Tp2pdyCiYnI8amMaU1QX', NULL, 1, 1, '2022-04-04', 0,
+VALUES (11, 'Usuario de prueba 1', 'usuario.prueba1', 'BMS0Tp2pdyCiYnI8amMaU1QX', NULL, 1, false, 1, '2022-04-04', 0,
         'usuario.prueba1@example.com', 'photo', 0, 0, 480, 1, '12345678X', 'OK', '666222333', '666555777', '', '', '',
         '', '', '', '', '', '', '', 'MAN', 0.0, 0.0, '', '', '', '');
 
-INSERT INTO User(id, name, login, password, passwordExpireDate, roleId, categoryId, startDate, workingInClient, email,
+INSERT INTO User(id, name, login, password, passwordExpireDate, roleId, active, categoryId, startDate, workingInClient, email,
                  photo, married, childrenNumber, dayDuration, agreementId, nif, academicQualification, phone, mobile,
                  street, city,
                  postalCode, drivenLicenseType, vehicleType, licensePlate, socialSecurityNumber, bank, account,
                  travelAvailability,
                  genre, salary, salaryExtras, securityCard, healthInsurance, notes, contractObservations)
-VALUES (12, 'Usuario de prueba 2', 'usuario.prueba2', 'BMS0Tp2pdyCiYnI8amMaU1QX', NULL, 1, 1, '2022-04-04', 0,
+VALUES (12, 'Usuario de prueba 2', 'usuario.prueba2', 'BMS0Tp2pdyCiYnI8amMaU1QX', NULL, 1, true, 1, '2022-04-04', 0,
         'usuario.prueba2@example.com', 'photo', 0, 0, 480, 1, '12345677X', 'OK', '666222333', '666555777', '', '', '',
         '', '', '', '', '', '', '', 'MAN', 0.0, 0.0, '', '', '', '');
 
