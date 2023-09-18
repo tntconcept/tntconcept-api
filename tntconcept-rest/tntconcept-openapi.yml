@@ -640,6 +640,20 @@ paths:
     get:
       summary: Retrieves the list of active users
       operationId: get$tntconcept_rest_3
+      parameters:
+      - name: ids
+        in: query
+        schema:
+          type: array
+          nullable: true
+          items:
+            type: integer
+            format: int64
+      - name: active
+        in: query
+        schema:
+          type: boolean
+          nullable: true
       responses:
         "200":
           description: get$tntconcept_rest 200 response
