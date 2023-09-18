@@ -414,6 +414,13 @@ paths:
     get:
       summary: Retrieves a list of all organizations
       operationId: getAllOrganizations_1
+      parameters:
+      - name: type
+        in: query
+        schema:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/OrganizationTypeFilter'
       responses:
         "200":
           description: getAllOrganizations_1 200 response
@@ -1244,6 +1251,12 @@ components:
           format: int64
         name:
           type: string
+    OrganizationTypeFilter:
+      type: string
+      enum:
+      - CLIENT
+      - PROVIDER
+      - PROSPECT
     PreviousAnnualBalanceResponse:
       required:
       - balance

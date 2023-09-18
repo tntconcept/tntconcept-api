@@ -5,6 +5,10 @@ import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
 import javax.persistence.*
 
+enum class OrganizationType {
+    CLIENT, PROVIDER, CLIENT_PROVIDER, PROSPECT
+}
+
 @Entity
 data class Organization(
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

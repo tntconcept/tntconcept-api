@@ -3,6 +3,7 @@ package com.autentia.tnt.api.binnacle.organization
 import com.autentia.tnt.api.binnacle.createOrganization
 import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.api.binnacle.project.ProjectResponse
+import com.autentia.tnt.binnacle.core.domain.OrganizationType
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.usecases.ImputableOrganizationsUseCase
@@ -60,9 +61,25 @@ internal class OrganizationControllerIT {
     fun `return all imputable organizations`() {
         val organization = OrganizationResponseDTO(1, "Dummy Organization")
 
-        doReturn(listOf(organization)).whenever(imputableOrganizationsUseCase).get()
+        doReturn(listOf(organization)).whenever(imputableOrganizationsUseCase).get(null)
 
         val response = client.exchangeList<OrganizationResponse>(HttpRequest.GET("/api/organizations"))
+
+        assertEquals(HttpStatus.OK, response.status)
+        assertNotNull(response.body())
+        assertEquals(1, response.body().count())
+        assertEquals(organization.id, response.body().get(0).id)
+        assertEquals(organization.name, response.body().get(0).name)
+    }
+
+    @Test
+    fun `return all organizations by type`() {
+        val organization = OrganizationResponseDTO(1, "Dummy Organization")
+        val organizationType = OrganizationType.CLIENT
+
+        doReturn(listOf(organization)).whenever(imputableOrganizationsUseCase).get(organizationType)
+
+        val response = client.exchangeList<OrganizationResponse>(HttpRequest.GET("/api/organizations?type=CLIENT"))
 
         assertEquals(HttpStatus.OK, response.status)
         assertNotNull(response.body())

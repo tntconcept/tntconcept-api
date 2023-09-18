@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 
 import com.autentia.tnt.binnacle.converters.OrganizationResponseConverter
+import com.autentia.tnt.binnacle.core.domain.OrganizationType
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.repositories.OrganizationRepository
 import io.micronaut.transaction.annotation.ReadOnly
@@ -17,7 +18,7 @@ class ImputableOrganizationsUseCase internal constructor(
 
     @Transactional
     @ReadOnly
-    fun get(): List<OrganizationResponseDTO> {
+    fun get(organizationType: OrganizationType?): List<OrganizationResponseDTO> {
         val organizations = organizationRepository.findAll()
 
         return organizations

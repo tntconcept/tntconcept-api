@@ -26,7 +26,7 @@ internal class ImputableOrganizationsUseCaseTest {
 
         assertEquals(
             listOf(OrganizationResponseDTO(id = 1, name = "Open/Closed projects")),
-            imputableOrganizationsUseCase.get()
+            imputableOrganizationsUseCase.get(null)
         )
     }
 
