@@ -138,7 +138,7 @@ internal class UserControllerIT {
         val userFilter = UserFilterDTO(
             ids = listOf(1, 2, 3),
             active = true,
-            filter = "us",
+            nameLike = "us",
             limit = 2
         )
 

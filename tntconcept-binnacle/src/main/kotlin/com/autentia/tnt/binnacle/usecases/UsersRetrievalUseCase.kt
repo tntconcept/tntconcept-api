@@ -19,15 +19,21 @@ class UsersRetrievalUseCase internal constructor(
 ) {
     @Transactional
     fun getUsers(userFilter: UserFilterDTO): List<UserResponseDTO> {
-        val predicate: Specification<User> = getPredicateFromUsersFilter(userFilter)
-        val users = if (userFilter.limit !== null) {
-            val pageable = Pageable.from(0, userFilter.limit)
-            val page = userRepository.findAll(predicate, pageable)
-            page.content
-        } else {
-            userRepository.findAll(predicate)
-        }
+        val predicate = getPredicateFromUsersFilter(userFilter)
+        val users = getUsers(userFilter.limit, predicate)
         return users.map { userResponseConverter.mapUserToUserResponseDTO(it) }
+    }
+
+    private fun getUsers(
+        limit: Int?,
+        predicate: Specification<User>
+    ): List<User> {
+        return if (limit !== null) {
+            val pageable = Pageable.from(0, limit)
+            userRepository.findAll(predicate, pageable)
+        } else {
+            userRepository.findAll(predicate, null)
+        }
     }
 
     private fun getPredicateFromUsersFilter(userFilter: UserFilterDTO): Specification<User> {
@@ -41,8 +47,8 @@ class UsersRetrievalUseCase internal constructor(
             predicate = PredicateBuilder.and(predicate, UserPredicates.fromUserIds(userFilter.ids))
         }
 
-        if (userFilter.filter !== null) {
-            predicate = PredicateBuilder.and(predicate, UserPredicates.filterByName(userFilter.filter))
+        if (userFilter.nameLike !== null) {
+            predicate = PredicateBuilder.and(predicate, UserPredicates.filterByName(userFilter.nameLike))
         }
 
         return predicate
