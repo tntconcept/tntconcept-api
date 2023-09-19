@@ -2,7 +2,7 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
-import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
+import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.services.DateService
 import org.junit.jupiter.api.BeforeAll
@@ -18,11 +18,11 @@ import java.time.LocalDateTime
 class TemporaryAttachmentsDeletionUseCaseTest {
 
     private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
-    private val attachmentFileSystemStorage = mock<AttachmentFileSystemStorage>()
+    private val attachmentService = mock<AttachmentService>()
     private val dateService = mock<DateService>()
     private val appProperties = AppProperties()
     private val temporaryAttachmentsDeletionUseCase =
-        TemporaryAttachmentsDeletionUseCase(attachmentInfoRepository, attachmentFileSystemStorage, dateService, appProperties)
+        TemporaryAttachmentsDeletionUseCase(attachmentInfoRepository, attachmentService, dateService, appProperties )
 
     @BeforeAll
     fun setCurrentDate() {
@@ -36,7 +36,7 @@ class TemporaryAttachmentsDeletionUseCaseTest {
         temporaryAttachmentsDeletionUseCase.delete()
 
         verifyNoInteractions(attachmentInfoRepository)
-        verifyNoInteractions(attachmentFileSystemStorage)
+        verifyNoInteractions(attachmentService)
     }
 
     @Test
@@ -50,8 +50,7 @@ class TemporaryAttachmentsDeletionUseCaseTest {
         temporaryAttachmentsDeletionUseCase.delete()
 
         verify(attachmentInfoRepository).findByIsTemporaryTrue()
-        verify(attachmentFileSystemStorage).deleteAttachmentFile(outDatedAttachment.path)
-        verify(attachmentInfoRepository).delete(listOf(outDatedAttachment).map { it.id })
+        verify(attachmentService).removeAttachments(listOf(outDatedAttachment))
     }
 
     companion object {

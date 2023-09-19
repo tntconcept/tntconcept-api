@@ -2,17 +2,16 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
-import com.autentia.tnt.binnacle.core.services.AttachmentFileSystemStorage
+import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.services.DateService
 import jakarta.inject.Singleton
-import java.time.LocalDateTime
 import javax.transaction.Transactional
 
 @Singleton
 class TemporaryAttachmentsDeletionUseCase internal constructor(
     private val attachmentInfoRepository: AttachmentInfoRepository,
-    private val attachmentFileSystemStorage: AttachmentFileSystemStorage,
+    private val attachmentService: AttachmentService,
     private val dateService: DateService,
     private val appProperties: AppProperties,
 ) {
@@ -25,8 +24,7 @@ class TemporaryAttachmentsDeletionUseCase internal constructor(
             val temporaryAttachmentsLessThanOneDay =
                 temporaryAttachments.filter { isMoreThanOneDay(it.toDomain()) }
 
-            temporaryAttachmentsLessThanOneDay.forEach { attachmentFileSystemStorage.deleteAttachmentFile(it.path) }
-            attachmentInfoRepository.delete(temporaryAttachmentsLessThanOneDay.map { it.id })
+            attachmentService.removeAttachments(temporaryAttachmentsLessThanOneDay)
         }
     }
 
