@@ -7,8 +7,10 @@ import com.autentia.tnt.security.application.canAccessAllUsers
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.data.jpa.repository.criteria.Specification
+import io.micronaut.data.model.Page
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
+import io.micronaut.data.model.Pageable
 import java.util.*
 
 @Singleton
@@ -47,6 +49,17 @@ internal class UserRepositorySecured(
         } else {
             val predicate = PredicateBuilder.and(userPredicate, UserPredicates.userId((authentication.id())))
             userDao.findAll(predicate)
+        }
+    }
+
+    override fun findAll(userPredicate: Specification<User>, pageable: Pageable): Page<User> {
+        val authentication = securityService.checkAuthentication()
+
+        return if (authentication.canAccessAllUsers()) {
+            return userDao.findAll(userPredicate, pageable) ?: Page.empty()
+        } else {
+            val predicate = PredicateBuilder.and(userPredicate, UserPredicates.userId((authentication.id())))
+            userDao.findAll(predicate, pageable)
         }
     }
 
