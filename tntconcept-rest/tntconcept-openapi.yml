@@ -410,17 +410,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HolidayResponse'
-  /api/organizations:
+  /api/organization:
     get:
       summary: Retrieves a list of all organizations
       operationId: getAllOrganizations_1
       parameters:
-      - name: type
+      - name: organizationFilterRequest
         in: query
+        required: true
+        explode: true
         schema:
-          nullable: true
-          allOf:
-          - $ref: '#/components/schemas/OrganizationTypeFilter'
+          $ref: '#/components/schemas/OrganizationFilterRequest'
       responses:
         "200":
           description: getAllOrganizations_1 200 response
@@ -430,6 +430,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/OrganizationResponse'
+  /api/organizations:
+    get:
+      summary: Retrieves a list of all organizations
+      operationId: getAllOrganizations_2
+      responses:
+        "200":
+          description: getAllOrganizations_2 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationResponse'
+      deprecated: true
   /api/organizations/{id}/projects:
     get:
       summary: Retrieves a list of imputable projects from an organization ID
@@ -450,6 +464,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectResponse'
+      deprecated: true
   /api/project:
     get:
       summary: Gets projects with specified filters
@@ -1240,6 +1255,15 @@ components:
           type: number
     Object:
       type: object
+    OrganizationFilterRequest:
+      type: object
+      properties:
+        types:
+          type: string
+          nullable: true
+        imputable:
+          type: boolean
+          nullable: true
     OrganizationResponse:
       required:
       - id
@@ -1251,12 +1275,6 @@ components:
           format: int64
         name:
           type: string
-    OrganizationTypeFilter:
-      type: string
-      enum:
-      - CLIENT
-      - PROVIDER
-      - PROSPECT
     PreviousAnnualBalanceResponse:
       required:
       - balance

@@ -43,7 +43,7 @@ internal class HookController(
     @Operation(summary = "Retrieves a list of all organizations")
     @Get("/organization")
     fun getAllOrganizations(): List<OrganizationResponse> =
-        imputableOrganizationsUseCase.get(null).map { OrganizationResponse.from(it) }
+        imputableOrganizationsUseCase.get().map { OrganizationResponse.from(it) }
 
     @Operation(summary = "Retrieves a list of imputable projects from an organization ID")
     @Get("/organization/{id}/project")
