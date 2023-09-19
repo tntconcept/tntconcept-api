@@ -4,6 +4,7 @@ import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.binnacle.entities.Role
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
+import com.autentia.tnt.binnacle.entities.dto.UserFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.UserInfoResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
 import com.autentia.tnt.binnacle.usecases.FindUserInfoUseCase
@@ -78,7 +79,9 @@ internal class UserControllerIT {
 
     @Test
     fun `get all active users if no user ids are requested and no active param requested `() {
-        whenever(usersRetrievalUseCase.getUsers(null, null)).thenReturn(listOf(USER_RESPONSE_DTO))
+
+        val userFilter = UserFilterDTO()
+        whenever(usersRetrievalUseCase.getUsers(userFilter)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
             HttpRequest.GET("/api/user"),
@@ -90,7 +93,8 @@ internal class UserControllerIT {
 
     @Test
     fun `get all active users if no user ids are requested and active param is true`() {
-        whenever(usersRetrievalUseCase.getUsers(null, true)).thenReturn(listOf(USER_RESPONSE_DTO))
+        val userFilter = UserFilterDTO(active = true)
+        whenever(usersRetrievalUseCase.getUsers(userFilter)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
             HttpRequest.GET("/api/user?active=true"),
@@ -102,7 +106,8 @@ internal class UserControllerIT {
 
     @Test
     fun `get all users requested by param ids and no active param requested`() {
-        whenever(usersRetrievalUseCase.getUsers(listOf(1, 2, 3), null)).thenReturn(listOf(USER_RESPONSE_DTO))
+        val userFilter = UserFilterDTO(ids = listOf(1, 2, 3))
+        whenever(usersRetrievalUseCase.getUsers(userFilter)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
             HttpRequest.GET("/api/user?ids=1,2,3"),
@@ -114,7 +119,8 @@ internal class UserControllerIT {
 
     @Test
     fun `get all users requested by param ids and active param is false`() {
-        whenever(usersRetrievalUseCase.getUsers(listOf(1, 2, 3), false)).thenReturn(listOf(USER_RESPONSE_DTO))
+        val userFilter = UserFilterDTO(ids = listOf(1, 2, 3), active = false)
+        whenever(usersRetrievalUseCase.getUsers(userFilter)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
             HttpRequest.GET("/api/user?ids=1,2,3&active=false"),
@@ -122,6 +128,29 @@ internal class UserControllerIT {
 
         assertEquals(OK, response.status)
         assertEquals(listOf(UserResponse.from(USER_RESPONSE_DTO)), response.body.get())
+    }
+
+    @Test
+    fun `get users by filter`() {
+        val active = true
+        val filter = "us"
+        val limit = 2
+        val userFilter = UserFilterDTO(
+            ids = listOf(1, 2, 3),
+            active = true,
+            filter = "us",
+            limit = 2
+        )
+
+        whenever(usersRetrievalUseCase.getUsers(userFilter)).thenReturn(listOf(USER_RESPONSE_DTO))
+
+        val response = client.exchangeList<UserResponse>(
+            HttpRequest.GET("/api/user?" + "ids=1,2,3" + "&active=${active}" + "&filter=${filter}" + "&limit=${limit}"),
+        )
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(UserResponse.from(USER_RESPONSE_DTO)), response.body.get())
+
     }
 
     private companion object {

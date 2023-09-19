@@ -638,22 +638,15 @@ paths:
                 $ref: '#/components/schemas/TimeSummaryResponse'
   /api/user:
     get:
-      summary: Retrieves the list of active users
+      summary: Retrieves the list of users with specified filters
       operationId: get$tntconcept_rest_3
       parameters:
-      - name: ids
+      - name: userFilterRequest
         in: query
+        required: true
+        explode: true
         schema:
-          type: array
-          nullable: true
-          items:
-            type: integer
-            format: int64
-      - name: active
-        in: query
-        schema:
-          type: boolean
-          nullable: true
+          $ref: '#/components/schemas/UserFilterRequest'
       responses:
         "200":
           description: get$tntconcept_rest 200 response
@@ -1446,6 +1439,22 @@ components:
         refresh_token:
           minLength: 1
           type: string
+    UserFilterRequest:
+      type: object
+      properties:
+        ids:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+          nullable: true
+        filter:
+          type: string
+          nullable: true
+        limit:
+          type: integer
+          format: int32
+          nullable: true
     UserInfoResponse:
       required:
       - hiringDate
