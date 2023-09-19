@@ -54,16 +54,14 @@ internal class AttachmentService(
         return Attachment(attachmentInfo.toDomain(), attachmentFile)
     }
 
-    fun removeAttachment(ids: List<UUID>) {
-        if (ids.isEmpty()) return
+    fun removeAttachments(attachments: List<AttachmentInfo>) {
+        if (attachments.isEmpty()) return
 
-        val listOfAttachmentInfo = attachmentInfoRepository.findByIds(ids)
-
-        listOfAttachmentInfo.forEach {
+        attachments.forEach {
             attachmentStorage.deleteAttachmentFile(it.path)
         }
 
-        attachmentInfoRepository.delete(ids)
+        attachmentInfoRepository.delete(attachments.map { it.id })
     }
 
     private fun isMimeTypeSupported(mimeType: String, fileName: String): Boolean = supportedMimeExtensions.containsKey(mimeType)

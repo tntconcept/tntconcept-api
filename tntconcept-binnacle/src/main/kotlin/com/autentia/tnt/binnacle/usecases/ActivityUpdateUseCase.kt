@@ -73,7 +73,7 @@ class ActivityUpdateUseCase internal constructor(
         val allEvidences =
             attachmentInfoRepository.findByIds((currentActivity.evidences union activityToUpdate.evidences).toList())
 
-        val idsToDelete = currentActivity.evidences.filterNot { activityToUpdate.evidences.contains(it) }
+        val attachmentsToDelete = allEvidences.filterNot { activityToUpdate.evidences.contains(it.id) }
         val idsToKeep = (activityToUpdate.evidences.toSet() intersect currentActivity.evidences.toSet()).toList()
         val idsToMarkAsNonTemporary = activityToUpdate.evidences.filterNot { currentActivity.evidences.contains(it) }
 
@@ -87,7 +87,7 @@ class ActivityUpdateUseCase internal constructor(
         val activity = activityRepository.update(activityEntityToUpdate)
 
         attachmentInfoRepository.update(evidencesToMarkAsNonTemporary)
-        attachmentService.removeAttachment(idsToDelete)
+        attachmentService.removeAttachments(attachmentsToDelete)
 
         return activity
     }

@@ -221,7 +221,7 @@ class AttachmentServiceTest {
 
     @Test
     fun `will not remove attachments when ids are empty`() {
-        this.sut.removeAttachment(emptyList())
+        this.sut.removeAttachments(emptyList())
         verifyNoInteractions(this.attachmentStorage, this.attachmentInfoRepository)
     }
 
@@ -234,9 +234,8 @@ class AttachmentServiceTest {
         whenever(this.attachmentStorage.retrieveAttachmentFile(any())).thenReturn(IMAGE_BYTEARRAY)
         doNothing().`when`(this.attachmentStorage).deleteAttachmentFile(any())
 
-        sut.removeAttachment(evidenceIds)
+        sut.removeAttachments(listOfEvidences)
 
-        verify(attachmentInfoRepository).findByIds(evidenceIds)
         verify(attachmentInfoRepository).delete(evidenceIds)
         listOfEvidences.forEach {
             verify(attachmentStorage).deleteAttachmentFile(it.path)

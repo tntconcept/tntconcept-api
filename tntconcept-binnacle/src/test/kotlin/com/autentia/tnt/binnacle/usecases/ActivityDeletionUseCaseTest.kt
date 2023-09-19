@@ -53,15 +53,14 @@ internal class ActivityDeletionUseCaseTest {
     @Test
     fun `call the repository and attachment service to mark the activities as temporary and delete activity`() {
         val activity = entityActivityWithEvidences
-        val attachmentIds = activity.evidences.map { it.id }
 
         whenever(activityRepository.findById(1L)).thenReturn(activity)
-        doNothing().`when`(attachmentService).removeAttachment(attachmentIds)
+        doNothing().`when`(attachmentService).removeAttachments(entityActivityWithEvidences.evidences)
 
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
-        verify(attachmentService).removeAttachment(attachmentIds)
+        verify(attachmentService).removeAttachments(entityActivityWithEvidences.evidences)
     }
 
     @Test
@@ -76,17 +75,16 @@ internal class ActivityDeletionUseCaseTest {
     @Test
     fun `check all access in validator if user has all access to activities`() {
         val activity = entityActivityWithEvidences
-        val attachmentIds = activity.evidences.map { it.id }
 
         val authenticatedUser = ClientAuthentication("id", mapOf("roles" to listOf("activity-approval")))
         whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
         whenever(activityRepository.findById(1L)).thenReturn(activity)
-        doNothing().`when`(attachmentService).removeAttachment(attachmentIds)
+        doNothing().`when`(attachmentService).removeAttachments(entityActivityWithEvidences.evidences)
 
         useCase.deleteActivityById(1L)
 
         verify(activityRepository).deleteById(1L)
-        verify(attachmentService).removeAttachment(attachmentIds)
+        verify(attachmentService).removeAttachments(entityActivityWithEvidences.evidences)
         verify(activityValidator).checkAllAccessActivityIsValidForDeletion(activity.toDomain())
     }
 

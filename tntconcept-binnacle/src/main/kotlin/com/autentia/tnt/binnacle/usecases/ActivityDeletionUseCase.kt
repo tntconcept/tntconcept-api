@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import com.autentia.tnt.security.application.canAccessAllActivities
 import com.autentia.tnt.security.application.checkAuthentication
@@ -34,7 +33,7 @@ class ActivityDeletionUseCase internal constructor(
         activityRepository.deleteById(id)
 
         if (activityToDeleteDomain.hasEvidences()) {
-            attachmentService.removeAttachment(activityToDeleteDomain.evidences)
+            attachmentService.removeAttachments(activityToDelete.evidences)
         }
     }
 }

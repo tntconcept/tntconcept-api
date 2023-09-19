@@ -680,8 +680,8 @@ internal class ActivityDaoIT {
 
         persistedActivity.map {
             activityDao.delete(it)
-            assertThat(activityDao.findById(savedActivity.id!!)).isEmpty()
-            assertThat(attachmentInfoDao.existsById(attachmentInfo.id)).isTrue()
+            assertThat(activityDao.findById(savedActivity.id!!)).isEmpty
+            assertThat(attachmentInfoDao.existsById(attachmentInfo.id)).isFalse
         }
 
     }

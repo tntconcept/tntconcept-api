@@ -447,7 +447,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
-        verify(attachmentService).removeAttachment(existingActivity.evidences.map { it.id })
+        verify(attachmentService).removeAttachments(existingActivity.evidences)
     }
 
     @Test
@@ -483,7 +483,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).findByIds(existingAttachmentIds)
-        verify(attachmentService).removeAttachment(existingActivity.evidences.map { it.id })
+        verify(attachmentService).removeAttachments(existingActivity.evidences)
     }
 
     @Test
@@ -557,7 +557,7 @@ internal class ActivityUpdateUseCaseTest {
         verify(activityCalendarService).getDurationByCountingWorkingDays(any())
         verify(activityRepository).update(updatedActivity)
         verify(attachmentInfoRepository).update(listOf(SAMPLE_EVIDENCE_1.copy(isTemporary = false)))
-        verify(attachmentService).removeAttachment(existingActivity.evidences.map { it.id })
+        verify(attachmentService).removeAttachments(existingActivity.evidences)
     }
 
     @Test
