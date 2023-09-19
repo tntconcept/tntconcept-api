@@ -1448,7 +1448,7 @@ components:
         active:
           type: boolean
           nullable: true
-        filter:
+        nameLike:
           type: string
           nullable: true
         limit:

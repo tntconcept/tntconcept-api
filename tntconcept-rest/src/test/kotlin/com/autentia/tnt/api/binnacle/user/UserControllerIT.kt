@@ -133,7 +133,7 @@ internal class UserControllerIT {
     @Test
     fun `get users by filter`() {
         val active = true
-        val filter = "us"
+        val nameLike = "us"
         val limit = 2
         val userFilter = UserFilterDTO(
             ids = listOf(1, 2, 3),
@@ -145,7 +145,7 @@ internal class UserControllerIT {
         whenever(usersRetrievalUseCase.getUsers(userFilter)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
-            HttpRequest.GET("/api/user?" + "ids=1,2,3" + "&active=${active}" + "&filter=${filter}" + "&limit=${limit}"),
+            HttpRequest.GET("/api/user?" + "ids=1,2,3" + "&active=${active}" + "&nameLike=${nameLike}" + "&limit=${limit}"),
         )
 
         assertEquals(OK, response.status)
