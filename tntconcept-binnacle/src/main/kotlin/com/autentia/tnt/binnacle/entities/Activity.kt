@@ -63,7 +63,7 @@ data class Activity(
     var approvalDate: LocalDateTime? = null,
 
 
-    @OneToMany(fetch = LAZY)
+    @OneToMany(fetch = LAZY, orphanRemoval = true)
     @JoinTable(name="ActivityAttachment",
         joinColumns = [JoinColumn(name = "activityId",
             referencedColumnName = "id")],
