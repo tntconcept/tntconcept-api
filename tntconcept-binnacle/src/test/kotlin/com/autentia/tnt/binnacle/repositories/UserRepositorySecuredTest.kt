@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import com.autentia.tnt.security.application.id
+import io.micronaut.data.model.Pageable
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import junit.framework.TestCase.assertEquals
@@ -128,7 +129,26 @@ class UserRepositorySecuredTest {
         userRepositorySecured.findAll(predicate)
 
         verify(userDao).findAll(predicateWithUserIdRestriction)
+    }
 
+    @Test
+    fun `findAll paginated throw IllegalStateException if there is not authenticated user`() {
+        val pageable = Pageable.from(0, 1)
+        val predicate = UserPredicates.ALL
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> { userRepositorySecured.findAll(predicate, pageable)}
+    }
+
+    @Test
+    fun `findAll can access to all users limit by 2 info if user has activity-approval role`() {
+        val pageable = Pageable.from(0, 2)
+        val predicate = UserPredicates.ALL
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
+
+        userRepositorySecured.findAll(predicate, pageable)
+
+        verify(userDao).findAll(predicate, pageable)
     }
 
     private companion object {

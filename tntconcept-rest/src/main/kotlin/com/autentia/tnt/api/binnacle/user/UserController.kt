@@ -7,7 +7,6 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Error
 import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.QueryValue
 import io.swagger.v3.oas.annotations.Operation
 
 @Controller("/api/user")
@@ -15,10 +14,10 @@ internal class UserController(
     private val findUserInfoUseCase: FindUserInfoUseCase,
     private val usersRetrievalUseCase: UsersRetrievalUseCase
 ) {
-    @Operation(summary = "Retrieves the list of active users")
-    @Get
-    internal fun get(@QueryValue ids: List<Long>?, @QueryValue active: Boolean?): List<UserResponse> =
-        usersRetrievalUseCase.getUsers(ids, active).map { UserResponse.from(it) }
+    @Get("{?userFilterRequest*}")
+    @Operation(summary = "Retrieves the list of users with specified filters")
+    internal fun get(userFilterRequest: UserFilterRequest): List<UserResponse> =
+        usersRetrievalUseCase.getUsers(userFilterRequest.toDto()).map { UserResponse.from(it) }
 
     @Operation(summary = "Retrieves the logged user")
     @Get("/me")
