@@ -34,8 +34,8 @@ internal class VacationController(
 
     @Get
     @Operation(summary = "Retrieves holidays within a given charge year.")
-    internal fun getPrivateHolidaysByChargeYear(chargeYear: Int): HolidayResponse =
-        HolidayResponse.from(privateHolidaysByChargeYearUseCase.get(chargeYear))
+    internal fun getPrivateHolidaysByChargeYear(chargeYear: Int): HolidaysResponse =
+        HolidaysResponse.from(privateHolidaysByChargeYearUseCase.get(chargeYear))
 
     @Get("/details")
     @Operation(summary = "Retrieves details for a holiday within a given charge year.")

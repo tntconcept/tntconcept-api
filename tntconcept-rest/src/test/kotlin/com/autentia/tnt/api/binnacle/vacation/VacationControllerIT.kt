@@ -1,10 +1,8 @@
 package com.autentia.tnt.api.binnacle.vacation
 
 import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.api.binnacle.getBody
-import com.autentia.tnt.api.binnacle.vacation.*
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.*
@@ -67,7 +65,7 @@ internal class VacationControllerIT {
     fun `get the vacations by charge year`() {
         doReturn(HOLIDAY_RESPONSE_DTO).whenever(privateHolidaysByChargeYearUseCase).get(CURRENT_YEAR)
 
-        val response = client.exchangeObject<HolidayResponse>(
+        val response = client.exchangeObject<HolidaysResponse>(
             GET("/api/vacations?chargeYear=$CURRENT_YEAR")
         )
 
@@ -268,12 +266,12 @@ internal class VacationControllerIT {
             CREATE_VACATION_RESPONSE_DTO.startDate
         )
 
-        private val HOLIDAY_RESPONSE_DTO = HolidayResponseDTO(
+        private val HOLIDAY_RESPONSE_DTO = HolidaysResponseDTO(
             listOf(HolidayDTO(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
             listOf(VACATION_DTO)
         )
 
-        private val HOLIDAY_RESPONSE = HolidayResponse(
+        private val HOLIDAY_RESPONSE = HolidaysResponse(
             listOf(HolidayDetailsResponse(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
             listOf(VACATION_RESPONSE)
         )
