@@ -403,7 +403,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/HolidayDetailsResponse'
   /api/holidays:
     get:
       summary: Retrieves existing holidays within a period
@@ -1122,15 +1124,6 @@ components:
         date:
           type: string
           format: date
-    HolidayResponse:
-      required:
-      - holidays
-      type: object
-      properties:
-        holidays:
-          type: array
-          items:
-            $ref: '#/components/schemas/HolidayDetailsResponse'
     HolidaysResponse:
       required:
       - holidays
