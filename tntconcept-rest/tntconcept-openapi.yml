@@ -115,12 +115,32 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectRoleResponse'
+  /api/absence:
+    get:
+      summary: Gets absence days with specified filters
+      operationId: get$tntconcept_rest_1
+      parameters:
+      - name: absenceFilterRequest
+        in: query
+        required: true
+        explode: true
+        schema:
+          $ref: '#/components/schemas/AbsenceFilterRequest'
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AbsenceResponse'
   /api/activity:
     get:
       tags:
       - activity
       summary: Gets activities with specified filters
-      operationId: get$tntconcept_rest_1
+      operationId: get$tntconcept_rest_2
       parameters:
       - name: activityFilterRequest
         in: query
@@ -206,7 +226,7 @@ paths:
       tags:
       - activity
       summary: Gets an activity by its id.
-      operationId: get$tntconcept_rest_2
+      operationId: get$tntconcept_rest_3
       parameters:
       - name: id
         in: path
@@ -686,7 +706,7 @@ paths:
   /api/user:
     get:
       summary: Retrieves the list of users with specified filters
-      operationId: get$tntconcept_rest_3
+      operationId: get$tntconcept_rest_4
       parameters:
       - name: userFilterRequest
         in: query
@@ -910,6 +930,57 @@ paths:
                 $ref: '#/components/schemas/Object'
 components:
   schemas:
+    AbsenceFilterRequest:
+      required:
+      - endDate
+      - startDate
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        userId:
+          type: integer
+          format: int64
+          nullable: true
+        organizationId:
+          type: integer
+          format: int64
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          nullable: true
+    AbsenceResponse:
+      required:
+      - endDate
+      - startDate
+      - type
+      - userId
+      - userName
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        userName:
+          type: string
+        type:
+          $ref: '#/components/schemas/AbsenceType'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+    AbsenceType:
+      type: string
+      enum:
+      - VACATION
+      - PAID_LEAVE
     ActivityDateResponse:
       required:
       - activities
