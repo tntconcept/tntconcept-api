@@ -386,6 +386,26 @@ paths:
               schema:
                 type: integer
                 format: int32
+  /api/holiday:
+    get:
+      summary: Retrieves existing holidays given a year
+      operationId: getHolidaysByYear
+      parameters:
+      - name: year
+        in: query
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+      responses:
+        "200":
+          description: getHolidaysByYear 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HolidayDetailsResponse'
   /api/holidays:
     get:
       summary: Retrieves existing holidays within a period
@@ -409,7 +429,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponse'
+                $ref: '#/components/schemas/HolidaysResponse'
+      deprecated: true
   /api/organizations:
     get:
       summary: Retrieves a list of all organizations
@@ -684,7 +705,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponse'
+                $ref: '#/components/schemas/HolidaysResponse'
     put:
       summary: Updates a holiday period.
       operationId: updatePrivateHolidayPeriod$tntconcept_rest
@@ -1103,7 +1124,7 @@ components:
         date:
           type: string
           format: date
-    HolidayResponse:
+    HolidaysResponse:
       required:
       - holidays
       - vacations

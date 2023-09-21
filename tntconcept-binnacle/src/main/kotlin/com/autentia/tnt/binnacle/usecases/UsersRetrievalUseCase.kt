@@ -46,7 +46,7 @@ class UsersRetrievalUseCase internal constructor(
         if (!userFilter.ids.isNullOrEmpty()) {
             predicate = PredicateBuilder.and(predicate, UserPredicates.fromUserIds(userFilter.ids))
         }
-
+        
         if (userFilter.nameLike !== null) {
             predicate = PredicateBuilder.and(predicate, UserPredicates.filterByName(userFilter.nameLike))
         }

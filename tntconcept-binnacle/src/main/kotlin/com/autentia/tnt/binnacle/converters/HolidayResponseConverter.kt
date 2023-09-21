@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.converters
 
-import com.autentia.tnt.binnacle.core.domain.HolidayResponse
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
+import com.autentia.tnt.binnacle.core.domain.HolidaysResponse
+import com.autentia.tnt.binnacle.entities.dto.HolidaysResponseDTO
 import jakarta.inject.Singleton
 
 @Singleton
@@ -10,10 +10,10 @@ class HolidayResponseConverter(
     private val holidayConverter: HolidayConverter
 ) {
 
-    fun toHolidayResponseDTO(holidayResponse: HolidayResponse) =
-        HolidayResponseDTO(
-            holidays = holidayResponse.holidays.map { holidayConverter.toHolidayDTO(it) },
-            vacations = holidayResponse.vacations.map { vacationConverter.toVacationDTO(it) }
+    @Deprecated("Use instead toHolidayResponseDTO")
+    fun toHolidaysResponseDTO(holidaysResponse: HolidaysResponse) =
+        HolidaysResponseDTO(
+            holidays = holidaysResponse.holidays.map { holidayConverter.toHolidayDTO(it) },
+            vacations = holidaysResponse.vacations.map { vacationConverter.toVacationDTO(it) }
         )
-
 }
