@@ -7,10 +7,9 @@ import com.autentia.tnt.security.application.canAccessAllUsers
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import io.micronaut.data.jpa.repository.criteria.Specification
-import io.micronaut.data.model.Page
+import io.micronaut.data.model.Pageable
 import io.micronaut.security.utils.SecurityService
 import jakarta.inject.Singleton
-import io.micronaut.data.model.Pageable
 import java.util.*
 
 @Singleton
