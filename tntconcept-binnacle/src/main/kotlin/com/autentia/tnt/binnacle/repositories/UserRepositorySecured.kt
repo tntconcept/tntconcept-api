@@ -56,15 +56,4 @@ internal class UserRepositorySecured(
         }
     }
 
-    override fun findAll(userPredicate: Specification<User>, pageable: Pageable): Page<User> {
-        val authentication = securityService.checkAuthentication()
-
-        return if (authentication.canAccessAllUsers()) {
-            return userDao.findAll(userPredicate, pageable) ?: Page.empty()
-        } else {
-            val predicate = PredicateBuilder.and(userPredicate, UserPredicates.userId((authentication.id())))
-            userDao.findAll(predicate, pageable)
-        }
-    }
-
 }
