@@ -26,19 +26,44 @@ class OrganizationsByFilterUseCase internal constructor(
     }
 
     private fun applyFilters(filter: OrganizationFilterDTO, organizations: Iterable<Organization>): List<Organization> {
-        var filteredOrganizations = organizations
-
-        filter.types.forEach {
-            filteredOrganizations = filteredOrganizations.filter { organization -> isOfType(organization, it) }
-        }
-
-        if(filter.imputable !== null){
-            filteredOrganizations = filteredOrganizations.filter { organization ->
-                organization.projects.any { project -> project.open && project.projectRoles.isNotEmpty() }
-            }
-        }
+        var filteredOrganizations = applyTypesFilter(filter.types, organizations)
+        filteredOrganizations = applyIsImputableFilter(filter.imputable, filteredOrganizations)
 
         return filteredOrganizations.toList()
+    }
+
+    private fun applyIsImputableFilter(
+        imputable: Boolean?,
+        organizations: Iterable<Organization>
+    ): Iterable<Organization> {
+        var filteredOrganizations = organizations
+        if (imputable !== null) {
+            filteredOrganizations = if (imputable) {
+                filteredOrganizations.filter { organization ->
+                    organization.projects.any { project -> project.open && project.projectRoles.isNotEmpty() }
+                }
+            } else {
+               filteredOrganizations.filter { organization ->
+                    organization.projects.all { project -> !project.open || project.projectRoles.isEmpty() }
+                }
+            }
+        }
+        return filteredOrganizations
+    }
+
+    private fun applyTypesFilter(
+        types: List<OrganizationType>,
+        organizations: Iterable<Organization>
+    ): Iterable<Organization> {
+        if (types.isNotEmpty()) {
+            val filteredOrganizations = mutableSetOf<Organization>()
+            types.forEach {
+                filteredOrganizations.addAll(organizations.filter { organization -> isOfType(organization, it) }
+                    .toMutableList())
+            }
+            return filteredOrganizations.toList()
+        }
+        return organizations
     }
 
     private fun isOfType(organization: Organization, type: OrganizationType): Boolean {
