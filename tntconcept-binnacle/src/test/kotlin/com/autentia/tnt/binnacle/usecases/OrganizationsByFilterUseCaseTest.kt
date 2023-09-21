@@ -75,6 +75,21 @@ internal class OrganizationsByFilterUseCaseTest {
     }
 
     @Test
+    fun `return prospect and client organizations if organization types filter is applied`() {
+        val organizationResponseDTOS = ORGANIZATIONS.map { OrganizationResponseDTO(it.id, it.name) }
+        val filter = OrganizationFilterDTO(listOf(OrganizationType.CLIENT, OrganizationType.PROVIDER), null)
+
+        whenever(organizationRepository.findAll()).thenReturn(ORGANIZATIONS)
+
+        val result = organizationsByFilterUseCase.get(filter)
+
+        assertEquals(3, result.size)
+        assertEquals(organizationResponseDTOS[0], result[0])
+        assertEquals(organizationResponseDTOS[1], result[1])
+        assertEquals(organizationResponseDTOS[2], result[2])
+    }
+
+    @Test
     fun `return only imputable organizations`(){
         val organizationResponseDTOS = ORGANIZATIONS.map { OrganizationResponseDTO(it.id, it.name) }
         val filter = OrganizationFilterDTO(listOf(), true)
@@ -82,21 +97,38 @@ internal class OrganizationsByFilterUseCaseTest {
         whenever(organizationRepository.findAll()).thenReturn(ORGANIZATIONS)
 
         val result = organizationsByFilterUseCase.get(filter)
+
         assertEquals(2, result.size)
         assertEquals(organizationResponseDTOS[0], result[0])
         assertEquals(organizationResponseDTOS[4], result[1])
     }
 
     @Test
-    fun `return only imputable prospect organizations`(){
+    fun `return not imputable organizations`(){
         val organizationResponseDTOS = ORGANIZATIONS.map { OrganizationResponseDTO(it.id, it.name) }
-        val filter = OrganizationFilterDTO(listOf(OrganizationType.PROSPECT), true)
+        val filter = OrganizationFilterDTO(listOf(), false)
 
         whenever(organizationRepository.findAll()).thenReturn(ORGANIZATIONS)
 
         val result = organizationsByFilterUseCase.get(filter)
-        assertEquals(1, result.size)
-        assertEquals(organizationResponseDTOS[4], result[0])
+
+        assertEquals(3, result.size)
+        assertEquals(organizationResponseDTOS[1], result[0])
+        assertEquals(organizationResponseDTOS[2], result[1])
+        assertEquals(organizationResponseDTOS[3], result[2])
+    }
+
+    @Test
+    fun `return only imputable prospect and client organizations`(){
+        val organizationResponseDTOS = ORGANIZATIONS.map { OrganizationResponseDTO(it.id, it.name) }
+        val filter = OrganizationFilterDTO(listOf(OrganizationType.CLIENT, OrganizationType.PROSPECT), true)
+
+        whenever(organizationRepository.findAll()).thenReturn(ORGANIZATIONS)
+
+        val result = organizationsByFilterUseCase.get(filter)
+        assertEquals(2, result.size)
+        assertEquals(organizationResponseDTOS[0], result[0])
+        assertEquals(organizationResponseDTOS[4], result[1])
     }
 
     private companion object {
