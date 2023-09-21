@@ -14,12 +14,9 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.fail
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.reset
@@ -90,7 +87,8 @@ internal class OrganizationControllerIT {
             client.exchangeList<OrganizationResponse>(HttpRequest.GET("/api/organization?types=PROVIDER,CLIENTS"))
         } catch (ex: HttpClientResponseException){
             assertEquals(HttpStatus.BAD_REQUEST, ex.response.status)
-
+            return
         }
+        fail("HttpClientResponseException should be thrown")
     }
 }
