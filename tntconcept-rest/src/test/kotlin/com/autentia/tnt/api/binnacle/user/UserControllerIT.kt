@@ -1,6 +1,7 @@
 package com.autentia.tnt.api.binnacle.user
 
 import com.autentia.tnt.api.binnacle.exchangeList
+import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.binnacle.entities.Role
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.WorkingAgreement
@@ -14,6 +15,7 @@ import io.micronaut.http.HttpStatus.*
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -133,19 +136,19 @@ internal class UserControllerIT {
     @Test
     fun `get users by filter`() {
         val active = true
-        val filter = "us"
+        val nameLike = "us"
         val limit = 2
         val userFilter = UserFilterDTO(
             ids = listOf(1, 2, 3),
             active = true,
-            filter = "us",
+            nameLike = "us",
             limit = 2
         )
 
         whenever(usersRetrievalUseCase.getUsers(userFilter)).thenReturn(listOf(USER_RESPONSE_DTO))
 
         val response = client.exchangeList<UserResponse>(
-            HttpRequest.GET("/api/user?" + "ids=1,2,3" + "&active=${active}" + "&filter=${filter}" + "&limit=${limit}"),
+            HttpRequest.GET("/api/user?" + "ids=1,2,3" + "&active=${active}" + "&nameLike=${nameLike}" + "&limit=${limit}"),
         )
 
         assertEquals(OK, response.status)
@@ -159,6 +162,18 @@ internal class UserControllerIT {
             "username",
             "Name surname",
         )
+    }
+
+    @Test
+    fun `fail getting users if user ids are not a list of longs`() {
+
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeObject<ByteArray>(
+                HttpRequest.GET("/api/user?ids=1,2,asdf")
+            )
+        }
+
+        assertEquals(BAD_REQUEST, ex.status)
     }
 
 }

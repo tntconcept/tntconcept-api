@@ -6,6 +6,6 @@ import io.micronaut.core.annotation.Introspected
 data class UserFilterDTO(
     val ids: List<Long>? = null,
     val active: Boolean? = null,
-    val filter: String? = null,
+    val nameLike: String? = null,
     val limit: Int? = null,
 )
