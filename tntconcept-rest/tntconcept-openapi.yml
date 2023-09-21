@@ -389,7 +389,7 @@ paths:
   /api/holiday:
     get:
       summary: Retrieves existing holidays given a year
-      operationId: getHolidaysBetweenDate
+      operationId: getHolidaysByYear
       parameters:
       - name: year
         in: query
@@ -399,7 +399,7 @@ paths:
           nullable: true
       responses:
         "200":
-          description: getHolidaysBetweenDate 200 response
+          description: getHolidaysByYear 200 response
           content:
             application/json:
               schema:
@@ -409,7 +409,7 @@ paths:
   /api/holidays:
     get:
       summary: Retrieves existing holidays within a period
-      operationId: getHolidaysBetweenDate_1
+      operationId: getHolidaysBetweenDate
       parameters:
       - name: startDate
         in: query
@@ -425,7 +425,7 @@ paths:
           format: date
       responses:
         "200":
-          description: getHolidaysBetweenDate_1 200 response
+          description: getHolidaysBetweenDate 200 response
           content:
             application/json:
               schema:
