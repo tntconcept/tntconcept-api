@@ -688,6 +688,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserInfoResponse'
+  /api/vacation:
+    get:
+      summary: Retrieves holidays within a given a period and a list of userIds.
+      operationId: getUsersVacationsFromPeriod$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: getUsersVacationsFromPeriod$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VacationResponse'
   /api/vacations:
     get:
       summary: Retrieves holidays within a given charge year.
@@ -706,6 +732,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HolidaysResponse'
+      deprecated: true
     put:
       summary: Updates a holiday period.
       operationId: updatePrivateHolidayPeriod$tntconcept_rest
