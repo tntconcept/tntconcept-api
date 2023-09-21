@@ -11,7 +11,7 @@ internal class OrganizationResponseConverterTest {
 
     @Test
     fun `given domain Organization should return OrganizationResponseDTO with converted values`() {
-        val organization = Organization(2L, "organization", listOf())
+        val organization = Organization(2L, "organization", 1, listOf())
 
         val result = sut.toOrganizationResponseDTO(organization)
 

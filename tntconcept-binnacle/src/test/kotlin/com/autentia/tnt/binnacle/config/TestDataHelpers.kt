@@ -90,6 +90,7 @@ internal fun createVacationUpdateDTO(id: Long, startDate: LocalDate, endDate: Lo
 internal fun createOrganization(id: Long = 1L) = Organization(
     id = id,
     name = "Dummy Organization",
+    organizationTypeId = 1L,
     projects = listOf()
 )
 

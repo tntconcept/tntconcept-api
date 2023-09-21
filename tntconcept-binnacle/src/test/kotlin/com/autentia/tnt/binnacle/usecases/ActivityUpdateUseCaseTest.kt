@@ -687,7 +687,7 @@ internal class ActivityUpdateUseCaseTest {
     private companion object {
         private val USER = createDomainUser()
         private val TODAY = LocalDate.now().atTime(8, 0)
-        private val ORGANIZATION = Organization(1L, "Organization", listOf())
+        private val ORGANIZATION = Organization(1L, "Organization", 1, listOf())
         private val PROJECT = Project(1L, "Project", open = true, billable = false,
                 LocalDate.now(), null, null, projectRoles = listOf(),
                 organization = ORGANIZATION
