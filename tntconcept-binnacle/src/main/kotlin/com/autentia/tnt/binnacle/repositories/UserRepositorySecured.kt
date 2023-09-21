@@ -40,14 +40,8 @@ internal class UserRepositorySecured(
         return userDao.findByActiveTrue()
     }
 
-    override fun findAll(userPredicate: Specification<User>, pageable: Pageable?): List<User> {
-        val authentication = securityService.checkAuthentication()
-
-        var predicate = userPredicate
-        if (!authentication.canAccessAllUsers()) {
-            predicate = PredicateBuilder.and(userPredicate, UserPredicates.userId((authentication.id())))
-        }
-
+    override fun findAll(predicate: Specification<User>, pageable: Pageable?): List<User> {
+        securityService.checkAuthentication()
         return if (pageable !== null) {
             userDao.findAll(predicate, pageable).content
         } else {

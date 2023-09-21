@@ -99,23 +99,7 @@ class UserRepositorySecuredTest {
     }
 
     @Test
-    fun `findAll can access to logged user info only if user has not valid role`() {
-        val predicate = UserPredicates.ALL
-        val predicateWithUserIdRestriction =
-            PredicateBuilder.and(
-                predicate,
-                UserPredicates.userId(userAuth.id())
-            )
-
-        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
-
-        userRepositorySecured.findAll(predicate, null)
-
-        verify(userDao).findAll(predicateWithUserIdRestriction)
-    }
-
-    @Test
-    fun `findAll paginated throw IllegalStateException if there is not authenticated user`() {
+    fun `findAll cannot access to users info if there is not an user authenticated`() {
         val pageable = Pageable.from(0, 1)
         val predicate = UserPredicates.ALL
         whenever(securityService.authentication).thenReturn(Optional.empty())
@@ -148,19 +132,6 @@ class UserRepositorySecuredTest {
         val result = userRepositorySecured.findAll(predicate, null)
 
         assertEquals(expectedUsers, result)
-    }
-
-    @Test
-    fun `findAll cannot access to all users info if user has user role`() {
-        val composedPredicate = PredicateBuilder.and(
-            UserPredicates.ALL,
-            UserPredicates.userId(userAuth.id())
-        )
-        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
-
-        userRepositorySecured.findAll(UserPredicates.ALL, null)
-
-        verify(userDao).findAll(composedPredicate)
     }
 
     private companion object {
