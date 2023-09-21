@@ -277,7 +277,7 @@ class ActivityMaxTimeByYearValidatorTest {
             LocalDate.now().minusYears(1),
             null,
             null,
-            Organization(1, "Organization", emptyList()),
+            Organization(1, "Organization", 1, emptyList()),
             emptyList()
         )
 

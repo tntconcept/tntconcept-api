@@ -27,7 +27,7 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
     private companion object {
         private const val ORGANIZATION_ID = 1L
 
-        private val ORGANIZATION = Organization(ORGANIZATION_ID, "Dummy Organization", listOf())
+        private val ORGANIZATION = Organization(ORGANIZATION_ID, "Dummy Organization", 1, listOf())
 
         private val PROJECT_ROLE_PROJECT_CLOSED = ProjectRole(
             1L,

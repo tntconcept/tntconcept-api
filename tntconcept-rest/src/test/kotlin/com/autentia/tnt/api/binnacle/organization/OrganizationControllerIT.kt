@@ -10,6 +10,7 @@ import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
@@ -83,4 +84,13 @@ internal class OrganizationControllerIT {
         assertEquals(organization.name, response.body().get(0).name)
     }
 
+    @Test
+    fun `return bad request if there is an invalid organization type`() {
+        try {
+            client.exchangeList<OrganizationResponse>(HttpRequest.GET("/api/organization?types=PROVIDER,CLIENTS"))
+        } catch (ex: HttpClientResponseException){
+            assertEquals(HttpStatus.BAD_REQUEST, ex.response.status)
+
+        }
+    }
 }

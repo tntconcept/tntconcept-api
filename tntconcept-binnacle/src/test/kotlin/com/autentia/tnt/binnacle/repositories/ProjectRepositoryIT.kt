@@ -77,7 +77,7 @@ internal class ProjectRepositoryIT {
             LocalDate.now(),
             null,
             null,
-            Organization(3, "Organization", emptyList()),
+            Organization(3, "Organization", 1, emptyList()),
             emptyList()
         )
     }

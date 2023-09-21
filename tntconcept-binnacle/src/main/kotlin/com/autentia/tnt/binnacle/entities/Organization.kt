@@ -5,8 +5,9 @@ import org.hibernate.annotations.Fetch
 import org.hibernate.annotations.FetchMode
 import javax.persistence.*
 
-enum class OrganizationType {
-    CLIENT, PROVIDER, CLIENT_PROVIDER, PROSPECT
+enum class OrganizationType(val id: Int) {
+    CLIENT(1), PROVIDER(2), CLIENT_PROVIDER(3), PROSPECT(4);
+
 }
 
 @Entity
@@ -15,6 +16,8 @@ data class Organization(
     val id: Long,
 
     val name: String,
+
+    val organizationTypeId: Long,
 
     @OneToMany(mappedBy = "organization", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
