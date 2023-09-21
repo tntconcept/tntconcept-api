@@ -14,7 +14,7 @@ internal class HolidayController(
 
     @Operation(summary = "Retrieves existing holidays given a year")
     @Get
-    fun getHolidaysBetweenDate(@QueryValue year: Int?): List<HolidayDetailsResponse> {
+    fun getHolidaysByYear(@QueryValue year: Int?): List<HolidayDetailsResponse> {
         return userHolidayBetweenDatesUseCase.getHolidays(year).map { HolidayDetailsResponse.from(it) }
     }
 }
