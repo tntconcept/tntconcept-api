@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.converters.HolidayConverter
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
@@ -17,17 +18,17 @@ import java.time.Month.JANUARY
 
 internal class UserHolidayBetweenDatesUseCaseTest {
     private var holidayRepository = mock<HolidayRepository>()
-    private var userHolidayUseCase = mock<UserHolidayBetweenDatesUseCase>()
+    private var userHolidayUseCase = UserHolidayBetweenDatesUseCase(
+        holidayRepository,
+        HolidayConverter()
+    )
 
     @Test
     fun `return holidays given a year`() {
-
-        doReturn(listOf(THREE_KINGS_DAY)).whenever(holidayRepository)
+        doReturn(THREE_KINGS_DAY).whenever(holidayRepository)
             .findAllByDateBetween(FIRST_DAY_OF_YEAR.atTime(LocalTime.MIN), LAST_DAY_OF_YEAR.atTime(23, 59, 59))
 
-        doReturn(listOf((THREE_KINGS_DAY_DTO))).whenever(userHolidayUseCase).getHolidays(CURRENT_YEAR)
-
-        assertEquals(listOf(THREE_KINGS_DAY_DTO), userHolidayUseCase.getHolidays(CURRENT_YEAR))
+        assertEquals(THREE_KINGS_DAY_DTO, userHolidayUseCase.getHolidays(CURRENT_YEAR))
     }
 
     private companion object {
