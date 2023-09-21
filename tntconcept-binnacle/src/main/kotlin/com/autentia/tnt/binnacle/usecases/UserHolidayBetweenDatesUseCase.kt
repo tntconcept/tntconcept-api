@@ -13,20 +13,21 @@ import java.time.LocalDate
 import java.time.LocalTime
 import com.autentia.tnt.binnacle.core.domain.Vacation as VacationDomain
 
-@Deprecated("Use UserHolidayBetweenDatesUseCase instead")
 @Singleton
-class UserHolidaysBetweenDatesUseCase internal constructor(
+class UserHolidayBetweenDatesUseCase internal constructor(
     private val holidayRepository: HolidayRepository,
-    private val vacationService: VacationService,
-    private val holidayResponseConverter: HolidayResponseConverter,
+    private val holidayConverter: HolidayConverter
 ) {
 
-    fun getHolidays(startDate: LocalDate, endDate: LocalDate): HolidaysResponseDTO {
-        val holidays: List<Holiday> = getHolidaysBetweenDates(startDate, endDate)
-        val vacations: List<VacationDomain> = vacationService.getVacationsBetweenDates(startDate, endDate)
+    fun getHolidays(year: Int?): List<HolidayDTO> {
+        val startDate: LocalDate = LocalDate.of(year ?: LocalDate.now().year, 1, 1)
+        val endDate: LocalDate = LocalDate.of(year ?: LocalDate.now().year, 12, 31)
 
-        return holidayResponseConverter.toHolidaysResponseDTO(HolidaysResponse(holidays, vacations))
+        val holidays = getHolidaysBetweenDates(startDate, endDate)
+
+        return holidays.map { holidayConverter.toHolidayDTO(it) }
     }
+
 
     private fun getHolidaysBetweenDates(
         startDate: LocalDate,

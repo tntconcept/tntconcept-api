@@ -21,8 +21,8 @@ internal class UsersRetrievalUseCaseTest {
     @Test
     fun `should return all users`() {
         val userFilter = UserFilterDTO()
+        
         whenever(userRepository.findAll(UserPredicates.ALL, null)).thenReturn(listOf(createUser()))
-
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
         assertEquals(listOf(userResponseDTO), actual)
@@ -31,6 +31,7 @@ internal class UsersRetrievalUseCaseTest {
     @Test
     fun `should return active users`() {
         val userFilter = UserFilterDTO(active = true)
+        
         whenever(userRepository.findAll(UserPredicates.isActive(true), null)).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
@@ -41,7 +42,9 @@ internal class UsersRetrievalUseCaseTest {
     @Test
     fun `should return not active users`() {
         val userFilter = UserFilterDTO(active = false)
+
         whenever(userRepository.findAll(UserPredicates.isActive(false), null)).thenReturn(listOf(createUser()))
+
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
@@ -51,6 +54,7 @@ internal class UsersRetrievalUseCaseTest {
     @Test
     fun `should return list of given users`() {
         val userFilter = UserFilterDTO(ids = listOf(1, 2, 3))
+
         whenever(userRepository.findAll(UserPredicates.fromUserIds(listOf(1, 2, 3)), null)).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
