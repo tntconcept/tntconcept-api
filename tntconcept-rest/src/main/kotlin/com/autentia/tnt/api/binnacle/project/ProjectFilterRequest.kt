@@ -5,7 +5,7 @@ import io.micronaut.core.annotation.Introspected
 
 @Introspected
 data class ProjectFilterRequest(
-    val organizationId: Long,
+    val organizationId: Long?,
     val organizationIds: String?,
     val open: Boolean? = null,
 ) {

@@ -1307,13 +1307,12 @@ components:
         balance:
           type: number
     ProjectFilterRequest:
-      required:
-      - organizationId
       type: object
       properties:
         organizationId:
           type: integer
           format: int64
+          nullable: true
         organizationIds:
           type: string
           nullable: true
