@@ -63,29 +63,80 @@ internal fun getVacationsInOneMonth2022(): List<LocalDate> {
 }
 
 
-internal fun createVacationRequestDTO(startDate: LocalDate, endDate: LocalDate, chargeYear: Int = startDate.year) = RequestVacationDTO(
-    id = null,
-    startDate = startDate,
-    endDate = endDate,
-    chargeYear = chargeYear,
-    description = "Lorem ipsum..."
-)
+internal fun createVacationRequestDTO(startDate: LocalDate, endDate: LocalDate, chargeYear: Int = startDate.year) =
+    RequestVacationDTO(
+        id = null,
+        startDate = startDate,
+        endDate = endDate,
+        chargeYear = chargeYear,
+        description = "Lorem ipsum..."
+    )
 
-internal fun createVacationUpdateDTO(startDate: LocalDate, endDate: LocalDate, chargeYear: Int = startDate.year) = RequestVacationDTO(
-    id = 20,
-    startDate = startDate,
-    endDate = endDate,
-    chargeYear = chargeYear,
-    description = "Lorem ipsum..."
-)
+internal fun createVacationUpdateDTO(startDate: LocalDate, endDate: LocalDate, chargeYear: Int = startDate.year) =
+    RequestVacationDTO(
+        id = 20,
+        startDate = startDate,
+        endDate = endDate,
+        chargeYear = chargeYear,
+        description = "Lorem ipsum..."
+    )
 
-internal fun createVacationUpdateDTO(id: Long, startDate: LocalDate, endDate: LocalDate, chargeYear: Int = startDate.year) = RequestVacationDTO(
+internal fun createVacationUpdateDTO(
+    id: Long,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    chargeYear: Int = startDate.year
+) = RequestVacationDTO(
     id = id,
     startDate = startDate,
     endDate = endDate,
     chargeYear = chargeYear,
     description = "Lorem ipsum..."
 )
+
+internal fun createVacationDTO(
+    id: Long = 1L,
+    observations: String = "Dummy observations",
+    description: String = "Dummy description",
+    state: VacationState = VacationState.PENDING,
+    startDate: LocalDate = LocalDate.of(LocalDate.now().year, 1, 1),
+    endDate: LocalDate = LocalDate.of(LocalDate.now().year, 12, 31),
+    days: List<LocalDate> = emptyList(),
+    chargeYear: LocalDate = LocalDate.of(LocalDate.now().year, 1, 1),
+): VacationDTO =
+    VacationDTO(
+        id,
+        observations,
+        description,
+        state,
+        startDate,
+        endDate,
+        days,
+        chargeYear,
+    )
+
+internal fun createVacation(
+    id: Long = 1L,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    state: VacationState = VacationState.PENDING,
+    userId: Long = 1L,
+    observations: String = "Dummy observations",
+    departmentId: Long? = null,
+    description: String = "Dummy description",
+    chargeYear: LocalDate = LocalDate.of(LocalDate.now().year, 1, 1),
+): Vacation =
+    Vacation(
+        id,
+        startDate,
+        endDate,
+        state,
+        userId,
+        observations,
+        departmentId,
+        description,
+        chargeYear,
+    )
 
 internal fun createOrganization(id: Long = 1L) = Organization(
     id = id,

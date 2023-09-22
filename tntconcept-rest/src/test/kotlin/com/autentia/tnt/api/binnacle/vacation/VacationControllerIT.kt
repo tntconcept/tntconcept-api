@@ -4,6 +4,7 @@ import com.autentia.tnt.api.binnacle.createVacationDTO
 import com.autentia.tnt.api.binnacle.createVacationResponse
 import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.binnacle.exception.DateRangeException
 import com.autentia.tnt.binnacle.usecases.UsersVacationsFromPeriodUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -24,6 +25,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -113,6 +115,25 @@ internal class VacationControllerIT {
         val result = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
                 HttpRequest.GET("/api/vacation")
+            )
+        }
+
+        assertEquals(HttpStatus.BAD_REQUEST, result.status)
+    }
+
+    @Test
+    fun `return bad request when endDate is before startDate`() {
+
+        val startDate = LAST_DAY_OF_YEAR
+        val endDate = FIRST_DAY_OF_YEAR
+
+        doThrow(DateRangeException(startDate, endDate))
+            .whenever(usersVacationsFromPeriodUseCase)
+            .getVacationsByPeriod(startDate, endDate)
+
+        val result = assertThrows<HttpClientResponseException> {
+            client.exchangeList<VacationResponse>(
+                HttpRequest.GET("/api/vacation?startDate=$startDate&endDate=$endDate")
             )
         }
 

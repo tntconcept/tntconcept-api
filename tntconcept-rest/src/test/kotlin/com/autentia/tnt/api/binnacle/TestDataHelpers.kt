@@ -39,7 +39,7 @@ internal fun createVacationResponse(
     description: String = "Dummy description",
     state: VacationState = VacationState.PENDING,
     startDate: LocalDate = LocalDate.of(LocalDate.now().year, 1, 1),
-    endDate: LocalDate =  LocalDate.of(LocalDate.now().year, 12, 31),
+    endDate: LocalDate = LocalDate.of(LocalDate.now().year, 12, 31),
     days: List<LocalDate> = emptyList(),
     chargeYear: LocalDate = LocalDate.of(LocalDate.now().year, 1, 1),
 ): VacationResponse =

@@ -690,7 +690,7 @@ paths:
                 $ref: '#/components/schemas/UserInfoResponse'
   /api/vacation:
     get:
-      summary: Retrieves holidays within a given a period and a list of userIds.
+      summary: Retrieves holidays within a given a period.
       operationId: getUsersVacationsFromPeriod$tntconcept_rest
       parameters:
       - name: startDate
