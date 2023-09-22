@@ -53,7 +53,7 @@ paths:
               type: object
               properties:
                 activityRequest:
-                  $ref: '#/components/schemas/ActivityRequest'
+                  $ref: '#/components/schemas/ActivityRequest_1'
         required: true
       responses:
         "200":
@@ -114,7 +114,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ProjectRoleResponse'
+                  $ref: '#/components/schemas/ProjectRoleResponse_1'
   /api/activity:
     get:
       tags:
@@ -122,12 +122,48 @@ paths:
       summary: Gets activities with specified filters
       operationId: get$tntconcept_rest_1
       parameters:
-      - name: activityFilterRequest
+      - name: startDate
         in: query
-        required: true
-        explode: true
         schema:
-          $ref: '#/components/schemas/ActivityFilterRequest'
+          type: string
+          format: date
+          nullable: true
+      - name: endDate
+        in: query
+        schema:
+          type: string
+          format: date
+          nullable: true
+      - name: approvalState
+        in: query
+        schema:
+          nullable: true
+          allOf:
+          - $ref: '#/components/schemas/ApprovalStateActivityFilter'
+      - name: organizationId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      - name: projectId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      - name: roleId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
+      - name: userId
+        in: query
+        schema:
+          type: integer
+          format: int64
+          nullable: true
       responses:
         "200":
           description: get$tntconcept_rest 200 response
@@ -440,12 +476,16 @@ paths:
       summary: Retrieves a list of organizations by filter
       operationId: getAllOrganizations_1
       parameters:
-      - name: organizationFilterRequest
+      - name: types
         in: query
-        required: true
-        explode: true
         schema:
-          $ref: '#/components/schemas/OrganizationFilterRequest'
+          type: string
+          nullable: true
+      - name: imputable
+        in: query
+        schema:
+          type: boolean
+          nullable: true
       responses:
         "200":
           description: getAllOrganizations_1 200 response
@@ -495,12 +535,17 @@ paths:
       summary: Gets projects with specified filters
       operationId: get
       parameters:
-      - name: projectFilterRequest
+      - name: organizationId
         in: query
         required: true
-        explode: true
         schema:
-          $ref: '#/components/schemas/ProjectFilterRequest'
+          type: integer
+          format: int64
+      - name: open
+        in: query
+        schema:
+          type: boolean
+          nullable: true
       responses:
         "200":
           description: get 200 response
@@ -547,7 +592,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectRoleResponse'
+                $ref: '#/components/schemas/ProjectRoleResponse_2'
   /api/project/{id}:
     get:
       summary: Retrieves a project´s information from its ID
@@ -688,12 +733,27 @@ paths:
       summary: Retrieves the list of users with specified filters
       operationId: get$tntconcept_rest_3
       parameters:
-      - name: userFilterRequest
+      - name: ids
         in: query
-        required: true
-        explode: true
         schema:
-          $ref: '#/components/schemas/UserFilterRequest'
+          type: string
+          nullable: true
+      - name: active
+        in: query
+        schema:
+          type: boolean
+          nullable: true
+      - name: nameLike
+        in: query
+        schema:
+          type: string
+          nullable: true
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          format: int32
+          nullable: true
       responses:
         "200":
           description: get$tntconcept_rest 200 response
@@ -743,6 +803,7 @@ paths:
               - $ref: '#/components/schemas/CreateVacationRequest'
               - required:
                 - locale
+                type: object
                 properties:
                   locale:
                     $ref: '#/components/schemas/Locale'
@@ -765,6 +826,7 @@ paths:
               - $ref: '#/components/schemas/CreateVacationRequest'
               - required:
                 - locale
+                type: object
                 properties:
                   locale:
                     $ref: '#/components/schemas/Locale'
@@ -840,7 +902,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Object'
+                type: object
   /logout:
     get:
       tags:
@@ -852,7 +914,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Object'
+                type: object
     post:
       tags:
       - security
@@ -863,7 +925,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Object'
+                type: object
   /oauth/access_token:
     get:
       tags:
@@ -881,7 +943,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Object'
+                type: object
     post:
       tags:
       - security
@@ -896,10 +958,16 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+              type: object
+              additionalProperties:
+                type: string
+              nullable: true
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenRefreshRequest'
+              type: object
+              additionalProperties:
+                type: string
+              nullable: true
         required: true
       responses:
         "200":
@@ -907,7 +975,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Object'
+                type: object
 components:
   schemas:
     ActivityDateResponse:
@@ -926,38 +994,7 @@ components:
         activities:
           type: array
           items:
-            $ref: '#/components/schemas/ActivityResponse'
-    ActivityFilterRequest:
-      type: object
-      properties:
-        startDate:
-          type: string
-          format: date
-          nullable: true
-        endDate:
-          type: string
-          format: date
-          nullable: true
-        approvalState:
-          nullable: true
-          allOf:
-          - $ref: '#/components/schemas/ApprovalStateActivityFilter'
-        organizationId:
-          type: integer
-          format: int64
-          nullable: true
-        projectId:
-          type: integer
-          format: int64
-          nullable: true
-        roleId:
-          type: integer
-          format: int64
-          nullable: true
-        userId:
-          type: integer
-          format: int64
-          nullable: true
+            $ref: '#/components/schemas/ActivityResponse_1'
     ActivityRequest:
       required:
       - billable
@@ -987,6 +1024,42 @@ components:
           pattern: "^data:[^,]+;base64,.+$"
           type: string
           nullable: true
+    ActivityRequest_1:
+      required:
+      - billable
+      - description
+      - duration
+      - hasImage
+      - projectRoleId
+      - startDate
+      - userName
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        startDate:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int32
+        description:
+          maxLength: 2048
+          type: string
+        billable:
+          type: boolean
+        projectRoleId:
+          type: integer
+          format: int64
+        hasImage:
+          type: boolean
+        imageFile:
+          type: string
+          nullable: true
+        userName:
+          type: string
     ActivityResponse:
       required:
       - approval
@@ -1018,6 +1091,44 @@ components:
           format: int64
         approval:
           $ref: '#/components/schemas/Approval'
+    ActivityResponse_1:
+      required:
+      - billable
+      - description
+      - duration
+      - id
+      - organization
+      - project
+      - projectRole
+      - startDate
+      - userId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        startDate:
+          type: string
+          format: date-time
+        duration:
+          type: integer
+          format: int32
+        description:
+          type: string
+        projectRole:
+          $ref: '#/components/schemas/ProjectRoleResponse'
+        userId:
+          type: integer
+          format: int64
+        billable:
+          type: boolean
+        organization:
+          $ref: '#/components/schemas/OrganizationResponse'
+        project:
+          $ref: '#/components/schemas/ProjectResponse'
+        hasImage:
+          type: boolean
+          nullable: true
     ActivitySummaryResponse:
       required:
       - date
@@ -1082,6 +1193,17 @@ components:
       type: object
       properties:
         id:
+          type: string
+    BaseLocale:
+      type: object
+      properties:
+        language:
+          type: string
+        script:
+          type: string
+        region:
+          type: string
+        variant:
           type: string
     BlockProjectRequest:
       required:
@@ -1210,6 +1332,10 @@ components:
           type: array
           items:
             type: string
+        baseLocale:
+          $ref: '#/components/schemas/BaseLocale'
+        localeExtensions:
+          $ref: '#/components/schemas/LocaleExtensions'
         ISO3Language:
           type: string
         ISO3Country:
@@ -1223,6 +1349,25 @@ components:
         displayVariant:
           type: string
         displayName:
+          type: string
+    LocaleExtensions:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            type: string
+        unicodeLocaleAttributes:
+          type: array
+          items:
+            type: string
+        unicodeLocaleKeys:
+          type: array
+          items:
+            type: string
+        empty:
+          type: boolean
+        ID:
           type: string
     MaxTimeAllowedResponse:
       required:
@@ -1271,17 +1416,6 @@ components:
           format: int64
         hours:
           type: number
-    Object:
-      type: object
-    OrganizationFilterRequest:
-      type: object
-      properties:
-        types:
-          type: string
-          nullable: true
-        imputable:
-          type: boolean
-          nullable: true
     OrganizationResponse:
       required:
       - id
@@ -1306,17 +1440,6 @@ components:
           type: number
         balance:
           type: number
-    ProjectFilterRequest:
-      required:
-      - organizationId
-      type: object
-      properties:
-        organizationId:
-          type: integer
-          format: int64
-        open:
-          type: boolean
-          nullable: true
     ProjectResponse:
       required:
       - billable
@@ -1351,6 +1474,51 @@ components:
           format: int64
           nullable: true
     ProjectRoleResponse:
+      required:
+      - id
+      - name
+      - requireEvidence
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        requireEvidence:
+          type: boolean
+    ProjectRoleResponse_1:
+      required:
+      - id
+      - isWorkingTime
+      - name
+      - organizationId
+      - projectId
+      - requireApproval
+      - requireEvidence
+      - timeInfo
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        organizationId:
+          type: integer
+          format: int64
+        projectId:
+          type: integer
+          format: int64
+        timeInfo:
+          $ref: '#/components/schemas/TimeInfoResponse'
+        isWorkingTime:
+          type: boolean
+        requireEvidence:
+          $ref: '#/components/schemas/RequireEvidence'
+        requireApproval:
+          type: boolean
+    ProjectRoleResponse_2:
       required:
       - id
       - isWorkingTime
@@ -1482,35 +1650,6 @@ components:
       - MINUTES
       - DAYS
       - NATURAL_DAYS
-    TokenRefreshRequest:
-      required:
-      - grant_type
-      - refresh_token
-      type: object
-      properties:
-        grant_type:
-          minLength: 1
-          pattern: refresh_token
-          type: string
-        refresh_token:
-          minLength: 1
-          type: string
-    UserFilterRequest:
-      type: object
-      properties:
-        ids:
-          type: string
-          nullable: true
-        active:
-          type: boolean
-          nullable: true
-        nameLike:
-          type: string
-          nullable: true
-        limit:
-          type: integer
-          format: int32
-          nullable: true
     UserInfoResponse:
       required:
       - hiringDate

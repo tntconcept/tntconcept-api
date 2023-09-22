@@ -3,7 +3,7 @@ package com.autentia.tnt.api.binnacle.hook
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
-import javax.validation.constraints.Size
+import jakarta.validation.constraints.Size
 
 @Introspected
 data class ActivityRequest(

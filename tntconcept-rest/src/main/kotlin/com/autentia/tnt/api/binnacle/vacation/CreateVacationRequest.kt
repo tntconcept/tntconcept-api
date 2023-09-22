@@ -3,8 +3,8 @@ package com.autentia.tnt.api.binnacle.vacation
 import com.autentia.tnt.binnacle.entities.dto.RequestVacationDTO
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDate
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Size
 
 @Introspected
 data class CreateVacationRequest(
