@@ -1302,7 +1302,7 @@ internal class ActivityValidatorTest {
             LocalDate.now(),
             null,
             null,
-            Organization(1, "Organization", emptyList()),
+            Organization(1, "Organization", 1, emptyList()),
             emptyList()
         )
 
@@ -1314,7 +1314,7 @@ internal class ActivityValidatorTest {
             LocalDate.now(),
             LocalDate.parse("2000-01-01"),
             user.id,
-            Organization(1, "Organization", emptyList()),
+            Organization(1, "Organization", 1, emptyList()),
             emptyList()
         )
 
@@ -1327,7 +1327,7 @@ internal class ActivityValidatorTest {
                 LocalDate.now().minusYears(5),
                 null,
                 null,
-                Organization(1, "Organization", emptyList()),
+                Organization(1, "Organization", 1, emptyList()),
                 emptyList()
             )
 
@@ -1376,7 +1376,7 @@ internal class ActivityValidatorTest {
                 LocalDate.now(),
                 null,
                 null,
-                Organization(1, "Autentia", emptyList()),
+                Organization(1, "Autentia", 1, emptyList()),
                 emptyList()
             )
         private val blockedProject =
@@ -1388,7 +1388,7 @@ internal class ActivityValidatorTest {
                 LocalDate.now(),
                 LocalDate.of(Year.now().value, 1, 1),
                 null,
-                Organization(1, "Organization", emptyList()),
+                Organization(1, "Organization", 1, emptyList()),
                 emptyList()
             )
         private val blockedProjectRole =
@@ -1838,7 +1838,7 @@ internal class ActivityValidatorTest {
             projectRole = projectRole.toDomain()
         ).copy(id = id, description = description, billable = billable, userId = userId, approvalState = approvalState)
 
-        private val organization = Organization(1, "Organization", listOf())
+        private val organization = Organization(1, "Organization", 1, listOf())
 
         fun createProjectRoleWithLimit(
             id: Long = projectRoleLimitedByYear.id,

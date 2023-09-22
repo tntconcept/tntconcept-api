@@ -44,9 +44,9 @@ internal class ImputableOrganizationsUseCaseTest {
         private val CLOSED_PROJECT = buildProject(2, false, listOf(buildProjectRole(id = 2)))
 
         private val ORGANIZATIONS = listOf(
-            Organization(1, "Open/Closed projects", listOf(OPEN_PROJECT, CLOSED_PROJECT)),
-            Organization(2, "Open Project but without roles", listOf(buildProject(3, true, listOf()))),
-            Organization(3, "Closed Project", listOf(buildProject(4, false, listOf(buildProjectRole(4)))))
+            Organization(1, "Open/Closed projects", 1, listOf(OPEN_PROJECT, CLOSED_PROJECT)),
+            Organization(2, "Open Project but without roles", 1, listOf(buildProject(3, true, listOf()))),
+            Organization(3, "Closed Project", 1, listOf(buildProject(4, false, listOf(buildProjectRole(4)))))
         )
 
     }

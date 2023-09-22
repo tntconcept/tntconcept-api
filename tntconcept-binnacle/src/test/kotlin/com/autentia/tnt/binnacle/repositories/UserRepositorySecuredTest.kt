@@ -1,16 +1,18 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createUser
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import com.autentia.tnt.security.application.id
+import io.micronaut.data.model.Page
+import io.micronaut.data.model.Pageable
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
-import junit.framework.TestCase.assertTrue
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
-import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 import java.util.*
 
@@ -18,64 +20,6 @@ class UserRepositorySecuredTest {
     private val userDao = mock<UserDao>()
     private val securityService = mock<SecurityService>()
     private val userRepositorySecured = UserRepositorySecured(userDao, securityService)
-
-    @Test
-    fun `find all users when the rol is not admin should return only authenticated user`() {
-        val user = createUser().copy(id = userId)
-
-        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
-        whenever(userDao.findById(userId)).thenReturn(Optional.of(user))
-
-        val users = userRepositorySecured.find()
-
-        verify(userDao, never()).findByActiveTrue()
-        assertEquals(1, users.size)
-        assertTrue(users.contains(user))
-    }
-
-    @Test
-    fun `find all users when the rol is not admin and authenticated user is not found should return IllegalStateException`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
-        whenever(userDao.findById(userId)).thenReturn(Optional.empty())
-
-        assertThrows<IllegalStateException> { userRepositorySecured.find() }
-    }
-
-    @Test
-    fun `find all users when no user logged throws exception`() {
-        whenever(securityService.authentication).thenReturn(Optional.empty())
-
-        assertThrows<IllegalStateException> { userRepositorySecured.find() }
-    }
-
-    @Test
-    fun `find all users when the rol is admin`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(adminAuth))
-
-        userRepositorySecured.find()
-
-        verify(userDao).findByActiveTrue()
-    }
-
-    @Test
-    fun `find all users when the rol is project-blocker`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(projectBlockerAuth))
-
-        userRepositorySecured.find()
-
-        verify(userDao).findByActiveTrue()
-        verify(userDao, never()).findById(projectBlockerAuth.id())
-    }
-
-    @Test
-    fun `find all users when the rol is activity approval`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
-
-        userRepositorySecured.find()
-
-        verify(userDao).findByActiveTrue()
-        verify(userDao, never()).findById(activityApprovalAuth.id())
-    }
 
     @Test
     fun `find by username with security`() {
@@ -154,6 +98,42 @@ class UserRepositorySecuredTest {
         assertThrows<IllegalStateException> { userRepositorySecured.find(userId) }
     }
 
+    @Test
+    fun `findAll cannot access to users info if there is not an user authenticated`() {
+        val pageable = Pageable.from(0, 1)
+        val predicate = UserPredicates.ALL
+        whenever(securityService.authentication).thenReturn(Optional.empty())
+
+        assertThrows<IllegalStateException> { userRepositorySecured.findAll(predicate, pageable) }
+    }
+
+    @Test
+    fun `findAll can access to all users limit by 2 info if user has activity-approval role`() {
+        val pageable = Pageable.from(0, 2)
+        val predicate = UserPredicates.ALL
+        val expectedUsers = listOf(createUser())
+
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
+        whenever(userDao.findAll(predicate, pageable)).thenReturn(Page.of(expectedUsers, pageable, 1))
+
+        val result = userRepositorySecured.findAll(predicate, pageable)
+
+        assertEquals(expectedUsers, result)
+    }
+
+    @Test
+    fun `findAll can access to all users info without pageable if user has activity-approval role`() {
+        val predicate = UserPredicates.ALL
+        val expectedUsers = listOf(createUser())
+
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
+        whenever(userDao.findAll(predicate)).thenReturn(expectedUsers)
+
+        val result = userRepositorySecured.findAll(predicate, null)
+
+        assertEquals(expectedUsers, result)
+    }
+
     private companion object {
         private const val userId = 1L
         private const val adminUserId = 3L
@@ -162,8 +142,6 @@ class UserRepositorySecuredTest {
             ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("admin", "activity-approval")))
         private val activityApprovalAuth =
             ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("activity-approval")))
-        private val projectBlockerAuth =
-            ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("project-blocker")))
         private val userAuth = ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
     }
 }

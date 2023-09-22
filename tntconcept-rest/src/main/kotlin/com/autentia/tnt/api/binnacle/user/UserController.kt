@@ -1,7 +1,5 @@
 package com.autentia.tnt.api.binnacle.user
 
-import com.autentia.tnt.binnacle.entities.dto.UserInfoResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
 import com.autentia.tnt.binnacle.usecases.FindUserInfoUseCase
 import com.autentia.tnt.binnacle.usecases.UsersRetrievalUseCase
 import io.micronaut.http.HttpRequest
@@ -16,10 +14,10 @@ internal class UserController(
     private val findUserInfoUseCase: FindUserInfoUseCase,
     private val usersRetrievalUseCase: UsersRetrievalUseCase
 ) {
-    @Operation(summary = "Retrieves the list of active users")
-    @Get
-    internal fun get(): List<UserResponse> =
-        usersRetrievalUseCase.getAllActiveUsers().map { UserResponse.from(it) }
+    @Get("{?userFilterRequest*}")
+    @Operation(summary = "Retrieves the list of users with specified filters")
+    internal fun get(userFilterRequest: UserFilterRequest): List<UserResponse> =
+        usersRetrievalUseCase.getUsers(userFilterRequest.toDto()).map { UserResponse.from(it) }
 
     @Operation(summary = "Retrieves the logged user")
     @Get("/me")

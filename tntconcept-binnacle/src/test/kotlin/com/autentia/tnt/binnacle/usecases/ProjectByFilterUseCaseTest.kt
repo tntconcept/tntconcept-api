@@ -51,7 +51,7 @@ class ProjectByFilterUseCaseTest {
             LocalDate.now(),
             null,
             null,
-            Organization(1, "Organization", emptyList()),
+            Organization(1, "Organization", 1, emptyList()),
             emptyList()
         )
         private val implicitOpenProjectFilter = ProjectFilterDTO(

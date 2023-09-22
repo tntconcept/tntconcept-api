@@ -43,7 +43,7 @@ internal class ProjectByIdUseCaseTest {
     private companion object {
         private const val PROJECT_ID = 1L
         private const val OTHER_PROJECT = 2L
-        private val ORGANIZATION = Organization(PROJECT_ID, "Autentia", emptyList())
+        private val ORGANIZATION = Organization(PROJECT_ID, "Autentia", 1, emptyList())
         private val PROJECT = Project(
             PROJECT_ID,
             "Dummy Project",

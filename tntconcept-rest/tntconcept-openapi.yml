@@ -386,6 +386,28 @@ paths:
               schema:
                 type: integer
                 format: int32
+  /api/holiday:
+    get:
+      tags:
+      - holiday
+      summary: Retrieves existing holidays given a year
+      operationId: getHolidaysByYear
+      parameters:
+      - name: year
+        in: query
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+      responses:
+        "200":
+          description: getHolidaysByYear 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HolidayDetailsResponse'
   /api/holidays:
     get:
       summary: Retrieves existing holidays within a period
@@ -409,11 +431,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponse'
-  /api/organizations:
+                $ref: '#/components/schemas/HolidaysResponse'
+      deprecated: true
+  /api/organization:
     get:
-      summary: Retrieves a list of all organizations
+      tags:
+      - organization
+      summary: Retrieves a list of organizations by filter
       operationId: getAllOrganizations_1
+      parameters:
+      - name: organizationFilterRequest
+        in: query
+        required: true
+        explode: true
+        schema:
+          $ref: '#/components/schemas/OrganizationFilterRequest'
       responses:
         "200":
           description: getAllOrganizations_1 200 response
@@ -423,6 +455,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/OrganizationResponse'
+  /api/organizations:
+    get:
+      summary: Retrieves a list of all organizations
+      operationId: getAllOrganizations_2
+      responses:
+        "200":
+          description: getAllOrganizations_2 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationResponse'
+      deprecated: true
   /api/organizations/{id}/projects:
     get:
       summary: Retrieves a list of imputable projects from an organization ID
@@ -443,6 +489,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectResponse'
+      deprecated: true
   /api/project:
     get:
       summary: Gets projects with specified filters
@@ -638,8 +685,15 @@ paths:
                 $ref: '#/components/schemas/TimeSummaryResponse'
   /api/user:
     get:
-      summary: Retrieves the list of active users
+      summary: Retrieves the list of users with specified filters
       operationId: get$tntconcept_rest_3
+      parameters:
+      - name: userFilterRequest
+        in: query
+        required: true
+        explode: true
+        schema:
+          $ref: '#/components/schemas/UserFilterRequest'
       responses:
         "200":
           description: get$tntconcept_rest 200 response
@@ -677,7 +731,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponse'
+                $ref: '#/components/schemas/HolidaysResponse'
     put:
       summary: Updates a holiday period.
       operationId: updatePrivateHolidayPeriod$tntconcept_rest
@@ -699,9 +753,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CreateVacationResponse'
+                $ref: '#/components/schemas/CreateVacationResponse'
     post:
       summary: Creates a holiday period.
       operationId: createPrivateHolidayPeriod$tntconcept_rest
@@ -723,9 +775,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CreateVacationResponse'
+                $ref: '#/components/schemas/CreateVacationResponse'
   /api/vacations/details:
     get:
       summary: Retrieves details for a holiday within a given charge year.
@@ -1043,6 +1093,7 @@ components:
           format: date
     CreateVacationRequest:
       required:
+      - chargeYear
       - endDate
       - startDate
       type: object
@@ -1057,6 +1108,9 @@ components:
         endDate:
           type: string
           format: date
+        chargeYear:
+          type: integer
+          format: int32
         description:
           maxLength: 1024
           type: string
@@ -1096,7 +1150,7 @@ components:
         date:
           type: string
           format: date
-    HolidayResponse:
+    HolidaysResponse:
       required:
       - holidays
       - vacations
@@ -1219,6 +1273,15 @@ components:
           type: number
     Object:
       type: object
+    OrganizationFilterRequest:
+      type: object
+      properties:
+        types:
+          type: string
+          nullable: true
+        imputable:
+          type: boolean
+          nullable: true
     OrganizationResponse:
       required:
       - id
@@ -1432,6 +1495,22 @@ components:
         refresh_token:
           minLength: 1
           type: string
+    UserFilterRequest:
+      type: object
+      properties:
+        ids:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+          nullable: true
+        nameLike:
+          type: string
+          nullable: true
+        limit:
+          type: integer
+          format: int32
+          nullable: true
     UserInfoResponse:
       required:
       - hiringDate

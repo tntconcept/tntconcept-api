@@ -1,10 +1,8 @@
 package com.autentia.tnt.api.binnacle.vacation
 
 import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.api.binnacle.exchangeObject
 import com.autentia.tnt.api.binnacle.getBody
-import com.autentia.tnt.api.binnacle.vacation.*
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.*
@@ -67,7 +65,7 @@ internal class VacationControllerIT {
     fun `get the vacations by charge year`() {
         doReturn(HOLIDAY_RESPONSE_DTO).whenever(privateHolidaysByChargeYearUseCase).get(CURRENT_YEAR)
 
-        val response = client.exchangeObject<HolidayResponse>(
+        val response = client.exchangeObject<HolidaysResponse>(
             GET("/api/vacations?chargeYear=$CURRENT_YEAR")
         )
 
@@ -104,15 +102,15 @@ internal class VacationControllerIT {
 
     @Test
     fun `post a new vacation period`() {
-        doReturn(listOf(CREATE_VACATION_RESPONSE_DTO))
+        doReturn(CREATE_VACATION_RESPONSE_DTO)
             .whenever(privateHolidayPeriodCreateUseCase).create(REQUEST_VACATION_DTO, EN_LOCALE)
 
-        val response = client.exchangeList<CreateVacationResponse>(
+        val response = client.exchangeObject<CreateVacationResponse>(
             POST("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
         )
 
         assertEquals(OK, response.status)
-        assertEquals(listOf(CREATE_VACATION_RESPONSE), response.body.get())
+        assertEquals(CREATE_VACATION_RESPONSE, response.body.get())
     }
 
     private fun postFailProvider() = arrayOf(
@@ -145,11 +143,11 @@ internal class VacationControllerIT {
 
     @Test
     fun `update a vacation period`() {
-        val createVacationResponseDTOs = listOf(CREATE_VACATION_RESPONSE_DTO)
+        val createVacationResponseDTOs = CREATE_VACATION_RESPONSE_DTO
         doReturn(createVacationResponseDTOs)
             .whenever(privateHolidayPeriodUpdateUseCase).update(REQUEST_VACATION_DTO, EN_LOCALE)
 
-        val response = client.exchangeList<CreateVacationResponseDTO>(
+        val response = client.exchangeObject<CreateVacationResponseDTO>(
             PUT("/api/vacations", CREATE_VACATION_REQUEST).header(ACCEPT_LANGUAGE, "en")
         )
 
@@ -229,8 +227,7 @@ internal class VacationControllerIT {
 
         private val EN_LOCALE = Locale.ENGLISH
 
-        private val REQUEST_VACATION_DTO = RequestVacationDTO(null, TODAY, TODAY, "Description")
-
+        private val REQUEST_VACATION_DTO = RequestVacationDTO(null, TODAY, TODAY, TODAY.year, "Description")
 
         private val CREATE_VACATION_RESPONSE_DTO =
             CreateVacationResponseDTO(
@@ -269,12 +266,12 @@ internal class VacationControllerIT {
             CREATE_VACATION_RESPONSE_DTO.startDate
         )
 
-        private val HOLIDAY_RESPONSE_DTO = HolidayResponseDTO(
+        private val HOLIDAY_RESPONSE_DTO = HolidaysResponseDTO(
             listOf(HolidayDTO(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
             listOf(VACATION_DTO)
         )
 
-        private val HOLIDAY_RESPONSE = HolidayResponse(
+        private val HOLIDAY_RESPONSE = HolidaysResponse(
             listOf(HolidayDetailsResponse(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
             listOf(VACATION_RESPONSE)
         )
@@ -288,6 +285,7 @@ internal class VacationControllerIT {
                 null,
                 TODAY,
                 TODAY,
+                TODAY.year,
                 "Description",
             )
     }

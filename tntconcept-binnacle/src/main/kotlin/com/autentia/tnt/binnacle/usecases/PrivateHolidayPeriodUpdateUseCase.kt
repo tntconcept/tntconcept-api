@@ -25,7 +25,7 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
 ) {
 
     @Transactional
-    fun update(requestVacationDTO: RequestVacationDTO, locale: Locale): List<CreateVacationResponseDTO> {
+    fun update(requestVacationDTO: RequestVacationDTO, locale: Locale): CreateVacationResponseDTO {
         require(requestVacationDTO.id != null) { "Cannot create vacation without id." }
 
         val requestVacation = requestVacationConverter.toRequestVacation(requestVacationDTO)
@@ -34,17 +34,15 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
 
         when (val result = vacationValidator.canUpdateVacationPeriod(requestVacation, user)) {
             is UpdateVacationValidation.Success -> {
-                val holidays = vacationService.updateVacationPeriod(requestVacation, user, result.vacationDb)
-                holidays.forEach {
-                    vacationMailService.sendRequestVacationsMail(
-                        user.username,
-                        it.startDate,
-                        it.endDate,
-                        requestVacation.description.orEmpty(),
-                        locale
-                    )
-                }
-                return holidays.map { createVacationResponseConverter.toCreateVacationResponseDTO(it) }
+                val vacation = vacationService.updateVacationPeriod(requestVacation, user, result.vacationDb)
+                vacationMailService.sendRequestVacationsMail(
+                    user.username,
+                    vacation.startDate,
+                    vacation.endDate,
+                    requestVacation.description.orEmpty(),
+                    locale
+                )
+                return createVacationResponseConverter.toCreateVacationResponseDTO(vacation)
             }
 
             is UpdateVacationValidation.Failure ->
@@ -63,6 +61,7 @@ class PrivateHolidayPeriodUpdateUseCase internal constructor(
                     UpdateVacationValidation.FailureReason.VACATION_BEFORE_HIRING_DATE -> throw VacationBeforeHiringDateException()
                     UpdateVacationValidation.FailureReason.VACATION_REQUEST_OVERLAPS -> throw VacationRequestOverlapsException()
                     UpdateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY -> throw VacationRequestEmptyException()
+                    UpdateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR -> throw NoMoreDaysLeftInYearException()
                 }
         }
     }

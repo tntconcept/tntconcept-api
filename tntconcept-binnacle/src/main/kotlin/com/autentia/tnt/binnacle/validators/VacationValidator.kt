@@ -9,6 +9,7 @@ import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.VacationState.ACCEPT
 import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.repositories.VacationRepository
+import com.autentia.tnt.binnacle.services.RemainingVacationService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDate
@@ -17,7 +18,8 @@ import javax.transaction.Transactional
 @Singleton
 internal class VacationValidator(
     private val vacationRepository: VacationRepository,
-    private val calendarFactory: CalendarFactory
+    private val calendarFactory: CalendarFactory,
+    private val remainingVacationService: RemainingVacationService
 ) {
 
     fun canCreateVacationPeriod(requestVacation: RequestVacation, user: User): CreateVacationValidation {
@@ -38,9 +40,43 @@ internal class VacationValidator(
                 CreateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY
             )
 
+            !areThereEnoughDaysInYear(requestVacation, user) ->
+                CreateVacationValidation.Failure(CreateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR)
+
             else -> CreateVacationValidation.Success
         }
     }
+
+    private fun areThereEnoughDaysInYear(requestVacation: RequestVacation, user: User): Boolean {
+        val currentYearRemainingVacations = remainingVacations(requestVacation, user)
+        val selectedDays = daysRequested(requestVacation)
+
+        return (selectedDays in 1..currentYearRemainingVacations)
+    }
+
+    private fun areThereEnoughDaysInYearForUpdate(
+        requestVacation: RequestVacation,
+        user: User,
+        vacationDb: Vacation
+    ): Boolean {
+        val currentYearRemainingVacations = remainingVacations(requestVacation, user)
+        val selectedDays = daysRequested(requestVacation)
+
+        val calendar = calendarFactory.create(DateInterval.of(vacationDb.startDate, vacationDb.endDate))
+        val oldCorrespondingDays = calendar.getWorkableDays(DateInterval.of(vacationDb.startDate, vacationDb.endDate)).size
+
+        return selectedDays > 0 && (currentYearRemainingVacations + oldCorrespondingDays >= selectedDays)
+    }
+
+    private fun daysRequested(requestVacation: RequestVacation) =
+        remainingVacationService
+            .getRequestedVacationsSelectedYear(requestVacation).size
+
+    private fun remainingVacations(
+        requestVacation: RequestVacation,
+        user: User
+    ) = remainingVacationService
+        .getRemainingVacations(requestVacation.chargeYear, user)
 
     private fun isRequestEmpty(startDate: LocalDate, endDate: LocalDate) =
         calendarFactory.create(DateInterval.of(startDate, endDate)).workableDays.isEmpty()
@@ -56,7 +92,6 @@ internal class VacationValidator(
     private fun isPastAndAcceptedVacation(startDate: LocalDate, state: VacationState): Boolean {
         return ((startDate <= LocalDate.now()) && (state == ACCEPT))
     }
-
 
     private fun isVacationOverlaps(startDate: LocalDate, endDate: LocalDate, id: Long?): Boolean {
         return vacationRepository.find(startDate, endDate)
@@ -92,6 +127,9 @@ internal class VacationValidator(
                         requestVacation.startDate,
                         requestVacation.endDate
                     ) -> UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.VACATION_REQUEST_EMPTY)
+
+                    !areThereEnoughDaysInYearForUpdate(requestVacation, user, vacationDb) ->
+                        UpdateVacationValidation.Failure(UpdateVacationValidation.FailureReason.NO_MORE_DAYS_LEFT_IN_YEAR)
 
                     else -> UpdateVacationValidation.Success(vacationDb)
                 }
@@ -130,7 +168,8 @@ sealed class CreateVacationValidation {
         VACATION_RANGE_CLOSED,
         VACATION_BEFORE_HIRING_DATE,
         VACATION_REQUEST_OVERLAPS,
-        VACATION_REQUEST_EMPTY
+        VACATION_REQUEST_EMPTY,
+        NO_MORE_DAYS_LEFT_IN_YEAR
     }
 }
 
@@ -145,7 +184,8 @@ sealed class UpdateVacationValidation {
         VACATION_RANGE_CLOSED,
         VACATION_BEFORE_HIRING_DATE,
         VACATION_REQUEST_OVERLAPS,
-        VACATION_REQUEST_EMPTY
+        VACATION_REQUEST_EMPTY,
+        NO_MORE_DAYS_LEFT_IN_YEAR
     }
 }
 

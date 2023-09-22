@@ -55,7 +55,7 @@ internal class ActivityDeletionUseCaseTest {
     }
 
     private companion object {
-        val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
+        val ORGANIZATION = Organization(1L, "Dummy Organization", 1, listOf())
         val PROJECT = Project(
             1L,
             "Dummy Project",

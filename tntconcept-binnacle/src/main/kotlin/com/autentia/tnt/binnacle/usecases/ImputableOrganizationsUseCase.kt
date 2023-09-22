@@ -8,6 +8,7 @@ import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
+@Deprecated("Use case called from deprecated organizations API")
 @Singleton
 class ImputableOrganizationsUseCase internal constructor(
     private val organizationRepository: OrganizationRepository,
