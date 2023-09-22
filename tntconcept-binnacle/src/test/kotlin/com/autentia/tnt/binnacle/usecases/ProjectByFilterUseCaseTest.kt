@@ -56,6 +56,7 @@ class ProjectByFilterUseCaseTest {
         )
         private val implicitOpenProjectFilter = ProjectFilterDTO(
             organizationId,
+            listOf()
         )
         private val implicitOpenProjectPredicate = PredicateBuilder.and(
             ProjectOrganizationIdSpecification(organizationId),
@@ -63,6 +64,7 @@ class ProjectByFilterUseCaseTest {
         )
         private val explicitOpenProjectFilter = ProjectFilterDTO(
             organizationId,
+            listOf(),
             false,
         )
         private val explicitOpenProjectPredicate = PredicateBuilder.and(

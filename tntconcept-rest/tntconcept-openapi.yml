@@ -1314,6 +1314,9 @@ components:
         organizationId:
           type: integer
           format: int64
+        organizationIds:
+          type: string
+          nullable: true
         open:
           type: boolean
           nullable: true

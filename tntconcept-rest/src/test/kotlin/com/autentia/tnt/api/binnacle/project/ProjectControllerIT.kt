@@ -226,13 +226,26 @@ internal class ProjectControllerIT {
     }
 
     @Test
-    fun `return all filtered projects`() {
+    fun `return all filtered projects without organization ids`() {
         val projectRequestBody = PROJECT_RESPONSE_DTO
 
-        val projectFilter = ProjectFilterDTO(1, false)
+        val projectFilter = ProjectFilterDTO(1, listOf(), false)
         whenever(projectByFilterUseCase.getProjects(projectFilter)).thenReturn(listOf(projectRequestBody))
 
         val response = client.exchangeList<ProjectResponse>(GET("/api/project?organizationId=1&open=false"))
+
+        assertEquals(OK, response.status)
+        assertEquals(listOf(PROJECT_RESPONSE), response.body())
+    }
+
+    @Test
+    fun `return all filtered projects`() {
+        val projectRequestBody = PROJECT_RESPONSE_DTO
+
+        val projectFilter = ProjectFilterDTO(1, listOf(1, 3), false)
+        whenever(projectByFilterUseCase.getProjects(projectFilter)).thenReturn(listOf(projectRequestBody))
+
+        val response = client.exchangeList<ProjectResponse>(GET("/api/project?organizationId=1&organizationIds=1,3&open=false"))
 
         assertEquals(OK, response.status)
         assertEquals(listOf(PROJECT_RESPONSE), response.body())
