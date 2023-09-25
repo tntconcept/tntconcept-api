@@ -1,5 +1,6 @@
 package com.autentia.tnt.api.binnacle.vacation
 
+import com.autentia.tnt.api.OpenApiTag.Companion.VACATION
 import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.binnacle.exception.DateRangeException
 import com.autentia.tnt.binnacle.usecases.UsersVacationsFromPeriodUseCase
@@ -11,12 +12,14 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.validation.Validated
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 import java.time.LocalDate
 
 private const val INVALID_DATE_RANGE = "INVALID_DATE_RANGE"
 
 @Controller("/api/vacation")
 @Validated
+@Tag(name = VACATION)
 class VacationController(
     private val usersVacationsFromPeriod: UsersVacationsFromPeriodUseCase
 ) {
