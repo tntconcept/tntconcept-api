@@ -512,6 +512,8 @@ paths:
       deprecated: true
   /api/project:
     get:
+      tags:
+      - project
       summary: Gets projects with specified filters
       operationId: get
       parameters:
@@ -570,6 +572,8 @@ paths:
                 $ref: '#/components/schemas/ProjectRoleResponse'
   /api/project/{id}:
     get:
+      tags:
+      - project
       summary: Retrieves a project´s information from its ID
       operationId: getProjectById
       parameters:
@@ -588,6 +592,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/block:
     post:
+      tags:
+      - project
       summary: Blocks a project until given date
       operationId: blockProjectById
       parameters:
@@ -612,6 +618,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/role:
     get:
+      tags:
+      - project
       summary: Retrieves a list of project roles from a project ID
       operationId: getProjectRolesByProjectId_1
       parameters:
@@ -644,6 +652,8 @@ paths:
                   $ref: '#/components/schemas/ProjectRoleUserResponse'
   /api/project/{projectId}/unblock:
     post:
+      tags:
+      - project
       summary: Unblocks a project
       operationId: unblockProjectById
       parameters:
@@ -734,6 +744,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserInfoResponse'
+  /api/vacation:
+    get:
+      tags:
+      - vacation
+      summary: Retrieves holidays within a given a period.
+      operationId: getUsersVacationsFromPeriod$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: getUsersVacationsFromPeriod$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VacationResponse'
   /api/vacations:
     get:
       summary: Retrieves holidays within a given charge year.
@@ -752,6 +790,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HolidaysResponse'
+      deprecated: true
     put:
       summary: Updates a holiday period.
       operationId: updatePrivateHolidayPeriod$tntconcept_rest
@@ -1378,13 +1417,15 @@ components:
         balance:
           type: number
     ProjectFilterRequest:
-      required:
-      - organizationId
       type: object
       properties:
         organizationId:
           type: integer
           format: int64
+          nullable: true
+        organizationIds:
+          type: string
+          nullable: true
         open:
           type: boolean
           nullable: true
