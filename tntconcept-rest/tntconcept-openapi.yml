@@ -492,6 +492,8 @@ paths:
       deprecated: true
   /api/project:
     get:
+      tags:
+      - project
       summary: Gets projects with specified filters
       operationId: get
       parameters:
@@ -550,6 +552,8 @@ paths:
                 $ref: '#/components/schemas/ProjectRoleResponse'
   /api/project/{id}:
     get:
+      tags:
+      - project
       summary: Retrieves a project´s information from its ID
       operationId: getProjectById
       parameters:
@@ -568,6 +572,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/block:
     post:
+      tags:
+      - project
       summary: Blocks a project until given date
       operationId: blockProjectById
       parameters:
@@ -592,6 +598,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/role:
     get:
+      tags:
+      - project
       summary: Retrieves a list of project roles from a project ID
       operationId: getProjectRolesByProjectId_1
       parameters:
@@ -624,6 +632,8 @@ paths:
                   $ref: '#/components/schemas/ProjectRoleUserResponse'
   /api/project/{projectId}/unblock:
     post:
+      tags:
+      - project
       summary: Unblocks a project
       operationId: unblockProjectById
       parameters:
