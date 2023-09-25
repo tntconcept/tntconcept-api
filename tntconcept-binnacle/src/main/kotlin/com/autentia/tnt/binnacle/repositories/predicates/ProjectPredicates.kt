@@ -10,6 +10,7 @@ import javax.persistence.criteria.Root
 
 internal object ProjectPredicates {
     internal fun organizationId(organizationId: Long) = ProjectOrganizationIdSpecification(organizationId)
+    internal fun organizationIds(organizationIds: List<Long>) = ProjectOrganizationIdsSpecification(organizationIds)
     internal fun open(open: Boolean) = ProjectOpenSpecification(open)
 }
 
@@ -35,6 +36,31 @@ class ProjectOrganizationIdSpecification(private val organizationId: Long) : Spe
 
     override fun hashCode(): Int {
         return organizationId.hashCode()
+    }
+}
+
+class ProjectOrganizationIdsSpecification(private val organizationIds: List<Long>) : Specification<Project> {
+    override fun toPredicate(
+        root: Root<Project>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return root.get<Organization>("organization").get<Long>("id").`in`(organizationIds)
+    }
+
+    override fun toString(): String {
+        return "project.organizationId==$organizationIds"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ProjectOrganizationIdsSpecification) return false
+
+        return organizationIds == other.organizationIds
+    }
+
+    override fun hashCode(): Int {
+        return organizationIds.hashCode()
     }
 }
 

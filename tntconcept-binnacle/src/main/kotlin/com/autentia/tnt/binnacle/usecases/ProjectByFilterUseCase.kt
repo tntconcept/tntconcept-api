@@ -5,10 +5,8 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.dto.ProjectFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
-import com.autentia.tnt.binnacle.repositories.predicates.EmptySpecification
+import com.autentia.tnt.binnacle.repositories.predicates.*
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
-import com.autentia.tnt.binnacle.repositories.predicates.ProjectOpenSpecification
-import com.autentia.tnt.binnacle.repositories.predicates.ProjectOrganizationIdSpecification
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
@@ -32,12 +30,18 @@ class ProjectByFilterUseCase internal constructor(
     private fun getPredicateFromFilter(projectFilter: ProjectFilterDTO): Specification<Project> {
         var predicate: Specification<Project> = EmptySpecification()
 
-        predicate = PredicateBuilder.and(predicate, ProjectOrganizationIdSpecification(projectFilter.organizationId))
+        if(projectFilter.organizationId !== null) {
+            predicate =
+                PredicateBuilder.and(predicate, ProjectOrganizationIdSpecification(projectFilter.organizationId))
+        }
 
-        predicate = if (projectFilter.open !== null) {
-            PredicateBuilder.and(predicate, ProjectOpenSpecification(projectFilter.open))
-        } else {
-            PredicateBuilder.and(predicate, ProjectOpenSpecification(true))
+        if(projectFilter.organizationIds.isNotEmpty()){
+            predicate =
+                PredicateBuilder.and(predicate, ProjectOrganizationIdsSpecification(projectFilter.organizationIds))
+        }
+
+        if (projectFilter.open !== null) {
+            predicate = PredicateBuilder.and(predicate, ProjectOpenSpecification(projectFilter.open))
         }
 
         return predicate
