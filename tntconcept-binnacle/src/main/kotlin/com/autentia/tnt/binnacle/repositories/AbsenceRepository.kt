@@ -7,10 +7,9 @@ import io.micronaut.data.jpa.repository.JpaRepository
 import java.time.LocalDate
 
 @Repository
-internal interface AbsenceRepository: JpaRepository<Absence, Long>{
+internal interface AbsenceRepository : JpaRepository<Absence, Long> {
     @Query(
-        """
-            WITH ActivitiesView (id, userId, userName, type, startDate, endDate, numActivities) AS (
+        """WITH ActivitiesView (id, userId, userName, type, startDate, endDate, numActivities) AS (
                 SELECT
                     a.id,
                     a.userId, u.name,
@@ -39,9 +38,13 @@ internal interface AbsenceRepository: JpaRepository<Absence, Long>{
             UNION ALL
             SELECT id, userId, userName, type, startDate, endDate
               FROM ActivitiesView
-              WHERE type = 'PAID_LEAVE' AND numActivities = 1
-       """
-    , nativeQuery = true
+              WHERE type = 'PAID_LEAVE' AND numActivities = 1""",
+        nativeQuery = true
     )
-    fun findAllByDateBetween(startDate: LocalDate, endDate: LocalDate, paidLeaveProjectIds: Set<Long>, userIds: Set<Long>?): List<Absence>
+    fun findAllByDateBetween(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        paidLeaveProjectIds: Set<Long>,
+        userIds: Set<Long>?
+    ): List<Absence>
 }

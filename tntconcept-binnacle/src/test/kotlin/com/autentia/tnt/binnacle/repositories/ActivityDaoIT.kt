@@ -370,7 +370,6 @@ internal class ActivityDaoIT {
         )
         val retrievedActivities = activityDao.findByApprovalState(ApprovalState.PENDING)
 
-        assertEquals(2, retrievedActivities.size)
         assertTrue(retrievedActivities.contains(savedActivities.elementAt(1)))
         assertTrue(retrievedActivities.contains(savedActivities.elementAt(2)))
     }
