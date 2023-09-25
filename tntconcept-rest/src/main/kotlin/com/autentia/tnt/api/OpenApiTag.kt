@@ -8,6 +8,6 @@ internal class OpenApiTag {
         internal const val ORGANIZATION = "organization"
         internal const val HOLIDAY = "holiday"
         internal const val PROJECT = "project"
-
+        internal const val VACATION = "vacation"
     }
 }
