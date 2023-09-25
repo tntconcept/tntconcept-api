@@ -2,9 +2,8 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.repositories.predicates.*
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
-import com.autentia.tnt.binnacle.repositories.predicates.ProjectOpenSpecification
-import com.autentia.tnt.binnacle.repositories.predicates.ProjectOrganizationIdSpecification
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.*
@@ -36,6 +35,18 @@ internal class ProjectRepositoryIT {
         val result = projectRepository.findAll(noProjectsPredicate)
 
         assert(result.isEmpty())
+    }
+
+    @Test
+    fun `should find the projects by organization ids`() {
+        val organizationIds = listOf(1L, 3L)
+        val projectsByOrganizationIdPredicate = ProjectOrganizationIdsSpecification(organizationIds)
+
+        val result = projectRepository.findAll(projectsByOrganizationIdPredicate)
+
+        assert(result.all {
+            organizationIds.contains(it.organization.id)
+        })
     }
 
     @Test
@@ -77,7 +88,7 @@ internal class ProjectRepositoryIT {
             LocalDate.now(),
             null,
             null,
-            Organization(3, "Organization", emptyList()),
+            Organization(3, "Organization", 1, emptyList()),
             emptyList()
         )
     }

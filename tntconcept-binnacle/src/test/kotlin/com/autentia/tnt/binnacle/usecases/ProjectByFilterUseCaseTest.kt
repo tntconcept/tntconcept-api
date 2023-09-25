@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.repositories.predicates.ProjectOpenSpecification
 import com.autentia.tnt.binnacle.repositories.predicates.ProjectOrganizationIdSpecification
+import com.autentia.tnt.binnacle.repositories.predicates.ProjectOrganizationIdsSpecification
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -22,9 +23,9 @@ class ProjectByFilterUseCaseTest {
 
     @Test
     fun `should return filtered projects with implicit open=true filter`() {
-        whenever(projectRepository.findAll(implicitOpenProjectPredicate)).thenReturn(listOf(project))
+        whenever(projectRepository.findAll(organizationIdProjectPredicate)).thenReturn(listOf(project))
 
-        val result = projectByFilterUseCase.getProjects(implicitOpenProjectFilter)
+        val result = projectByFilterUseCase.getProjects(organizationIdProjectFilter)
 
         val expectedResult = listOf(projectResponseConverter.toProjectResponseDTO(project.toDomain()))
         assertEquals(expectedResult, result)
@@ -41,8 +42,21 @@ class ProjectByFilterUseCaseTest {
         assertEquals(expectedResult, result)
     }
 
+    @Test
+    fun `should return filtered projects without organizationId filter`() {
+        val closedProject = project.copy(open = false)
+        whenever(projectRepository.findAll(organizationsAndClosedProjectPredicate)).thenReturn(listOf(closedProject))
+
+        val result = projectByFilterUseCase.getProjects(organizationsAndClosedProjectFilter)
+
+        val expectedResult = listOf(projectResponseConverter.toProjectResponseDTO(closedProject.toDomain()))
+        assertEquals(expectedResult, result)
+    }
+
     private companion object {
         private const val organizationId = 1L
+        private const val otherOrganizationId = 1L
+
         private val project = Project(
             1,
             "BlockedProject",
@@ -51,22 +65,31 @@ class ProjectByFilterUseCaseTest {
             LocalDate.now(),
             null,
             null,
-            Organization(1, "Organization", emptyList()),
+            Organization(1, "Organization", 1, emptyList()),
             emptyList()
         )
-        private val implicitOpenProjectFilter = ProjectFilterDTO(
+        private val organizationIdProjectFilter = ProjectFilterDTO(
             organizationId,
+            listOf()
         )
-        private val implicitOpenProjectPredicate = PredicateBuilder.and(
-            ProjectOrganizationIdSpecification(organizationId),
-            ProjectOpenSpecification(true)
-        )
+        private val organizationIdProjectPredicate = ProjectOrganizationIdSpecification(organizationId)
+
         private val explicitOpenProjectFilter = ProjectFilterDTO(
             organizationId,
+            listOf(),
+            false,
+        )
+        private val organizationsAndClosedProjectFilter = ProjectFilterDTO(
+            null,
+            listOf(organizationId, otherOrganizationId),
             false,
         )
         private val explicitOpenProjectPredicate = PredicateBuilder.and(
             ProjectOrganizationIdSpecification(organizationId),
+            ProjectOpenSpecification(false)
+        )
+        private val organizationsAndClosedProjectPredicate = PredicateBuilder.and(
+            ProjectOrganizationIdsSpecification(listOf(organizationId, otherOrganizationId)),
             ProjectOpenSpecification(false)
         )
     }

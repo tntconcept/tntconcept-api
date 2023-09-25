@@ -4,6 +4,7 @@ import io.micronaut.core.annotation.Introspected
 
 @Introspected
 data class ProjectFilterDTO(
-    val organizationId: Long,
+    val organizationId: Long?,
+    val organizationIds: List<Long>,
     val open: Boolean? = null,
 )

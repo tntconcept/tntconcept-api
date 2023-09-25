@@ -388,6 +388,8 @@ paths:
                 format: int32
   /api/holiday:
     get:
+      tags:
+      - holiday
       summary: Retrieves existing holidays given a year
       operationId: getHolidaysByYear
       parameters:
@@ -431,10 +433,19 @@ paths:
               schema:
                 $ref: '#/components/schemas/HolidaysResponse'
       deprecated: true
-  /api/organizations:
+  /api/organization:
     get:
-      summary: Retrieves a list of all organizations
+      tags:
+      - organization
+      summary: Retrieves a list of organizations by filter
       operationId: getAllOrganizations_1
+      parameters:
+      - name: organizationFilterRequest
+        in: query
+        required: true
+        explode: true
+        schema:
+          $ref: '#/components/schemas/OrganizationFilterRequest'
       responses:
         "200":
           description: getAllOrganizations_1 200 response
@@ -444,6 +455,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/OrganizationResponse'
+  /api/organizations:
+    get:
+      summary: Retrieves a list of all organizations
+      operationId: getAllOrganizations_2
+      responses:
+        "200":
+          description: getAllOrganizations_2 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationResponse'
+      deprecated: true
   /api/organizations/{id}/projects:
     get:
       summary: Retrieves a list of imputable projects from an organization ID
@@ -464,8 +489,11 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectResponse'
+      deprecated: true
   /api/project:
     get:
+      tags:
+      - project
       summary: Gets projects with specified filters
       operationId: get
       parameters:
@@ -524,6 +552,8 @@ paths:
                 $ref: '#/components/schemas/ProjectRoleResponse'
   /api/project/{id}:
     get:
+      tags:
+      - project
       summary: Retrieves a project´s information from its ID
       operationId: getProjectById
       parameters:
@@ -542,6 +572,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/block:
     post:
+      tags:
+      - project
       summary: Blocks a project until given date
       operationId: blockProjectById
       parameters:
@@ -566,6 +598,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/role:
     get:
+      tags:
+      - project
       summary: Retrieves a list of project roles from a project ID
       operationId: getProjectRolesByProjectId_1
       parameters:
@@ -598,6 +632,8 @@ paths:
                   $ref: '#/components/schemas/ProjectRoleUserResponse'
   /api/project/{projectId}/unblock:
     post:
+      tags:
+      - project
       summary: Unblocks a project
       operationId: unblockProjectById
       parameters:
@@ -1276,6 +1312,15 @@ components:
           type: number
     Object:
       type: object
+    OrganizationFilterRequest:
+      type: object
+      properties:
+        types:
+          type: string
+          nullable: true
+        imputable:
+          type: boolean
+          nullable: true
     OrganizationResponse:
       required:
       - id
@@ -1301,13 +1346,15 @@ components:
         balance:
           type: number
     ProjectFilterRequest:
-      required:
-      - organizationId
       type: object
       properties:
         organizationId:
           type: integer
           format: int64
+          nullable: true
+        organizationIds:
+          type: string
+          nullable: true
         open:
           type: boolean
           nullable: true

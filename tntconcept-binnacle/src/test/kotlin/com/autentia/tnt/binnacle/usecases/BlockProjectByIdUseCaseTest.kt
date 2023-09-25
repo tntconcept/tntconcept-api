@@ -123,6 +123,7 @@ class BlockProjectByIdUseCaseTest {
         val organizationEntity: com.autentia.tnt.binnacle.entities.Organization = com.autentia.tnt.binnacle.entities.Organization(
             id = 1L,
             "Test organization",
+            1,
             emptyList(),
         )
         val blockedProjectEntity: com.autentia.tnt.binnacle.entities.Project = com.autentia.tnt.binnacle.entities.Project(

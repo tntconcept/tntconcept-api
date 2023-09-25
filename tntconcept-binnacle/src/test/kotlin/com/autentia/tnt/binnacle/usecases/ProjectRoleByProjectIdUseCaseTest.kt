@@ -221,7 +221,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
         private const val OTHER_USER_ID = 2L
         private const val PROJECT_ID = 1L
 
-        private val ORGANIZATION = Organization(1L, "Nuestra empresa", listOf())
+        private val ORGANIZATION = Organization(1L, "Nuestra empresa", 1, listOf())
         private val PROJECT =
             Project(1L, "Dummy project", true, false, LocalDate.now(), null, null, ORGANIZATION, listOf())
 

@@ -9,6 +9,7 @@ import java.time.LocalDate
 internal fun createOrganization(id: Long = 1L) = Organization(
     id = id,
     name = "Dummy Organization",
+    organizationTypeId = 1,
     projects = listOf()
 )
 
