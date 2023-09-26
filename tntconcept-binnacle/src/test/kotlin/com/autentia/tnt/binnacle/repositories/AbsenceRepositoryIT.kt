@@ -142,22 +142,19 @@ class AbsenceRepositoryIT {
             ),
         )
 
-        val expectedAbsences = listOf(
-            Absence(AbsenceId(1, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
-            Absence(AbsenceId(1, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
-            Absence(AbsenceId(5, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
-            Absence(AbsenceId(7, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
-        )
 
         val savedActivities = activityDao.saveAll(activitiesToSave)
         val savedVacations = vacationDao.saveAll(vacationsToSave)
+        val expectedAbsences = listOf(
+            Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
+            Absence(AbsenceId(savedActivities.elementAt(0).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
+            Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
+            Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
+        )
 
         val result = absenceRepository.findAllByDateBetween(startDate, endDate, setOf(1, 2), null)
 
-        assertEquals(4, result.size)
-
-        activityDao.deleteAll(savedActivities)
-        vacationDao.deleteAll(savedVacations)
+        assertEquals(expectedAbsences, result)
     }
 
     @Test
@@ -284,19 +281,18 @@ class AbsenceRepositoryIT {
             ),
         )
 
-        val expectedAbsences = listOf(
-            Absence(AbsenceId(1, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
-            Absence(AbsenceId(1, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
-            Absence(AbsenceId(5, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
-            Absence(AbsenceId(7, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
-        )
-
         val savedActivities = activityDao.saveAll(activitiesToSave)
         val savedVacations = vacationDao.saveAll(vacationsToSave)
+        val expectedAbsences = listOf(
+            Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
+            Absence(AbsenceId(savedActivities.elementAt(0).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
+            Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
+            Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
+        )
 
         val result = absenceRepository.findAllByDateBetween(startDate, endDate, setOf(1, 2), setOf(11, 12))
 
-        assertEquals(4, result.size)
+        assertEquals(expectedAbsences, result)
     }
 
     private companion object {
