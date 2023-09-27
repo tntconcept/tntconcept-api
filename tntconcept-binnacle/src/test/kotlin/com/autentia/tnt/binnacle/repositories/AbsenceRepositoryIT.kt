@@ -152,7 +152,7 @@ class AbsenceRepositoryIT {
             Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
         )
 
-        val result = absenceRepository.findAllByDateBetween(startDate, endDate, setOf(1, 2), null)
+        val result = absenceRepository.findAllByDateBetweenAndUsers(startDate, endDate, null)
 
         assertEquals(expectedAbsences, result)
     }
@@ -290,7 +290,144 @@ class AbsenceRepositoryIT {
             Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
         )
 
-        val result = absenceRepository.findAllByDateBetween(startDate, endDate, setOf(1, 2), setOf(11, 12))
+        val result = absenceRepository.findAllByDateBetweenAndUsers(startDate, endDate, setOf(11, 12))
+
+        assertEquals(expectedAbsences, result)
+    }
+
+    @Test
+    fun `should recover absences between two dates and by user id`() {
+        val startDate = LocalDate.of(2023, Month.AUGUST, 1)
+        val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
+        val activitiesToSave = listOf(
+            Activity(
+                start = LocalDateTime.of(2023, 9, 1, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 1, 17, 0, 0),
+                duration = 480,
+                description = "Abscense 1",
+                projectRole = projectRolePaidLeave2,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 2, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 2, 13, 0, 0),
+                duration = 240,
+                description = "Abscense 2",
+                projectRole = projectRolePaidLeave2,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 2, 13, 0, 0),
+                end = LocalDateTime.of(2023, 9, 2, 17, 0, 0),
+                duration = 240,
+                description = "Abscense 3",
+                projectRole = otherProjectRole,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 3, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 3, 17, 0, 0),
+                duration = 480,
+                description = "Abscense 4",
+                projectRole = otherProjectRole,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 6, 0, 0, 0),
+                end = LocalDateTime.of(2023, 9, 7, 23, 59, 59),
+                duration = 960,
+                description = "Abscense 5",
+                projectRole = projectRolePaidLeave1,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 7, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 7, 17, 0, 0),
+                duration = 240,
+                description = "Abscense 6",
+                projectRole = otherProjectRole,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 4, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 4, 17, 0, 0),
+                duration = 480,
+                description = "Abscense 7",
+                projectRole = projectRolePaidLeave2,
+                userId = 12,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 4, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 4, 17, 0, 0),
+                duration = 480,
+                description = "Abscense 8",
+                projectRole = projectRolePaidLeave2,
+                userId = 1,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+        )
+        val vacationsToSave = listOf(
+            Vacation(
+                id = null,
+                startDate = LocalDate.of(2023, 8, 30),
+                endDate = LocalDate.of(2023, 8, 31),
+                chargeYear = LocalDate.of(2023, 1, 31),
+                userId = 11,
+                description = "Vacations 1",
+                state = VacationState.ACCEPT
+            ),
+            Vacation(
+                id = null,
+                startDate = LocalDate.of(2023, 2, 2),
+                endDate = LocalDate.of(2023, 2, 5),
+                chargeYear = LocalDate.of(2023, 1, 31),
+                userId = 12,
+                description = "Vacations 2",
+                state = VacationState.ACCEPT
+            ),
+            Vacation(
+                id = null,
+                startDate = LocalDate.of(2023, 9, 1),
+                endDate = LocalDate.of(2023, 9, 2),
+                chargeYear = LocalDate.of(2023, 1, 31),
+                userId = 1,
+                description = "Vacations 3",
+                state = VacationState.PENDING
+            ),
+        )
+
+        val savedActivities = activityDao.saveAll(activitiesToSave)
+        val savedVacations = vacationDao.saveAll(vacationsToSave)
+        val expectedAbsences = listOf(
+            Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
+            Absence(AbsenceId(savedActivities.elementAt(0).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
+            Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
+        )
+
+        val result = absenceRepository.findAllByDateBetweenAndUser(startDate, endDate, 11)
 
         assertEquals(expectedAbsences, result)
     }

@@ -21,7 +21,11 @@ internal object ActivityPredicates {
 
     internal fun endDateGreaterThanOrEqualTo(date: LocalDate) = ActivityEndDateGreaterOrEqualSpecification(date)
     internal fun projectId(projectId: Long) = ActivityProjectIdSpecification(projectId)
+    internal fun projectIds(projectIds: List<Long>) = ActivityProjectIdsSpecification(projectIds)
+
     internal fun organizationId(organizationId: Long) = ActivityOrganizationIdSpecification(organizationId)
+    internal fun organizationIds(organizationIds: List<Long>) = ActivityOrganizationIdsSpecification(organizationIds)
+
     internal fun userId(userId: Long) = ActivityUserIdSpecification(userId)
 
     internal fun missingEvidenceWeekly() = ActivityMissingEvidenceWeeklySpecification()
@@ -318,6 +322,33 @@ class ActivityProjectIdSpecification(private val projectId: Long) : Specificatio
     }
 }
 
+class ActivityProjectIdsSpecification(private val projectIds: List<Long>) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder,
+    ): Predicate? {
+        return root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
+                .join<ProjectRole, Project>("project", JoinType.INNER)
+                .get<Long>("id").`in`(projectIds)
+    }
+
+    override fun toString(): String {
+        return "activity.projectRole.project.ids IN $projectIds"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityProjectIdsSpecification) return false
+
+        return projectIds == other.projectIds
+    }
+
+    override fun hashCode(): Int {
+        return projectIds.hashCode()
+    }
+}
+
 class ActivityOrganizationIdSpecification(private val organizationId: Long) : Specification<Activity> {
     override fun toPredicate(
         root: Root<Activity>,
@@ -344,6 +375,33 @@ class ActivityOrganizationIdSpecification(private val organizationId: Long) : Sp
 
     override fun hashCode(): Int {
         return organizationId.hashCode()
+    }
+}
+
+class ActivityOrganizationIdsSpecification(private val organizationIds: List<Long>) : Specification<Activity> {
+    override fun toPredicate(
+        root: Root<Activity>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder,
+    ): Predicate? {
+        return root.join<Activity, ProjectRole>("projectRole", JoinType.INNER)
+                .join<ProjectRole, Project>("project", JoinType.INNER).join<Project, Organization>("organization")
+                .get<Long>("id").`in`(organizationIds)
+    }
+
+    override fun toString(): String {
+        return "activity.projectRole.project.organization.id IN ($organizationIds)"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ActivityOrganizationIdsSpecification) return false
+
+        return organizationIds == other.organizationIds
+    }
+
+    override fun hashCode(): Int {
+        return organizationIds.hashCode()
     }
 }
 

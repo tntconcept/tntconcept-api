@@ -13,7 +13,7 @@ internal interface AbsenceRepository : JpaRepository<Absence, Long> {
                 SELECT
                     a.id,
                     a.userId, u.name,
-                    CASE WHEN p.id IN (:paidLeaveProjectIds) THEN 'PAID_LEAVE' ELSE 'OTHER_ACTIVITY' END,
+                    CASE WHEN pr.isApprovalRequired = true THEN 'PAID_LEAVE' ELSE 'OTHER_ACTIVITY' END,
                     DATE(a.start), DATE(a.end),
                     COUNT(1) OVER (PARTITION BY a.userId, DATE(a.start))
                  FROM
@@ -41,10 +41,48 @@ internal interface AbsenceRepository : JpaRepository<Absence, Long> {
               WHERE type = 'PAID_LEAVE' AND numActivities = 1""",
         nativeQuery = true
     )
-    fun findAllByDateBetween(
+    fun findAllByDateBetweenAndUsers(
         startDate: LocalDate,
         endDate: LocalDate,
-        paidLeaveProjectIds: Set<Long>,
         userIds: Set<Long>?
+    ): List<Absence>
+
+    @Query(
+        """WITH ActivitiesView (id, userId, userName, type, startDate, endDate, numActivities) AS (
+                SELECT
+                    a.id,
+                    a.userId, u.name,
+                    CASE WHEN pr.isApprovalRequired = true THEN 'PAID_LEAVE' ELSE 'OTHER_ACTIVITY' END,
+                    DATE(a.start), DATE(a.end),
+                    COUNT(1) OVER (PARTITION BY a.userId, DATE(a.start))
+                 FROM
+                    Activity a
+                    INNER JOIN User u ON a.userId = u.id
+                    INNER JOIN ProjectRole pr ON pr.id = a.roleId
+                    INNER JOIN Project p ON p.id = pr.projectId
+                 WHERE
+                    a.start BETWEEN :startDate AND :endDate
+                    AND a.userId = :userId
+            ), VacationsView (id, userId, userName, type, startDate, endDate) AS (
+                SELECT rh.id, rh.userId, u.name, 'VACATION', rh.beginDate, rh.finalDate
+                 FROM
+                    RequestHoliday rh
+                    INNER JOIN User u ON rh.userId = u.id
+                 WHERE
+                    rh.beginDate BETWEEN :startDate AND :endDate
+                    AND rh.userId = :userId
+            )
+            SELECT id, userId, userName, type, startDate, endDate
+              FROM VacationsView
+            UNION ALL
+            SELECT id, userId, userName, type, startDate, endDate
+              FROM ActivitiesView
+              WHERE type = 'PAID_LEAVE' AND numActivities = 1""",
+        nativeQuery = true
+    )
+    fun findAllByDateBetweenAndUser(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        userId: Long?
     ): List<Absence>
 }

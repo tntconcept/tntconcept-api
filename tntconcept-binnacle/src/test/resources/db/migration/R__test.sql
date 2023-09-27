@@ -120,7 +120,7 @@ VALUES ('4d3cbe3f-369f-11ee-99c2-0242ac180003', 11, 'path/to/test/file', 'testFi
 
 -- Absences
 
--- Project role perteneciente al pryecto 2 (permisos) configurado con duracion de tipo DAYS
+-- Project role perteneciente al proyecto 2 (permisos) configurado con duracion de tipo DAYS
 INSERT INTO ProjectRole (id, projectId,name,costPerHour,expectedHours,requireEvidence,ownerId,departmentId,insertDate,updateDate,maxTimeAllowedByYear,timeUnit,isApprovalRequired,isWorkingTime,maxTimeAllowedByActivity)
-VALUES (13, 2,'permiso diario',0.00,0,'NO',NULL,NULL,'2023-09-21 13:22:15','2023-09-21 13:22:18',0,'DAYS',0,1,0);
+VALUES (13, 2,'permiso diario',0.00,0,'NO',NULL,NULL,'2023-09-21 13:22:15','2023-09-21 13:22:18',0,'DAYS',1,1,0);
 

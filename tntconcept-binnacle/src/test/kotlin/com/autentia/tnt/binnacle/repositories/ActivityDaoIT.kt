@@ -9,6 +9,7 @@ import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.LocalTime
 
