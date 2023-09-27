@@ -38,7 +38,8 @@ internal interface AbsenceDao : JpaRepository<Absence, Long> {
             UNION ALL
             SELECT id, userId, userName, type, startDate, endDate
               FROM ActivitiesView
-              WHERE type = 'PAID_LEAVE' AND numActivities = 1""",
+              WHERE type = 'PAID_LEAVE' AND numActivities = 1
+              ORDER BY startDate""",
         nativeQuery = true
     )
     fun findAllByDateBetweenAndUsers(
@@ -77,7 +78,8 @@ internal interface AbsenceDao : JpaRepository<Absence, Long> {
             UNION ALL
             SELECT id, userId, userName, type, startDate, endDate
               FROM ActivitiesView
-              WHERE type = 'PAID_LEAVE' AND numActivities = 1""",
+              WHERE type = 'PAID_LEAVE' AND numActivities = 1
+              ORDER BY startDate""",
         nativeQuery = true
     )
     fun findAllByDateBetweenAndUser(

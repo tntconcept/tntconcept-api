@@ -148,8 +148,8 @@ class AbsenceDaoIT {
         val expectedAbsences = listOf(
             Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
             Absence(AbsenceId(savedActivities.elementAt(0).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
-            Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
             Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
+            Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
         )
 
         val result = absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, null)
@@ -286,8 +286,8 @@ class AbsenceDaoIT {
         val expectedAbsences = listOf(
             Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
             Absence(AbsenceId(savedActivities.elementAt(0).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
-            Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
             Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
+            Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
         )
 
         val result = absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, listOf(11, 12))

@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
+import com.autentia.tnt.binnacle.converters.AbsenceResponseConverter
 import com.autentia.tnt.binnacle.entities.Absence
 import com.autentia.tnt.binnacle.entities.AbsenceId
 import com.autentia.tnt.binnacle.entities.dto.AbsenceDTO
@@ -8,7 +9,6 @@ import com.autentia.tnt.binnacle.entities.dto.AbsenceFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.AbsenceType
 import com.autentia.tnt.binnacle.repositories.AbsenceRepository
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,9 +22,10 @@ internal class AbsencesByFilterUseCaseTest {
 
     private val activityRepository = mock<ActivityRepository>()
     private val absenceRepository = mock<AbsenceRepository>()
+    private val absenceResponseConverter = AbsenceResponseConverter()
 
     private val absencesByFilterUseCase =
-        AbsencesByFilterUseCase(activityRepository, absenceRepository)
+        AbsencesByFilterUseCase(activityRepository, absenceRepository, absenceResponseConverter)
 
 
     @Test

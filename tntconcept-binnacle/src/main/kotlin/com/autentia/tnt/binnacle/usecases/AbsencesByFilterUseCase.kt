@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.binnacle.converters.AbsenceResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.AbsenceDTO
 import com.autentia.tnt.binnacle.entities.dto.AbsenceFilterDTO
@@ -18,6 +19,7 @@ import javax.transaction.Transactional
 class AbsencesByFilterUseCase internal constructor(
     @param:Named("Internal") private val activityRepository: ActivityRepository,
     private val absenceRepository: AbsenceRepository,
+    private val absenceResponseConverter: AbsenceResponseConverter,
 ) {
     @Transactional
     @ReadOnly
@@ -31,13 +33,7 @@ class AbsencesByFilterUseCase internal constructor(
 
         val absences = absenceRepository.find(absenceFilter.startDate, absenceFilter.endDate, userIds)
         return absences.map {
-            AbsenceDTO(
-                it.userId,
-                it.userName,
-                AbsenceType.valueOf(it.absenceId.type),
-                it.startDate,
-                it.endDate
-            )
+            absenceResponseConverter.toAbsenceDTO(it)
         }
     }
 
