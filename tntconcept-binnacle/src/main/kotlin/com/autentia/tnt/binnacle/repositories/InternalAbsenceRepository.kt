@@ -7,7 +7,7 @@ import java.time.LocalDate
 @Singleton
 internal class InternalAbsenceRepository(private val absenceDao: AbsenceDao): AbsenceRepository {
 
-    override fun find(startDate: LocalDate, endDate: LocalDate, userIds: Set<Long>?): List<Absence> {
+    override fun find(startDate: LocalDate, endDate: LocalDate, userIds: List<Long>?): List<Absence> {
         if(!userIds.isNullOrEmpty()) {
             return if (userIds.size == 1) {
                 absenceDao.findAllByDateBetweenAndUser(startDate, endDate, userIds.elementAt(0))

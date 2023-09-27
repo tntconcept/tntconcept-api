@@ -24,7 +24,7 @@ class InternalAbsenceRepositoryTest {
 
         whenever(absenceDao.findAllByDateBetweenAndUser(startDate, endDate, userId)).thenReturn(absences)
 
-        val result = internalAbsenceRepository.find(startDate, endDate, setOf(userId))
+        val result = internalAbsenceRepository.find(startDate, endDate, listOf(userId))
 
         assertEquals(absences, result)
     }
@@ -33,7 +33,7 @@ class InternalAbsenceRepositoryTest {
     fun `find absences by period and users`() {
         val startDate = LocalDate.of(2023, 9, 1)
         val endDate = LocalDate.of(2023, 9, 30)
-        val userIds = setOf(1L, 2L)
+        val userIds = listOf(1L, 2L)
         val absences = listOf(
             createAbsence(1L, "PAID_LEAVE")
         )

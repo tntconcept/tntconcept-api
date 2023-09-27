@@ -290,7 +290,7 @@ class AbsenceDaoIT {
             Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
         )
 
-        val result = absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, setOf(11, 12))
+        val result = absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, listOf(11, 12))
 
         assertEquals(expectedAbsences, result)
     }

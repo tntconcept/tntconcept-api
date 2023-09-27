@@ -7,7 +7,7 @@ import java.time.LocalDate
 data class AbsenceFilterDTO (
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val userId: Long? = null,
-    val organizationId: Long? = null,
-    val projectId: Long? = null,
+    val userIds: List<Long>? = null,
+    val organizationIds: List<Long>? = null,
+    val projectIds: List<Long>? = null,
 )

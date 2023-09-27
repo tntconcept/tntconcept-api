@@ -59,16 +59,90 @@ internal class AbsenceControllerIT {
     }
 
     @Test
-    fun `returns BAD_REQUEST when date range is not defined`() {
+    fun `filter absences by date range and organizations`() {
+        val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
+        val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
+        val absenceFilterDto = AbsenceFilterDTO(startDate, endDate, null, listOf(1L,2L), null)
+
+        doReturn(listOf(ABSENCE_DTO)).whenever(absenceByFilterUseCase).getAbsences(absenceFilterDto)
+
+        val response = client.exchangeList<AbsenceResponse>(
+            HttpRequest.GET("/api/absence?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}&organizationIds=1,2"),
+        )
+
+        assertEquals(HttpStatus.OK, response.status)
+        assertEquals(listOf(AbsenceResponse.from(ABSENCE_DTO)), response.body.get())
+    }
+
+    @Test
+    fun `filter absences by date range and projects`() {
+        val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
+        val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
+        val absenceFilterDto = AbsenceFilterDTO(startDate, endDate, null, null, listOf(1L,2L))
+
+        doReturn(listOf(ABSENCE_DTO)).whenever(absenceByFilterUseCase).getAbsences(absenceFilterDto)
+
+        val response = client.exchangeList<AbsenceResponse>(
+            HttpRequest.GET("/api/absence?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}&projectIds=1,2"),
+        )
+
+        assertEquals(HttpStatus.OK, response.status)
+        assertEquals(listOf(AbsenceResponse.from(ABSENCE_DTO)), response.body.get())
+    }
+
+    @Test
+    fun `filter absences by date range and users`() {
+        val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
+        val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
+        val absenceFilterDto = AbsenceFilterDTO(startDate, endDate, listOf(1L,2L), null, null)
+
+        doReturn(listOf(ABSENCE_DTO)).whenever(absenceByFilterUseCase).getAbsences(absenceFilterDto)
+
+        val response = client.exchangeList<AbsenceResponse>(
+            HttpRequest.GET("/api/absence?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}&userIds=1,2"),
+        )
+
+        assertEquals(HttpStatus.OK, response.status)
+        assertEquals(listOf(AbsenceResponse.from(ABSENCE_DTO)), response.body.get())
+    }
+
+    @Test
+    fun `filter absences by all filters`() {
+        val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
+        val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
+        val absenceFilterDto = AbsenceFilterDTO(startDate, endDate, listOf(1L,2L), listOf(13L,52L), listOf(3L, 5L))
+
+        doReturn(listOf(ABSENCE_DTO)).whenever(absenceByFilterUseCase).getAbsences(absenceFilterDto)
+
+        val response = client.exchangeList<AbsenceResponse>(
+            HttpRequest.GET("/api/absence?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}&userIds=1,2&organizationIds=13,52&projectIds=3,5"),
+        )
+
+        assertEquals(HttpStatus.OK, response.status)
+        assertEquals(listOf(AbsenceResponse.from(ABSENCE_DTO)), response.body.get())
+    }
+
+    @Test
+    fun `returns BAD_REQUEST when invalid list of user ids`() {
+        val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
+        val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeList<AbsenceResponse>(
-                HttpRequest.GET("/api/absence?userId=11"),
+                HttpRequest.GET("/api/absence?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}&userIds=aaaa,12"),
             )
         }
-
         assertEquals(HttpStatus.BAD_REQUEST, ex.status)
+    }
 
+    @Test
+    fun `returns BAD_REQUEST when date range is not defined`() {
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeList<AbsenceResponse>(
+                HttpRequest.GET("/api/absence?userIds=11,12"),
+            )
+        }
+        assertEquals(HttpStatus.BAD_REQUEST, ex.status)
     }
 
     private companion object {

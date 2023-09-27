@@ -44,7 +44,7 @@ internal interface AbsenceDao : JpaRepository<Absence, Long> {
     fun findAllByDateBetweenAndUsers(
         startDate: LocalDate,
         endDate: LocalDate,
-        userIds: Set<Long>?
+        userIds: List<Long>?
     ): List<Absence>
 
     @Query(

@@ -981,17 +981,14 @@ components:
         endDate:
           type: string
           format: date
-        userId:
-          type: integer
-          format: int64
+        userIds:
+          type: string
           nullable: true
-        organizationId:
-          type: integer
-          format: int64
+        organizationIds:
+          type: string
           nullable: true
-        projectId:
-          type: integer
-          format: int64
+        projectIds:
+          type: string
           nullable: true
     AbsenceResponse:
       required:

@@ -5,5 +5,5 @@ import java.time.LocalDate
 
 internal interface AbsenceRepository {
 
-    fun find(startDate: LocalDate, endDate: LocalDate, userIds: Set<Long>?): List<Absence>
+    fun find(startDate: LocalDate, endDate: LocalDate, userIds: List<Long>?): List<Absence>
 }

@@ -8,16 +8,16 @@ import java.time.LocalDate
 data class  AbsenceFilterRequest (
     val startDate: LocalDate,
     val endDate: LocalDate,
-    val userId: Long? = null,
-    val organizationId: Long? = null,
-    val projectId: Long? = null,
+    val userIds: String? = null,
+    val organizationIds: String? = null,
+    val projectIds: String? = null,
 ) {
     fun toDto(): AbsenceFilterDTO =
         AbsenceFilterDTO(
             startDate,
             endDate,
-            userId,
-            organizationId,
-            projectId,
+            userIds?.split(",".trim())?.map { it.toLong() },
+            organizationIds?.split(",".trim())?.map { it.toLong() },
+            projectIds?.split(",".trim())?.map { it.toLong() },
         )
 }
