@@ -303,3 +303,11 @@ internal fun createAttachmentInfoEntityWithFilenameAndMimetype(filename: String,
     uploadDate = LocalDateTime.now().withSecond(0).withNano(0),
     isTemporary = true
 )
+
+internal fun createAbsence(id: Long, type: String) = Absence(
+    AbsenceId(id, type),
+    1L,
+    "USER_NAME",
+    LocalDate.of(2023, Month.JANUARY, 1),
+    LocalDate.of(2023, Month.JANUARY, 3)
+)

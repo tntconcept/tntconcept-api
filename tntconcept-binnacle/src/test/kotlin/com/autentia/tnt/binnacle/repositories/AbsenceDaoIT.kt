@@ -13,7 +13,7 @@ import java.time.Month
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AbsenceRepositoryIT {
+class AbsenceDaoIT {
 
     private lateinit var projectRolePaidLeave1: ProjectRole
     private lateinit var projectRolePaidLeave2: ProjectRole
@@ -29,7 +29,7 @@ class AbsenceRepositoryIT {
     private lateinit var projectRoleDao: ProjectRoleDao
 
     @Inject
-    private lateinit var absenceRepository: AbsenceRepository
+    private lateinit var absenceDao: AbsenceDao
 
     @BeforeAll
     fun `obtain data test references`() {
@@ -152,7 +152,7 @@ class AbsenceRepositoryIT {
             Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
         )
 
-        val result = absenceRepository.findAllByDateBetweenAndUsers(startDate, endDate, null)
+        val result = absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, null)
 
         assertEquals(expectedAbsences, result)
     }
@@ -290,7 +290,7 @@ class AbsenceRepositoryIT {
             Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, "Usuario de prueba 2", LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
         )
 
-        val result = absenceRepository.findAllByDateBetweenAndUsers(startDate, endDate, setOf(11, 12))
+        val result = absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, setOf(11, 12))
 
         assertEquals(expectedAbsences, result)
     }
@@ -427,7 +427,7 @@ class AbsenceRepositoryIT {
             Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
         )
 
-        val result = absenceRepository.findAllByDateBetweenAndUser(startDate, endDate, 11)
+        val result = absenceDao.findAllByDateBetweenAndUser(startDate, endDate, 11)
 
         assertEquals(expectedAbsences, result)
     }
