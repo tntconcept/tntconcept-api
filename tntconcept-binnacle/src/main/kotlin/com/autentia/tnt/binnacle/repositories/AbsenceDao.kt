@@ -22,7 +22,7 @@ internal interface AbsenceDao : JpaRepository<Absence, Long> {
                     INNER JOIN ProjectRole pr ON pr.id = a.roleId
                     INNER JOIN Project p ON p.id = pr.projectId
                  WHERE
-                    a.start BETWEEN :startDate AND :endDate
+                    a.start <= :endDate AND a.end >= :startDate
                     AND (COALESCE(:userIds) IS NULL OR a.userId IN (:userIds))
             ), VacationsView (id, userId, userName, type, startDate, endDate) AS (
                 SELECT rh.id, rh.userId, u.name, 'VACATION', rh.beginDate, rh.finalDate
@@ -30,7 +30,7 @@ internal interface AbsenceDao : JpaRepository<Absence, Long> {
                     RequestHoliday rh
                     INNER JOIN User u ON rh.userId = u.id
                  WHERE
-                    rh.beginDate BETWEEN :startDate AND :endDate
+                    rh.beginDate <= :endDate AND rh.finalDate >= :startDate
                     AND (COALESCE(:userIds) IS NULL OR rh.userId IN (:userIds))
             )
             SELECT id, userId, userName, type, startDate, endDate
@@ -62,7 +62,7 @@ internal interface AbsenceDao : JpaRepository<Absence, Long> {
                     INNER JOIN ProjectRole pr ON pr.id = a.roleId
                     INNER JOIN Project p ON p.id = pr.projectId
                  WHERE
-                    a.start BETWEEN :startDate AND :endDate
+                    a.start <= :endDate AND a.end >= :startDate
                     AND a.userId = :userId
             ), VacationsView (id, userId, userName, type, startDate, endDate) AS (
                 SELECT rh.id, rh.userId, u.name, 'VACATION', rh.beginDate, rh.finalDate
@@ -70,7 +70,7 @@ internal interface AbsenceDao : JpaRepository<Absence, Long> {
                     RequestHoliday rh
                     INNER JOIN User u ON rh.userId = u.id
                  WHERE
-                    rh.beginDate BETWEEN :startDate AND :endDate
+                    rh.beginDate <= :endDate AND rh.finalDate >= :startDate
                     AND rh.userId = :userId
             )
             SELECT id, userId, userName, type, startDate, endDate

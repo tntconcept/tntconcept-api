@@ -297,7 +297,7 @@ class AbsenceDaoIT {
 
     @Test
     fun `should recover absences between two dates and by user id`() {
-        val startDate = LocalDate.of(2023, Month.AUGUST, 1)
+        val startDate = LocalDate.of(2023, Month.AUGUST, 27)
         val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
         val activitiesToSave = listOf(
             Activity(
@@ -392,7 +392,7 @@ class AbsenceDaoIT {
         val vacationsToSave = listOf(
             Vacation(
                 id = null,
-                startDate = LocalDate.of(2023, 8, 30),
+                startDate = LocalDate.of(2023, 8, 21),
                 endDate = LocalDate.of(2023, 8, 31),
                 chargeYear = LocalDate.of(2023, 1, 31),
                 userId = 11,
@@ -422,7 +422,7 @@ class AbsenceDaoIT {
         val savedActivities = activityDao.saveAll(activitiesToSave)
         val savedVacations = vacationDao.saveAll(vacationsToSave)
         val expectedAbsences = listOf(
-            Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
+            Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, "Usuario de prueba 1", LocalDate.of(2023, 8, 21), LocalDate.of(2023, 8, 31)),
             Absence(AbsenceId(savedActivities.elementAt(0).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
             Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, "Usuario de prueba 1", LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
         )
