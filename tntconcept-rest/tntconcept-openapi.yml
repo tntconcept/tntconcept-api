@@ -117,6 +117,8 @@ paths:
                   $ref: '#/components/schemas/ProjectRoleResponse'
   /api/absence:
     get:
+      tags:
+      - absence
       summary: Gets absence days with specified filters
       operationId: get$tntconcept_rest_1
       parameters:

@@ -10,7 +10,7 @@ internal class InternalAbsenceRepository(private val absenceDao: AbsenceDao): Ab
     override fun find(startDate: LocalDate, endDate: LocalDate, userIds: List<Long>?): List<Absence> {
         if(!userIds.isNullOrEmpty()) {
             return if (userIds.size == 1) {
-                absenceDao.findAllByDateBetweenAndUser(startDate, endDate, userIds.elementAt(0))
+                absenceDao.findAllByDateBetweenAndUser(startDate, endDate, userIds[0])
             } else {
                 absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, userIds)
             }
