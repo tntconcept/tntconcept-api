@@ -1,16 +1,17 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
+import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.AbsenceResponseConverter
 import com.autentia.tnt.binnacle.entities.Absence
 import com.autentia.tnt.binnacle.entities.AbsenceId
-import com.autentia.tnt.binnacle.entities.dto.AbsenceDTO
-import com.autentia.tnt.binnacle.entities.dto.AbsenceFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.AbsenceType
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.AbsenceRepository
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -22,48 +23,71 @@ internal class AbsencesByFilterUseCaseTest {
 
     private val activityRepository = mock<ActivityRepository>()
     private val absenceRepository = mock<AbsenceRepository>()
+    private val userRepository = mock<UserRepository>()
     private val absenceResponseConverter = AbsenceResponseConverter()
 
     private val absencesByFilterUseCase =
-        AbsencesByFilterUseCase(activityRepository, absenceRepository, absenceResponseConverter)
+        AbsencesByFilterUseCase(activityRepository, absenceRepository, userRepository, absenceResponseConverter)
 
 
     @Test
     fun `should return all the absences of requested user ids`() {
         val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
         val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
-        val userIds = listOf(1L, 3L)
+        val userIds = listOf(1L, 3L, 5L)
         val absenceFilterDTO = AbsenceFilterDTO(startDate, endDate, userIds, null, null)
-        val expectedAbsences = listOf(ABSENCE_01, ABSENCE_02)
         val absences = listOf(
             Absence(
-                AbsenceId(1, ABSENCE_01.type.name),
-                ABSENCE_01.userId,
-                ABSENCE_01.userName,
-                ABSENCE_01.startDate,
-                ABSENCE_01.endDate
+                AbsenceId(1, AbsenceType.VACATION.name),
+                1L,
+                "John Doe",
+                START_DATE_01,
+                END_DATE_01
             ),
             Absence(
-                AbsenceId(2, ABSENCE_02.type.name),
-                ABSENCE_02.userId,
-                ABSENCE_02.userName,
-                ABSENCE_02.startDate,
-                ABSENCE_02.endDate
+                AbsenceId(2, AbsenceType.PAID_LEAVE.name),
+                3L,
+                "John Doe 2",
+                LocalDate.of(2023, Month.SEPTEMBER, 11),
+                LocalDate.of(2023, Month.SEPTEMBER, 14)
             ),
         )
 
+        val expectedAbsences2 = listOf(
+            AbsenceResponseDTO(
+                1L, "John Doe",
+                listOf(
+                    AbsenceDTO(
+                        AbsenceType.VACATION, START_DATE_01,
+                        END_DATE_01
+                    )
+                )
+            ),
+            AbsenceResponseDTO(
+                3L, "John Doe 2",
+                listOf(
+                    AbsenceDTO(
+                        AbsenceType.PAID_LEAVE, LocalDate.of(2023, Month.SEPTEMBER, 11),
+                        LocalDate.of(2023, Month.SEPTEMBER, 14)
+                    )
+                )
+            ),
+            AbsenceResponseDTO(5L, "John Doe 3", listOf())
+        )
+
         whenever(absenceRepository.find(startDate, endDate, userIds)).thenReturn(absences)
+        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds), null)).thenReturn(users)
 
         val result = absencesByFilterUseCase.getAbsences(absenceFilterDTO)
 
-        assertEquals(expectedAbsences, result)
+        assertEquals(expectedAbsences2, result)
     }
 
     @Test
     fun `should return all the absences of users who have activities which belong to requested organizations and projects`() {
         val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
         val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
-        val userIds = listOf(1L, 3L)
+        val userIds = listOf(1L, 3L, 5L)
         val projectIds = listOf(45L, 67L)
         val organizationIds = listOf(30L, 21L)
         val absenceFilterDTO = AbsenceFilterDTO(startDate, endDate, null, organizationIds, projectIds)
@@ -79,26 +103,48 @@ internal class AbsencesByFilterUseCaseTest {
             ActivityPredicates.projectIds(absenceFilterDTO.projectIds!!)
         )
 
-        val expectedAbsences = listOf(ABSENCE_01, ABSENCE_02)
         val absences = listOf(
             Absence(
-                AbsenceId(1, ABSENCE_01.type.name),
-                ABSENCE_01.userId,
-                ABSENCE_01.userName,
-                ABSENCE_01.startDate,
-                ABSENCE_01.endDate
+                AbsenceId(1, AbsenceType.VACATION.name),
+                1L,
+                "John Doe",
+                START_DATE_01,
+                END_DATE_01
             ),
             Absence(
-                AbsenceId(2, ABSENCE_02.type.name),
-                ABSENCE_02.userId,
-                ABSENCE_02.userName,
-                ABSENCE_02.startDate,
-                ABSENCE_02.endDate
+                AbsenceId(2, AbsenceType.PAID_LEAVE.name),
+                3L,
+                "John Doe 2",
+                LocalDate.of(2023, Month.SEPTEMBER, 11),
+                LocalDate.of(2023, Month.SEPTEMBER, 14)
             ),
+        )
+
+        val expectedAbsences = listOf(
+            AbsenceResponseDTO(
+                1L, "John Doe",
+                listOf(
+                    AbsenceDTO(
+                        AbsenceType.VACATION, START_DATE_01,
+                        END_DATE_01
+                    )
+                )
+            ),
+            AbsenceResponseDTO(
+                3L, "John Doe 2",
+                listOf(
+                    AbsenceDTO(
+                        AbsenceType.PAID_LEAVE, LocalDate.of(2023, Month.SEPTEMBER, 11),
+                        LocalDate.of(2023, Month.SEPTEMBER, 14)
+                    )
+                )
+            ),
+            AbsenceResponseDTO(5L, "John Doe 3", listOf())
         )
 
         whenever(activityRepository.findAll(predicate)).thenReturn(activities)
         whenever(absenceRepository.find(startDate, endDate, userIds)).thenReturn(absences)
+        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds), null)).thenReturn(users)
 
         val result = absencesByFilterUseCase.getAbsences(absenceFilterDTO)
 
@@ -109,7 +155,7 @@ internal class AbsencesByFilterUseCaseTest {
     fun `should return all the absences of users who have activities which belong to requested organizations`() {
         val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
         val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
-        val userIds = listOf(1L, 3L)
+        val userIds = listOf(1L, 3L, 5L)
         val organizationIds = listOf(30L, 21L)
         val absenceFilterDTO = AbsenceFilterDTO(startDate, endDate, null, organizationIds, null)
 
@@ -121,48 +167,67 @@ internal class AbsencesByFilterUseCaseTest {
             ActivityPredicates.organizationIds(absenceFilterDTO.organizationIds!!)
         )
 
-        val expectedAbsences = listOf(ABSENCE_01, ABSENCE_02)
         val absences = listOf(
             Absence(
-                AbsenceId(1, ABSENCE_01.type.name),
-                ABSENCE_01.userId,
-                ABSENCE_01.userName,
-                ABSENCE_01.startDate,
-                ABSENCE_01.endDate
+                AbsenceId(1, AbsenceType.VACATION.name),
+                1L,
+                "John Doe",
+                START_DATE_01,
+                END_DATE_01
             ),
             Absence(
-                AbsenceId(2, ABSENCE_02.type.name),
-                ABSENCE_02.userId,
-                ABSENCE_02.userName,
-                ABSENCE_02.startDate,
-                ABSENCE_02.endDate
+                AbsenceId(2, AbsenceType.PAID_LEAVE.name),
+                3L,
+                "John Doe 2",
+                LocalDate.of(2023, Month.SEPTEMBER, 11),
+                LocalDate.of(2023, Month.SEPTEMBER, 14)
             ),
+        )
+        val expectedAbsences2 = listOf(
+            AbsenceResponseDTO(
+                1L, "John Doe",
+                listOf(
+                    AbsenceDTO(
+                        AbsenceType.VACATION, START_DATE_01,
+                        END_DATE_01
+                    )
+                )
+            ),
+            AbsenceResponseDTO(
+                3L, "John Doe 2",
+                listOf(
+                    AbsenceDTO(
+                        AbsenceType.PAID_LEAVE, LocalDate.of(2023, Month.SEPTEMBER, 11),
+                        LocalDate.of(2023, Month.SEPTEMBER, 14)
+                    )
+                )
+            ),
+            AbsenceResponseDTO(5L, "John Doe 3", listOf())
         )
 
         whenever(activityRepository.findAll(predicate)).thenReturn(activities)
         whenever(absenceRepository.find(startDate, endDate, userIds)).thenReturn(absences)
+        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds), null)).thenReturn(users)
 
         val result = absencesByFilterUseCase.getAbsences(absenceFilterDTO)
 
-        assertEquals(expectedAbsences, result)
+        assertEquals(expectedAbsences2, result)
     }
 
     private companion object {
         private val START_DATE_01 = LocalDate.of(2023, Month.SEPTEMBER, 5)
         private val END_DATE_01 = LocalDate.of(2023, Month.SEPTEMBER, 10)
-        private val ABSENCE_01 = AbsenceDTO(2, "John Doe", AbsenceType.VACATION, START_DATE_01, END_DATE_01)
-        private val ABSENCE_02 = AbsenceDTO(
-            2,
-            "John Doe",
-            AbsenceType.PAID_LEAVE,
-            LocalDate.of(2023, Month.SEPTEMBER, 11),
-            LocalDate.of(2023, Month.SEPTEMBER, 14)
-        )
         private val activities = listOf(
             createActivity().copy(userId = 1L, description = "Activity 1"),
             createActivity().copy(userId = 3L, description = "Activity 2"),
             createActivity().copy(userId = 1L, description = "Activity 3"),
             createActivity().copy(userId = 1L, description = "Activity 4"),
+            createActivity().copy(userId = 5L, description = "Activity 5"),
+        )
+        private val users = listOf(
+            createUser().copy(id = 1L, name = "John Doe"),
+            createUser().copy(id = 3L, name = "John Doe 2"),
+            createUser().copy(id = 5L, name = "John Doe 3"),
         )
     }
 }

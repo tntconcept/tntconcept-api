@@ -11,7 +11,7 @@ internal class AbsenceController (
 ){
     @Get("{?absenceFilterRequest*}")
     @Operation(summary = "Gets absence days with specified filters")
-    internal fun get(absenceFilterRequest: AbsenceFilterRequest): List<AbsenceResponse> =
-        absencesByFilterUseCase.getAbsences(absenceFilterRequest.toDto()).map { AbsenceResponse.from(it) }
+    internal fun get(absenceFilterRequest: AbsenceFilterRequest): List<UserAbsenceResponse> =
+        absencesByFilterUseCase.getAbsences(absenceFilterRequest.toDto()).map { UserAbsenceResponse.from(it) }
 
 }

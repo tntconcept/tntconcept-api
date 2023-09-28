@@ -7,8 +7,6 @@ enum class AbsenceType {
 }
 
 data class AbsenceDTO(
-    val userId: Long,
-    val userName: String,
     val type: AbsenceType,
     val startDate: LocalDate,
     val endDate: LocalDate,
