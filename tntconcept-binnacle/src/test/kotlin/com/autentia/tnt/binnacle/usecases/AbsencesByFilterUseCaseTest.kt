@@ -40,14 +40,12 @@ internal class AbsencesByFilterUseCaseTest {
             Absence(
                 AbsenceId(1, AbsenceType.VACATION.name),
                 1L,
-                "John Doe",
                 START_DATE_01,
                 END_DATE_01
             ),
             Absence(
                 AbsenceId(2, AbsenceType.PAID_LEAVE.name),
                 3L,
-                "John Doe 2",
                 LocalDate.of(2023, Month.SEPTEMBER, 11),
                 LocalDate.of(2023, Month.SEPTEMBER, 14)
             ),
@@ -107,14 +105,12 @@ internal class AbsencesByFilterUseCaseTest {
             Absence(
                 AbsenceId(1, AbsenceType.VACATION.name),
                 1L,
-                "John Doe",
                 START_DATE_01,
                 END_DATE_01
             ),
             Absence(
                 AbsenceId(2, AbsenceType.PAID_LEAVE.name),
                 3L,
-                "John Doe 2",
                 LocalDate.of(2023, Month.SEPTEMBER, 11),
                 LocalDate.of(2023, Month.SEPTEMBER, 14)
             ),
@@ -171,14 +167,12 @@ internal class AbsencesByFilterUseCaseTest {
             Absence(
                 AbsenceId(1, AbsenceType.VACATION.name),
                 1L,
-                "John Doe",
                 START_DATE_01,
                 END_DATE_01
             ),
             Absence(
                 AbsenceId(2, AbsenceType.PAID_LEAVE.name),
                 3L,
-                "John Doe 2",
                 LocalDate.of(2023, Month.SEPTEMBER, 11),
                 LocalDate.of(2023, Month.SEPTEMBER, 14)
             ),

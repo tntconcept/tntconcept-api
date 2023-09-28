@@ -9,7 +9,6 @@ data class Absence (
     @EmbeddedId
     val absenceId: AbsenceId,
     val userId: Long,
-    val userName: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
 )
