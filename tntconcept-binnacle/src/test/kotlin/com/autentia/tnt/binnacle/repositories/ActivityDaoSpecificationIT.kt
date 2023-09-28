@@ -4,15 +4,18 @@ import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createOrganization
 import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import io.micronaut.data.model.Sort
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -20,6 +23,9 @@ class ActivityDaoSpecificationIT {
 
     @Inject
     private lateinit var activityDao: ActivityDao
+
+    @Inject
+    private lateinit var projectRoleDao: ProjectRoleDao
 
     @Inject
     private lateinit var projectRepository: ProjectRepository
@@ -43,23 +49,37 @@ class ActivityDaoSpecificationIT {
 
     @Test
     fun `test findAll with order`() {
+        val initDate = LocalDate.of(2023, 1, 1)
+        val predicate = ActivityPredicates.startDateBetweenDates(DateInterval.of(initDate, initDate.plusDays(3L)))
 
         val activitiesToSave = listOf(
-            createActivity().copy(id = null, start = LocalDate.now().plusDays(1L).atTime(10, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
-            createActivity().copy(id = null, start = LocalDate.now().plusDays(2L).atTime(12, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
-            createActivity().copy(id = null, start = LocalDate.now().atTime(12, 30, 0), end = LocalDate.now().atTime(14, 30, 0)),
-            createActivity().copy(id = null, userId = 1L, start = LocalDate.now().atTime(9, 0, 0), end = LocalDate.now().atTime(12, 30, 0)),
+            createActivity().copy(
+                id = null,
+                start = initDate.plusDays(1L).atTime(10, 30, 0),
+                end = initDate.atTime(14, 30, 0)
+            ),
+            createActivity().copy(
+                id = null,
+                start = initDate.plusDays(2L).atTime(12, 30, 0),
+                end = initDate.atTime(14, 30, 0)
+            ),
+            createActivity().copy(id = null, start = initDate.atTime(12, 30, 0), end = initDate.atTime(14, 30, 0)),
+            createActivity().copy(
+                id = null,
+                userId = 1L,
+                start = initDate.atTime(9, 0, 0),
+                end = initDate.atTime(12, 30, 0)
+            ),
         )
         activityDao.saveAll(activitiesToSave)
 
-        val actualActivities = activityDao.findAll(ActivityPredicates.ALL, Sort.of(Sort.Order("start")))
+        val actualActivities = activityDao.findAll(predicate, Sort.of(Sort.Order("start")))
 
         assertEquals(4, actualActivities.size)
         assertEquals(activitiesToSave[3].start, actualActivities[0].start)
         assertEquals(activitiesToSave[2].start, actualActivities[1].start)
         assertEquals(activitiesToSave[0].start, actualActivities[2].start)
         assertEquals(activitiesToSave[1].start, actualActivities[3].start)
-
     }
 
     @Test
@@ -124,7 +144,15 @@ class ActivityDaoSpecificationIT {
 
         projectRepository.update(
             (Project(
-                project.id, project.name, false, project.billable, LocalDate.now(), null, null, organization.get(), project.projectRoles
+                project.id,
+                project.name,
+                false,
+                project.billable,
+                LocalDate.now(),
+                null,
+                null,
+                organization.get(),
+                project.projectRoles
             ))
         )
 
@@ -140,8 +168,161 @@ class ActivityDaoSpecificationIT {
         activityDao.saveAll(activitiesToSave)
 
         val actualActivities = activityDao.findAll(ActivityPredicates.ALL.and(ActivityPredicates.organizationId(1L)))
-        assertEquals(1, actualActivities.size)
-        assertEquals(1L, actualActivities[0].projectRole.project.organization.id)
+        assertTrue(actualActivities.isNotEmpty())
+        assertTrue(actualActivities.all { it.projectRole.project.organization.id == 1L })
+    }
+
+    @Test
+    fun `test findAll by organization and projects`() {
+        val projectRole = projectRoleDao.findById(13L).orElseThrow { IllegalStateException() }
+        val otherProjectRole = projectRoleDao.findById(5L).orElseThrow { IllegalStateException() }
+        val projectRoleOfAnotherOrganization = projectRoleDao.findById(11L).orElseThrow { IllegalStateException() }
+
+        val activitiesToSave = listOf(
+            Activity(
+                start = LocalDateTime.of(2023, 9, 1, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 1, 17, 0, 0),
+                duration = 480,
+                description = "Activity 1",
+                projectRole = projectRole,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 2, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 2, 13, 0, 0),
+                duration = 240,
+                description = "Activity 2",
+                projectRole = projectRole,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 2, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 2, 13, 0, 0),
+                duration = 240,
+                description = "Activity 3",
+                projectRole = otherProjectRole,
+                userId = 12,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 13, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 13, 13, 0, 0),
+                duration = 240,
+                description = "Activity 4",
+                projectRole = projectRoleOfAnotherOrganization,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+        )
+
+        activityDao.saveAll(activitiesToSave)
+
+        val projectIds = listOf(projectRole.project.id, otherProjectRole.project.id)
+
+        val actualActivities = activityDao.findAll(
+            ActivityPredicates.organizationId(1L).and(
+                ActivityPredicates.projectIds(
+                    projectIds
+                )
+            )
+        )
+
+        assertTrue(actualActivities.isNotEmpty())
+        assertTrue(actualActivities.all { it.projectRole.project.organization.id == 1L })
+        assertTrue(actualActivities.all { projectIds.contains(it.projectRole.project.id) })
+    }
+
+    @Test
+    fun `test findAll by organizations`() {
+        val projectRole = projectRoleDao.findById(13L).orElseThrow { IllegalStateException() }
+        val otherProjectRole = projectRoleDao.findById(5L).orElseThrow { IllegalStateException() }
+        val projectRoleOfAnotherOrganization = projectRoleDao.findById(11L).orElseThrow { IllegalStateException() }
+
+        val project = projectRepository.findById(2).get()
+        val organization = organizationRepository.findById(2L)
+
+        projectRepository.update(
+            (Project(
+                project.id,
+                project.name,
+                false,
+                project.billable,
+                LocalDate.now(),
+                null,
+                null,
+                organization.get(),
+                project.projectRoles
+            ))
+        )
+
+        val activitiesToSave = listOf(
+            Activity(
+                start = LocalDateTime.of(2023, 9, 1, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 1, 17, 0, 0),
+                duration = 480,
+                description = "Activity 1",
+                projectRole = projectRole,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 2, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 2, 13, 0, 0),
+                duration = 240,
+                description = "Activity 2",
+                projectRole = projectRole,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 2, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 2, 13, 0, 0),
+                duration = 240,
+                description = "Activity 3",
+                projectRole = otherProjectRole,
+                userId = 12,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+            Activity(
+                start = LocalDateTime.of(2023, 9, 13, 9, 0, 0),
+                end = LocalDateTime.of(2023, 9, 13, 13, 0, 0),
+                duration = 240,
+                description = "Activity 4",
+                projectRole = projectRoleOfAnotherOrganization,
+                userId = 11,
+                billable = false,
+                hasEvidences = false,
+                approvalState = ApprovalState.PENDING
+            ),
+        )
+
+        activityDao.saveAll(activitiesToSave)
+
+        val organizationIds =
+            listOf(otherProjectRole.project.organization.id, projectRoleOfAnotherOrganization.project.organization.id)
+
+        val actualActivities = activityDao.findAll(
+            ActivityPredicates.organizationIds(organizationIds)
+        )
+
+        assertTrue(actualActivities.isNotEmpty())
+        assertTrue(actualActivities.all { organizationIds.contains(it.projectRole.project.organization.id) })
     }
 
 
