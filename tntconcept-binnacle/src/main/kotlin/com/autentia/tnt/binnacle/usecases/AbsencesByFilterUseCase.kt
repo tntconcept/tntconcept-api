@@ -30,8 +30,7 @@ class AbsencesByFilterUseCase internal constructor(
         var userIds = absenceFilter.userIds?: listOf()
         if (userIds.isEmpty()) {
             val activities = getActivitiesByFilter(absenceFilter)
-            userIds = activities.map { it.userId }.toSet().toList()
-
+            userIds = activities.map { it.userId }.distinct().toList()
         }
         val users = userRepository.findAll(UserPredicates.fromUserIds(userIds), null)
         val absences = absenceRepository.find(absenceFilter.startDate, absenceFilter.endDate, userIds)

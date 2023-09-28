@@ -45,7 +45,6 @@ internal interface AbsenceDao : JpaRepository<Absence, Long> {
         endDate: LocalDate,
         userIds: List<Long>?
     ): List<Absence>
-
     @Query(
         """WITH ActivitiesView (id, userId, type, startDate, endDate, numActivities) AS (
                 SELECT
