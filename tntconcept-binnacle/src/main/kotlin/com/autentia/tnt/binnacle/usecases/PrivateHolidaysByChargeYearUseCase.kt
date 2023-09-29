@@ -2,10 +2,10 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.HolidayResponseConverter
 import com.autentia.tnt.binnacle.core.domain.DateInterval
-import com.autentia.tnt.binnacle.core.domain.HolidayResponse
+import com.autentia.tnt.binnacle.core.domain.HolidaysResponse
 import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.entities.Holiday
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.HolidaysResponseDTO
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.services.VacationService
@@ -26,16 +26,16 @@ class PrivateHolidaysByChargeYearUseCase internal constructor(
 
     @Transactional
     @ReadOnly
-    fun get(chargeYear: Int): HolidayResponseDTO {
+    fun get(chargeYear: Int): HolidaysResponseDTO {
         val user = userService.getAuthenticatedUser()
 
         val userTimeSinceHiringYear = getTimeSinceHiringYear(user.hiringDate.year)
         val holidays: List<Holiday> = getAllByDateBetween(userTimeSinceHiringYear.start, userTimeSinceHiringYear.end)
         val vacations: List<Vacation> = vacationService.getVacationsByChargeYear(chargeYear)
 
-        val holidayResponse = HolidayResponse(holidays, vacations)
+        val holidaysResponse = HolidaysResponse(holidays, vacations)
 
-        return holidayResponseConverter.toHolidayResponseDTO(holidayResponse)
+        return holidayResponseConverter.toHolidaysResponseDTO(holidaysResponse)
     }
 
     private fun getTimeSinceHiringYear(year: Int): DateInterval {

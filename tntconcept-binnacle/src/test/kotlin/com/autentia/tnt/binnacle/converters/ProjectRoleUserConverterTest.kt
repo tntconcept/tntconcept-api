@@ -85,7 +85,7 @@ internal class ProjectRoleUserConverterTest {
     }
 
     private companion object {
-        val project = Project(1, "Dummy project", false, false, LocalDate.now(), null, null, Organization(2, "Organzation", listOf()), listOf())
+        val project = Project(1, "Dummy project", false, false, LocalDate.now(), null, null, Organization(2, "Organzation", 1, listOf()), listOf())
         val role = ProjectRole(1, "First Role", RequireEvidence.NO, project, 0, 0, true, false, TimeUnit.MINUTES)
         val timeInfo =TimeInfo(MaxTimeAllowed(250, 0), TimeUnit.MINUTES)
 

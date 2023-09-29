@@ -40,7 +40,7 @@ internal class ActivityRequestBodyConverterTest {
             1
         )
 
-        val DUMMY_ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
+        val DUMMY_ORGANIZATION = Organization(1L, "Dummy Organization", 1, listOf())
 
         val DUMMY_PROJECT = Project(1L, "Dummy Project", open = true, billable = false, LocalDate.now(), null, null, projectRoles = listOf(), organization = DUMMY_ORGANIZATION)
 

@@ -4,6 +4,8 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import com.autentia.tnt.security.application.id
+import io.micronaut.data.model.Page
+import io.micronaut.data.model.Pageable
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import junit.framework.TestCase.assertEquals
@@ -97,38 +99,39 @@ class UserRepositorySecuredTest {
     }
 
     @Test
-    fun `findAll throw IllegalStateException if there is not authenticated user`() {
+    fun `findAll cannot access to users info if there is not an user authenticated`() {
+        val pageable = Pageable.from(0, 1)
         val predicate = UserPredicates.ALL
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
-        assertThrows<IllegalStateException> { userRepositorySecured.findAll(predicate)}
+        assertThrows<IllegalStateException> { userRepositorySecured.findAll(predicate, pageable) }
     }
 
     @Test
-    fun `findAll can access to all users info if user has activity-approval role`() {
+    fun `findAll can access to all users limit by 2 info if user has activity-approval role`() {
+        val pageable = Pageable.from(0, 2)
         val predicate = UserPredicates.ALL
+        val expectedUsers = listOf(createUser())
+
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
+        whenever(userDao.findAll(predicate, pageable)).thenReturn(Page.of(expectedUsers, pageable, 1))
 
-        userRepositorySecured.findAll(predicate)
+        val result = userRepositorySecured.findAll(predicate, pageable)
 
-        verify(userDao).findAll(predicate)
+        assertEquals(expectedUsers, result)
     }
 
     @Test
-    fun `findAll can access to logged user info only if user has not valid role`() {
-        val predicate =  UserPredicates.ALL
-        val predicateWithUserIdRestriction =
-            PredicateBuilder.and(
-            predicate,
-                UserPredicates.userId(userAuth.id())
-        )
+    fun `findAll can access to all users info without pageable if user has activity-approval role`() {
+        val predicate = UserPredicates.ALL
+        val expectedUsers = listOf(createUser())
 
-        whenever(securityService.authentication).thenReturn(Optional.of(userAuth))
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
+        whenever(userDao.findAll(predicate)).thenReturn(expectedUsers)
 
-        userRepositorySecured.findAll(predicate)
+        val result = userRepositorySecured.findAll(predicate, null)
 
-        verify(userDao).findAll(predicateWithUserIdRestriction)
-
+        assertEquals(expectedUsers, result)
     }
 
     private companion object {

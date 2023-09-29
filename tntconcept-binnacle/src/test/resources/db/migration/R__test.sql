@@ -127,3 +127,10 @@ VALUES (111, 11, '2023-08-02 09:00:00', 240, 1, 10, 'Permiso', 1, '2023-08-02 11
 -- Activity evidence
 INSERT INTO ActivityAttachment (activityId, attachmentId, insertDate)
 VALUES (111, '4d3cbe3f-369f-11ee-99c2-0242ac180003', NOW());
+
+-- Absences
+
+-- Project role perteneciente al proyecto 2 (permisos) configurado con duracion de tipo DAYS
+INSERT INTO ProjectRole (id, projectId,name,costPerHour,expectedHours,requireEvidence,ownerId,departmentId,insertDate,updateDate,maxTimeAllowedByYear,timeUnit,isApprovalRequired,isWorkingTime,maxTimeAllowedByActivity)
+VALUES (13, 2,'permiso diario',0.00,0,'NO',NULL,NULL,'2023-09-21 13:22:15','2023-09-21 13:22:18',0,'DAYS',1,1,0);
+

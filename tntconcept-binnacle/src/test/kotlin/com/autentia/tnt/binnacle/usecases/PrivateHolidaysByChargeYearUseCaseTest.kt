@@ -7,7 +7,7 @@ import com.autentia.tnt.binnacle.converters.VacationConverter
 import com.autentia.tnt.binnacle.core.domain.Vacation
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.HolidaysResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.UserService
@@ -50,7 +50,7 @@ internal class PrivateHolidaysByChargeYearUseCaseTest {
         private val HOLIDAYS_DTO = listOf<HolidayDTO>()
         private val VACATIONS = listOf<Vacation>()
         private val VACATIONS_DTO = listOf<VacationDTO>()
-        private val HOLIDAY_RESPONSE_DTO = HolidayResponseDTO(HOLIDAYS_DTO, VACATIONS_DTO)
+        private val HOLIDAY_RESPONSE_DTO = HolidaysResponseDTO(HOLIDAYS_DTO, VACATIONS_DTO)
     }
 
 }

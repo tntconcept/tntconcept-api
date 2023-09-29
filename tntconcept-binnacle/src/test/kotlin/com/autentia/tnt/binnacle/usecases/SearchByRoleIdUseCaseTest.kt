@@ -301,7 +301,7 @@ internal class SearchByRoleIdUseCaseTest {
     private companion object {
         private val UNKONW_ROLE_ID = -1L
 
-        private val AUTENTIA = com.autentia.tnt.binnacle.entities.Organization(1L, "Autentia", listOf())
+        private val AUTENTIA = com.autentia.tnt.binnacle.entities.Organization(1L, "Autentia", 1, listOf())
         private val INTERNAL_TRAINING =
             com.autentia.tnt.binnacle.entities.Project(
                 1,
@@ -339,7 +339,7 @@ internal class SearchByRoleIdUseCaseTest {
                 TimeUnit.MINUTES
             )
 
-        private val OTHER_COMPANY = com.autentia.tnt.binnacle.entities.Organization(2L, "Other S.A.", listOf())
+        private val OTHER_COMPANY = com.autentia.tnt.binnacle.entities.Organization(2L, "Other S.A.", 1, listOf())
         private val EXTERNAL_TRAINING =
             com.autentia.tnt.binnacle.entities.Project(
                 2,

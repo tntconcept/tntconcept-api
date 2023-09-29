@@ -7,8 +7,7 @@ import io.micronaut.data.repository.CrudRepository
 
 @Repository
 internal interface ProjectRepository : CrudRepository<Project, Long> {
+
     fun findAll(projectSpecification: Specification<Project>): List<Project>
-
     fun findAllByOrganizationId(id: Long): List<Project>
-
 }

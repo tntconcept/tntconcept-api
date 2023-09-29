@@ -1,5 +1,6 @@
 package com.autentia.tnt.api.binnacle.project
 
+import com.autentia.tnt.api.OpenApiTag.Companion.PROJECT
 import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.api.binnacle.projectrole.ProjectRoleUserResponse
 import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
@@ -9,8 +10,10 @@ import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.*
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
 
 @Controller("/api/project")
+@Tag(name = PROJECT)
 internal class ProjectController(
     private val projectByIdUseCase: ProjectByIdUseCase,
     private val projectRoleByProjectIdUseCase: ProjectRoleByProjectIdUseCase,

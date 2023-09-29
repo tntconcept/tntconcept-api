@@ -1,14 +1,9 @@
 package com.autentia.tnt.api.binnacle.holiday
 
-import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.api.binnacle.exchangeList
 import com.autentia.tnt.api.binnacle.vacation.HolidayDetailsResponse
-import com.autentia.tnt.api.binnacle.vacation.HolidayResponse
-import com.autentia.tnt.api.binnacle.vacation.VacationResponse
-import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.VacationDTO
-import com.autentia.tnt.binnacle.usecases.UserHolidaysBetweenDatesUseCase
+import com.autentia.tnt.binnacle.usecases.UserHolidayBetweenDatesUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.BlockingHttpClient
@@ -17,7 +12,7 @@ import io.micronaut.http.client.annotation.Client
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -36,8 +31,8 @@ internal class HolidayControllerIT {
 
     private lateinit var client: BlockingHttpClient
 
-    @get:MockBean(UserHolidaysBetweenDatesUseCase::class)
-    internal val holidaysBetweenDateForUserUseCase = mock<UserHolidaysBetweenDatesUseCase>()
+    @get:MockBean(UserHolidayBetweenDatesUseCase::class)
+    internal val holidayBetweenDateForUserUseCase = mock<UserHolidayBetweenDatesUseCase>()
 
 
     @BeforeAll
@@ -46,52 +41,57 @@ internal class HolidayControllerIT {
     }
 
     @Test
-    fun `get the holidays by charge year`() {
-        doReturn(HOLIDAY_RESPONSE_DTO).whenever(holidaysBetweenDateForUserUseCase).getHolidays(
-            START_DATE, START_DATE.plusDays(3L)
-        )
+    fun `get the holidays by year`() {
+        val currYear = LocalDate.now().year
+        doReturn(HOLIDAYS_RESPONSE_DTO).whenever(holidayBetweenDateForUserUseCase).getHolidays(currYear)
 
-        val response = client.exchangeObject<HolidayResponse>(
-            HttpRequest.GET("/api/holidays?startDate=${START_DATE}&endDate=${START_DATE.plusDays(3L)}")
+        val response = client.exchangeList<HolidayDetailsResponse>(
+            HttpRequest.GET("/api/holiday?year=${currYear}")
         )
 
         assertEquals(HttpStatus.OK, response.status())
         assertEquals(HOLIDAY_RESPONSE, response.body.get())
     }
 
+    @Test
+    fun `get the holidays of current year if no year provided`() {
+        doReturn(HOLIDAYS_RESPONSE_DTO).whenever(holidayBetweenDateForUserUseCase).getHolidays(null)
+
+        val response = client.exchangeList<HolidayDetailsResponse>(
+            HttpRequest.GET("/api/holiday")
+        )
+
+        assertEquals(HttpStatus.OK, response.status())
+        assertEquals(HOLIDAY_RESPONSE, response.body.get())
+    }
+
+    @Test
+    fun `get the an empty array when year has no holidays`() {
+        val currentYear = 2022
+        doReturn(listOf<HolidayDTO>()).whenever(holidayBetweenDateForUserUseCase).getHolidays(currentYear)
+
+        val response = client.exchangeList<HolidayDetailsResponse>(
+            HttpRequest.GET("/api/holiday?year=${currentYear}")
+        )
+
+        assertEquals(HttpStatus.OK, response.status())
+        assertEquals(listOf<HolidayDetailsResponse>(), response.body.get())
+    }
+
     private companion object {
-        private val START_DATE = LocalDate.of(2023, 7, 6)
 
-        val VACATION_DTO = VacationDTO(
-            2,
-            "Observations",
-            "Description",
-            VacationState.PENDING,
-            START_DATE,
-            START_DATE.plusDays(1L),
-            listOf(START_DATE),
-            START_DATE
-        )
-        val VACATION_RESPONSE = VacationResponse(
-            2,
-            "Observations",
-            "Description",
-            VacationState.PENDING,
-            START_DATE,
-            START_DATE.plusDays(1L),
-            listOf(START_DATE),
-            START_DATE
-        )
+        private val HOLIDAYS_RESPONSE_DTO =
+            listOf(
+                HolidayDTO(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1)),
+                HolidayDTO(2, "Santa", LocalDate.of(LocalDate.now().year, 12, 25))
+            )
 
-        private val HOLIDAY_RESPONSE_DTO = HolidayResponseDTO(
-            listOf(HolidayDTO(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
-            listOf(VACATION_DTO)
-        )
 
-        private val HOLIDAY_RESPONSE = HolidayResponse(
-            listOf(HolidayDetailsResponse(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1))),
-            listOf(VACATION_RESPONSE)
-        )
+        private val HOLIDAY_RESPONSE =
+            listOf(
+                HolidayDetailsResponse(1, "New year", LocalDate.of(LocalDate.now().year, 1, 1)),
+                HolidayDetailsResponse(2, "Santa", LocalDate.of(LocalDate.now().year, 12, 25))
+            )
     }
 
 }

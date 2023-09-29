@@ -16,6 +16,33 @@ internal object UserPredicates {
     internal fun fromUserIds(ids: List<Long>) = UserFromUserIdsSpecification(ids)
 
     internal fun userId(id: Long) = UserIdSpecification(id)
+
+    internal fun filterByName(filter: String) = UserFilterByNameSpecification(filter)
+}
+
+class UserFilterByNameSpecification(private val filter: String) : Specification<User> {
+    override fun toPredicate(
+        root: Root<User>,
+        query: CriteriaQuery<*>,
+        criteriaBuilder: CriteriaBuilder
+    ): Predicate? {
+        return criteriaBuilder.like(root.get("name"), "%${filter}%")
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as UserFilterByNameSpecification
+
+        return filter == other.filter
+    }
+
+    override fun hashCode(): Int {
+        return filter.hashCode()
+    }
+
+
 }
 
 class UserIdSpecification(private val id: Long) : Specification<User> {

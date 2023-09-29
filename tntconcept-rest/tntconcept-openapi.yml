@@ -115,12 +115,34 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectRoleResponse'
+  /api/absence:
+    get:
+      tags:
+      - absence
+      summary: Gets absence days with specified filters
+      operationId: get$tntconcept_rest_1
+      parameters:
+      - name: absenceFilterRequest
+        in: query
+        required: true
+        explode: true
+        schema:
+          $ref: '#/components/schemas/AbsenceFilterRequest'
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAbsenceResponse'
   /api/activity:
     get:
       tags:
       - activity
       summary: Gets activities with specified filters
-      operationId: get$tntconcept_rest_1
+      operationId: get$tntconcept_rest_2
       parameters:
       - name: activityFilterRequest
         in: query
@@ -206,7 +228,7 @@ paths:
       tags:
       - activity
       summary: Gets an activity by its id.
-      operationId: get$tntconcept_rest_2
+      operationId: get$tntconcept_rest_3
       parameters:
       - name: id
         in: path
@@ -366,6 +388,28 @@ paths:
               schema:
                 type: integer
                 format: int32
+  /api/holiday:
+    get:
+      tags:
+      - holiday
+      summary: Retrieves existing holidays given a year
+      operationId: getHolidaysByYear
+      parameters:
+      - name: year
+        in: query
+        schema:
+          type: integer
+          format: int32
+          nullable: true
+      responses:
+        "200":
+          description: getHolidaysByYear 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HolidayDetailsResponse'
   /api/holidays:
     get:
       summary: Retrieves existing holidays within a period
@@ -389,11 +433,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponse'
-  /api/organizations:
+                $ref: '#/components/schemas/HolidaysResponse'
+      deprecated: true
+  /api/organization:
     get:
-      summary: Retrieves a list of all organizations
+      tags:
+      - organization
+      summary: Retrieves a list of organizations by filter
       operationId: getAllOrganizations_1
+      parameters:
+      - name: organizationFilterRequest
+        in: query
+        required: true
+        explode: true
+        schema:
+          $ref: '#/components/schemas/OrganizationFilterRequest'
       responses:
         "200":
           description: getAllOrganizations_1 200 response
@@ -403,6 +457,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/OrganizationResponse'
+  /api/organizations:
+    get:
+      summary: Retrieves a list of all organizations
+      operationId: getAllOrganizations_2
+      responses:
+        "200":
+          description: getAllOrganizations_2 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationResponse'
+      deprecated: true
   /api/organizations/{id}/projects:
     get:
       summary: Retrieves a list of imputable projects from an organization ID
@@ -423,8 +491,11 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectResponse'
+      deprecated: true
   /api/project:
     get:
+      tags:
+      - project
       summary: Gets projects with specified filters
       operationId: get
       parameters:
@@ -483,6 +554,8 @@ paths:
                 $ref: '#/components/schemas/ProjectRoleResponse'
   /api/project/{id}:
     get:
+      tags:
+      - project
       summary: Retrieves a project´s information from its ID
       operationId: getProjectById
       parameters:
@@ -501,6 +574,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/block:
     post:
+      tags:
+      - project
       summary: Blocks a project until given date
       operationId: blockProjectById
       parameters:
@@ -525,6 +600,8 @@ paths:
                 $ref: '#/components/schemas/ProjectResponse'
   /api/project/{projectId}/role:
     get:
+      tags:
+      - project
       summary: Retrieves a list of project roles from a project ID
       operationId: getProjectRolesByProjectId_1
       parameters:
@@ -557,6 +634,8 @@ paths:
                   $ref: '#/components/schemas/ProjectRoleUserResponse'
   /api/project/{projectId}/unblock:
     post:
+      tags:
+      - project
       summary: Unblocks a project
       operationId: unblockProjectById
       parameters:
@@ -618,22 +697,15 @@ paths:
                 $ref: '#/components/schemas/TimeSummaryResponse'
   /api/user:
     get:
-      summary: Retrieves the list of active users
-      operationId: get$tntconcept_rest_3
+      summary: Retrieves the list of users with specified filters
+      operationId: get$tntconcept_rest_4
       parameters:
-      - name: ids
+      - name: userFilterRequest
         in: query
+        required: true
+        explode: true
         schema:
-          type: array
-          nullable: true
-          items:
-            type: integer
-            format: int64
-      - name: active
-        in: query
-        schema:
-          type: boolean
-          nullable: true
+          $ref: '#/components/schemas/UserFilterRequest'
       responses:
         "200":
           description: get$tntconcept_rest 200 response
@@ -654,6 +726,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserInfoResponse'
+  /api/vacation:
+    get:
+      tags:
+      - vacation
+      summary: Retrieves holidays within a given a period.
+      operationId: getUsersVacationsFromPeriod$tntconcept_rest
+      parameters:
+      - name: startDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      - name: endDate
+        in: query
+        required: true
+        schema:
+          type: string
+          format: date
+      responses:
+        "200":
+          description: getUsersVacationsFromPeriod$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VacationResponse'
   /api/vacations:
     get:
       summary: Retrieves holidays within a given charge year.
@@ -671,7 +771,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HolidayResponse'
+                $ref: '#/components/schemas/HolidaysResponse'
+      deprecated: true
     put:
       summary: Updates a holiday period.
       operationId: updatePrivateHolidayPeriod$tntconcept_rest
@@ -850,6 +951,47 @@ paths:
                 $ref: '#/components/schemas/Object'
 components:
   schemas:
+    AbsenceFilterRequest:
+      required:
+      - endDate
+      - startDate
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        userIds:
+          type: string
+          nullable: true
+        organizationIds:
+          type: string
+          nullable: true
+        projectIds:
+          type: string
+          nullable: true
+    AbsenceResponse:
+      required:
+      - endDate
+      - startDate
+      - type
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/AbsenceType'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+    AbsenceType:
+      type: string
+      enum:
+      - VACATION
+      - PAID_LEAVE
     ActivityDateResponse:
       required:
       - activities
@@ -1091,7 +1233,7 @@ components:
         date:
           type: string
           format: date
-    HolidayResponse:
+    HolidaysResponse:
       required:
       - holidays
       - vacations
@@ -1214,6 +1356,15 @@ components:
           type: number
     Object:
       type: object
+    OrganizationFilterRequest:
+      type: object
+      properties:
+        types:
+          type: string
+          nullable: true
+        imputable:
+          type: boolean
+          nullable: true
     OrganizationResponse:
       required:
       - id
@@ -1239,13 +1390,15 @@ components:
         balance:
           type: number
     ProjectFilterRequest:
-      required:
-      - organizationId
       type: object
       properties:
         organizationId:
           type: integer
           format: int64
+          nullable: true
+        organizationIds:
+          type: string
+          nullable: true
         open:
           type: boolean
           nullable: true
@@ -1427,6 +1580,38 @@ components:
         refresh_token:
           minLength: 1
           type: string
+    UserAbsenceResponse:
+      required:
+      - absences
+      - userId
+      - userName
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        userName:
+          type: string
+        absences:
+          type: array
+          items:
+            $ref: '#/components/schemas/AbsenceResponse'
+    UserFilterRequest:
+      type: object
+      properties:
+        ids:
+          type: string
+          nullable: true
+        active:
+          type: boolean
+          nullable: true
+        nameLike:
+          type: string
+          nullable: true
+        limit:
+          type: integer
+          format: int32
+          nullable: true
     UserInfoResponse:
       required:
       - hiringDate

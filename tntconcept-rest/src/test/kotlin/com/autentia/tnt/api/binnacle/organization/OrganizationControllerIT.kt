@@ -1,31 +1,26 @@
 package com.autentia.tnt.api.binnacle.organization
 
-import com.autentia.tnt.api.binnacle.createOrganization
 import com.autentia.tnt.api.binnacle.exchangeList
-import com.autentia.tnt.api.binnacle.project.ProjectResponse
+import com.autentia.tnt.binnacle.core.domain.OrganizationType
+import com.autentia.tnt.binnacle.entities.dto.OrganizationFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
-import com.autentia.tnt.binnacle.usecases.ImputableOrganizationsUseCase
-import com.autentia.tnt.binnacle.usecases.ImputableProjectsByOrganizationIdUseCase
+import com.autentia.tnt.binnacle.usecases.OrganizationsByFilterUseCase
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.fail
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
-import java.time.LocalDate
 
 @MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -37,17 +32,13 @@ internal class OrganizationControllerIT {
 
     private lateinit var client: BlockingHttpClient
 
-    @get:MockBean(ImputableOrganizationsUseCase::class)
-    internal val imputableOrganizationsUseCase = mock<ImputableOrganizationsUseCase>()
-
-    @get:MockBean(ImputableProjectsByOrganizationIdUseCase::class)
-    internal val imputableProjectsByOrganizationIdUseCase = mock<ImputableProjectsByOrganizationIdUseCase>()
+    @get:MockBean(OrganizationsByFilterUseCase::class)
+    internal val organizationsByFilterUseCase = mock<OrganizationsByFilterUseCase>()
 
     @AfterEach
     fun resetMocks() {
         reset(
-            imputableOrganizationsUseCase,
-            imputableProjectsByOrganizationIdUseCase
+            organizationsByFilterUseCase
         )
     }
 
@@ -57,12 +48,13 @@ internal class OrganizationControllerIT {
     }
 
     @Test
-    fun `return all imputable organizations`() {
+    fun `return all organizations`() {
         val organization = OrganizationResponseDTO(1, "Dummy Organization")
+        val organizationFilter = OrganizationFilterDTO(listOf(), null)
 
-        doReturn(listOf(organization)).whenever(imputableOrganizationsUseCase).get()
+        doReturn(listOf(organization)).whenever(organizationsByFilterUseCase).get(organizationFilter)
 
-        val response = client.exchangeList<OrganizationResponse>(HttpRequest.GET("/api/organizations"))
+        val response = client.exchangeList<OrganizationResponse>(HttpRequest.GET("/api/organization"))
 
         assertEquals(HttpStatus.OK, response.status)
         assertNotNull(response.body())
@@ -72,19 +64,31 @@ internal class OrganizationControllerIT {
     }
 
     @Test
-    fun `return all projects by organization`() {
-        val organization = createOrganization()
-        val project = ProjectResponseDTO(1, "Dummy Project", true, true, 1L, startDate = LocalDate.now())
+    fun `return all organizations by type`() {
+        val organization = OrganizationResponseDTO(1, "Dummy Organization")
+        val organizationsType = listOf(OrganizationType.CLIENT, OrganizationType.PROVIDER)
+        val organizationFilter = OrganizationFilterDTO(organizationsType, null)
 
-        doReturn(listOf(project)).whenever(imputableProjectsByOrganizationIdUseCase).get(organization.id)
+        doReturn(listOf(organization)).whenever(organizationsByFilterUseCase).get(organizationFilter)
 
-        val response = client.exchangeList<ProjectResponse>(HttpRequest.GET("/api/organizations/${project.id}/projects"))
-
-        val expectedProjectDTO = ProjectResponse(1, "Dummy Project", true, true, 1L, startDate = LocalDate.now())
+        val response =
+            client.exchangeList<OrganizationResponse>(HttpRequest.GET("/api/organization?types=CLIENT,PROVIDER"))
 
         assertEquals(HttpStatus.OK, response.status)
         assertNotNull(response.body())
-        assertEquals(listOf(expectedProjectDTO), response.body())
+        assertEquals(1, response.body().count())
+        assertEquals(organization.id, response.body().get(0).id)
+        assertEquals(organization.name, response.body().get(0).name)
     }
 
+    @Test
+    fun `return bad request if there is an invalid organization type`() {
+        try {
+            client.exchangeList<OrganizationResponse>(HttpRequest.GET("/api/organization?types=PROVIDER,CLIENTS"))
+        } catch (ex: HttpClientResponseException){
+            assertEquals(HttpStatus.BAD_REQUEST, ex.response.status)
+            return
+        }
+        fail("HttpClientResponseException should be thrown")
+    }
 }

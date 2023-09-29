@@ -437,7 +437,7 @@ internal class ActivityCreationUseCaseTest {
 
         private val TODAY = Date()
 
-        private val ORGANIZATION = Organization(1L, "Dummy Organization", listOf())
+        private val ORGANIZATION = Organization(1L, "Dummy Organization", 1, listOf())
 
         private val PROJECT = Project(
                 1L,

@@ -1,10 +1,10 @@
 package com.autentia.tnt.binnacle.converters
 
-import com.autentia.tnt.binnacle.core.domain.HolidayResponse
+import com.autentia.tnt.binnacle.core.domain.HolidaysResponse
 import com.autentia.tnt.binnacle.entities.Holiday
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.HolidayDTO
-import com.autentia.tnt.binnacle.entities.dto.HolidayResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.HolidaysResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.VacationDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -20,20 +20,20 @@ internal class HolidayResponseConverterTest {
     private var sut = HolidayResponseConverter(VacationConverter(), HolidayConverter())
 
     @Test
-    fun `given HolidayResponse should return HolidayResponseDTO`() {
+    fun `given HolidaysResponse should return HolidaysResponseDTO`() {
 
-        val holidayResponse = HOLIDAY_RESPONSE
+        val holidayResponse = HOLIDAYS_RESPONSE
 
-        val result = sut.toHolidayResponseDTO(holidayResponse)
+        val result = sut.toHolidaysResponseDTO(holidayResponse)
 
         assertTrue(result.holidays.isNotEmpty())
         assertTrue(result.vacations.isNotEmpty())
 
-        assertEquals(HOLIDAY_RESPONSE_DTO, result)
+        assertEquals(HOLIDAYS_RESPONSE_DTO, result)
 
     }
 
-    private companion object{
+    private companion object {
         private val HOLIDAY_ID = 10L
         private val HOLIDAY_DESCRIPTION = "Dummy Holiday"
         private val HOLIDAY_DATE = LocalDateTime.of(2020, Month.JANUARY, 1, 0, 0, 0)
@@ -70,7 +70,7 @@ internal class HolidayResponseConverterTest {
             VACATION_END_DATE,
             VACATION_DAYS,
             VACATION_CHARGE_YEAR
-            )
+        )
 
 
         val vacationDTO = VacationDTO(
@@ -84,15 +84,17 @@ internal class HolidayResponseConverterTest {
             vacation.chargeYear
         )
 
-        val HOLIDAY_RESPONSE = HolidayResponse(
+        val HOLIDAYS_RESPONSE = HolidaysResponse(
             listOf(holiday),
             listOf(vacation)
         )
 
-        val HOLIDAY_RESPONSE_DTO = HolidayResponseDTO(
+        val HOLIDAYS_RESPONSE_DTO = HolidaysResponseDTO(
             listOf(holidayDTO),
             listOf(vacationDTO)
         )
+
+        val HOLIDAY_RESPONSE_DTO = listOf(holidayDTO)
 
     }
 

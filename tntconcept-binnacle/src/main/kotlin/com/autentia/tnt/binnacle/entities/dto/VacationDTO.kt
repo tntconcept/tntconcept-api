@@ -12,12 +12,12 @@ data class VacationDTO(
     val state: VacationState,
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-        val startDate: LocalDate,
+    val startDate: LocalDate,
     @JsonFormat(pattern = "yyyy-MM-dd")
-        val endDate: LocalDate,
+    val endDate: LocalDate,
 
     @JsonFormat(pattern = "yyyy-MM-dd")
-        val days: List<LocalDate>,
+    val days: List<LocalDate>,
     @JsonFormat(pattern = "yyyy-MM-dd")
-        val chargeYear: LocalDate
+    val chargeYear: LocalDate
 )

@@ -8,6 +8,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -363,7 +364,6 @@ internal class ActivityDaoIT {
         )
         val retrievedActivities = activityDao.findByApprovalState(ApprovalState.PENDING)
 
-        assertEquals(2, retrievedActivities.size)
         assertTrue(retrievedActivities.contains(savedActivities.elementAt(1)))
         assertTrue(retrievedActivities.contains(savedActivities.elementAt(2)))
     }

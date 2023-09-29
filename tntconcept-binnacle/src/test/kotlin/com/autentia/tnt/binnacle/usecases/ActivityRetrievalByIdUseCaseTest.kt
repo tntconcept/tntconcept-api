@@ -67,7 +67,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 LocalDate.now(),
                 null,
                 null,
-                Organization(1L, "Dummy Organization", listOf()),
+                Organization(1L, "Dummy Organization", 1, listOf()),
                 listOf(),
             ),
             0,

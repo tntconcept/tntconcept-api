@@ -5,5 +5,10 @@ internal class OpenApiTag {
         internal const val SECURITY = "security"
         internal const val ACTIVITY = "activity"
         internal const val ATTACHMENT = "attachment"
+        internal const val ORGANIZATION = "organization"
+        internal const val HOLIDAY = "holiday"
+        internal const val PROJECT = "project"
+        internal const val VACATION = "vacation"
+        internal const val ABSENCE = "absence"
     }
 }

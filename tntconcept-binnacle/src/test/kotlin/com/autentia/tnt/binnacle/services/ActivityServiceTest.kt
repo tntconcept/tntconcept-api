@@ -87,7 +87,7 @@ internal class ActivityServiceTest {
 
     private companion object {
 
-        private val organization = Organization(1L, "Autentia", emptyList())
+        private val organization = Organization(1L, "Autentia", 1, emptyList())
         private val project =
             Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
         private val projectRole =
