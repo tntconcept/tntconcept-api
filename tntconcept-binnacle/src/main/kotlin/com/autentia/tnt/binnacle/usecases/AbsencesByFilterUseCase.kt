@@ -27,16 +27,35 @@ class AbsencesByFilterUseCase internal constructor(
     @Transactional
     @ReadOnly
     fun getAbsences(absenceFilter: AbsenceFilterDTO): List<AbsenceResponseDTO> {
-        var userIds = absenceFilter.userIds?: listOf()
-        if (userIds.isEmpty()) {
-            val activities = getActivitiesByFilter(absenceFilter)
-            userIds = activities.map { it.userId }.distinct().toList()
-        }
-        val users = userRepository.findAll(UserPredicates.fromUserIds(userIds), null)
-        val absences = absenceRepository.find(absenceFilter.startDate, absenceFilter.endDate, userIds)
+        require(isAbsenceFilterValid(absenceFilter)) { "At least user ids or organization/project ids should be specified" }
 
-        return absenceResponseConverter.toAbsenceResponseDTO(users, absences)
+        var userIds = absenceFilter.userIds ?: listOf()
+
+        if (shouldFilterUsersByOrganizationAndProjectActivities(absenceFilter)) {
+            val activities = getActivitiesByFilter(absenceFilter)
+            val userActivities = activities.map { it.userId }.distinct().toList()
+
+            userIds = if (userIds.isNotEmpty()) {
+                (userIds intersect userActivities.toSet()).toList()
+            } else {
+                userActivities
+            }
+        }
+
+        if (userIds.isNotEmpty()) {
+            val users = userRepository.findAll(UserPredicates.fromUserIds(userIds), null)
+            val absences = absenceRepository.find(absenceFilter.startDate, absenceFilter.endDate, userIds)
+
+            return absenceResponseConverter.toAbsenceResponseDTO(users, absences)
+        }
+        return emptyList()
     }
+
+    private fun isAbsenceFilterValid(absenceFilter: AbsenceFilterDTO) =
+        !absenceFilter.userIds.isNullOrEmpty() || !absenceFilter.organizationIds.isNullOrEmpty() || !absenceFilter.projectIds.isNullOrEmpty()
+
+    private fun shouldFilterUsersByOrganizationAndProjectActivities(absenceFilter: AbsenceFilterDTO) =
+        !absenceFilter.organizationIds.isNullOrEmpty() || !absenceFilter.projectIds.isNullOrEmpty()
 
     private fun getActivitiesByFilter(absenceFilter: AbsenceFilterDTO): List<Activity> {
         val predicate = getActivityPredicate(absenceFilter)
