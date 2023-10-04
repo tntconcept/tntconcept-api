@@ -14,6 +14,7 @@ import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
@@ -29,6 +30,14 @@ internal class AbsencesByFilterUseCaseTest {
     private val absencesByFilterUseCase =
         AbsencesByFilterUseCase(activityRepository, absenceRepository, userRepository, absenceResponseConverter)
 
+    @Test
+    fun `should return IllegalArgumentException if filter is not valid`() {
+        val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
+        val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
+        val absenceFilterDTO = AbsenceFilterDTO(startDate, endDate, null, null, null)
+
+        assertThrows<IllegalArgumentException> { absencesByFilterUseCase.getAbsences(absenceFilterDTO) }
+    }
 
     @Test
     fun `should return all the absences of requested user ids`() {
@@ -151,9 +160,14 @@ internal class AbsencesByFilterUseCaseTest {
     fun `should return all the absences of users who have activities which belong to requested organizations`() {
         val startDate = LocalDate.of(2023, Month.SEPTEMBER, 1)
         val endDate = LocalDate.of(2023, Month.SEPTEMBER, 30)
-        val userIds = listOf(1L, 3L, 5L)
+        val requestedUserIds = listOf(1L, 3L)
+        val userIds = listOf(1L)
         val organizationIds = listOf(30L, 21L)
-        val absenceFilterDTO = AbsenceFilterDTO(startDate, endDate, null, organizationIds, null)
+        val absenceFilterDTO = AbsenceFilterDTO(startDate, endDate, requestedUserIds, organizationIds, null)
+
+        val organizationActivities = listOf(
+            createActivity().copy(userId = 1L, description = "Activity 1"),
+        )
 
         val predicate = PredicateBuilder.and(
             PredicateBuilder.and(
@@ -170,14 +184,8 @@ internal class AbsencesByFilterUseCaseTest {
                 START_DATE_01,
                 END_DATE_01
             ),
-            Absence(
-                AbsenceId(2, AbsenceType.PAID_LEAVE.name),
-                3L,
-                LocalDate.of(2023, Month.SEPTEMBER, 11),
-                LocalDate.of(2023, Month.SEPTEMBER, 14)
-            ),
         )
-        val expectedAbsences2 = listOf(
+        val expectedAbsences = listOf(
             AbsenceResponseDTO(
                 1L, "John Doe",
                 listOf(
@@ -187,25 +195,18 @@ internal class AbsencesByFilterUseCaseTest {
                     )
                 )
             ),
-            AbsenceResponseDTO(
-                3L, "John Doe 2",
-                listOf(
-                    AbsenceDTO(
-                        AbsenceType.PAID_LEAVE, LocalDate.of(2023, Month.SEPTEMBER, 11),
-                        LocalDate.of(2023, Month.SEPTEMBER, 14)
-                    )
-                )
-            ),
-            AbsenceResponseDTO(5L, "John Doe 3", listOf())
+        )
+        val users = listOf(
+            createUser().copy(id = 1L, name = "John Doe"),
         )
 
-        whenever(activityRepository.findAll(predicate)).thenReturn(activities)
+        whenever(activityRepository.findAll(predicate)).thenReturn(organizationActivities)
         whenever(absenceRepository.find(startDate, endDate, userIds)).thenReturn(absences)
         whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds), null)).thenReturn(users)
 
         val result = absencesByFilterUseCase.getAbsences(absenceFilterDTO)
 
-        assertEquals(expectedAbsences2, result)
+        assertEquals(expectedAbsences, result)
     }
 
     private companion object {
