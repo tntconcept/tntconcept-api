@@ -130,10 +130,10 @@ internal class UsersRetrievalUseCaseTest {
         val limit = 2
         val userFilter = UserFilterDTO(nameLike = "o", limit = limit)
         val compositedSpecification =
-                PredicateBuilder.and(
-                        UserPredicates.ALL,
-                        UserPredicates.filterByName("o")
-                )
+            PredicateBuilder.and(
+                UserPredicates.ALL,
+                UserPredicates.filterByName("o")
+            )
         val pageable = Pageable.from(0, limit)
 
         whenever(userRepository.findAll(compositedSpecification,
