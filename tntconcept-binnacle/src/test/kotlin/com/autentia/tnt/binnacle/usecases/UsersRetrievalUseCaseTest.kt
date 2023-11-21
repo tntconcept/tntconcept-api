@@ -8,6 +8,7 @@ import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import io.micronaut.data.model.Pageable
+import io.micronaut.data.model.Sort
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -21,8 +22,11 @@ internal class UsersRetrievalUseCaseTest {
     @Test
     fun `should return all users`() {
         val userFilter = UserFilterDTO()
-        
-        whenever(userRepository.findAll(UserPredicates.ALL, null)).thenReturn(listOf(createUser()))
+        val pageable = Pageable.unpaged()
+
+        whenever(userRepository.findAll(UserPredicates.ALL,
+                pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(listOf(createUser()))
+
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
         assertEquals(listOf(userResponseDTO), actual)
@@ -31,8 +35,10 @@ internal class UsersRetrievalUseCaseTest {
     @Test
     fun `should return active users`() {
         val userFilter = UserFilterDTO(active = true)
-        
-        whenever(userRepository.findAll(UserPredicates.isActive(true), null)).thenReturn(listOf(createUser()))
+        val pageable = Pageable.unpaged()
+
+        whenever(userRepository.findAll(UserPredicates.isActive(true),
+                pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
@@ -42,9 +48,10 @@ internal class UsersRetrievalUseCaseTest {
     @Test
     fun `should return not active users`() {
         val userFilter = UserFilterDTO(active = false)
+        val pageable = Pageable.unpaged()
 
-        whenever(userRepository.findAll(UserPredicates.isActive(false), null)).thenReturn(listOf(createUser()))
-
+        whenever(userRepository.findAll(UserPredicates.isActive(false),
+                pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
@@ -54,8 +61,10 @@ internal class UsersRetrievalUseCaseTest {
     @Test
     fun `should return list of given users`() {
         val userFilter = UserFilterDTO(ids = listOf(1, 2, 3))
+        val pageable = Pageable.unpaged()
 
-        whenever(userRepository.findAll(UserPredicates.fromUserIds(listOf(1, 2, 3)), null)).thenReturn(listOf(createUser()))
+        whenever(userRepository.findAll(UserPredicates.fromUserIds(listOf(1, 2, 3)),
+                pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
@@ -66,11 +75,14 @@ internal class UsersRetrievalUseCaseTest {
     fun `should return list of active users given a list of users`() {
         val userFilter = UserFilterDTO(ids = listOf(1, 2, 3), active = true)
         val compositedSpecification =
-            PredicateBuilder.and(
-                UserPredicates.fromUserIds(listOf(1, 2, 3)),
-                UserPredicates.isActive(true)
-            )
-        whenever(userRepository.findAll(compositedSpecification, null)).thenReturn(listOf(createUser()))
+                PredicateBuilder.and(
+                        UserPredicates.fromUserIds(listOf(1, 2, 3)),
+                        UserPredicates.isActive(true)
+                )
+        val pageable = Pageable.unpaged()
+
+        whenever(userRepository.findAll(compositedSpecification,
+                pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
@@ -81,11 +93,14 @@ internal class UsersRetrievalUseCaseTest {
     fun `should return list of not active users given a list of users`() {
         val userFilter = UserFilterDTO(ids = listOf(1, 2, 3), active = false)
         val compositedSpecification =
-            PredicateBuilder.and(
-                UserPredicates.fromUserIds(listOf(1, 2, 3)),
-                UserPredicates.isActive(false)
-            )
-        whenever(userRepository.findAll(compositedSpecification, null)).thenReturn(listOf(createUser()))
+                PredicateBuilder.and(
+                        UserPredicates.fromUserIds(listOf(1, 2, 3)),
+                        UserPredicates.isActive(false)
+                )
+        val pageable = Pageable.unpaged()
+
+        whenever(userRepository.findAll(compositedSpecification,
+                pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
@@ -96,12 +111,14 @@ internal class UsersRetrievalUseCaseTest {
     fun `should return list of users filtered by expression`() {
         val userFilter = UserFilterDTO(nameLike = "o")
         val compositedSpecification =
-            PredicateBuilder.and(
-                UserPredicates.ALL,
-                UserPredicates.filterByName("o")
-            )
+                PredicateBuilder.and(
+                        UserPredicates.ALL,
+                        UserPredicates.filterByName("o")
+                )
+        val pageable = Pageable.unpaged()
 
-        whenever(userRepository.findAll(compositedSpecification, null)).thenReturn(listOf(createUser()))
+        whenever(userRepository.findAll(compositedSpecification,
+                pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
@@ -113,18 +130,19 @@ internal class UsersRetrievalUseCaseTest {
         val limit = 2
         val userFilter = UserFilterDTO(nameLike = "o", limit = limit)
         val compositedSpecification =
-            PredicateBuilder.and(
-                UserPredicates.ALL,
-                UserPredicates.filterByName("o")
-            )
+                PredicateBuilder.and(
+                        UserPredicates.ALL,
+                        UserPredicates.filterByName("o")
+                )
         val pageable = Pageable.from(0, limit)
-        whenever(userRepository.findAll(compositedSpecification, pageable)).thenReturn(listOf(createUser()))
+
+        whenever(userRepository.findAll(compositedSpecification,
+                pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(listOf(createUser()))
 
         val actual = usersRetrievalUseCase.getUsers(userFilter)
 
         assertEquals(listOf(userResponseDTO), actual)
     }
-
 
 
     private companion object {

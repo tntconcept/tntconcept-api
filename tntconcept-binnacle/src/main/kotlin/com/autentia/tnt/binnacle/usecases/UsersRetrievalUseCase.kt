@@ -9,6 +9,7 @@ import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.data.model.Pageable
+import io.micronaut.data.model.Sort
 import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
@@ -30,9 +31,10 @@ class UsersRetrievalUseCase internal constructor(
     ): List<User> {
         return if (limit !== null) {
             val pageable = Pageable.from(0, limit)
-            userRepository.findAll(predicate, pageable)
+            userRepository.findAll(predicate, pageable.order("name", Sort.Order.Direction.ASC))
         } else {
-            userRepository.findAll(predicate, null)
+            val pageable = Pageable.unpaged()
+            userRepository.findAll(predicate, pageable.order("name", Sort.Order.Direction.ASC))
         }
     }
 
