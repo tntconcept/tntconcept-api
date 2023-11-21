@@ -75,10 +75,10 @@ internal class UsersRetrievalUseCaseTest {
     fun `should return list of active users given a list of users`() {
         val userFilter = UserFilterDTO(ids = listOf(1, 2, 3), active = true)
         val compositedSpecification =
-                PredicateBuilder.and(
-                        UserPredicates.fromUserIds(listOf(1, 2, 3)),
-                        UserPredicates.isActive(true)
-                )
+            PredicateBuilder.and(
+                UserPredicates.fromUserIds(listOf(1, 2, 3)),
+                UserPredicates.isActive(true)
+            )
         val pageable = Pageable.unpaged()
 
         whenever(userRepository.findAll(compositedSpecification,
@@ -93,10 +93,10 @@ internal class UsersRetrievalUseCaseTest {
     fun `should return list of not active users given a list of users`() {
         val userFilter = UserFilterDTO(ids = listOf(1, 2, 3), active = false)
         val compositedSpecification =
-                PredicateBuilder.and(
-                        UserPredicates.fromUserIds(listOf(1, 2, 3)),
-                        UserPredicates.isActive(false)
-                )
+            PredicateBuilder.and(
+                UserPredicates.fromUserIds(listOf(1, 2, 3)),
+                UserPredicates.isActive(false)
+            )
         val pageable = Pageable.unpaged()
 
         whenever(userRepository.findAll(compositedSpecification,
@@ -111,10 +111,10 @@ internal class UsersRetrievalUseCaseTest {
     fun `should return list of users filtered by expression`() {
         val userFilter = UserFilterDTO(nameLike = "o")
         val compositedSpecification =
-                PredicateBuilder.and(
-                        UserPredicates.ALL,
-                        UserPredicates.filterByName("o")
-                )
+            PredicateBuilder.and(
+                UserPredicates.ALL,
+                UserPredicates.filterByName("o")
+            )
         val pageable = Pageable.unpaged()
 
         whenever(userRepository.findAll(compositedSpecification,
