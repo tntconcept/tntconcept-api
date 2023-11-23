@@ -5,7 +5,6 @@ import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.data.model.Pageable
 import java.util.*
 
-
 internal interface UserRepository {
 
     fun find(userId: Long): User?
@@ -17,7 +16,5 @@ internal interface UserRepository {
     fun findWithoutSecurity(): List<User>
 
     fun findAll(predicate: Specification<User>, pageable: Pageable?): List<User>
-
-    fun findByIdsWithoutSecurity(ids: List<Long>): List<User>
 
 }

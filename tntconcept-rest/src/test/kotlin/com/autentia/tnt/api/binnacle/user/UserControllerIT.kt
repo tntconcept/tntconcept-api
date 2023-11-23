@@ -161,6 +161,7 @@ internal class UserControllerIT {
             1L,
             "username",
             "Name surname",
+            "username@mail.com"
         )
     }
 

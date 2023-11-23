@@ -6,7 +6,8 @@ import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.repositories.UserRepository
+import com.autentia.tnt.binnacle.entities.dto.UserFilterDTO
+import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.services.EmptyActivitiesReminderMailService
 import io.micronaut.transaction.annotation.ReadOnly
@@ -23,55 +24,87 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
     private val calendarFactory: CalendarFactory,
     private val activitiesByFilterUseCase: ActivitiesByFilterUseCase,
     private val vacationRepository: VacationRepository,
-    private val userRepository: UserRepository,
-    private val emptyActivitiesReminderMailService: EmptyActivitiesReminderMailService
+    private val emptyActivitiesReminderMailService: EmptyActivitiesReminderMailService,
+    private val usersRetrievalUseCase: UsersRetrievalUseCase
 ) {
 
     @Transactional
     @ReadOnly
     fun sendReminders() {
         val workableDays = generateWorkableDays()
-        val activities =
-            activitiesByFilterUseCase.getActivities(ActivityFilterDTO(firstDayOfActualYear(), workableDays.last()))
-        val activitiesByUser = generateActivitiesByUser(activities)
-        val vacations = vacationRepository.findBetweenChargeYearsAndStatesWithoutSecurity(
+        val activeUsers = usersRetrievalUseCase.getUsers(UserFilterDTO(active = true))
+        val activities = activitiesByFilterUseCase.getActivities(
+            ActivityFilterDTO(
+                firstDayOfActualYear(),
+                workableDays.last()
+            )
+        )
+        val activitiesByUser = activeUsers.associate {
+            it.id to activities.filter { activity -> it.id == activity.userId }
+        }
+        val allVacations = vacationRepository.findBetweenChargeYearsAndStatesWithoutSecurity(
             firstDayOfActualYear()!!, workableDays.last(),
             listOf(VacationState.ACCEPT, VacationState.PENDING)
         )
-        val vacationsByUser = generateVacationsByUser(vacations)
-        val emptyDaysByUser = generateEmptyDaysByUser(workableDays, vacationsByUser, activitiesByUser)
-        val mailsByUser = findMailsByUser(emptyDaysByUser.keys.toList())
-        sendMails(mailsByUser, emptyDaysByUser)
+        val vacationsByUser = activeUsers.associate {
+            it.id to allVacations.filter { activity -> it.id == activity.userId }
+        }
+        val emptyDaysByUser = generateEmptyDaysByUser(
+            activeUsers.map { it.id },
+            workableDays, vacationsByUser, activitiesByUser
+        )
+        val userIdsToSendEmail = emptyDaysByUser.keys
+        val usersToSendEmail = activeUsers.filter { userIdsToSendEmail.contains(it.id) }
+        sendMails(usersToSendEmail, emptyDaysByUser)
     }
 
-    private fun sendMails(mailsByUser: Map<Long, String>, emptyDaysByUser: Map<Long, List<LocalDate>>) {
+    private fun sendMails(users: List<UserResponseDTO>, emptyDaysByUser: Map<Long, List<LocalDate>>) {
         val locale = Locale.forLanguageTag("es")
-        mailsByUser.forEach { (id, email) ->
-            emptyActivitiesReminderMailService.sendEmail(emptyDaysByUser[id]!!, email, locale)
+        users.forEach {
+            emptyActivitiesReminderMailService.sendEmail(emptyDaysByUser[it.id]!!, it.email, locale)
         }
     }
 
-    private fun findMailsByUser(ids: List<Long>): Map<Long, String> {
-        return userRepository.findByIdsWithoutSecurity(ids).associate { it.id to it.email }
-    }
-
     private fun generateEmptyDaysByUser(
+        userIds: List<Long>,
         workableDays: List<LocalDate>,
         vacationsByUser: Map<Long, List<Vacation>>,
         activitiesByUser: Map<Long, List<ActivityResponseDTO>>
     ): Map<Long, List<LocalDate>> {
-        //TODO IMPLEMENT
-        return emptyMap()
+        return userIds.associateWith { userId ->
+            findEmptyDays(
+                workableDays,
+                activitiesByUser,
+                userId,
+                vacationsByUser
+            )
+        }
     }
 
-    private fun generateVacationsByUser(vacations: List<Vacation>): Map<Long, List<Vacation>> {
-        //TODO IMPLEMENT
-        return emptyMap()
+    private fun findEmptyDays(
+        workableDays: List<LocalDate>,
+        activitiesByUser: Map<Long, List<ActivityResponseDTO>>,
+        userId: Long,
+        vacationsByUser: Map<Long, List<Vacation>>
+    ): MutableList<LocalDate> {
+        val workableDaysToUser = workableDays.toMutableList()
+        activitiesByUser[userId]?.forEach {
+            removeDays(workableDaysToUser, it.interval.start.toLocalDate(), it.interval.end.toLocalDate())
+        }
+        vacationsByUser[userId]?.forEach {
+            removeDays(workableDaysToUser, it.startDate, it.endDate)
+        }
+        return workableDaysToUser
     }
 
-    private fun generateActivitiesByUser(activities: List<ActivityResponseDTO>): Map<Long, List<ActivityResponseDTO>> {
-        //TODO IMPLEMENT
-        return emptyMap()
+    private fun removeDays(
+        workableDaysToUser: MutableList<LocalDate>,
+        dateToDelete: LocalDate,
+        dateLimitToDelete: LocalDate
+    ) {
+        while (!dateToDelete.isAfter(dateLimitToDelete)) {
+            workableDaysToUser.remove(dateToDelete)
+        }
     }
 
     private fun generateWorkableDays(): List<LocalDate> {

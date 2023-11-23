@@ -47,8 +47,4 @@ internal class UserRepositorySecured(
         }
     }
 
-    override fun findByIdsWithoutSecurity(ids: List<Long>): List<User> {
-        return userDao.findByIdIn(ids)
-    }
-
 }
