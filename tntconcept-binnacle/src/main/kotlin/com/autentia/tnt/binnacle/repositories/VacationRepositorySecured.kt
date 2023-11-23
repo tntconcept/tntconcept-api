@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.Vacation
+import com.autentia.tnt.binnacle.entities.VacationState
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
 import com.autentia.tnt.security.application.isAdmin
@@ -40,6 +41,14 @@ internal class VacationRepositorySecured(
     ): List<Vacation> {
         //TODO: secure this method!!!
         return vacationDao.findBetweenChargeYears(startYear, endYear, userId)
+    }
+
+    override fun findBetweenChargeYearsAndStatesWithoutSecurity(
+        startYear: LocalDate,
+        endYear: LocalDate,
+        states: List<VacationState>
+    ): List<Vacation> {
+        return vacationDao.findBetweenChargeYearsAndStates(startYear,endYear,states)
     }
 
     override fun findById(vacationId: Long): Vacation? {

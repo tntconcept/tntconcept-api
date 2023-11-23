@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.Vacation
+import com.autentia.tnt.binnacle.entities.VacationState
 import java.time.LocalDate
 
 internal interface VacationRepository {
@@ -30,6 +31,11 @@ internal interface VacationRepository {
         userId: Long
     ): List<Vacation>
 
+    fun findBetweenChargeYearsAndStatesWithoutSecurity(
+        startYear: LocalDate,
+        endYear: LocalDate,
+        states: List<VacationState>
+    ): List<Vacation>
 
     fun findById(vacationId: Long): Vacation?
     fun save(vacation: Vacation): Vacation

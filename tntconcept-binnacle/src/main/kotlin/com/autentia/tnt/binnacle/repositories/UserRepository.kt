@@ -18,4 +18,6 @@ internal interface UserRepository {
 
     fun findAll(predicate: Specification<User>, pageable: Pageable?): List<User>
 
+    fun findByIdsWithoutSecurity(ids: List<Long>): List<User>
+
 }
