@@ -6,6 +6,8 @@ import io.micronaut.context.MessageSource
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.*
 
 @Singleton
@@ -46,7 +48,9 @@ internal class EmptyActivitiesReminderMailBuilder(private val messageSource: Mes
 
     private companion object {
         private const val subjectKey = "mail.request.emptyActivitiesReminder.subject"
-        private const val bodyKey = "mail.request.emptyActivitiesReminder.template"
+        private const val headerKey = "mail.request.emptyActivitiesReminder.header"
+        private const val elementKey = "mail.request.emptyActivitiesReminder.element"
+        private const val footerKey = "mail.request.emptyActivitiesReminder.footer"
     }
 
     fun buildMessage(
@@ -56,14 +60,25 @@ internal class EmptyActivitiesReminderMailBuilder(private val messageSource: Mes
         val subject =
             messageSource.getMessage(subjectKey, locale).orElse(null)
                 ?: error("Cannot find message $subjectKey")
+        val bodyMessage = generateBody(workableDays, locale)
+        return Mail(subject, bodyMessage)
+    }
 
-        //TODO CREATE MESSAGE WITH workableDays
-        val workableDaysMessage = workableDays.toString()
-
-        val body = messageSource.getMessage(bodyKey, locale, workableDaysMessage).orElse(null)
-            ?: error("Cannot find message $bodyKey")
-
-        return Mail(subject, body)
+    private fun generateBody(workableDays: List<LocalDate>, locale: Locale): String {
+        val bodyMessage = StringBuilder()
+        val headerMessage = messageSource.getMessage(headerKey, locale).orElse(null)
+            ?: error("Cannot find message $headerKey")
+        bodyMessage.append(headerMessage)
+        workableDays.forEach {
+            val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).withLocale(locale)
+            val elementoFormateado = messageSource.getMessage(elementKey, locale, it.format(formatter))
+                .orElse(null) ?: error("Cannot find message $elementKey")
+            bodyMessage.append(elementoFormateado)
+        }
+        val footerMessage = messageSource.getMessage(footerKey, locale).orElse(null)
+            ?: error("Cannot find message $footerKey")
+        bodyMessage.append(footerMessage)
+        return bodyMessage.toString()
     }
 
 }

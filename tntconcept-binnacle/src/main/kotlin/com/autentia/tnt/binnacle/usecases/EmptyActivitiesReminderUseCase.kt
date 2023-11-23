@@ -33,14 +33,14 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
     fun sendReminders() {
         val workableDays = generateWorkableDays()
         val activeUsers = usersRetrievalUseCase.getUsers(UserFilterDTO(active = true))
-        val activities = activitiesByFilterUseCase.getActivities(
+        val allActivities = activitiesByFilterUseCase.getActivities(
             ActivityFilterDTO(
                 firstDayOfActualYear(),
                 workableDays.last()
             )
         )
         val activitiesByUser = activeUsers.associate {
-            it.id to activities.filter { activity -> it.id == activity.userId }
+            it.id to allActivities.filter { activity -> it.id == activity.userId }
         }
         val allVacations = vacationRepository.findBetweenChargeYearsAndStatesWithoutSecurity(
             firstDayOfActualYear()!!, workableDays.last(),
