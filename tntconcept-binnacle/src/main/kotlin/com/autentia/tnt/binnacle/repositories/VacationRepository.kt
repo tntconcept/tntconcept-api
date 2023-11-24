@@ -32,8 +32,8 @@ internal interface VacationRepository {
     ): List<Vacation>
 
     fun findByDatesAndStatesWithoutSecurity(
-        startYear: LocalDate,
-        endYear: LocalDate,
+        startDate: LocalDate,
+        endDate: LocalDate,
         states: List<VacationState>
     ): List<Vacation>
 

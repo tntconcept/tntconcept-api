@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.Vacation
@@ -13,11 +14,10 @@ import com.autentia.tnt.binnacle.services.EmptyActivitiesReminderMailService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.util.*
 import javax.transaction.Transactional
-
-private const val REMOVE_LAST_WORKABLE_DAYS = 3
 
 @Singleton
 class EmptyActivitiesReminderUseCase @Inject internal constructor(
@@ -25,12 +25,21 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
     private val activitiesByFilterUseCase: ActivitiesByFilterUseCase,
     private val vacationRepository: VacationRepository,
     private val emptyActivitiesReminderMailService: EmptyActivitiesReminderMailService,
-    private val usersRetrievalUseCase: UsersRetrievalUseCase
+    private val usersRetrievalUseCase: UsersRetrievalUseCase,
+    private val appProperties: AppProperties
 ) {
+    private companion object {
+        private val logger = LoggerFactory.getLogger(EmptyActivitiesReminderUseCase::class.java)
+        private const val REMOVE_LAST_WORKABLE_DAYS = 3
+    }
 
     @Transactional
     @ReadOnly
     fun sendReminders() {
+        if (!appProperties.binnacle.emptyActivitiesReminder.enabled) {
+            logger.info("Mailing of empty activities reminder is disabled")
+            return
+        }
         val workableDays = generateWorkableDays()
         val activeUsers = usersRetrievalUseCase.getUsers(UserFilterDTO(active = true))
         val allActivities = activitiesByFilterUseCase.getActivities(

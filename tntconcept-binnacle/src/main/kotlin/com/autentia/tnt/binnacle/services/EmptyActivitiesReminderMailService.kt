@@ -27,17 +27,10 @@ internal class EmptyActivitiesReminderMailService(
     ) {
         require(workableDays.isNotEmpty())
         require(toUserEmail.isNotEmpty())
-
-        if (!appProperties.binnacle.emptyActivitiesReminder.enabled) {
-            logger.info("Mailing of empty activities reminder is disabled")
-            return
-        }
-
         val mail = emptyActivitiesReminderMailBuilder.buildMessage(
             locale,
             workableDays,
         )
-
         mailService.send(appProperties.mail.from, listOf(toUserEmail), mail.subject, mail.body)
             .onFailure { logger.error("Error sending empty activities reminder email", it) }
     }
