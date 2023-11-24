@@ -42,7 +42,7 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
         val activitiesByUser = activeUsers.associate {
             it.id to allActivities.filter { activity -> it.id == activity.userId }
         }
-        val allVacations = vacationRepository.findBetweenChargeYearsAndStatesWithoutSecurity(
+        val allVacations = vacationRepository.findByDatesAndStatesWithoutSecurity(
             firstDayOfActualYear()!!, workableDays.last(),
             listOf(VacationState.ACCEPT, VacationState.PENDING)
         )

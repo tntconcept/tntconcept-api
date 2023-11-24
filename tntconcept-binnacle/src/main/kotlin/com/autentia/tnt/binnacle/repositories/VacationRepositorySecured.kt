@@ -43,12 +43,12 @@ internal class VacationRepositorySecured(
         return vacationDao.findBetweenChargeYears(startYear, endYear, userId)
     }
 
-    override fun findBetweenChargeYearsAndStatesWithoutSecurity(
-        startYear: LocalDate,
-        endYear: LocalDate,
+    override fun findByDatesAndStatesWithoutSecurity(
+        startDate: LocalDate,
+        endDate: LocalDate,
         states: List<VacationState>
     ): List<Vacation> {
-        return vacationDao.findBetweenChargeYearsAndStates(startYear,endYear,states)
+        return vacationDao.findByDatesAndStates(startDate,endDate,states)
     }
 
     override fun findById(vacationId: Long): Vacation? {

@@ -32,10 +32,10 @@ internal interface VacationDao : CrudRepository<Vacation, Long> {
         userId: Long
     ): List<Vacation>
 
-    @Query("SELECT h FROM Vacation h WHERE (h.chargeYear BETWEEN :startYear AND :endYear) AND h.state IN (:states)")
-    fun findBetweenChargeYearsAndStates(
-        startYear: LocalDate,
-        endYear: LocalDate,
+    @Query("SELECT h FROM Vacation h WHERE (h.startDate >= :startDate AND h.endDate <= :endDate OR h.endDate >= :startDate AND h.startDate <= :endDate) AND h.state IN (:states)")
+    fun findByDatesAndStates(
+        startDate: LocalDate,
+        endDate: LocalDate,
         states: List<VacationState>
     ): List<Vacation>
 }

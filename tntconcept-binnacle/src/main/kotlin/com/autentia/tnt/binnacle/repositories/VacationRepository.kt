@@ -31,7 +31,7 @@ internal interface VacationRepository {
         userId: Long
     ): List<Vacation>
 
-    fun findBetweenChargeYearsAndStatesWithoutSecurity(
+    fun findByDatesAndStatesWithoutSecurity(
         startYear: LocalDate,
         endYear: LocalDate,
         states: List<VacationState>
