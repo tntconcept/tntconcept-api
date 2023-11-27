@@ -111,8 +111,10 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
         dateToDelete: LocalDate,
         dateLimitToDelete: LocalDate
     ) {
-        while (!dateToDelete.isAfter(dateLimitToDelete)) {
-            workableDaysToUser.remove(dateToDelete)
+        var dateIteration = dateToDelete
+        while (!dateIteration.isAfter(dateLimitToDelete)) {
+            workableDaysToUser.remove(dateIteration)
+            dateIteration = dateIteration.plusDays(1)
         }
     }
 
