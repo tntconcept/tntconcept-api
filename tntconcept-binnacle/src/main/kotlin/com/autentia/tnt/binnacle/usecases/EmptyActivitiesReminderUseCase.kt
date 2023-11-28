@@ -3,16 +3,20 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.DateInterval
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.Vacation
 import com.autentia.tnt.binnacle.entities.VacationState
-import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.UserFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.UserResponseDTO
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.services.EmptyActivitiesReminderMailService
+import com.autentia.tnt.binnacle.services.UserService
+import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Inject
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
@@ -22,10 +26,10 @@ import javax.transaction.Transactional
 @Singleton
 class EmptyActivitiesReminderUseCase @Inject internal constructor(
     private val calendarFactory: CalendarFactory,
-    private val activitiesByFilterUseCase: ActivitiesByFilterUseCase,
+    @param:Named("Internal") private val activityRepository: ActivityRepository,
     private val vacationRepository: VacationRepository,
     private val emptyActivitiesReminderMailService: EmptyActivitiesReminderMailService,
-    private val usersRetrievalUseCase: UsersRetrievalUseCase,
+    private val userService: UserService,
     private val appProperties: AppProperties
 ) {
     private companion object {
@@ -40,14 +44,11 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
             logger.info("Mailing of empty activities reminder is disabled")
             return
         }
+        logger.info("Start EmptyActivitiesReminderUseCase")
         val workableDays = generateWorkableDays()
-        val activeUsers = usersRetrievalUseCase.getUsers(UserFilterDTO(active = true))
-        val allActivities = activitiesByFilterUseCase.getActivities(
-            ActivityFilterDTO(
-                firstDayOfActualYear(),
-                workableDays.last()
-            )
-        )
+        val activeUsers = userService.getActiveUsersWithoutSecurity()
+        val predicate: Specification<Activity> = getPredicateFromActivityFilter(workableDays.last())
+        val allActivities = activityRepository.findAll(predicate).map { it.toDomain() }
         val activitiesByUser = activeUsers.associate {
             it.id to allActivities.filter { activity -> it.id == activity.userId }
         }
@@ -65,11 +66,23 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
         val userIdsToSendEmail = emptyDaysByUser.keys
         val usersToSendEmail = activeUsers.filter { userIdsToSendEmail.contains(it.id) }
         sendMails(usersToSendEmail, emptyDaysByUser)
+        logger.info("End EmptyActivitiesReminderUseCase")
     }
 
-    private fun sendMails(users: List<UserResponseDTO>, emptyDaysByUser: Map<Long, List<LocalDate>>) {
+    private fun getPredicateFromActivityFilter(endDate: LocalDate): Specification<Activity> {
+        var predicate: Specification<Activity> = ActivityPredicates.ALL
+        predicate = PredicateBuilder.and(
+            predicate, ActivityPredicates.startDateLessThanOrEqualTo(endDate)
+        )
+        predicate = PredicateBuilder.and(
+            predicate, ActivityPredicates.endDateGreaterThanOrEqualTo(firstDayOfActualYear()!!)
+        )
+        return predicate
+    }
+
+    private fun sendMails(users: List<User>?, emptyDaysByUser: Map<Long, List<LocalDate>>) {
         val locale = Locale.forLanguageTag("es")
-        users.forEach {
+        users?.forEach {
             emptyActivitiesReminderMailService.sendEmail(emptyDaysByUser[it.id]!!, it.email, locale)
         }
     }
@@ -78,7 +91,7 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
         userIds: List<Long>,
         workableDays: List<LocalDate>,
         vacationsByUser: Map<Long, List<Vacation>>,
-        activitiesByUser: Map<Long, List<ActivityResponseDTO>>
+        activitiesByUser: Map<Long, List<com.autentia.tnt.binnacle.core.domain.Activity>>
     ): Map<Long, List<LocalDate>> {
         return userIds.associateWith { userId ->
             findEmptyDays(
@@ -92,13 +105,13 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
 
     private fun findEmptyDays(
         workableDays: List<LocalDate>,
-        activitiesByUser: Map<Long, List<ActivityResponseDTO>>,
+        activitiesByUser: Map<Long, List<com.autentia.tnt.binnacle.core.domain.Activity>>,
         userId: Long,
         vacationsByUser: Map<Long, List<Vacation>>
     ): MutableList<LocalDate> {
         val workableDaysToUser = workableDays.toMutableList()
         activitiesByUser[userId]?.forEach {
-            removeDays(workableDaysToUser, it.interval.start.toLocalDate(), it.interval.end.toLocalDate())
+            removeDays(workableDaysToUser, it.getStart().toLocalDate(), it.getEnd().toLocalDate())
         }
         vacationsByUser[userId]?.forEach {
             removeDays(workableDaysToUser, it.startDate, it.endDate)

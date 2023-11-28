@@ -12,5 +12,4 @@ internal interface UserDao : PageableRepository<User, Long>, JpaSpecificationExe
 
     fun findByActiveTrue(): List<User>
 
-    fun findByIdIn(ids: List<Long>): List<User>
 }

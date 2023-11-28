@@ -1,13 +1,20 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.AppProperties
+import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.Calendar
 import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.DateInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
+import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.services.EmptyActivitiesReminderMailService
+import com.autentia.tnt.binnacle.services.UserService
+import io.micronaut.data.jpa.repository.criteria.Specification
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.mockito.kotlin.mock
@@ -23,17 +30,17 @@ import java.util.*
 class EmptyActivitiesReminderUseCaseTest {
 
     private val calendarFactory = mock<CalendarFactory>()
-    private val activitiesByFilterUseCase = mock<ActivitiesByFilterUseCase>()
+    private val activityRepository = mock<ActivityRepository>()
     private val vacationRepository = mock<VacationRepository>()
     private val emptyActivitiesReminderMailService = mock<EmptyActivitiesReminderMailService>()
-    private val usersRetrievalUseCase = mock<UsersRetrievalUseCase>()
+    private val userService = mock<UserService>()
     private val appProperties = AppProperties()
     private val sut = EmptyActivitiesReminderUseCase(
         calendarFactory,
-        activitiesByFilterUseCase,
+        activityRepository,
         vacationRepository,
         emptyActivitiesReminderMailService,
-        usersRetrievalUseCase,
+        userService,
         appProperties
     )
 
@@ -53,16 +60,14 @@ class EmptyActivitiesReminderUseCaseTest {
         )
         whenever(calendarFactory.create(DateInterval.of(LocalDate.now().withDayOfYear(1), LocalDate.now())))
             .thenReturn(calendar)
-        whenever(usersRetrievalUseCase.getUsers(UserFilterDTO(active = true))).thenReturn(
-            listOf(generateUserResponseDTO())
+        whenever(userService.getActiveUsersWithoutSecurity()).thenReturn(
+            listOf(createUser(LocalDate.now().withDayOfYear(1), 15L))
         )
         whenever(
-            activitiesByFilterUseCase.getActivities(
-                ActivityFilterDTO(
-                    LocalDate.now().withDayOfYear(1), LocalDate.now().withDayOfYear(17)
-                )
+            activityRepository.findAll(
+                generateActivitySpecification()
             )
-        ).thenReturn(listOf(generateActivityResponseDTO()))
+        ).thenReturn(listOf(generateActivity()))
         whenever(
             vacationRepository.findByDatesAndStatesWithoutSecurity(
                 LocalDate.now().withDayOfYear(1), LocalDate.now().withDayOfYear(17),
@@ -78,7 +83,7 @@ class EmptyActivitiesReminderUseCaseTest {
                 LocalDate.now().withDayOfYear(13),
                 LocalDate.now().withDayOfYear(16),
                 LocalDate.now().withDayOfYear(17)
-            ), "user@mail.com", Locale.forLanguageTag("es")
+            ), "jdoe@doe.com", Locale.forLanguageTag("es")
         )
     }
 
@@ -92,11 +97,22 @@ class EmptyActivitiesReminderUseCaseTest {
 
         verifyNoInteractions(
             calendarFactory,
-            activitiesByFilterUseCase,
+            activityRepository,
             vacationRepository,
             emptyActivitiesReminderMailService,
-            usersRetrievalUseCase
+            userService
         )
+    }
+
+    private fun generateActivitySpecification(): Specification<Activity> {
+        var predicate: Specification<Activity> = ActivityPredicates.ALL
+        predicate = PredicateBuilder.and(
+            predicate, ActivityPredicates.endDateGreaterThanOrEqualTo(LocalDate.now().withDayOfYear(1))
+        )
+        predicate = PredicateBuilder.and(
+            predicate, ActivityPredicates.startDateLessThanOrEqualTo(LocalDate.now().withDayOfYear(17))
+        )
+        return predicate
     }
 
     private fun generateVacation() = Vacation(
@@ -109,27 +125,17 @@ class EmptyActivitiesReminderUseCaseTest {
         chargeYear = LocalDate.now().withDayOfYear(1)
     )
 
-    private fun generateUserResponseDTO() = UserResponseDTO(
-        id = 15L,
-        username = "userName",
-        name = "User Name",
-        email = "user@mail.com"
-    )
-
-    private fun generateActivityResponseDTO(): ActivityResponseDTO = ActivityResponseDTO(
+    private fun generateActivity(): Activity = Activity(
         billable = false,
         description = "Dummy description",
         hasEvidences = false,
         id = 1L,
-        projectRoleId = 10L,
-        interval = IntervalResponseDTO(
-            LocalDateTime.of(LocalDate.now().withDayOfYear(8), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now().withDayOfYear(12), LocalTime.NOON).plusMinutes(60),
-            60,
-            TimeUnit.MINUTES
-        ),
+        projectRole = createProjectRole(10L),
+        start = LocalDateTime.of(LocalDate.now().withDayOfYear(8), LocalTime.NOON),
+        end = LocalDateTime.of(LocalDate.now().withDayOfYear(12), LocalTime.NOON).plusMinutes(60),
         userId = 15L,
-        approval = ApprovalDTO(ApprovalState.NA)
+        approvalState = ApprovalState.NA,
+        duration = 4
     )
 
 }
