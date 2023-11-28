@@ -54,9 +54,9 @@ internal class EmptyActivitiesReminderMailServiceTest {
     @DisplayName("Message builder test")
     inner class BuilderTest {
         private val subjectKey = "mail.request.emptyActivitiesReminder.subject"
-        private val headerKey = "mail.request.emptyActivitiesReminder.header"
-        private val elementKey = "mail.request.emptyActivitiesReminder.element"
-        private val footerKey = "mail.request.emptyActivitiesReminder.footer"
+        private val headerKey = "mail.request.emptyActivitiesReminder.template.header"
+        private val elementKey = "mail.request.emptyActivitiesReminder.template.element"
+        private val footerKey = "mail.request.emptyActivitiesReminder.template.footer"
         private val messageSource: MessageSource = mock()
         private val emptyActivitiesReminderMailBuilder =
             EmptyActivitiesReminderMailBuilder(messageSource = messageSource)

@@ -38,9 +38,9 @@ internal class EmptyActivitiesReminderMailBuilder(private val messageSource: Mes
 
     private companion object {
         private const val subjectKey = "mail.request.emptyActivitiesReminder.subject"
-        private const val headerKey = "mail.request.emptyActivitiesReminder.header"
-        private const val elementKey = "mail.request.emptyActivitiesReminder.element"
-        private const val footerKey = "mail.request.emptyActivitiesReminder.footer"
+        private const val headerKey = "mail.request.emptyActivitiesReminder.template.header"
+        private const val elementKey = "mail.request.emptyActivitiesReminder.template.element"
+        private const val footerKey = "mail.request.emptyActivitiesReminder.template.footer"
     }
 
     fun buildMessage(
