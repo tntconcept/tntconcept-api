@@ -51,17 +51,17 @@ class EmptyActivitiesReminderUseCaseTest {
         }
         val calendar = Calendar(
             dateInterval = DateInterval.of(
-                LocalDate.now().withDayOfYear(1), LocalDate.now().withDayOfYear(20)
+                LocalDate.ofYearDay(2023, 1), LocalDate.ofYearDay(2023, 20)
             ),
             holidays = listOf(
-                Holiday(1, "Holiday description", LocalDate.now().withDayOfYear(6).atStartOfDay()),
-                Holiday(1, "Holiday description", LocalDate.now().withDayOfYear(7).atStartOfDay())
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(2023, 6).atStartOfDay()),
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(2023, 7).atStartOfDay())
             )
         )
-        whenever(calendarFactory.create(DateInterval.of(LocalDate.now().withDayOfYear(1), LocalDate.now())))
+        whenever(calendarFactory.create(DateInterval.of(LocalDate.ofYearDay(2023, 1), LocalDate.now())))
             .thenReturn(calendar)
         whenever(userService.getActiveUsersWithoutSecurity()).thenReturn(
-            listOf(createUser(LocalDate.now().withDayOfYear(1), 15L))
+            listOf(createUser(LocalDate.ofYearDay(2023, 1), 15))
         )
         whenever(
             activityRepository.findAll(
@@ -70,7 +70,7 @@ class EmptyActivitiesReminderUseCaseTest {
         ).thenReturn(listOf(generateActivity()))
         whenever(
             vacationRepository.findByDatesAndStatesWithoutSecurity(
-                LocalDate.now().withDayOfYear(1), LocalDate.now().withDayOfYear(17),
+                LocalDate.ofYearDay(2023, 1), LocalDate.ofYearDay(2023, 16),
                 listOf(VacationState.ACCEPT, VacationState.PENDING)
             )
         ).thenReturn(listOf(generateVacation()))
@@ -79,10 +79,9 @@ class EmptyActivitiesReminderUseCaseTest {
 
         verify(this.emptyActivitiesReminderMailService).sendEmail(
             listOf(
-                LocalDate.now().withDayOfYear(2),
-                LocalDate.now().withDayOfYear(13),
-                LocalDate.now().withDayOfYear(16),
-                LocalDate.now().withDayOfYear(17)
+                LocalDate.ofYearDay(2023, 2),
+                LocalDate.ofYearDay(2023, 13),
+                LocalDate.ofYearDay(2023, 16)
             ), "jdoe@doe.com", Locale.forLanguageTag("es")
         )
     }
@@ -107,10 +106,10 @@ class EmptyActivitiesReminderUseCaseTest {
     private fun generateActivitySpecification(): Specification<Activity> {
         var predicate: Specification<Activity> = ActivityPredicates.ALL
         predicate = PredicateBuilder.and(
-            predicate, ActivityPredicates.endDateGreaterThanOrEqualTo(LocalDate.now().withDayOfYear(1))
+            predicate, ActivityPredicates.endDateGreaterThanOrEqualTo(LocalDate.ofYearDay(2023, 1))
         )
         predicate = PredicateBuilder.and(
-            predicate, ActivityPredicates.startDateLessThanOrEqualTo(LocalDate.now().withDayOfYear(17))
+            predicate, ActivityPredicates.startDateLessThanOrEqualTo(LocalDate.ofYearDay(2023, 16))
         )
         return predicate
     }
@@ -120,9 +119,9 @@ class EmptyActivitiesReminderUseCaseTest {
         userId = 15L,
         description = "2 days",
         state = VacationState.REJECT,
-        startDate = LocalDate.now().withDayOfYear(3),
-        endDate = LocalDate.now().withDayOfYear(5),
-        chargeYear = LocalDate.now().withDayOfYear(1)
+        startDate = LocalDate.ofYearDay(2023, 3),
+        endDate = LocalDate.ofYearDay(2023, 5),
+        chargeYear = LocalDate.ofYearDay(2023, 1)
     )
 
     private fun generateActivity(): Activity = Activity(
@@ -131,8 +130,8 @@ class EmptyActivitiesReminderUseCaseTest {
         hasEvidences = false,
         id = 1L,
         projectRole = createProjectRole(10L),
-        start = LocalDateTime.of(LocalDate.now().withDayOfYear(8), LocalTime.NOON),
-        end = LocalDateTime.of(LocalDate.now().withDayOfYear(12), LocalTime.NOON).plusMinutes(60),
+        start = LocalDateTime.of(LocalDate.ofYearDay(2023, 8), LocalTime.NOON),
+        end = LocalDateTime.of(LocalDate.ofYearDay(2023, 12), LocalTime.NOON).plusMinutes(60),
         userId = 15L,
         approvalState = ApprovalState.NA,
         duration = 4

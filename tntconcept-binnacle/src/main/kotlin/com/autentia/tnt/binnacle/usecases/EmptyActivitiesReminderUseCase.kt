@@ -34,7 +34,7 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
 ) {
     private companion object {
         private val logger = LoggerFactory.getLogger(EmptyActivitiesReminderUseCase::class.java)
-        private const val REMOVE_LAST_WORKABLE_DAYS = 3
+        private const val REMOVE_LAST_WORKABLE_DAYS = 4
     }
 
     @Transactional
