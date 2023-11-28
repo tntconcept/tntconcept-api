@@ -25,14 +25,11 @@ internal class EmptyActivitiesReminderMailService(
         toUserEmail: String,
         locale: Locale
     ) {
-        require(workableDays.isNotEmpty())
-        require(toUserEmail.isNotEmpty())
-        val mail = emptyActivitiesReminderMailBuilder.buildMessage(
-            locale,
-            workableDays,
-        )
-        mailService.send(appProperties.mail.from, listOf(toUserEmail), mail.subject, mail.body)
-            .onFailure { logger.error("Error sending empty activities reminder email", it) }
+        if (workableDays.isNotEmpty() && toUserEmail.isNotEmpty()) {
+            val mail = emptyActivitiesReminderMailBuilder.buildMessage(locale, workableDays)
+            mailService.send(appProperties.mail.from, listOf(toUserEmail), mail.subject, mail.body)
+                .onFailure { logger.error("Error sending empty activities reminder email", it) }
+        }
     }
 }
 
