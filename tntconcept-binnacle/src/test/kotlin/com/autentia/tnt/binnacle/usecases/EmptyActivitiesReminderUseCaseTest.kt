@@ -12,24 +12,32 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.services.DateService
 import com.autentia.tnt.binnacle.services.EmptyActivitiesReminderMailService
 import com.autentia.tnt.binnacle.services.UserService
 import io.micronaut.data.jpa.repository.criteria.Specification
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.*
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class EmptyActivitiesReminderUseCaseTest {
 
+    companion object {
+        private const val yearTest = 2023
+        private val firstDayOfYear = LocalDate.ofYearDay(yearTest, 1)
+        private val sunday = LocalDate.ofYearDay(yearTest, 15)
+        private val saturday = LocalDate.ofYearDay(yearTest, 14)
+        private val workableFriday = LocalDate.ofYearDay(yearTest, 20)
+        private val holiday = LocalDate.ofYearDay(yearTest, 17)
+    }
+
     private val calendarFactory = mock<CalendarFactory>()
+    private val dateService = mock<DateService>()
     private val activityRepository = mock<ActivityRepository>()
     private val vacationRepository = mock<VacationRepository>()
     private val emptyActivitiesReminderMailService = mock<EmptyActivitiesReminderMailService>()
@@ -41,56 +49,145 @@ class EmptyActivitiesReminderUseCaseTest {
         vacationRepository,
         emptyActivitiesReminderMailService,
         userService,
-        appProperties
+        appProperties,
+        dateService
     )
 
     @Test
-    fun `should send reminders if is enabled`() {
-        appProperties.apply {
-            binnacle.emptyActivitiesReminder.enabled = true
-        }
+    fun `should send reminders if is enabled at holiday`() {
+        appProperties.apply { binnacle.emptyActivitiesReminder.enabled = true }
         val calendar = Calendar(
-            dateInterval = DateInterval.of(
-                LocalDate.ofYearDay(2023, 1), LocalDate.ofYearDay(2023, 20)
-            ),
-            holidays = listOf(
-                Holiday(1, "Holiday description", LocalDate.ofYearDay(2023, 6).atStartOfDay()),
-                Holiday(1, "Holiday description", LocalDate.ofYearDay(2023, 7).atStartOfDay())
+            dateInterval = DateInterval.of(firstDayOfYear, holiday), holidays = listOf(
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(yearTest, 17).atStartOfDay()),
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(yearTest, 18).atStartOfDay())
             )
         )
-        whenever(calendarFactory.create(DateInterval.of(LocalDate.ofYearDay(2023, 1), LocalDate.now())))
-            .thenReturn(calendar)
+        whenever(calendarFactory.create(DateInterval.of(firstDayOfYear, holiday))).thenReturn(calendar)
+        whenever(dateService.getLocalDateNow()).thenReturn(holiday)
         whenever(userService.getActiveUsersWithoutSecurity()).thenReturn(
-            listOf(createUser(LocalDate.ofYearDay(2023, 1), 15))
+            listOf(createUser(firstDayOfYear, 15))
         )
-        whenever(
-            activityRepository.findAll(
-                generateActivitySpecification()
-            )
-        ).thenReturn(listOf(generateActivity()))
-        whenever(
-            vacationRepository.findByDatesAndStatesWithoutSecurity(
-                LocalDate.ofYearDay(2023, 1), LocalDate.ofYearDay(2023, 16),
-                listOf(VacationState.ACCEPT, VacationState.PENDING)
-            )
-        ).thenReturn(listOf(generateVacation()))
+        whenever(activityRepository.findAll(generateActivitySpecification(firstDayOfYear, 12))).thenReturn(
+            listOf(generateActivity())
+        )
 
         sut.sendReminders()
 
         verify(this.emptyActivitiesReminderMailService).sendEmail(
             listOf(
-                LocalDate.ofYearDay(2023, 2),
-                LocalDate.ofYearDay(2023, 13),
-                LocalDate.ofYearDay(2023, 16)
+                LocalDate.ofYearDay(yearTest, 2),
+                LocalDate.ofYearDay(yearTest, 3),
+                LocalDate.ofYearDay(yearTest, 4),
+                LocalDate.ofYearDay(yearTest, 5),
+                LocalDate.ofYearDay(yearTest, 6),
+                LocalDate.ofYearDay(yearTest, 9),
+                LocalDate.ofYearDay(yearTest, 10),
+                LocalDate.ofYearDay(yearTest, 11)
+            ), "jdoe@doe.com", Locale.forLanguageTag("es")
+        )
+    }
+
+    @Test
+    fun `should send reminders if is enabled at sunday`() {
+        appProperties.apply { binnacle.emptyActivitiesReminder.enabled = true }
+        val calendar = Calendar(
+            dateInterval = DateInterval.of(firstDayOfYear, sunday), holidays = listOf(
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(yearTest, 6).atStartOfDay()),
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(yearTest, 7).atStartOfDay())
+            )
+        )
+        whenever(calendarFactory.create(DateInterval.of(firstDayOfYear, sunday))).thenReturn(
+            calendar
+        )
+        whenever(dateService.getLocalDateNow()).thenReturn(sunday)
+        whenever(userService.getActiveUsersWithoutSecurity()).thenReturn(
+            listOf(createUser(firstDayOfYear, 15))
+        )
+        whenever(activityRepository.findAll(generateActivitySpecification(firstDayOfYear, 10))).thenReturn(
+            listOf(generateActivity())
+        )
+        whenever(
+            vacationRepository.findByDatesAndStatesWithoutSecurity(
+                firstDayOfYear,
+                LocalDate.ofYearDay(yearTest, 10),
+                listOf(VacationState.ACCEPT, VacationState.PENDING)
+            )
+        ).thenReturn(listOf(generateVacation(firstDayOfYear)))
+
+        sut.sendReminders()
+
+        verify(this.emptyActivitiesReminderMailService).sendEmail(
+            listOf(LocalDate.ofYearDay(yearTest, 2)), "jdoe@doe.com", Locale.forLanguageTag("es")
+        )
+    }
+
+    @Test
+    fun `should send reminders if is enabled at saturday`() {
+        appProperties.apply { binnacle.emptyActivitiesReminder.enabled = true }
+        val calendar = Calendar(
+            dateInterval = DateInterval.of(firstDayOfYear, saturday), holidays = listOf(
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(yearTest, 6).atStartOfDay()),
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(yearTest, 7).atStartOfDay())
+            )
+        )
+        whenever(calendarFactory.create(DateInterval.of(firstDayOfYear, saturday))).thenReturn(calendar)
+        whenever(dateService.getLocalDateNow()).thenReturn(saturday)
+        whenever(userService.getActiveUsersWithoutSecurity()).thenReturn(listOf(createUser(firstDayOfYear, 15)))
+        whenever(activityRepository.findAll(generateActivitySpecification(firstDayOfYear, 10))).thenReturn(
+            listOf(generateActivity())
+        )
+        whenever(
+            vacationRepository.findByDatesAndStatesWithoutSecurity(
+                firstDayOfYear,
+                LocalDate.ofYearDay(yearTest, 10),
+                listOf(VacationState.ACCEPT, VacationState.PENDING)
+            )
+        ).thenReturn(listOf(generateVacation(firstDayOfYear)))
+
+        sut.sendReminders()
+
+        verify(this.emptyActivitiesReminderMailService).sendEmail(
+            listOf(LocalDate.ofYearDay(yearTest, 2)), "jdoe@doe.com", Locale.forLanguageTag("es")
+        )
+    }
+
+    @Test
+    fun `should send reminders if is enabled at workableFriday`() {
+        appProperties.apply { binnacle.emptyActivitiesReminder.enabled = true }
+        val calendar = Calendar(
+            dateInterval = DateInterval.of(firstDayOfYear, workableFriday), holidays = listOf(
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(yearTest, 6).atStartOfDay()),
+                Holiday(1, "Holiday description", LocalDate.ofYearDay(yearTest, 7).atStartOfDay())
+            )
+        )
+        whenever(calendarFactory.create(DateInterval.of(firstDayOfYear, workableFriday))).thenReturn(calendar)
+        whenever(dateService.getLocalDateNow()).thenReturn(workableFriday)
+        whenever(userService.getActiveUsersWithoutSecurity()).thenReturn(listOf(createUser(firstDayOfYear, 15)))
+        whenever(activityRepository.findAll(generateActivitySpecification(firstDayOfYear, 16))).thenReturn(
+            listOf(generateActivity())
+        )
+        whenever(
+            vacationRepository.findByDatesAndStatesWithoutSecurity(
+                firstDayOfYear,
+                LocalDate.ofYearDay(yearTest, 16),
+                listOf(VacationState.ACCEPT, VacationState.PENDING)
+            )
+        ).thenReturn(listOf(generateVacation(firstDayOfYear)))
+
+        sut.sendReminders()
+
+        verify(this.emptyActivitiesReminderMailService).sendEmail(
+            listOf(
+                LocalDate.ofYearDay(yearTest, 2),
+                LocalDate.ofYearDay(yearTest, 13),
+                LocalDate.ofYearDay(yearTest, 16)
             ), "jdoe@doe.com", Locale.forLanguageTag("es")
         )
     }
 
     @Test
     fun `should not send reminders if is disabled`() {
-        appProperties.apply {
-            binnacle.emptyActivitiesReminder.enabled = false
-        }
+        appProperties.apply { binnacle.emptyActivitiesReminder.enabled = false }
 
         sut.sendReminders()
 
@@ -103,25 +200,25 @@ class EmptyActivitiesReminderUseCaseTest {
         )
     }
 
-    private fun generateActivitySpecification(): Specification<Activity> {
+    private fun generateActivitySpecification(firstDayOfYear: LocalDate, dayOfYear: Int): Specification<Activity> {
         var predicate: Specification<Activity> = ActivityPredicates.ALL
         predicate = PredicateBuilder.and(
-            predicate, ActivityPredicates.endDateGreaterThanOrEqualTo(LocalDate.ofYearDay(2023, 1))
+            predicate, ActivityPredicates.endDateGreaterThanOrEqualTo(firstDayOfYear)
         )
         predicate = PredicateBuilder.and(
-            predicate, ActivityPredicates.startDateLessThanOrEqualTo(LocalDate.ofYearDay(2023, 16))
+            predicate, ActivityPredicates.startDateLessThanOrEqualTo(LocalDate.ofYearDay(yearTest, dayOfYear))
         )
         return predicate
     }
 
-    private fun generateVacation() = Vacation(
+    private fun generateVacation(firstDayOfYear: LocalDate) = Vacation(
         id = 1,
         userId = 15L,
         description = "2 days",
-        state = VacationState.REJECT,
-        startDate = LocalDate.ofYearDay(2023, 3),
-        endDate = LocalDate.ofYearDay(2023, 5),
-        chargeYear = LocalDate.ofYearDay(2023, 1)
+        state = VacationState.ACCEPT,
+        startDate = LocalDate.ofYearDay(yearTest, 3),
+        endDate = LocalDate.ofYearDay(yearTest, 5),
+        chargeYear = firstDayOfYear
     )
 
     private fun generateActivity(): Activity = Activity(
@@ -130,8 +227,8 @@ class EmptyActivitiesReminderUseCaseTest {
         hasEvidences = false,
         id = 1L,
         projectRole = createProjectRole(10L),
-        start = LocalDateTime.of(LocalDate.ofYearDay(2023, 8), LocalTime.NOON),
-        end = LocalDateTime.of(LocalDate.ofYearDay(2023, 12), LocalTime.NOON).plusMinutes(60),
+        start = LocalDateTime.of(LocalDate.ofYearDay(yearTest, 8), LocalTime.NOON),
+        end = LocalDateTime.of(LocalDate.ofYearDay(yearTest, 12), LocalTime.NOON).plusMinutes(60),
         userId = 15L,
         approvalState = ApprovalState.NA,
         duration = 4

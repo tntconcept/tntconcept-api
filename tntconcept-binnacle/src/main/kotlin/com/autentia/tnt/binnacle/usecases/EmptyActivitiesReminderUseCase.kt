@@ -11,6 +11,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.VacationRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.services.DateService
 import com.autentia.tnt.binnacle.services.EmptyActivitiesReminderMailService
 import com.autentia.tnt.binnacle.services.UserService
 import io.micronaut.data.jpa.repository.criteria.Specification
@@ -30,7 +31,8 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
     private val vacationRepository: VacationRepository,
     private val emptyActivitiesReminderMailService: EmptyActivitiesReminderMailService,
     private val userService: UserService,
-    private val appProperties: AppProperties
+    private val appProperties: AppProperties,
+    private val dateService: DateService
 ) {
     private companion object {
         private val logger = LoggerFactory.getLogger(EmptyActivitiesReminderUseCase::class.java)
@@ -46,26 +48,32 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
         }
         logger.info("Start EmptyActivitiesReminderUseCase")
         val workableDays = generateWorkableDays()
-        val activeUsers = userService.getActiveUsersWithoutSecurity()
-        val predicate: Specification<Activity> = getPredicateFromActivityFilter(workableDays.last())
-        val allActivities = activityRepository.findAll(predicate).map { it.toDomain() }
-        val activitiesByUser = activeUsers.associate {
-            it.id to allActivities.filter { activity -> it.id == activity.userId }
+        if (workableDays.isNotEmpty()) {
+            val activeUsers = userService.getActiveUsersWithoutSecurity()
+            if (activeUsers.isNotEmpty()) {
+                val predicate: Specification<Activity> = getPredicateFromActivityFilter(workableDays.last())
+                val allActivities = activityRepository.findAll(predicate).map { it.toDomain() }
+                val activitiesByUser = activeUsers.associate {
+                    it.id to allActivities.filter { activity -> it.id == activity.userId }
+                }
+                val allVacations = vacationRepository.findByDatesAndStatesWithoutSecurity(
+                    firstDayOfActualYear()!!, workableDays.last(),
+                    listOf(VacationState.ACCEPT, VacationState.PENDING)
+                )
+                val vacationsByUser = activeUsers.associate {
+                    it.id to allVacations.filter { activity -> it.id == activity.userId }
+                }
+                val emptyDaysByUser = generateEmptyDaysByUser(
+                    activeUsers,
+                    workableDays, vacationsByUser, activitiesByUser
+                )
+                if (emptyDaysByUser.isNotEmpty()) {
+                    val userIdsToSendEmail = emptyDaysByUser.keys
+                    val usersToSendEmail = activeUsers.filter { userIdsToSendEmail.contains(it.id) }
+                    sendMails(usersToSendEmail, emptyDaysByUser)
+                }
+            }
         }
-        val allVacations = vacationRepository.findByDatesAndStatesWithoutSecurity(
-            firstDayOfActualYear()!!, workableDays.last(),
-            listOf(VacationState.ACCEPT, VacationState.PENDING)
-        )
-        val vacationsByUser = activeUsers.associate {
-            it.id to allVacations.filter { activity -> it.id == activity.userId }
-        }
-        val emptyDaysByUser = generateEmptyDaysByUser(
-            activeUsers.map { it.id },
-            workableDays, vacationsByUser, activitiesByUser
-        )
-        val userIdsToSendEmail = emptyDaysByUser.keys
-        val usersToSendEmail = activeUsers.filter { userIdsToSendEmail.contains(it.id) }
-        sendMails(usersToSendEmail, emptyDaysByUser)
         logger.info("End EmptyActivitiesReminderUseCase")
     }
 
@@ -88,33 +96,41 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
     }
 
     private fun generateEmptyDaysByUser(
-        userIds: List<Long>,
+        users: List<User>,
         workableDays: List<LocalDate>,
         vacationsByUser: Map<Long, List<Vacation>>,
         activitiesByUser: Map<Long, List<com.autentia.tnt.binnacle.core.domain.Activity>>
     ): Map<Long, List<LocalDate>> {
-        return userIds.associateWith { userId ->
-            findEmptyDays(
-                workableDays,
-                activitiesByUser,
-                userId,
-                vacationsByUser
-            )
+        return users.associate {
+            it.id to
+                    findEmptyDays(
+                        workableDays,
+                        activitiesByUser,
+                        it,
+                        vacationsByUser
+                    )
         }
     }
 
     private fun findEmptyDays(
         workableDays: List<LocalDate>,
         activitiesByUser: Map<Long, List<com.autentia.tnt.binnacle.core.domain.Activity>>,
-        userId: Long,
+        user: User,
         vacationsByUser: Map<Long, List<Vacation>>
     ): MutableList<LocalDate> {
         val workableDaysToUser = workableDays.toMutableList()
-        activitiesByUser[userId]?.forEach {
+        activitiesByUser[user.id]?.forEach {
             removeDays(workableDaysToUser, it.getStart().toLocalDate(), it.getEnd().toLocalDate())
         }
-        vacationsByUser[userId]?.forEach {
+        vacationsByUser[user.id]?.forEach {
             removeDays(workableDaysToUser, it.startDate, it.endDate)
+        }
+        if (user.hiringDate.year == dateService.getLocalDateNow().year) {
+            removeDays(
+                workableDaysToUser,
+                dateService.getLocalDateNow().withDayOfYear(1),
+                user.hiringDate.minusDays(1)
+            )
         }
         return workableDaysToUser
     }
@@ -132,11 +148,16 @@ class EmptyActivitiesReminderUseCase @Inject internal constructor(
     }
 
     private fun generateWorkableDays(): List<LocalDate> {
-        val workableDays = calendarFactory.create(DateInterval.of(firstDayOfActualYear()!!, LocalDate.now()))
-            .workableDays
-        return workableDays.subList(0, workableDays.size - REMOVE_LAST_WORKABLE_DAYS)
+        val workableDays =
+            calendarFactory.create(DateInterval.of(firstDayOfActualYear()!!, dateService.getLocalDateNow()))
+                .workableDays
+        var daysToRemove = REMOVE_LAST_WORKABLE_DAYS
+        if (!workableDays.contains(dateService.getLocalDateNow())) {
+            daysToRemove -= 1
+        }
+        return workableDays.subList(0, workableDays.size - daysToRemove)
     }
 
-    private fun firstDayOfActualYear(): LocalDate? = LocalDate.now().withDayOfYear(1)
+    private fun firstDayOfActualYear(): LocalDate? = dateService.getLocalDateNow().withDayOfYear(1)
 
 }
