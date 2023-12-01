@@ -48,6 +48,8 @@ internal class AppProperties {
 
         var temporaryAttachments = TemporaryAttachmentsDeletionProperties()
 
+        var emptyActivitiesReminder = EmptyActivitiesReminderProperties()
+
         @ConfigurationProperties("work-summary")
         internal class WorkSummaryProperties {
             var persistenceEnabled: Boolean = false
@@ -94,6 +96,12 @@ internal class AppProperties {
 
         @ConfigurationProperties("temporary-attachments")
         internal class TemporaryAttachmentsDeletionProperties {
+            var enabled: Boolean = false
+            var cronExpression: String? = null
+        }
+
+        @ConfigurationProperties("empty-activities-reminder")
+        internal class EmptyActivitiesReminderProperties {
             var enabled: Boolean = false
             var cronExpression: String? = null
         }

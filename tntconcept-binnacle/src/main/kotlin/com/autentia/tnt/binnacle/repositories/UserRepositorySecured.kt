@@ -1,8 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.User
-import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
-import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
 import com.autentia.tnt.security.application.canAccessAllUsers
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
