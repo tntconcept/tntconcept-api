@@ -12,4 +12,3 @@ data class AttachmentInfo(
         val userId: Long,
         val path: String
 )
-

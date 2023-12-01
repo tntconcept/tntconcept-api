@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.entities.dto
 
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
+import java.util.*
 
 @Introspected
 data class ActivityRequestDTO(
@@ -10,8 +11,7 @@ data class ActivityRequestDTO(
     val description: String,
     val billable: Boolean,
     val projectRoleId: Long,
-    val hasEvidences: Boolean,
-    val evidence: EvidenceDTO? = null
+    val evidences: List<UUID> = arrayListOf()
 ) {
     constructor(
         id: Long? = null,
@@ -20,7 +20,7 @@ data class ActivityRequestDTO(
         description: String,
         billable: Boolean,
         projectRoleId: Long,
-        hasEvidences: Boolean,
-        evidence: EvidenceDTO? = null
-    ) : this(id, TimeIntervalRequestDTO(start, end), description, billable, projectRoleId, hasEvidences, evidence)
+        evidences: List<UUID> = arrayListOf()
+    ) : this(id, TimeIntervalRequestDTO(start, end), description, billable, projectRoleId, evidences)
+
 }

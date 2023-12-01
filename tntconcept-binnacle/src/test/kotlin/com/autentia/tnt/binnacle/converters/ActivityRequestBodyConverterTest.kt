@@ -37,9 +37,7 @@ internal class ActivityRequestBodyConverterTest {
             75,
             "New activity",
             false,
-            1,
-            false,
-            null
+            1
         )
 
         val DUMMY_ORGANIZATION = Organization(1L, "Dummy Organization", 1, listOf())
@@ -60,7 +58,6 @@ internal class ActivityRequestBodyConverterTest {
             false,
             1,
             null,
-            false,
             ApprovalState.NA
         )
 

@@ -5,7 +5,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 data class ActivityResponse(
     val billable: Boolean,
     val description: String,
-    val hasEvidences: Boolean?,
+    val evidences: List<String>,
     val id: Long,
     val projectRoleId: Long,
     val interval: IntervalResponse,
@@ -17,7 +17,7 @@ data class ActivityResponse(
             ActivityResponse(
                 activityResponseDTO.billable,
                 activityResponseDTO.description,
-                activityResponseDTO.hasEvidences,
+                activityResponseDTO.evidences,
                 activityResponseDTO.id,
                 activityResponseDTO.projectRoleId,
                 IntervalResponse.from(activityResponseDTO.interval),

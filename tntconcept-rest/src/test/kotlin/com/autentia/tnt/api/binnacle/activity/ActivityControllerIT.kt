@@ -52,9 +52,6 @@ internal class ActivityControllerIT {
     @get:MockBean(ActivityDeletionUseCase::class)
     internal val activityDeletionUseCase = mock<ActivityDeletionUseCase>()
 
-    @get:MockBean(ActivityEvidenceRetrievalUseCase::class)
-    internal val activityEvidenceRetrievalUseCase = mock<ActivityEvidenceRetrievalUseCase>()
-
     @get:MockBean(ActivitiesSummaryUseCase::class)
     internal val activitiesSummaryUseCase = mock<ActivitiesSummaryUseCase>()
 
@@ -93,7 +90,7 @@ internal class ActivityControllerIT {
     }
 
     @Test
-    fun `get all perding activities by approvalState`() {
+    fun `get all pending activities by approvalState`() {
         val approvalState = ApprovalStateActivityFilter.PENDING
         val activityResponseDTOs = listOf(ACTIVITY_RESPONSE_DTO)
         val activities = listOf(ACTIVITY_RESPONSE)
@@ -186,20 +183,6 @@ internal class ActivityControllerIT {
 
         assertEquals(NOT_FOUND, ex.status)
         assertEquals("RESOURCE_NOT_FOUND", ex.response.getBody<ErrorResponse>().get().code)
-    }
-
-    @Test
-    fun `get an evidence activity by id`() {
-        val activityId = ACTIVITY_RESPONSE_DTO.id
-        doReturn(EvidenceDTO.from(ACTIVITY_IMAGE)).whenever(activityEvidenceRetrievalUseCase)
-            .getActivityEvidenceByActivityId(activityId)
-
-        val response = client.exchangeObject<String>(
-            GET("/api/activity/$activityId/evidence")
-        )
-
-        assertEquals(OK, response.status)
-        assertEquals(ACTIVITY_IMAGE, response.body())
     }
 
     @Test
@@ -422,7 +405,7 @@ internal class ActivityControllerIT {
         )
 
         private val ACTIVITY_REQUEST_BODY_DTO = ActivityRequest(
-            null, INTERVAL_REQUEST_DTO, "Activity description", true, 3, false, null
+            null, INTERVAL_REQUEST_DTO, "Activity description", true, 3, arrayListOf()
         )
 
         private val ACTIVITY_POST_JSON = """
@@ -434,7 +417,7 @@ internal class ActivityControllerIT {
                 "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
                 "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
-                "hasEvidences": ${ACTIVITY_REQUEST_BODY_DTO.hasEvidences}                
+                "evidences": []
             }
         """.trimIndent()
 
@@ -447,8 +430,7 @@ internal class ActivityControllerIT {
                 "description": "${ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${ACTIVITY_REQUEST_BODY_DTO.billable},
                 "projectRoleId": ${ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
-                "hasEvidences": true,
-                "evidence": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+                "evidences": ["b4afdac6-e536-41de-8a44-2561f8ffad50"]
             }
         """.trimIndent()
 
@@ -470,7 +452,7 @@ internal class ActivityControllerIT {
         private val ACTIVITY_RESPONSE_DTO = ActivityResponseDTO(
             ACTIVITY_REQUEST_BODY_DTO.billable,
             ACTIVITY_REQUEST_BODY_DTO.description,
-            ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
+            arrayListOf(),
             2L,
             ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
             IntervalResponseDTO(
@@ -497,12 +479,9 @@ internal class ActivityControllerIT {
                 "description": "Updated activity description",
                 "billable": ${ACTIVITY_RESPONSE_DTO.billable},
                 "projectRoleId": ${ACTIVITY_RESPONSE_DTO.projectRoleId},
-                "hasEvidences": ${ACTIVITY_RESPONSE_DTO.hasEvidences}
+                "evidences": []
             }
         """.trimIndent()
-
-        private const val ACTIVITY_IMAGE =
-            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
     }
 
 }

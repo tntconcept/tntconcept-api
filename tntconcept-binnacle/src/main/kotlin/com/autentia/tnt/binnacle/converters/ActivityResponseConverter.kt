@@ -9,13 +9,14 @@ import jakarta.inject.Singleton
 
 @Singleton
 class ActivityResponseConverter(
-        private val activityIntervalResponseConverter: ActivityIntervalResponseConverter
+        private val activityIntervalResponseConverter: ActivityIntervalResponseConverter,
+        private val activityEvidenceResponseConverter: ActivityEvidenceResponseConverter
 ) {
 
     fun toActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = ActivityResponseDTO(
             billable = activity.billable,
             description = activity.description,
-            hasEvidences = activity.hasEvidences,
+            evidences = activityEvidenceResponseConverter.getEvidencesUUIDs(activity),
             id = activity.id!!,
             projectRoleId = activity.projectRole.id,
             interval = activityIntervalResponseConverter.toIntervalResponseDTO(activity),
@@ -39,7 +40,7 @@ class ActivityResponseConverter(
             project = activity.projectRole.project,
             projectRole = activity.projectRole,
             duration = activity.duration,
-            hasEvidences = activity.hasEvidences,
+            evidences =  activityEvidenceResponseConverter.getEvidencesUUIDs(activity),
             approval = Approval(
                     activity.approvalState,
                     activity.approvedByUserId,
@@ -51,7 +52,7 @@ class ActivityResponseConverter(
             ActivityResponseDTO(
                     activityResponse.billable,
                     activityResponse.description,
-                    activityResponse.hasEvidences,
+                    activityResponse.evidences,
                     activityResponse.id,
                     activityResponse.projectRole.id,
                     activityIntervalResponseConverter.mapActivityResponseToIntervalResponseDTO(activityResponse),

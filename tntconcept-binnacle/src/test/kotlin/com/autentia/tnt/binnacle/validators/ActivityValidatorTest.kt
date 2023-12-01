@@ -11,6 +11,7 @@ import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.*
@@ -20,10 +21,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.Mockito.doReturn
-import org.mockito.kotlin.any
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.reset
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.*
 import java.util.*
 
@@ -32,6 +30,7 @@ internal class ActivityValidatorTest {
     private val holidayRepository = mock<HolidayRepository>()
     private val activityRepository = mock<ActivityRepository>()
     private val projectRepository = mock<ProjectRepository>()
+    private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
 
     private val calendarFactory: CalendarFactory = CalendarFactory(holidayRepository)
     private val activitiesCalendarFactory: ActivitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
@@ -42,12 +41,18 @@ internal class ActivityValidatorTest {
         ActivityValidator(
             activityService,
             activityCalendarService,
-            projectRepository
+            projectRepository,
+            attachmentInfoRepository
         )
 
     @Nested
     @TestInstance(PER_CLASS)
     inner class CheckActivityIsValidForCreation {
+
+        @BeforeEach
+        fun setup() {
+            whenever(attachmentInfoRepository.existsAllByIds(any())).doReturn(true)
+        }
 
         @AfterEach
         fun resetMocks() {
@@ -582,6 +587,47 @@ internal class ActivityValidatorTest {
             assertEquals(projectRoleLimited.toDomain().getMaxTimeAllowedByYearInTimeUnits(), exception.maxAllowedTime)
             assertEquals(expectedRemainingHours, exception.remainingTime)
         }
+
+        @Test
+        fun `throw AttachmentNotFoundException when activity has a invalid evidence id`() {
+            val attachmentID = UUID.randomUUID()
+            whenever(attachmentInfoRepository.existsAllByIds(listOf(attachmentID))).doReturn(false)
+
+            val activity = createActivity(
+                start = todayDateTime,
+                end = todayDateTime.plusMinutes(MINUTES_IN_HOUR * 9L),
+                duration = (MINUTES_IN_HOUR * 9),
+                evidences = arrayListOf(attachmentID)
+            ).copy(id = null)
+
+            doReturn(Optional.of(nonBlockedProject))
+                .whenever(projectRepository)
+                .findById(nonBlockedProject.id)
+
+
+            val exception = assertThrows<AttachmentNotFoundException> {
+                activityValidator.checkActivityIsValidForCreation(activity, user)
+            }
+
+            assertEquals("Attachment does not exist", exception.message)
+        }
+
+        @Test
+        fun `Allow when the attachments are correct`() {
+            val attachmentID = UUID.randomUUID()
+
+            val activity = newActivityWithEvidences(arrayListOf(attachmentID))
+
+            doReturn(Optional.of(vacationProject))
+                .whenever(projectRepository)
+                .findById(projectRole.project.id)
+
+            doReturn(true)
+                .whenever(attachmentInfoRepository)
+                .existsAllByIds(listOf(attachmentID))
+
+            activityValidator.checkActivityIsValidForCreation(activity, user)
+        }
     }
 
     @Nested
@@ -606,34 +652,6 @@ internal class ActivityValidatorTest {
                 activityValidator.checkActivityIsValidForUpdate(
                     activityInvalidPeriodForMinutesProjectRole,
                     activityInvalidPeriodForMinutesProjectRole,
-                    user
-                )
-            }
-        }
-
-        @Test
-        fun `throw NoEvidenceInActivityException when activity evidence is incoherent`() {
-            val firstIncoherentActivity =
-                createDomainActivity().copy(hasEvidences = true, evidence = null)
-            val secondIncoherentActivity =
-                createDomainActivity().copy(hasEvidences = false, evidence = Evidence("", ""))
-
-
-            doReturn(Optional.of(createProject()))
-                .whenever(projectRepository)
-                .findById(firstIncoherentActivity.projectRole.project.id)
-
-            doReturn(Optional.of(createProject()))
-                .whenever(projectRepository)
-                .findById(secondIncoherentActivity.projectRole.project.id)
-
-            assertThrows<NoEvidenceInActivityException> {
-                activityValidator.checkActivityIsValidForUpdate(firstIncoherentActivity, firstIncoherentActivity, user)
-            }
-            assertThrows<NoEvidenceInActivityException> {
-                activityValidator.checkActivityIsValidForUpdate(
-                    secondIncoherentActivity,
-                    secondIncoherentActivity,
                     user
                 )
             }
@@ -799,7 +817,6 @@ internal class ActivityValidatorTest {
                     user.id,
                     billable = false,
                     approvalState = ApprovalState.NA,
-                    hasEvidences = false
                 )
             )
 
@@ -971,7 +988,6 @@ internal class ActivityValidatorTest {
                         projectRole,
                         user.id,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA
 
                     ).toDomain()
@@ -1275,6 +1291,7 @@ internal class ActivityValidatorTest {
             }
         }
     }
+
 
     private companion object {
 
@@ -1651,7 +1668,6 @@ internal class ActivityValidatorTest {
             user.id,
             billable = false,
             approvalState = ApprovalState.NA,
-            hasEvidences = false
         )
 
         private val overlappedActivityToCreate = createDomainActivity(
@@ -1674,9 +1690,25 @@ internal class ActivityValidatorTest {
             false,
             null,
             null,
-            false,
             ApprovalState.NA,
-            null
+            arrayListOf()
+        )
+
+        private fun newActivityWithEvidences(evidences: List<UUID>) = com.autentia.tnt.binnacle.core.domain.Activity.of(
+            null,
+            TimeInterval.of(
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
+                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong())
+            ),
+            MINUTES_IN_HOUR,
+            "description",
+            projectRole.toDomain(),
+            1L,
+            false,
+            null,
+            null,
+            ApprovalState.NA,
+            evidences
         )
 
         private val newActivityInClosedProject = createDomainActivity(
@@ -1799,14 +1831,6 @@ internal class ActivityValidatorTest {
             projectRole = projectRoleLimitedByYearInDays.toDomain()
         )
 
-        private val activityWithAcceptedApprovalState =
-            createDomainActivity().copy(approvalState = ApprovalState.ACCEPTED)
-        private val activityWithNotApplicableApprovalState =
-            createDomainActivity().copy(approvalState = ApprovalState.NA)
-        private val activityWithoutEvidence = createDomainActivity().copy(approvalState = ApprovalState.PENDING)
-        private val activityValidForApproval =
-            createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = true)
-
         private fun createActivity(
             start: LocalDateTime,
             end: LocalDateTime,
@@ -1814,11 +1838,10 @@ internal class ActivityValidatorTest {
             description: String = "",
             projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = projectRoleLimitedByYear.toDomain(),
             billable: Boolean = false,
-            hasEvidences: Boolean = false,
-        ) = createDomainActivity(start, end, duration, projectRole).copy(
+            evidences: List<UUID> = arrayListOf()
+        ) = createDomainActivity(start, end, duration, projectRole, evidences).copy(
             description = description,
             billable = billable,
-            hasEvidences = hasEvidences
         )
 
         private fun createActivity(

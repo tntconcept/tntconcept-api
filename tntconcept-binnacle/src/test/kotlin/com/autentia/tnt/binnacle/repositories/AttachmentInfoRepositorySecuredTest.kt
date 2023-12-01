@@ -49,7 +49,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
         attachmentInfoRepositorySecured.save(SUPPORTED_ATTACHMENT_INFO.copy(userId = 3L))
 
-        verify(attachmentInfoDao).save(SUPPORTED_ATTACHMENT_INFO_ENTITY.copy(id = SUPPORTED_ATTACHMENT_INFO.id, userId = 3L))
+        verify(attachmentInfoDao).save(SUPPORTED_ATTACHMENT_INFO.copy(id = SUPPORTED_ATTACHMENT_INFO.id, userId = 3L))
     }
 
     @Test
@@ -67,22 +67,6 @@ internal class AttachmentInfoRepositorySecuredTest {
     }
 
     @Test
-    fun `call isPresent when user is admin`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
-        attachmentInfoRepositorySecured.isPresent(attachmentId)
-
-        verify(attachmentInfoDao).findById(attachmentId)
-    }
-
-    @Test
-    fun `call isPresent when user is not admin`() {
-        whenever(securityService.authentication).thenReturn(Optional.of(authenticationUser))
-        attachmentInfoRepositorySecured.isPresent(attachmentId)
-
-        verify(attachmentInfoDao).findByIdAndUserId(attachmentId, userId)
-    }
-
-    @Test
     fun `call findByIsTemporaryTrue without check authentication`() {
         attachmentInfoRepositorySecured.findByIsTemporaryTrue()
 
@@ -91,9 +75,9 @@ internal class AttachmentInfoRepositorySecuredTest {
 
     @Test
     fun `call deleteTemporaryList without check authentication`() {
-        attachmentInfoRepositorySecured.delete(listOf(SUPPORTED_ATTACHMENT_INFO.id!!))
+        attachmentInfoRepositorySecured.delete(listOf(SUPPORTED_ATTACHMENT_INFO.id))
 
-        verify(attachmentInfoDao).delete(listOf(SUPPORTED_ATTACHMENT_INFO.id!!))
+        verify(attachmentInfoDao).deleteByIdIn(listOf(SUPPORTED_ATTACHMENT_INFO.id))
     }
 
     companion object {
@@ -107,12 +91,7 @@ internal class AttachmentInfoRepositorySecuredTest {
         private const val IMAGE_SUPPORTED_FILENAME = "Evidence001.png"
         private const val IMAGE_SUPPORTED_MIMETYPE = "image/png"
 
-        private val SUPPORTED_ATTACHMENT_INFO = createAttachmentInfoEntityWithFilenameAndMimetype(
-                IMAGE_SUPPORTED_FILENAME,
-                IMAGE_SUPPORTED_MIMETYPE
-        ).toDomain()
-
-        private val SUPPORTED_ATTACHMENT_INFO_ENTITY = createAttachmentInfoEntityWithFilenameAndMimetype(
+        private val SUPPORTED_ATTACHMENT_INFO= createAttachmentInfoEntityWithFilenameAndMimetype(
                 IMAGE_SUPPORTED_FILENAME,
                 IMAGE_SUPPORTED_MIMETYPE
         )

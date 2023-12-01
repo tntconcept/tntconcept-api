@@ -9,7 +9,6 @@ import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
-import com.autentia.tnt.binnacle.validators.ActivityValidatorTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
 import java.time.LocalDateTime
+import java.util.*
 
 class ActivityTest {
     private val dateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25)
@@ -55,9 +55,8 @@ class ActivityTest {
                         true,
                         null,
                         LocalDateTime.now(),
-                        false,
                         ApprovalState.NA,
-                        null,
+                        arrayListOf(),
                         null,
                         null
                 ).getDurationByCountingDays(0)
@@ -81,9 +80,8 @@ class ActivityTest {
                         true,
                         null,
                         LocalDateTime.now(),
-                        false,
                         ApprovalState.NA,
-                        null,
+                        arrayListOf(),
                         null,
                         null
                 ).getDurationByCountingDays(1)
@@ -104,9 +102,8 @@ class ActivityTest {
                         true,
                         null,
                         LocalDateTime.now(),
-                        false,
                         ApprovalState.NA,
-                        null,
+                        arrayListOf(),
                         null,
                         null
                 ).getDurationByCountingDays(1)
@@ -128,9 +125,8 @@ class ActivityTest {
                         true,
                         null,
                         LocalDateTime.now(),
-                        false,
                         ApprovalState.NA,
-                        null,
+                        arrayListOf(),
                         null,
                         null
                 ).getDurationByCountingWorkableDays(calendar)
@@ -154,9 +150,8 @@ class ActivityTest {
                         true,
                         null,
                         LocalDateTime.now(),
-                        false,
                         ApprovalState.NA,
-                        null,
+                        arrayListOf(),
                         null,
                         null
                 ).getDurationByCountingWorkableDays(calendar)
@@ -178,15 +173,13 @@ class ActivityTest {
                         true,
                         null,
                         LocalDateTime.now(),
-                        false,
                         ApprovalState.NA,
-                        null,
+                        arrayListOf(),
                         null,
                         null
                 ).getDurationByCountingWorkableDays(calendar)
         )
     }
-
     @Nested
     inner class CheckActivityIsValidForApproval {
         @Test
@@ -215,7 +208,7 @@ class ActivityTest {
         }
 
         private fun `get activity without evidence and evidence is required by role`() =
-                createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = false,
+                createDomainActivity().copy(approvalState = ApprovalState.PENDING,
                         projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.ONCE))
 
         @Test
@@ -232,14 +225,16 @@ class ActivityTest {
         }
 
         private fun `get activity with evidence with status pending and role requiring evidence`() =
-                createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = true, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.ONCE))
+                createDomainActivity().copy(approvalState = ApprovalState.PENDING, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.ONCE),
+                    evidences = arrayListOf(UUID.randomUUID()))
 
         private fun `get activity with evidence with status pending and role not requiring evidence`() =
-                createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = true, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.NO))
+                createDomainActivity().copy(approvalState = ApprovalState.PENDING, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.NO))
 
         private fun `get activity without evidence with status pending and role not requiring evidence`() =
-                createDomainActivity().copy(approvalState = ApprovalState.PENDING, hasEvidences = false, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.NO))
+                createDomainActivity().copy(approvalState = ApprovalState.PENDING, projectRole = createDomainProjectRole().copy(requireEvidence = RequireEvidence.NO))
 
     }
+
 
 }

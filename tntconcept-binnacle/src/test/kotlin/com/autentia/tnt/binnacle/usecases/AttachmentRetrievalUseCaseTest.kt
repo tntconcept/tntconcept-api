@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.core.domain.Attachment
 import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
 import com.autentia.tnt.binnacle.core.services.AttachmentService
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
-import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.assertj.core.api.Assertions.assertThat

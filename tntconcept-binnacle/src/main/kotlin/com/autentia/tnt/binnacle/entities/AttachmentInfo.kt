@@ -10,7 +10,6 @@ import javax.persistence.Table
 @Entity
 @Table(name = "Attachment")
 data class AttachmentInfo(
-
     @Id
     @Type(type = "uuid-char")
     var id: UUID,
@@ -19,8 +18,8 @@ data class AttachmentInfo(
     val path: String,
     val fileName: String,
     val mimeType: String,
-    val uploadDate: LocalDateTime,
-    val isTemporary: Boolean,
+    var uploadDate: LocalDateTime,
+    var isTemporary: Boolean,
 
     ) {
 
@@ -36,14 +35,14 @@ data class AttachmentInfo(
         )
 
     companion object {
-        fun of(attachment: com.autentia.tnt.binnacle.core.domain.Attachment) = AttachmentInfo(
-            attachment.info.id,
-                attachment.info.userId,
-                attachment.info.path,
-                attachment.info.fileName,
-                attachment.info.mimeType,
-                attachment.info.uploadDate,
-                attachment.info.isTemporary
+        fun of(attachmentInfo: com.autentia.tnt.binnacle.core.domain.AttachmentInfo) = AttachmentInfo(
+                attachmentInfo.id,
+                attachmentInfo.userId,
+                attachmentInfo.path,
+                attachmentInfo.fileName,
+                attachmentInfo.mimeType,
+                attachmentInfo.uploadDate,
+                attachmentInfo.isTemporary
         )
     }
 }

@@ -6,6 +6,7 @@ import com.autentia.tnt.binnacle.core.domain.CalendarFactory
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -17,10 +18,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.Mockito.doReturn
-import org.mockito.Mockito.reset
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
+import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
@@ -31,6 +29,7 @@ class ActivityMaxTimeByYearValidatorTest {
     private val holidayRepository = mock<HolidayRepository>()
     private val activityRepository = mock<ActivityRepository>()
     private val projectRepository = mock<ProjectRepository>()
+    private val attachmentInfoRepository = mock<AttachmentInfoRepository>()
 
     private val calendarFactory: CalendarFactory = CalendarFactory(holidayRepository)
     private val activitiesCalendarFactory: ActivitiesCalendarFactory = ActivitiesCalendarFactory(calendarFactory)
@@ -41,17 +40,16 @@ class ActivityMaxTimeByYearValidatorTest {
         ActivityValidator(
             activityService,
             activityCalendarService,
-            projectRepository
+            projectRepository,
+            attachmentInfoRepository
         )
     private val timeInterval2023 = TimeInterval.ofYear(2023)
 
 
     @BeforeEach
     fun setupTest() {
-
-        doReturn(Optional.of(project))
-            .whenever(projectRepository)
-            .findById(projectRoleLimitedByYear.project.id)
+        whenever(projectRepository.findById(projectRoleLimitedByYear.project.id)).doReturn(Optional.of(project))
+        whenever(attachmentInfoRepository.existsAllByIds(any())).doReturn(true)
     }
 
     @AfterEach
@@ -59,7 +57,8 @@ class ActivityMaxTimeByYearValidatorTest {
         reset(
             holidayRepository,
             activityRepository,
-            projectRepository
+            projectRepository,
+            attachmentInfoRepository
         )
     }
 
@@ -84,7 +83,8 @@ class ActivityMaxTimeByYearValidatorTest {
         arrayOf(2, 2, TimeUnit.NATURAL_DAYS),
         arrayOf(3, 1, TimeUnit.DAYS),
         arrayOf(3, 1, TimeUnit.NATURAL_DAYS),
-        )
+    )
+
     @ParameterizedTest
     @MethodSource("testInputsInDays")
     fun `do not throw exception when activity is valid for creation in days or natural_days`(
@@ -115,6 +115,7 @@ class ActivityMaxTimeByYearValidatorTest {
         activityValidator.checkActivityIsValidForCreation(newActivity, user)
 
     }
+
     private fun testInputsInDaysWithChangeOfYear() = arrayOf(
         arrayOf(0, 2, TimeUnit.DAYS),
         arrayOf(0, 2, TimeUnit.NATURAL_DAYS),
@@ -129,6 +130,7 @@ class ActivityMaxTimeByYearValidatorTest {
         arrayOf(2, 2, TimeUnit.DAYS),
         arrayOf(2, 2, TimeUnit.NATURAL_DAYS),
     )
+
     @ParameterizedTest
     @MethodSource("testInputsInDaysWithChangeOfYear")
     fun `do not throw exception when activity is valid for creation in days or natural days ending in different year`(
@@ -171,6 +173,7 @@ class ActivityMaxTimeByYearValidatorTest {
         arrayOf(2, 2),
         arrayOf(3, 1)
     )
+
     @ParameterizedTest
     @MethodSource("testInputsInMinutes")
     fun `do not throw exception when activity is valid for creation in minutes`(
@@ -316,7 +319,6 @@ class ActivityMaxTimeByYearValidatorTest {
             true,
             1L,
             null,
-            false,
             ApprovalState.NA
         )
     }

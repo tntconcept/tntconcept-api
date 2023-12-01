@@ -3,7 +3,7 @@ package com.autentia.tnt.binnacle.entities.dto
 data class ActivityResponseDTO(
         val billable: Boolean,
         val description: String,
-        val hasEvidences: Boolean?,
+        val evidences: List<String>,
         val id: Long,
         val projectRoleId: Long,
         val interval: IntervalResponseDTO,

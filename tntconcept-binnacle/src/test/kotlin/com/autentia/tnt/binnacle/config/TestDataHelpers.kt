@@ -212,7 +212,11 @@ internal fun createProjectRoleWithTimeUnit(id: Long = 1L, timeUnit: TimeUnit): P
     timeUnit
 )
 
-internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = ApprovalState.NA) = Activity(
+internal fun createActivity(
+    id: Long? = 1,
+    approvalState: ApprovalState = ApprovalState.NA,
+    evidences: MutableList<AttachmentInfo> = ArrayList()
+) = Activity(
     id,
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
@@ -223,11 +227,16 @@ internal fun createActivity(id: Long? = 1, approvalState: ApprovalState = Approv
     true,
     1L,
     null,
-    false,
-    approvalState
+    approvalState,
+    null,
+    null,
+    evidences
 )
 
-internal fun createActivity(projectRole: ProjectRole) = Activity(
+internal fun createActivity(
+    projectRole: ProjectRole,
+    evidences: MutableList<AttachmentInfo> = ArrayList()
+) = Activity(
     1,
     LocalDateTime.of(2023, 3, 1, 13, 5, 25),
     LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
@@ -238,8 +247,10 @@ internal fun createActivity(projectRole: ProjectRole) = Activity(
     true,
     1L,
     null,
-    false,
-    ApprovalState.NA
+    ApprovalState.NA,
+    null,
+    null,
+    evidences
 )
 
 internal fun createDomainActivity(
@@ -247,6 +258,7 @@ internal fun createDomainActivity(
     end: LocalDateTime = LocalDateTime.of(2023, 3, 1, 13, 5, 25).plusHours(1),
     duration: Int = 60,
     projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole = createDomainProjectRole(),
+    evidences: List<UUID> = arrayListOf()
 ) =
     com.autentia.tnt.binnacle.core.domain.Activity.of(
         1L,
@@ -261,9 +273,8 @@ internal fun createDomainActivity(
         true,
         null,
         null,
-        false,
         ApprovalState.NA,
-        null,
+        evidences,
         null,
         null
     )
@@ -281,12 +292,12 @@ internal fun createActivityResponseDTO(
     id: Long,
     start: LocalDateTime,
     end: LocalDateTime,
-    hasEvidences: Boolean,
+    evidences: List<String>,
     approvalState: ApprovalState = ApprovalState.NA,
 ) = ActivityResponseDTO(
     billable = true,
     description = "Dummy description",
-    hasEvidences = hasEvidences,
+    evidences = evidences,
     id = id,
     projectRoleId = 1L,
     interval = IntervalResponseDTO(start, end, 45, TimeUnit.MINUTES),

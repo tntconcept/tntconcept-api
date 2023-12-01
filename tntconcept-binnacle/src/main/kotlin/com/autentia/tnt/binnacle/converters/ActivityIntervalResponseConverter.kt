@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityResponse
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import jakarta.inject.Singleton

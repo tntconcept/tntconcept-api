@@ -1,19 +1,18 @@
 package com.autentia.tnt.binnacle.validators
 
-import com.autentia.tnt.binnacle.core.domain.Activity
-import com.autentia.tnt.binnacle.core.domain.Calendar
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
-import com.autentia.tnt.binnacle.core.domain.User
+import com.autentia.tnt.binnacle.core.domain.*
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
+import java.util.UUID
 import javax.transaction.Transactional
 
 @Singleton
@@ -21,6 +20,7 @@ internal class ActivityValidator(
     private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
     private val projectRepository: ProjectRepository,
+    private val attachmentInfoRepository: AttachmentInfoRepository,
 ) {
     @Transactional
     @ReadOnly
@@ -34,7 +34,6 @@ internal class ActivityValidator(
             getTotalRegisteredDurationByProjectRole(emptyActivity, activityToCreateStartYear, user.id)
 
         when {
-            isEvidenceInputIncoherent(activityToCreate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
@@ -42,7 +41,7 @@ internal class ActivityValidator(
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
-
+            !evidencesExist(activityToCreate.evidences) -> throw AttachmentNotFoundException()
             activityToCreate.isMoreThanOneDay() && activityToCreate.timeUnit === TimeUnit.MINUTES -> throw ActivityPeriodNotValidException()
             isExceedingMaxTimeByActivity(activityToCreate) -> throw MaxTimePerActivityRoleException(
                 activityToCreate.projectRole.getMaxTimeAllowedByActivityInTimeUnits(),
@@ -78,10 +77,8 @@ internal class ActivityValidator(
         return activityDuration > activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity
     }
 
-    private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
-        return activity.hasEvidences && activity.evidence == null
-                || !activity.hasEvidences && activity.evidence != null
-    }
+    private fun evidencesExist(evidencesIds: List<UUID>) = if (evidencesIds.isEmpty()) true
+        else attachmentInfoRepository.existsAllByIds(evidencesIds)
 
     private fun getTotalRegisteredDurationByProjectRole(
         activityToUpdate: Activity,
@@ -196,8 +193,6 @@ internal class ActivityValidator(
         val totalRegisteredDurationForThisRoleStartYear =
             getTotalRegisteredDurationByProjectRole(activityToUpdate, activityToUpdateStartYear, user.id)
         when {
-            isEvidenceInputIncoherent(activityToUpdate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
-
             isProjectBlocked(
                 projectToUpdate,
                 activityToUpdate

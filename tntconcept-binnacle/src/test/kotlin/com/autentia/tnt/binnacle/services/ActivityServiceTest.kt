@@ -2,7 +2,6 @@ package com.autentia.tnt.binnacle.services
 
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -20,7 +19,6 @@ internal class ActivityServiceTest {
     private val activityRepository = mock<ActivityRepository>()
     private val internalActivityRepository = mock<InternalActivityRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
-
 
     private val sut = ActivityService(
         activityRepository
@@ -95,8 +93,6 @@ internal class ActivityServiceTest {
         private val projectRole =
             ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, 0, true, false, TimeUnit.MINUTES)
 
-        private const val notFoundActivityId = 1L
-
         private val activityWithoutEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
             null,
             TimeInterval.of(
@@ -110,49 +106,13 @@ internal class ActivityServiceTest {
             false,
             1L,
             null,
-            false,
             ApprovalState.NA,
-            null
+            arrayListOf()
         )
 
-        private val activityWithoutEvidenceAttached = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            null,
-            TimeInterval.of(
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(60)
-        ),
-            60,
-            "Dummy description",
-            projectRole.toDomain(),
-            1L,
-            false,
-            1L,
-            null,
-            true,
-            ApprovalState.NA,
-            null
-        )
-
-        private val activityWithEvidence = com.autentia.tnt.binnacle.core.domain.Activity.of(
-            null, TimeInterval.of(
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON),
-            LocalDateTime.of(LocalDate.now(), LocalTime.NOON).plusMinutes(120)
-        ), 120, "Description...", projectRole.toDomain(), 1L, false, 1L, null, true, ApprovalState.NA, null, null, null
-        )
-
-        private val evidence = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")
-
-        private val activityWithEvidenceToSave = Activity.of(activityWithEvidence, projectRole)
         private val activityWithoutEvidenceToSave = Activity.of(activityWithoutEvidence, projectRole)
-        private val activityWithoutEvidenceAttachedToSave = Activity.of(activityWithoutEvidenceAttached, projectRole)
-
-        private val activityWithEvidenceSaved =
-            activityWithEvidenceToSave.copy(id = 101, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
         private val activityWithoutEvidenceSaved =
-            activityWithoutEvidenceToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
-
-        private val activityWithoutEvidenceAttachedSaved =
             activityWithoutEvidenceToSave.copy(id = 100L, insertDate = Date(), approvalState = ApprovalState.PENDING)
 
         private val activities = listOf(activityWithoutEvidenceSaved)

@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createActivity
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
@@ -42,7 +43,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA
                 )
         )
@@ -68,7 +68,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA
                 )
         )
@@ -95,7 +94,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA
         )
         whenever(internalActivityRepository.findByIdAndUserId(activityId, userId)).thenReturn(activity)
@@ -116,7 +114,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = 2L,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(internalActivityRepository.findById(activityId)).thenReturn(activity)
@@ -320,7 +317,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA,
                 )
         )
@@ -367,7 +363,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA,
                 )
         )
@@ -402,7 +397,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
@@ -422,7 +416,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         val expectedActivity = Activity(
@@ -434,7 +427,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -465,7 +457,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
@@ -486,7 +477,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -508,7 +498,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -531,7 +520,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -580,7 +568,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = userId,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.NA,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(emptyRolesAuth))
@@ -602,7 +589,6 @@ internal class ActivityRepositorySecuredTest {
                 projectRole = projectRole,
                 userId = 234L,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.ACCEPTED,
         )
         whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
@@ -625,7 +611,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA,
                 )
         )
@@ -683,7 +668,6 @@ internal class ActivityRepositorySecuredTest {
                         projectRole = projectRole,
                         userId = userId,
                         billable = false,
-                        hasEvidences = false,
                         approvalState = ApprovalState.NA,
                 )
         )
@@ -727,6 +711,38 @@ internal class ActivityRepositorySecuredTest {
             )
         }
     }
+
+
+    @Test
+    fun `find activities with associated evidences`() {
+        val evidences = mutableListOf(createAttachmentInfoEntity(), createAttachmentInfoEntity())
+
+        val activities = listOf(
+            Activity(
+                id = 2L,
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.NA,
+                evidences = evidences
+            )
+        )
+        val activitySpecification = ActivityPredicates.ALL
+
+        whenever(securityService.authentication).thenReturn(Optional.of(activityApprovalAuth))
+        whenever(internalActivityRepository.findAll(activitySpecification)).thenReturn(activities)
+
+        val result = activityRepositorySecured.findAll(ActivityPredicates.ALL)
+
+        assertEquals(activities, result)
+    }
+
+    private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg")
+
 
     private companion object {
         private const val userId = 1L

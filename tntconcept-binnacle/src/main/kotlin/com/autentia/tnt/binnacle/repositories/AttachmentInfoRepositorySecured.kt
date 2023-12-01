@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.security.application.canAccessAllAttachments
 import com.autentia.tnt.security.application.checkAuthentication
 import com.autentia.tnt.security.application.id
@@ -17,58 +17,46 @@ internal class AttachmentInfoRepositorySecured(
     override fun findById(id: UUID): Optional<AttachmentInfo> {
         val authentication = securityService.checkAuthentication()
         return if (authentication.canAccessAllAttachments())
-            attachmentInfoDao.findById(id).map { Mapper.toDomain(it) }
+            attachmentInfoDao.findById(id)
         else
-            attachmentInfoDao.findByIdAndUserId(id, authentication.id()).map { Mapper.toDomain(it) }
+            attachmentInfoDao.findByIdAndUserId(id, authentication.id())
+    }
+
+    override fun findByIds(ids: List<UUID>): List<AttachmentInfo> {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.canAccessAllAttachments())
+            attachmentInfoDao.findByIdIn(ids)
+        else
+            attachmentInfoDao.findByIdInAndUserId(ids, authentication.id())
+    }
+
+    override fun existsAllByIds(evidencesIds: List<UUID>): Boolean {
+        val authentication = securityService.checkAuthentication()
+        return if (authentication.canAccessAllAttachments())
+            attachmentInfoDao.existsByIdIn(evidencesIds)
+        else
+            attachmentInfoDao.existsByIdInAndUserId(evidencesIds, authentication.id())
     }
 
     override fun save(attachmentInfo: AttachmentInfo) {
         val authentication = securityService.checkAuthentication()
         require(attachmentInfo.userId == authentication.id()) { "User cannot upload attachment" }
 
-        attachmentInfoDao.save(Mapper.toJpaEntity(attachmentInfo))
+        attachmentInfoDao.save(attachmentInfo)
     }
 
-    override fun isPresent(id: UUID): Boolean {
+    override fun update(attachmentInfos: List<AttachmentInfo>) {
         val authentication = securityService.checkAuthentication()
 
-        return if (authentication.canAccessAllAttachments())
-            attachmentInfoDao.findById(id).isPresent
-        else
-            attachmentInfoDao.findByIdAndUserId(id, authentication.id()).isPresent
+        attachmentInfos.forEach { attachmentInfo ->
+            require(attachmentInfo.userId == authentication.id()) { "User cannot update attachment" }
+            attachmentInfoDao.update(attachmentInfo)
+        }
     }
 
-    override fun findByIsTemporaryTrue(): List<AttachmentInfo> =
-        attachmentInfoDao.findByIsTemporaryTrue().map { Mapper.toDomain(it) }
+    override fun findByIsTemporaryTrue(): List<AttachmentInfo> = attachmentInfoDao.findByIsTemporaryTrue()
 
-    override fun delete(attachmentsIds: List<UUID>) =
-        attachmentInfoDao.delete(attachmentsIds)
+    override fun delete(attachmentsIds: List<UUID>) = attachmentInfoDao.deleteByIdIn(attachmentsIds)
 
-    object Mapper {
-        fun toJpaEntity(attachmentInfo: AttachmentInfo): com.autentia.tnt.binnacle.entities.AttachmentInfo = with(attachmentInfo) {
-            com.autentia.tnt.binnacle.entities.AttachmentInfo(
-                    id = id,
-                    userId = userId,
-                    path = path,
-                    fileName = fileName,
-                    mimeType = mimeType,
-                    uploadDate = uploadDate,
-                    isTemporary = isTemporary
-            )
-        }
-
-        fun toDomain(attachmentInfo: com.autentia.tnt.binnacle.entities.AttachmentInfo): AttachmentInfo = with(attachmentInfo) {
-            AttachmentInfo(
-                    id = id,
-                    userId = userId,
-                    path = path,
-                    fileName = fileName,
-                    mimeType = mimeType,
-                    uploadDate = uploadDate,
-                    isTemporary = isTemporary
-            )
-        }
-
-    }
 
 }

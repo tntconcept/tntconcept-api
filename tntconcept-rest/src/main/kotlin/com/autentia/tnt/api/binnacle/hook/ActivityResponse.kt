@@ -14,8 +14,7 @@ data class ActivityResponse(
     val userId: Long,
     val billable: Boolean,
     val organization: OrganizationResponse,
-    val project: ProjectResponse,
-    val hasImage: Boolean?,
+    val project: ProjectResponse
 ) {
     companion object {
         fun from(activitiesResponseDTO: ActivitiesResponseDTO) =
@@ -28,8 +27,7 @@ data class ActivityResponse(
                 activitiesResponseDTO.userId,
                 activitiesResponseDTO.billable,
                 OrganizationResponse.from(activitiesResponseDTO.organization),
-                ProjectResponse.from(activitiesResponseDTO.project),
-                activitiesResponseDTO.hasImage,
+                ProjectResponse.from(activitiesResponseDTO.project)
             )
     }
 }

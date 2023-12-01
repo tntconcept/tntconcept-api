@@ -8,11 +8,13 @@ import com.autentia.tnt.binnacle.entities.dto.TimeSummaryDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.*
+import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Month
+import javax.transaction.Transactional
 
 @Singleton
 class UserTimeSummaryUseCase internal constructor(
@@ -31,6 +33,8 @@ class UserTimeSummaryUseCase internal constructor(
         return timeSummaryConverter.toTimeSummaryDTO(timeSummary)
     }
 
+    @Transactional
+    @ReadOnly
     fun getTimeSummary(date: LocalDate, user: User): TimeSummary {
         val startYearDate = LocalDate.of(date.year, Month.JANUARY, 1)
         val endYearDate = LocalDate.of(date.year, Month.DECEMBER, 31)

@@ -283,26 +283,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
-  /api/activity/{id}/evidence:
-    get:
-      tags:
-      - activity
-      summary: Retrieves an activity evidence by the activity id.
-      operationId: getEvidenceByActivityId$tntconcept_rest
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: getEvidenceByActivityId$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                type: string
   /api/attachment:
     post:
       tags:
@@ -1064,7 +1044,6 @@ components:
       required:
       - billable
       - description
-      - hasEvidences
       - interval
       - projectRoleId
       type: object
@@ -1083,17 +1062,18 @@ components:
         projectRoleId:
           type: integer
           format: int64
-        hasEvidences:
-          type: boolean
-        evidence:
-          pattern: "^data:[^,]+;base64,.+$"
-          type: string
+        evidences:
+          type: array
           nullable: true
+          items:
+            type: string
+            format: uuid
     ActivityResponse:
       required:
       - approval
       - billable
       - description
+      - evidences
       - id
       - interval
       - projectRoleId
@@ -1104,9 +1084,10 @@ components:
           type: boolean
         description:
           type: string
-        hasEvidences:
-          type: boolean
-          nullable: true
+        evidences:
+          type: array
+          items:
+            type: string
         id:
           type: integer
           format: int64

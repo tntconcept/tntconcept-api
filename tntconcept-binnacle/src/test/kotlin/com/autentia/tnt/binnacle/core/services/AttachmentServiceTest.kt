@@ -1,7 +1,7 @@
 package com.autentia.tnt.binnacle.core.services
 
 import com.autentia.tnt.AppProperties
-import com.autentia.tnt.binnacle.core.domain.AttachmentInfo
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.exception.AttachmentMimeTypeNotSupportedException
 import com.autentia.tnt.binnacle.exception.AttachmentNotFoundException
 import com.autentia.tnt.binnacle.repositories.AttachmentInfoRepository
@@ -25,7 +25,7 @@ class AttachmentServiceTest {
 
     private val appProperties = AppProperties().apply {
         files.supportedMimeTypes = mapOf(
-                Pair("image/jpg", "jpg"),
+                Pair("image/jpg", "jpg,jpeg"),
         )
     }
 
@@ -43,7 +43,7 @@ class AttachmentServiceTest {
         // Given
         doReturn(SOME_DATE).whenever(this.dateService).getDateNow()
         doNothing().whenever(this.attachmentStorage).storeAttachmentFile(any(), any())
-        doNothing().whenever(this.attachmentInfoRepository).save(any())
+        doNothing().whenever(this.attachmentInfoRepository).save(any<AttachmentInfo>())
 
         val fileName = "some_image.jpg"
         val mimetype = "image/jpg"
@@ -71,7 +71,44 @@ class AttachmentServiceTest {
 
         // Verify
         verify(this.attachmentStorage).storeAttachmentFile(expectedPath, file)
-        verify(this.attachmentInfoRepository).save(result.info)
+        verify(this.attachmentInfoRepository).save(any<AttachmentInfo>())
+        verify(this.dateService).getDateNow()
+    }
+
+    @Test
+    fun `create and persist an attachment with a supported mime type and extension  and use file storage to store it`() {
+        // Given
+        doReturn(SOME_DATE).whenever(this.dateService).getDateNow()
+        doNothing().whenever(this.attachmentStorage).storeAttachmentFile(any(), any())
+        doNothing().whenever(this.attachmentInfoRepository).save(any<AttachmentInfo>())
+
+        val fileName = "some_image.jpeg"
+        val mimetype = "image/jpg"
+        val file = IMAGE_BYTEARRAY
+        val userId = CURRENT_USER
+
+        // When
+        val result = this.sut.createAttachment(
+                fileName = fileName,
+                mimeType = mimetype,
+                file = file,
+                userId = userId
+        )
+
+        // Then
+        assertThat(result.info.fileName).isEqualTo(fileName)
+        assertThat(result.info.mimeType).isEqualTo(mimetype)
+        assertThat(result.info.userId).isEqualTo(userId)
+        assertThat(result.file.contentEquals(file)).isTrue()
+        assertThat(result.info.isTemporary).isTrue()
+        assertThat(result.info.uploadDate).isEqualTo(SOME_DATE)
+
+        val expectedPath = "/2023/2/${result.info.id}.jpeg"
+        assertThat(result.info.path).isEqualTo(expectedPath)
+
+        // Verify
+        verify(this.attachmentStorage).storeAttachmentFile(expectedPath, file)
+        verify(this.attachmentInfoRepository).save(any<AttachmentInfo>())
         verify(this.dateService).getDateNow()
     }
 
@@ -112,7 +149,7 @@ class AttachmentServiceTest {
         // Given
         val existingId = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")
         val existingInfo = AttachmentInfo(
-                id = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"),
+                id = existingId,
                 fileName = "some_image.jpg",
                 mimeType = "application/jpg",
                 uploadDate = SOME_DATE,
@@ -125,7 +162,7 @@ class AttachmentServiceTest {
         whenever(this.attachmentStorage.retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")).thenReturn(IMAGE_BYTEARRAY)
 
         // When
-        val result = this.sut.findAttachment(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
+        val result = this.sut.findAttachment(existingId)
 
         // Then
         assertThat(result.info.fileName).isEqualTo("some_image.jpg")
@@ -149,7 +186,7 @@ class AttachmentServiceTest {
 
         // When, Then
         assertThatThrownBy {
-            this.sut.findAttachment(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
+            this.sut.findAttachment(someId)
         }.isInstanceOf(AttachmentNotFoundException::class.java)
 
         // Verify
@@ -162,7 +199,7 @@ class AttachmentServiceTest {
         // Given
         val someId = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b")
         val existingInfo = AttachmentInfo(
-                id = UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"),
+                id = someId,
                 fileName = "some_image.jpg",
                 mimeType = "application/jpg",
                 uploadDate = SOME_DATE,
@@ -175,13 +212,47 @@ class AttachmentServiceTest {
         whenever(this.attachmentStorage.retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")).thenThrow(AttachmentNotFoundException())
 
         // When, Then
-        assertThatThrownBy {
-            this.sut.findAttachment(UUID.fromString("7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b"))
-        }.isInstanceOf(AttachmentNotFoundException::class.java)
+        assertThatThrownBy { this.sut.findAttachment(someId) }.isInstanceOf(AttachmentNotFoundException::class.java)
 
         // Verify
         verify(this.attachmentInfoRepository).findById(someId)
         verify(this.attachmentStorage).retrieveAttachmentFile("/2023/2/7a5a56cf-03c3-42fb-8c1a-91b4cbf6b42b.jpg")
+    }
+
+    @Test
+    fun `will not remove attachments when ids are empty`() {
+        this.sut.removeAttachments(emptyList())
+        verifyNoInteractions(this.attachmentStorage, this.attachmentInfoRepository)
+    }
+
+    @Test
+    fun `remove an existing attachment`() {
+        val listOfEvidences = listOf(`get evidence for current user`(), `get evidence for current user`())
+        val evidenceIds = listOfEvidences.map { it.id }
+
+        whenever(this.attachmentInfoRepository.findByIds(evidenceIds)).thenReturn(listOfEvidences)
+        whenever(this.attachmentStorage.retrieveAttachmentFile(any())).thenReturn(IMAGE_BYTEARRAY)
+        doNothing().`when`(this.attachmentStorage).deleteAttachmentFile(any())
+
+        sut.removeAttachments(listOfEvidences)
+
+        verify(attachmentInfoRepository).delete(evidenceIds)
+        listOfEvidences.forEach {
+            verify(attachmentStorage).deleteAttachmentFile(it.path)
+        }
+    }
+
+    private fun `get evidence for current user`(): AttachmentInfo {
+        val id = UUID.randomUUID()
+        return AttachmentInfo(
+                id = id,
+                fileName = "some_image.jpg",
+                mimeType = "application/jpg",
+                uploadDate = SOME_DATE,
+                userId = CURRENT_USER,
+                path = "/2023/2/$id.jpg",
+                isTemporary = false
+        )
     }
 
     companion object {

@@ -49,8 +49,8 @@ internal class AppPropertiesIT {
         assertThat(appProperties.files.supportedMimeTypes).containsAllEntriesOf(
             mapOf(
                 Pair("application/pdf", "pdf"),
-                Pair("image/jpg", "jpg"),
-                Pair("image/jpeg", "jpeg"),
+                Pair("image/jpg", "jpg,jpeg"),
+                Pair("image/jpeg", "jpeg,jpg"),
                 Pair("image/png", "png"),
                 Pair("image/gif", "gif")
             )

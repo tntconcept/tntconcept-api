@@ -56,13 +56,22 @@ data class Activity(
     @JsonIgnore
     var insertDate: Date? = null,
 
-    var hasEvidences: Boolean = false,
-
     @Enumerated(EnumType.STRING)
     var approvalState: ApprovalState,
 
     var approvedByUserId: Long? = null,
-    var approvalDate: LocalDateTime? = null
+    var approvalDate: LocalDateTime? = null,
+
+
+    @OneToMany(fetch = LAZY, orphanRemoval = true)
+    @JoinTable(name="ActivityAttachment",
+        joinColumns = [JoinColumn(name = "activityId",
+            referencedColumnName = "id")],
+        inverseJoinColumns = [JoinColumn(name = "attachmentId",
+            referencedColumnName = "id")]
+    )
+    var evidences: MutableList<AttachmentInfo> = ArrayList()
+
 ) {
     fun getTimeInterval() = TimeInterval.of(start, end)
 
@@ -78,12 +87,13 @@ data class Activity(
             billable,
             departmentId,
             toLocalDateTime(insertDate),
-            hasEvidences,
             approvalState,
-            null,
+            evidences.map {it.id},
             approvedByUserId,
             approvalDate
         )
+
+    fun hasEvidences() = evidences.isNotEmpty()
 
     companion object {
 
@@ -101,10 +111,29 @@ data class Activity(
                 activity.billable,
                 activity.departmentId,
                 toDate(activity.insertDate),
-                activity.hasEvidences,
                 activity.approvalState,
                 activity.approvedByUserId,
                 activity.approvalDate
+            )
+
+        fun of(
+            activity: com.autentia.tnt.binnacle.core.domain.Activity, projectRole: ProjectRole, attachmentInfos: MutableList<AttachmentInfo>
+        ) =
+            Activity(
+                activity.id,
+                activity.getStart(),
+                activity.getEnd(),
+                activity.duration,
+                activity.description,
+                projectRole,
+                activity.userId,
+                activity.billable,
+                activity.departmentId,
+                toDate(activity.insertDate),
+                activity.approvalState,
+                activity.approvedByUserId,
+                activity.approvalDate,
+                attachmentInfos
             )
 
         fun of(
@@ -118,7 +147,6 @@ data class Activity(
             billable: Boolean,
             departmentId: Long?,
             insertDate: Date?,
-            hasEvidences: Boolean,
             approvalState: ApprovalState,
             approvedByUser: Long?,
             approvalDate: LocalDateTime?
@@ -134,7 +162,6 @@ data class Activity(
                 billable,
                 departmentId,
                 insertDate,
-                hasEvidences,
                 approvalState,
                 approvedByUser,
                 approvalDate
@@ -142,7 +169,7 @@ data class Activity(
 
         fun emptyActivity(projectRole: ProjectRole): Activity = Activity(
             0, LocalDateTime.MIN, LocalDateTime.MIN, 0, "Empty activity", projectRole, 0L,
-            false, 0, null, false, ApprovalState.NA, null, null
+            false, 0, null, ApprovalState.NA, null, null, arrayListOf()
         )
     }
 }

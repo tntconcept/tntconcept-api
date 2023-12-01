@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Singleton
-class ActivityRequestBodyConverter() {
+class ActivityRequestBodyConverter {
     fun toActivity(
         activityRequestBody: ActivityRequestDTO,
         duration: Int,
@@ -30,9 +30,8 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.billable,
             user.departmentId,
             insertDate,
-            activityRequestBody.hasEvidences,
             projectRole.getApprovalState(),
-            activityRequestBody.evidence?.toDomain()
+            activityRequestBody.evidences
         )
 
     fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =
@@ -43,9 +42,7 @@ class ActivityRequestBodyConverter() {
             activityRequestBodyDTO.duration,
             activityRequestBodyDTO.description,
             activityRequestBodyDTO.billable,
-            activityRequestBodyDTO.projectRoleId,
-            activityRequestBodyDTO.hasImage,
-            activityRequestBodyDTO.imageFile
+            activityRequestBodyDTO.projectRoleId
         )
 
     fun mapActivityRequestBodyToActivity(
@@ -65,7 +62,6 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.billable,
             user.departmentId,
             insertDate,
-            activityRequestBody.hasEvidences,
             getApprovalState(projectRole)
         )
 

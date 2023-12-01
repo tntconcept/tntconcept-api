@@ -1,19 +1,20 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createProjectRole
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.*
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.lang.IllegalStateException
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 
-@MicronautTest()
+@MicronautTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class ActivityDaoIT {
 
@@ -22,19 +23,21 @@ internal class ActivityDaoIT {
 
     @Inject
     private lateinit var projectRepository: ProjectRepository
-    
+
+    @Inject
+    private lateinit var attachmentInfoDao: AttachmentInfoDao
+
     @Test
     fun `should find activity by id`() {
         val activity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val savedActivity = activityDao.save(activity)
 
@@ -46,15 +49,14 @@ internal class ActivityDaoIT {
     @Test
     fun `should find activity by id and user id`() {
         val activity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val savedActivity = activityDao.save(activity)
 
@@ -66,42 +68,39 @@ internal class ActivityDaoIT {
     @Test
     fun `should find activities filtered by period of time`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
-            start = yesterday.minusDays(2).atTime(0, 0, 0),
-            end = yesterday.minusDays(1).atTime(23, 59, 59),
-            duration = 960,
-            description = "Test activity 3",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = yesterday.minusDays(2).atTime(0, 0, 0),
+                end = yesterday.minusDays(1).atTime(23, 59, 59),
+                duration = 960,
+                description = "Test activity 3",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val savedActivities = activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, activityForTwoDays
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, activityForTwoDays
+                )
         )
 
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
@@ -117,42 +116,39 @@ internal class ActivityDaoIT {
     @Test
     fun `should find activities filtered by period of time and user list`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
-            start = yesterday.minusDays(2).atTime(0, 0, 0),
-            end = yesterday.minusDays(1).atTime(23, 59, 59),
-            duration = 960,
-            description = "Test activity 3",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = yesterday.minusDays(2).atTime(0, 0, 0),
+                end = yesterday.minusDays(1).atTime(23, 59, 59),
+                duration = 960,
+                description = "Test activity 3",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val savedActivities = activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, activityForTwoDays
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, activityForTwoDays
+                )
         )
 
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
@@ -171,61 +167,66 @@ internal class ActivityDaoIT {
         val openedProject = projectRepository.findById(1).get()
 
         projectRepository.update(
-            Project(
-                project.id, project.name, false, project.billable, LocalDate.now(), null, null, project.organization, project.projectRoles
-            )
+                Project(
+                        project.id,
+                        project.name,
+                        false,
+                        project.billable,
+                        LocalDate.now(),
+                        null,
+                        null,
+                        project.organization,
+                        project.projectRoles
+                )
         )
         projectRepository.update(
-            Project(
-                openedProject.id,
-                openedProject.name,
-                true,
-                openedProject.billable,
-                openedProject.startDate,
-                openedProject.blockDate,
-                openedProject.blockedByUser,
-                openedProject.organization,
-                openedProject.projectRoles
-            )
+                Project(
+                        openedProject.id,
+                        openedProject.name,
+                        true,
+                        openedProject.billable,
+                        openedProject.startDate,
+                        openedProject.blockDate,
+                        openedProject.blockedByUser,
+                        openedProject.organization,
+                        openedProject.projectRoles
+                )
         )
 
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = createProjectRole(1L, openedProject),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(1L, openedProject),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = createProjectRole().copy(id = 5),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = createProjectRole().copy(id = 5),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
-            start = yesterday.minusDays(10).atTime(0, 0, 0),
-            end = yesterday.minusDays(8).atTime(23, 59, 59),
-            duration = 960,
-            description = "Test activity 3",
-            projectRole = createProjectRole(1L, openedProject),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = yesterday.minusDays(10).atTime(0, 0, 0),
+                end = yesterday.minusDays(8).atTime(23, 59, 59),
+                duration = 960,
+                description = "Test activity 3",
+                projectRole = createProjectRole(1L, openedProject),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val savedActivities = activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, activityForTwoDays
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, activityForTwoDays
+                )
         )
 
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
@@ -241,33 +242,31 @@ internal class ActivityDaoIT {
 
         val projectRole = createProjectRole()
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
-            start = yesterday.minusDays(2).atTime(0, 0, 0),
-            end = yesterday.minusDays(1).atTime(23, 59, 59),
-            duration = 960,
-            description = "Test activity 3",
-            projectRole = projectRole.copy(id = 2L),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = yesterday.minusDays(2).atTime(0, 0, 0),
+                end = yesterday.minusDays(1).atTime(23, 59, 59),
+                duration = 960,
+                description = "Test activity 3",
+                projectRole = projectRole.copy(id = 2L),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
 
 
         val savedActivities = activityDao.saveAll(
-            listOf(
-                yesterdayActivity, activityForTwoDays
-            )
+                listOf(
+                        yesterdayActivity, activityForTwoDays
+                )
         )
 
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
@@ -281,42 +280,39 @@ internal class ActivityDaoIT {
     @Test
     fun `should find pending activities`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
-            start = yesterday.minusDays(2).atTime(0, 0, 0),
-            end = yesterday.minusDays(1).atTime(23, 59, 59),
-            duration = 960,
-            description = "Test activity 3",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.minusDays(2).atTime(0, 0, 0),
+                end = yesterday.minusDays(1).atTime(23, 59, 59),
+                duration = 960,
+                description = "Test activity 3",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val savedActivities = activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, activityForTwoDays
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, activityForTwoDays
+                )
         )
         var retrievedActivities = activityDao.findByApprovalStateAndUserId(ApprovalState.PENDING, userId)
 
@@ -332,42 +328,39 @@ internal class ActivityDaoIT {
     @Test
     fun `should find pending activities of all users`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
-            start = yesterday.minusDays(2).atTime(0, 0, 0),
-            end = yesterday.minusDays(1).atTime(23, 59, 59),
-            duration = 960,
-            description = "Test activity 3",
-            projectRole = createProjectRole(),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.minusDays(2).atTime(0, 0, 0),
+                end = yesterday.minusDays(1).atTime(23, 59, 59),
+                duration = 960,
+                description = "Test activity 3",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val savedActivities = activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, activityForTwoDays
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, activityForTwoDays
+                )
         )
         val retrievedActivities = activityDao.findByApprovalState(ApprovalState.PENDING)
 
@@ -378,42 +371,39 @@ internal class ActivityDaoIT {
     @Test
     fun `should find worked minutes between date`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
-            start = today.plusDays(2).atTime(0, 0, 0),
-            end = today.plusDays(3).atTime(23, 59, 59),
-            duration = 960,
-            description = "Test activity 3",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = today.plusDays(2).atTime(0, 0, 0),
+                end = today.plusDays(3).atTime(23, 59, 59),
+                duration = 960,
+                description = "Test activity 3",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, activityForTwoDays
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, activityForTwoDays
+                )
         )
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
         val end = today.atTime(LocalTime.MAX)
@@ -421,7 +411,7 @@ internal class ActivityDaoIT {
         val workedTimeActivities = activityDao.find(start, end, createProjectRole().id, userId)
 
         val expectedWorkedMinutesActivities = listOf(
-            yesterdayActivity.copy(), todayActivity.copy()
+                yesterdayActivity.copy(), todayActivity.copy()
         )
 
         assertEquals(2, workedTimeActivities.size)
@@ -431,42 +421,39 @@ internal class ActivityDaoIT {
     @Test
     fun `should find overlapped activities`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val activityForTwoDays = Activity(
-            start = today.plusDays(2).atTime(0, 0, 0),
-            end = today.plusDays(3).atTime(23, 59, 59),
-            duration = 960,
-            description = "Test activity 3",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = today.plusDays(2).atTime(0, 0, 0),
+                end = today.plusDays(3).atTime(23, 59, 59),
+                duration = 960,
+                description = "Test activity 3",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, activityForTwoDays
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, activityForTwoDays
+                )
         )
         val start = yesterday.minusDays(1L).atTime(LocalTime.MIN)
         val end = today.atTime(LocalTime.MAX)
@@ -474,7 +461,7 @@ internal class ActivityDaoIT {
         val workedTimeActivities = activityDao.findOverlapped(start, end, userId)
 
         val expectedWorkedMinutesActivities = listOf(
-            todayActivity, yesterdayActivity
+                todayActivity, yesterdayActivity
         )
 
         assertEquals(2, workedTimeActivities.size)
@@ -484,42 +471,39 @@ internal class ActivityDaoIT {
     @Test
     fun `should find intervals`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val theDayBeforeYesterdayActivity = Activity(
-            start = yesterday.minusDays(1L).atTime(8, 0, 0),
-            end = yesterday.minusDays(1L).atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.minusDays(1L).atTime(8, 0, 0),
+                end = yesterday.minusDays(1L).atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
+                )
         )
 
         val expectedActivityIntervals = listOf(yesterdayActivity, todayActivity)
@@ -535,42 +519,39 @@ internal class ActivityDaoIT {
     @Test
     fun `should find by project role and user id`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = createProjectRole(2L),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = createProjectRole(2L),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val theDayBeforeYesterdayActivity = Activity(
-            start = yesterday.minusDays(1L).atTime(8, 0, 0),
-            end = yesterday.minusDays(1L).atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.minusDays(1L).atTime(8, 0, 0),
+                end = yesterday.minusDays(1L).atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
+                )
         )
 
         val expectedActivities = listOf(todayActivity, theDayBeforeYesterdayActivity)
@@ -582,53 +563,127 @@ internal class ActivityDaoIT {
     @Test
     fun `should find by project roles and user id`() {
         val todayActivity = Activity(
-            start = today.atTime(10, 0, 0),
-            end = today.atTime(12, 0, 0),
-            duration = 120,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.ACCEPTED
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED
         )
         val yesterdayActivity = Activity(
-            start = yesterday.atTime(8, 0, 0),
-            end = yesterday.atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 2",
-            projectRole = createProjectRole(2L),
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.atTime(8, 0, 0),
+                end = yesterday.atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 2",
+                projectRole = createProjectRole(2L),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         val theDayBeforeYesterdayActivity = Activity(
-            start = yesterday.minusDays(1L).atTime(8, 0, 0),
-            end = yesterday.minusDays(1L).atTime(17, 0, 0),
-            duration = 540,
-            description = "Test activity 3",
-            projectRole = projectRole,
-            userId = userId,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.PENDING
+                start = yesterday.minusDays(1L).atTime(8, 0, 0),
+                end = yesterday.minusDays(1L).atTime(17, 0, 0),
+                duration = 540,
+                description = "Test activity 3",
+                projectRole = projectRole,
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.PENDING
         )
         activityDao.saveAll(
-            listOf(
-                todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
-            )
+                listOf(
+                        todayActivity, yesterdayActivity, theDayBeforeYesterdayActivity
+                )
         )
 
         val expectedActivities = listOf(theDayBeforeYesterdayActivity)
         val result = activityDao.findByProjectRoleIds(
-            yesterday.minusDays(1L).atTime(8, 0, 0),
-            yesterday.atTime(17, 0, 0),
-            listOf(projectRole.id),
-            userId
+                yesterday.minusDays(1L).atTime(8, 0, 0),
+                yesterday.atTime(17, 0, 0),
+                listOf(projectRole.id),
+                userId
         )
 
         assertEquals(expectedActivities, result)
+    }
+
+    @Test
+    fun `should find activity with attachment`() {
+        val result = activityDao.findById(activityDdId)
+        assertTrue(result.isPresent)
+        assertTrue(result.get().evidences.isNotEmpty())
+        assertEquals(UUID.fromString(attachmentDbId), result.get().evidences[0].id)
+    }
+
+    @Test
+    fun `should save activity with attachment`() {
+        val attachmentInfo = AttachmentInfo(
+                UUID.randomUUID(),
+                userId = 11,
+                path = "path/to/file",
+                fileName = "test.jpg",
+                mimeType = "image/jpeg",
+                uploadDate = LocalDateTime.now(),
+                isTemporary = true)
+
+        val savedAttachmentInfo = attachmentInfoDao.save(attachmentInfo)
+
+        val activity = Activity(
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED,
+                evidences = mutableListOf(savedAttachmentInfo)
+        )
+
+        val savedActivity = activityDao.save(activity)
+
+        val result = activityDao.findById(savedActivity.id!!)
+
+        assertEquals(savedActivity, result.get())
+    }
+
+    @Test
+    fun `delete an activity with attachment removes association between attachment and activity`() {
+        val attachmentInfo = AttachmentInfo(
+                UUID.randomUUID(),
+                userId = 11,
+                path = "path/to/file",
+                fileName = "test.jpg",
+                mimeType = "image/jpeg",
+                uploadDate = LocalDateTime.now(),
+                isTemporary = false)
+
+        val savedAttachmentInfo = attachmentInfoDao.save(attachmentInfo)
+
+        val activity = Activity(
+                start = today.atTime(10, 0, 0),
+                end = today.atTime(12, 0, 0),
+                duration = 120,
+                description = "Test activity",
+                projectRole = createProjectRole(),
+                userId = userId,
+                billable = false,
+                approvalState = ApprovalState.ACCEPTED,
+                evidences = mutableListOf(savedAttachmentInfo)
+        )
+
+        val savedActivity = activityDao.save(activity)
+        val persistedActivity = activityDao.findById(savedActivity.id!!)
+        assertThat(persistedActivity).contains(savedActivity)
+
+        persistedActivity.map {
+            activityDao.delete(it)
+            assertThat(activityDao.findById(savedActivity.id!!)).isEmpty
+            assertThat(attachmentInfoDao.existsById(attachmentInfo.id)).isFalse
+        }
+
     }
 
     private companion object {
@@ -637,5 +692,7 @@ internal class ActivityDaoIT {
         private const val userId = 1L
         private const val otherUserId = 2L
         private val projectRole = createProjectRole()
+        private const val activityDdId = 111L
+        private const val attachmentDbId = "4d3cbe3f-369f-11ee-99c2-0242ac180003"
     }
 }

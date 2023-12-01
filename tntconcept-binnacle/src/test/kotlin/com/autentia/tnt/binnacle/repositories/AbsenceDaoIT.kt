@@ -51,7 +51,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -62,7 +61,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -73,7 +71,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -84,7 +81,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -95,7 +91,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave1,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -106,7 +101,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -117,7 +111,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 12,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
         )
@@ -170,7 +163,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -181,7 +173,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -192,7 +183,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -203,7 +193,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -214,7 +203,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave1,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -225,7 +213,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -236,7 +223,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 12,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -247,7 +233,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 1,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
         )
@@ -308,7 +293,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -319,7 +303,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -330,7 +313,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -341,7 +323,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -352,7 +333,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave1,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -363,7 +343,6 @@ class AbsenceDaoIT {
                 projectRole = otherProjectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -374,7 +353,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 12,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -385,7 +363,6 @@ class AbsenceDaoIT {
                 projectRole = projectRolePaidLeave2,
                 userId = 1,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
         )

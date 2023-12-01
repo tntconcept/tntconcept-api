@@ -2,16 +2,15 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createActivityResponseDTO
+import com.autentia.tnt.binnacle.config.createAttachmentInfoEntityWithFilenameAndMimetype
 import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
-import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.*
-import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.assertj.core.api.Assertions.assertThat
@@ -69,8 +68,11 @@ internal class ActivityApprovalUseCaseTest {
     fun `should approve activity`() {
         val user = createUser()
 
+        val attachmentInfo = createAttachmentInfoEntity()
+        val evidences = mutableListOf(attachmentInfo)
+
         val activityToApprove =
-                createActivity(approvalState = ApprovalState.PENDING).copy(hasEvidences = true)
+                createActivity(approvalState = ApprovalState.PENDING, evidences = evidences)
         val approvedActivity = activityToApprove.copy(approvalState = ApprovalState.ACCEPTED,
                 approvedByUserId = user.id, approvalDate = currentDate)
 
@@ -78,7 +80,7 @@ internal class ActivityApprovalUseCaseTest {
                 activityId,
                 approvedActivity.start,
                 approvedActivity.end,
-                approvedActivity.hasEvidences,
+                arrayListOf(),
                 approvedActivity.approvalState
         )
 
@@ -131,6 +133,9 @@ internal class ActivityApprovalUseCaseTest {
             activityApprovalUseCase.approveActivity(activityId, Locale.ENGLISH)
         }
     }
+
+    private fun createAttachmentInfoEntity() = createAttachmentInfoEntityWithFilenameAndMimetype("sample.jpg", "image/jpg")
+
 
     private companion object {
         private val currentDate = LocalDateTime.now()

@@ -1,12 +1,14 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.AttachmentInfo
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.InvalidActivityApprovalStateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.UUID
 
 data class Activity private constructor(
         val id: Long? = null,
@@ -18,9 +20,8 @@ data class Activity private constructor(
         val billable: Boolean,
         val departmentId: Long?,
         var insertDate: LocalDateTime? = null,
-        val hasEvidences: Boolean,
         var approvalState: ApprovalState,
-        var evidence: Evidence?,
+        var evidences: List<UUID> = arrayListOf(),
         val approvedByUserId: Long? = null,
         val approvalDate: LocalDateTime? = null,
 ) : ActivityTimeInterval(timeInterval, projectRole.getTimeUnit()) {
@@ -46,15 +47,17 @@ data class Activity private constructor(
     fun checkActivityIsValidForApproval() {
         when {
             isAcceptedOrNoApply() -> throw InvalidActivityApprovalStateException()
-            RequireEvidence.isRequired(projectRole.requireEvidence) && !hasEvidences -> throw NoEvidenceInActivityException(id!!)
+            RequireEvidence.isRequired(projectRole.requireEvidence) && !hasEvidences() -> throw NoEvidenceInActivityException(id!!)
             !canBeApproved() -> throw InvalidActivityApprovalStateException()
         }
     }
 
     fun canBeApproved(): Boolean = approvalState == ApprovalState.PENDING &&
-            ((RequireEvidence.isRequired(projectRole.requireEvidence) && hasEvidences) || !RequireEvidence.isRequired(projectRole.requireEvidence))
+            ((RequireEvidence.isRequired(projectRole.requireEvidence) && hasEvidences()) || !RequireEvidence.isRequired(projectRole.requireEvidence))
 
     private fun isAcceptedOrNoApply() = approvalState == ApprovalState.ACCEPTED || approvalState == ApprovalState.NA
+
+    fun hasEvidences() = evidences.isNotEmpty()
 
     companion object {
 
@@ -68,9 +71,8 @@ data class Activity private constructor(
                 billable: Boolean,
                 departmentId: Long?,
                 insertDate: LocalDateTime?,
-                hasEvidences: Boolean,
                 approvalState: ApprovalState,
-                evidence: Evidence?,
+                evidences: List<UUID> = arrayListOf(),
                 approvedByUserId: Long? = null,
                 approvalDate: LocalDateTime? = null,
         ) = Activity(
@@ -86,9 +88,8 @@ data class Activity private constructor(
                 billable,
                 departmentId,
                 insertDate,
-                hasEvidences,
                 approvalState,
-                evidence,
+                evidences,
                 approvedByUserId,
                 approvalDate
         )
@@ -103,9 +104,8 @@ data class Activity private constructor(
                 false,
                 null,
                 LocalDateTime.MIN,
-                false,
                 ApprovalState.NA,
-                null,
+                arrayListOf(),
                 null,
                 null
         )

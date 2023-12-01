@@ -33,7 +33,6 @@ class ActivityDaoSpecificationIT {
     @Inject
     private lateinit var organizationRepository: OrganizationRepository
 
-    @Inject
 
     @Test
     fun `test findAll without condition`() {
@@ -44,7 +43,7 @@ class ActivityDaoSpecificationIT {
         activityDao.saveAll(activitiesToSave)
 
         val actualActivities = activityDao.findAll(ActivityPredicates.ALL)
-        assertEquals(2, actualActivities.size)
+        assertEquals(initialActivities + 2, actualActivities.size)
     }
 
     @Test
@@ -187,7 +186,6 @@ class ActivityDaoSpecificationIT {
                 projectRole = projectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -198,7 +196,6 @@ class ActivityDaoSpecificationIT {
                 projectRole = projectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -209,7 +206,6 @@ class ActivityDaoSpecificationIT {
                 projectRole = otherProjectRole,
                 userId = 12,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -220,7 +216,6 @@ class ActivityDaoSpecificationIT {
                 projectRole = projectRoleOfAnotherOrganization,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
         )
@@ -274,7 +269,6 @@ class ActivityDaoSpecificationIT {
                 projectRole = projectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -285,7 +279,6 @@ class ActivityDaoSpecificationIT {
                 projectRole = projectRole,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -296,7 +289,6 @@ class ActivityDaoSpecificationIT {
                 projectRole = otherProjectRole,
                 userId = 12,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
             Activity(
@@ -307,7 +299,6 @@ class ActivityDaoSpecificationIT {
                 projectRole = projectRoleOfAnotherOrganization,
                 userId = 11,
                 billable = false,
-                hasEvidences = false,
                 approvalState = ApprovalState.PENDING
             ),
         )
@@ -376,4 +367,10 @@ class ActivityDaoSpecificationIT {
         assertEquals(expectedActivityAtEnd.start, actualActivities[2].start)
         assertEquals(expectedActivityAtEnd.end, actualActivities[2].end)
     }
+
+    private companion object {
+        private val initialActivities = 1
+        private val initialActivityStartDate = LocalDateTime.of(2023, 8, 2, 9, 0, 0)
+    }
+
 }

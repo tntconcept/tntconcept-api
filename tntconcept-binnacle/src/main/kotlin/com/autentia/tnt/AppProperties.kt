@@ -4,6 +4,7 @@ import io.micronaut.context.annotation.ConfigurationProperties
 import javax.validation.constraints.Email
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.Pattern
 
 @ConfigurationProperties("app")
 internal class AppProperties {
@@ -21,6 +22,7 @@ internal class AppProperties {
         var attachmentsPath: String = ""
 
         @NotEmpty
+        @Pattern(regexp = "^([a-zA-Z0-9]+,)*[a-zA-Z0-9]+$")
         var supportedMimeTypes: Map<String, String> = emptyMap()
     }
 

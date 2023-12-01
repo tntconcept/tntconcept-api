@@ -13,7 +13,7 @@ data class ActivityRequestBodyHookDTO(
     val description: String,
     val billable: Boolean,
     val projectRoleId: Long,
+    val userName: String,
     val hasImage: Boolean,
     val imageFile: String? = null,
-    val userName: String,
 )
