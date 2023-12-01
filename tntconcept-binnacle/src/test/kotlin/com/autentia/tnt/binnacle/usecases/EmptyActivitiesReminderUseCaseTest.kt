@@ -224,7 +224,6 @@ class EmptyActivitiesReminderUseCaseTest {
     private fun generateActivity(): Activity = Activity(
         billable = false,
         description = "Dummy description",
-        hasEvidences = false,
         id = 1L,
         projectRole = createProjectRole(10L),
         start = LocalDateTime.of(LocalDate.ofYearDay(yearTest, 8), LocalTime.NOON),
