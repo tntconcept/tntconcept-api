@@ -151,6 +151,7 @@ internal class UsersRetrievalUseCaseTest {
                 createUser().id,
                 createUser().username,
                 createUser().name,
+                createUser().email
             )
     }
 }

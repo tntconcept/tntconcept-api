@@ -80,7 +80,6 @@ class VacationRepositorySecuredTest {
         verify(vacationDao, never()).findByIdAndUserId(vacationId, adminUserId)
     }
 
-
     @Test
     fun `filter vacations charge year when user not authenticated`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
@@ -165,7 +164,6 @@ class VacationRepositorySecuredTest {
 
         verify(vacationDao).saveAll(vacations)
     }
-
 
     @Test
     fun `update vacation when not authenticated`() {
@@ -273,6 +271,19 @@ class VacationRepositorySecuredTest {
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationAdmin))
 
         assertThrows<IllegalArgumentException> { vacationRepositorySecured.deleteById(vacationId) }
+    }
+
+    @Test
+    fun `filter vacations by dates and states`() {
+        val states = listOf(VacationState.PENDING, VacationState.ACCEPT)
+
+        vacationRepositorySecured.findByDatesAndStatesWithoutSecurity(
+            startDate,
+            endDate,
+            states
+        )
+
+        verify(vacationDao).findByDatesAndStates(startDate, endDate, states)
     }
 
     private companion object {

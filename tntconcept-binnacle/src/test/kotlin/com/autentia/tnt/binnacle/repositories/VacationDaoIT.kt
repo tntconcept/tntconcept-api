@@ -58,6 +58,36 @@ internal class VacationDaoIT {
         description = ""
     )
 
+    private val sanjose2021 = Vacation(
+        id = null,
+        startDate = LocalDate.of(2021, Month.MARCH, 19),
+        endDate = LocalDate.of(2021, Month.MARCH, 19),
+        state = VacationState.PENDING,
+        chargeYear = LocalDate.of(2021, Month.JANUARY, 1),
+        userId = userId,
+        description = ""
+    )
+
+    private val summer2021 = Vacation(
+        id = null,
+        startDate = LocalDate.of(2021, Month.JULY, 15),
+        endDate = LocalDate.of(2021, Month.JULY, 20),
+        state = VacationState.CANCELLED,
+        chargeYear = LocalDate.of(2021, Month.JANUARY, 1),
+        userId = userId,
+        description = ""
+    )
+
+    private val spring2021 = Vacation(
+        id = null,
+        startDate = LocalDate.of(2021, Month.APRIL, 15),
+        endDate = LocalDate.of(2021, Month.APRIL, 20),
+        state = VacationState.REJECT,
+        chargeYear = LocalDate.of(2021, Month.JANUARY, 1),
+        userId = userId,
+        description = ""
+    )
+
     @BeforeEach
     fun setUpTest() {
         vacationDao.deleteAll()
@@ -116,5 +146,24 @@ internal class VacationDaoIT {
 
         assertEquals(3, actual.size)
         assertTrue(actual.containsAll(listOf(vacations[1], vacations[2], vacations[3])))
+    }
+
+    @Test
+    fun `filter user vacations by dates and states`() {
+        val vacations = listOf(
+            christmas2021.copy(),
+            sanjose2021.copy(),
+            summer2021.copy(),
+            spring2021.copy()
+        )
+        vacationDao.saveAll(vacations)
+
+        val startDate = LocalDate.of(2021, Month.JANUARY, 1)
+        val endDate = LocalDate.of(2021, Month.DECEMBER, 31)
+
+        val actual = vacationDao.findByDatesAndStates(startDate, endDate, listOf(VacationState.PENDING,VacationState.ACCEPT))
+
+        assertEquals(2, actual.size)
+        assertTrue(actual.containsAll(listOf(vacations[0], vacations[1])))
     }
 }

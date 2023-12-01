@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.entities.Vacation
+import com.autentia.tnt.binnacle.entities.VacationState
 import io.micronaut.data.annotation.Query
 import io.micronaut.data.annotation.Repository
 import io.micronaut.data.repository.CrudRepository
@@ -29,5 +30,12 @@ internal interface VacationDao : CrudRepository<Vacation, Long> {
     fun findByChargeYear(
         chargeYear: LocalDate,
         userId: Long
+    ): List<Vacation>
+
+    @Query("SELECT h FROM Vacation h WHERE h.state IN (:states) AND (h.startDate >= :startDate AND h.endDate <= :endDate OR h.endDate >= :startDate AND h.startDate <= :endDate)")
+    fun findByDatesAndStates(
+        startDate: LocalDate,
+        endDate: LocalDate,
+        states: List<VacationState>
     ): List<Vacation>
 }
