@@ -12,6 +12,8 @@ import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.binnacle.repositories.predicates.UserPredicates
+import io.micronaut.data.model.Pageable
+import io.micronaut.data.model.Sort
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -83,7 +85,9 @@ internal class AbsencesByFilterUseCaseTest {
         )
 
         whenever(absenceRepository.find(startDate, endDate, userIds)).thenReturn(absences)
-        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds), null)).thenReturn(users)
+        val pageable = Pageable.unpaged()
+        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds),
+            pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(users)
 
         val result = absencesByFilterUseCase.getAbsences(absenceFilterDTO)
 
@@ -149,7 +153,9 @@ internal class AbsencesByFilterUseCaseTest {
 
         whenever(activityRepository.findAll(predicate)).thenReturn(activities)
         whenever(absenceRepository.find(startDate, endDate, userIds)).thenReturn(absences)
-        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds), null)).thenReturn(users)
+        val pageable = Pageable.unpaged()
+        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds),
+            pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(users)
 
         val result = absencesByFilterUseCase.getAbsences(absenceFilterDTO)
 
@@ -202,7 +208,9 @@ internal class AbsencesByFilterUseCaseTest {
 
         whenever(activityRepository.findAll(predicate)).thenReturn(organizationActivities)
         whenever(absenceRepository.find(startDate, endDate, userIds)).thenReturn(absences)
-        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds), null)).thenReturn(users)
+        val pageable = Pageable.unpaged()
+        whenever(userRepository.findAll(UserPredicates.fromUserIds(userIds),
+            pageable.order("name", Sort.Order.Direction.ASC))).thenReturn(users)
 
         val result = absencesByFilterUseCase.getAbsences(absenceFilterDTO)
 

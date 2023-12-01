@@ -11,6 +11,8 @@ import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import io.micronaut.data.jpa.repository.criteria.Specification
+import io.micronaut.data.model.Pageable
+import io.micronaut.data.model.Sort
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -43,7 +45,9 @@ class AbsencesByFilterUseCase internal constructor(
         }
 
         if (userIds.isNotEmpty()) {
-            val users = userRepository.findAll(UserPredicates.fromUserIds(userIds), null)
+            val pageable = Pageable.unpaged()
+            val users = userRepository.findAll(UserPredicates.fromUserIds(userIds),
+                pageable.order("name", Sort.Order.Direction.ASC))
             val absences = absenceRepository.find(absenceFilter.startDate, absenceFilter.endDate, userIds)
 
             return absenceResponseConverter.toAbsenceResponseDTO(users, absences)
