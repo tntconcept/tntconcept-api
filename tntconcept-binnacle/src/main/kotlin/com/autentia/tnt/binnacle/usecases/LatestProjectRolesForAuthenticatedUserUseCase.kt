@@ -32,17 +32,16 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
     fun get(year: Int?): List<ProjectRoleUserDTO> {
         val authentication = securityService.checkAuthentication()
         val userId = authentication.id()
-        val oneMonthDateRange = oneMonthTimeIntervalFromCurrentYear()
-        val yearTimeInterval = getTimeIntervalFromOptionalYear(year)
-
-        val lastMonthActivities =
-            activityRepository.findOfLatestProjects(oneMonthDateRange.start, oneMonthDateRange.end, userId)
+        val oneWeekDateRange = oneWeekTimeIntervalFromCurrentYear()
+        val lastWeekActivities =
+            activityRepository.findOfLatestProjects(oneWeekDateRange.start, oneWeekDateRange.end, userId)
                 .map(Activity::toDomain)
 
+        val yearTimeInterval = getTimeIntervalFromOptionalYear(year)
         var requestedYearActivities: List<Activity>? = null
 
         val latestUserProjectRoles =
-            lastMonthActivities.sortedByDescending { it.timeInterval.start }.map { it.projectRole }.distinct()
+            lastWeekActivities.sortedByDescending { it.timeInterval.start }.map { it.projectRole }.distinct()
                 .map { projectRole ->
                     var remainingOfProjectRoleForUser = 0
                     if (projectRole.isMaxTimeAllowedRole()) {
@@ -70,11 +69,11 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         return latestUserProjectRoles.map(projectRoleResponseConverter::toProjectRoleUserDTO)
     }
 
-    private fun oneMonthTimeIntervalFromCurrentYear(): TimeInterval {
+    private fun oneWeekTimeIntervalFromCurrentYear(): TimeInterval {
         val now = LocalDate.now()
 
         return TimeInterval.of(
-            now.minusMonths(1).atTime(LocalTime.MIN),
+            now.minusWeeks(1).atTime(LocalTime.MIN),
             now.atTime(23, 59, 59)
         )
     }
