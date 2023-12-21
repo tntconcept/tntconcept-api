@@ -25,6 +25,8 @@ data class ProjectRole(
         return remaining
     }
 
+    fun isMaxTimeAllowedRole() = getMaxTimeAllowedByYear() > 0
+
     fun getMaxTimeAllowedByYear() = timeInfo.getMaxTimeAllowedByYear()
 
     fun getMaxTimeAllowedByActivity() = timeInfo.getMaxTimeAllowedByActivity()
@@ -38,6 +40,7 @@ data class ProjectRole(
             TimeUnit.MINUTES -> timeInfo.maxTimeAllowed.byYear.toDouble()
         }
     }
+
     fun getMaxTimeAllowedByActivityInTimeUnits(): Int {
         return when (timeInfo.timeUnit) {
             TimeUnit.DAYS -> timeInfo.maxTimeAllowed.byActivity / 60 / 8
@@ -45,15 +48,16 @@ data class ProjectRole(
             TimeUnit.MINUTES -> timeInfo.maxTimeAllowed.byActivity
         }
     }
+
     fun getApprovalState() = if (isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
 
     fun requireEvidence() = RequireEvidence.isRequired(requireEvidence)
 
     private fun getRemaining(calendar: Calendar, activities: List<Activity>) =
-        if (timeInfo.getMaxTimeAllowedByYear() == 0) {
-            0
-        } else {
+        if (isMaxTimeAllowedRole()) {
             timeInfo.getMaxTimeAllowedByYear() - activities.sumOf { activity -> activity.getDuration(calendar) }
+        } else {
+            0
         }
 
     private fun fromMinutesToDays(minutes: Int) = minutes / (MINUTES_IN_HOUR * HOURS_BY_DAY)
