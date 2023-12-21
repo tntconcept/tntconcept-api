@@ -35,30 +35,35 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         val oneMonthDateRange = oneMonthTimeIntervalFromCurrentYear()
         val yearTimeInterval = getTimeIntervalFromOptionalYear(year)
 
-        val requestedYearActivities =
-            activityRepository.findOfLatestProjects(
-                yearTimeInterval.start,
-                yearTimeInterval.end,
-                userId
-            ).filter { it.start.year == yearTimeInterval.getYearOfStart() }
-
         val lastMonthActivities =
             activityRepository.findOfLatestProjects(oneMonthDateRange.start, oneMonthDateRange.end, userId)
                 .map(Activity::toDomain)
 
+        var requestedYearActivities: List<Activity>? = null
+
         val latestUserProjectRoles =
             lastMonthActivities.sortedByDescending { it.timeInterval.start }.map { it.projectRole }.distinct()
                 .map { projectRole ->
-                    val remainingOfProjectRoleForUser = if (projectRole.timeInfo.getMaxTimeAllowedByYear() > 0)
-                        activityCalendarService.getRemainingOfProjectRoleForUser(
+                    var remainingOfProjectRoleForUser = 0
+                    if (projectRole.isMaxTimeAllowedRole()) {
+                        if (requestedYearActivities == null) {
+                            requestedYearActivities =
+                                activityRepository.findOfLatestProjects(
+                                    yearTimeInterval.start,
+                                    yearTimeInterval.end,
+                                    userId
+                                ).filter { it.start.year == yearTimeInterval.getYearOfStart() }
+                        }
+                        remainingOfProjectRoleForUser = activityCalendarService.getRemainingOfProjectRoleForUser(
                             projectRole,
-                            requestedYearActivities.map(Activity::toDomain),
+                            requestedYearActivities!!.map(Activity::toDomain),
                             getDateIntervalForActivityList(
-                                requestedYearActivities.map(Activity::toDomain),
+                                requestedYearActivities!!.map(Activity::toDomain),
                                 yearTimeInterval
                             ),
                             userId
-                        ) else 0
+                        )
+                    }
                     projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
                 }
 
