@@ -49,15 +49,16 @@ class LatestProjectRolesForAuthenticatedUserUseCase internal constructor(
         val latestUserProjectRoles =
             lastMonthActivities.sortedByDescending { it.timeInterval.start }.map { it.projectRole }.distinct()
                 .map { projectRole ->
-                    val remainingOfProjectRoleForUser = if (projectRole.timeInfo.getMaxTimeAllowedByYear() > 0) activityCalendarService.getRemainingOfProjectRoleForUser(
-                        projectRole,
-                        requestedYearActivities.map(Activity::toDomain),
-                        getDateIntervalForActivityList(
+                    val remainingOfProjectRoleForUser = if (projectRole.timeInfo.getMaxTimeAllowedByYear() > 0)
+                        activityCalendarService.getRemainingOfProjectRoleForUser(
+                            projectRole,
                             requestedYearActivities.map(Activity::toDomain),
-                            yearTimeInterval
-                        ),
-                        userId
-                    ) else 0
+                            getDateIntervalForActivityList(
+                                requestedYearActivities.map(Activity::toDomain),
+                                yearTimeInterval
+                            ),
+                            userId
+                        ) else 0
                     projectRoleConverter.toProjectRoleUser(projectRole, remainingOfProjectRoleForUser, userId)
                 }
 
