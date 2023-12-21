@@ -47,13 +47,13 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
     fun `return the last imputed roles ordered by activity start date without year parameter`() {
         val userId = 1L
         val yearTimeInterval = TimeInterval.ofYear(BEGINNING_OF_THE_YEAR.year)
-        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
+        val oneWeekTimeInterval = oneWeekInterval()
 
         val activities = listOf(
             createActivity().copy(
                 projectRole = projectRole1,
-                start = TODAY.minusDays(15).atTime(7, 30, 0),
-                end = TODAY.minusDays(15).atTime(9, 0, 0)
+                start = TODAY.minusDays(3).atTime(7, 30, 0),
+                end = TODAY.minusDays(3).atTime(9, 0, 0)
             ),
             createActivity().copy(projectRole = projectRole2),
             createActivity().copy(
@@ -72,7 +72,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         ).thenReturn(
             activities
         )
-        whenever(activityRepository.findOfLatestProjects(oneMonthTimeInterval.start, oneMonthTimeInterval.end, userId))
+        whenever(activityRepository.findOfLatestProjects(oneWeekTimeInterval.start, oneWeekTimeInterval.end, userId))
             .thenReturn(activities)
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
 
@@ -90,13 +90,13 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         val year = 2021
         val yearTimeInterval = TimeInterval.ofYear(year)
         val yearTimeDate = yearTimeInterval.end
-        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
+        val oneWeekTimeInterval = oneWeekInterval()
 
         val lastMonthActivities = listOf(
             createActivity().copy(
                 projectRole = projectRole1,
-                start = TODAY.minusDays(15).atTime(7, 30, 0),
-                end = TODAY.minusDays(15).atTime(9, 0, 0)
+                start = TODAY.minusDays(3).atTime(7, 30, 0),
+                end = TODAY.minusDays(3).atTime(9, 0, 0)
             ),
             createActivity().copy(projectRole = projectRole2),
             createActivity().copy(
@@ -109,8 +109,8 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         val pastYearActivities = listOf(
             createActivity().copy(
                 projectRole = projectRole1,
-                start = yearTimeDate.minusDays(15).minusMinutes(30),
-                end = yearTimeDate.minusDays(15)
+                start = yearTimeDate.minusDays(3).minusMinutes(30),
+                end = yearTimeDate.minusDays(3)
             ),
             createActivity().copy(projectRole = projectRole2),
             createActivity().copy(
@@ -129,7 +129,7 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         ).thenReturn(
             pastYearActivities
         )
-        whenever(activityRepository.findOfLatestProjects(oneMonthTimeInterval.start, oneMonthTimeInterval.end, userId))
+        whenever(activityRepository.findOfLatestProjects(oneWeekTimeInterval.start, oneWeekTimeInterval.end, userId))
             .thenReturn(lastMonthActivities)
         whenever(securityService.authentication).thenReturn(Optional.of(authentication))
 
@@ -146,18 +146,18 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         val userId = 1L
         val year = TODAY.year
         val yearTimeInterval = TimeInterval.ofYear(year)
-        val oneMonthTimeInterval = oneMonthTimeIntervalFromCurrentYear()
+        val oneMonthTimeInterval = oneWeekInterval()
 
         val activities = listOf(
             createActivity().copy(
                 projectRole = projectRole1,
-                start = TODAY.minusDays(15).atTime(7, 30, 0),
-                end = TODAY.minusDays(15).atTime(9, 0, 0)
+                start = TODAY.minusDays(3).atTime(7, 30, 0),
+                end = TODAY.minusDays(3).atTime(9, 0, 0)
             ),
             createActivity().copy(
                 projectRole = projectRole3,
-                start = TODAY.minusDays(15).atTime(LocalTime.MIN),
-                end = TODAY.minusDays(14).atTime(23, 59, 59)
+                start = TODAY.minusDays(3).atTime(LocalTime.MIN),
+                end = TODAY.minusDays(2).atTime(23, 59, 59)
             ),
             createActivity().copy(projectRole = projectRole2),
             createActivity().copy(
@@ -193,15 +193,19 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
         private const val USER_ID = 1L
         private val TODAY = LocalDate.now()
         private val BEGINNING_OF_THE_YEAR = LocalDate.of(TODAY.year, 1, 1)
-        private val START_DATE = TODAY.minusDays(1)
-        private val END_DATE = TODAY.minusDays(4)
         private val projectRole1 = createProjectRole().copy(name = "Role ID 1").copy(maxTimeAllowedByYear = 120)
         private val projectRole2 = createProjectRole(id = 2).copy(name = "Role ID 2")
-        private val projectRole3 = createProjectRole(id = 3).copy(maxTimeAllowedByYear = 960).copy(name = "Role ID 3").copy(timeUnit = TimeUnit.NATURAL_DAYS)
+        private val projectRole3 = createProjectRole(id = 3).copy(maxTimeAllowedByYear = 960).copy(name = "Role ID 3")
+            .copy(timeUnit = TimeUnit.NATURAL_DAYS)
         private val authentication =
             ClientAuthentication(USER_ID.toString(), mapOf("roles" to listOf("admin")))
 
-        private fun buildProjectRoleUserDTO(id: Long, remaining: Int, maxTimeAllowedByYear: Int, timeUnit: TimeUnit? = TimeUnit.MINUTES): ProjectRoleUserDTO =
+        private fun buildProjectRoleUserDTO(
+            id: Long,
+            remaining: Int,
+            maxTimeAllowedByYear: Int,
+            timeUnit: TimeUnit? = TimeUnit.MINUTES
+        ): ProjectRoleUserDTO =
             ProjectRoleUserDTO(
                 id,
                 "Role ID $id",
@@ -213,13 +217,14 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
                 TimeInfoDTO(MaxTimeAllowedDTO(maxTimeAllowedByYear, 0), timeUnit!!, remaining)
             )
 
-        private fun oneMonthTimeIntervalFromCurrentYear(): TimeInterval {
+        private fun oneWeekInterval(): TimeInterval {
             val now = LocalDate.now()
 
             return TimeInterval.of(
-                now.minusMonths(1).atTime(LocalTime.MIN),
+                now.minusWeeks(1).atTime(LocalTime.MIN),
                 now.atTime(23, 59, 59)
             )
         }
     }
+
 }
