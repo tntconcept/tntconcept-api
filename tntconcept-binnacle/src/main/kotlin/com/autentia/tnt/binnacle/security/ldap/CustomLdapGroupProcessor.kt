@@ -1,4 +1,4 @@
-package com.autentia.tnt.binnacle.services.ldap
+package com.autentia.tnt.binnacle.security.ldap
 
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.data.jdbc.runtime.JdbcOperations
@@ -8,8 +8,6 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import javax.transaction.Transactional
 
-
-private const val s = "@autentia.com"
 
 @Singleton
 @Replaces(DefaultLdapGroupProcessor::class)
