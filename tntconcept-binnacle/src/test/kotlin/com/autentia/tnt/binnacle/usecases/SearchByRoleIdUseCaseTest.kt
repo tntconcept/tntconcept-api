@@ -16,6 +16,7 @@ import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.security.application.id
+import io.archimedesfw.commons.time.test.ClockTestUtils
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -27,7 +28,11 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Month
 import java.util.*
+
+
+val mockNow = LocalDateTime.of(2023, Month.MARCH, 1, 0, 0, 0)
 
 internal class SearchByRoleIdUseCaseTest {
 
@@ -65,7 +70,10 @@ internal class SearchByRoleIdUseCaseTest {
         doReturn(emptyList<ProjectRole>())
             .whenever(projectRoleRepository).getAllByIdIn(listOf(UNKONW_ROLE_ID))
 
-        val roles = searchByRoleIdUseCase.get(listOf(UNKONW_ROLE_ID), null)
+        val roles =
+            ClockTestUtils.runWithFixed(mockNow) {
+                searchByRoleIdUseCase.get(listOf(UNKONW_ROLE_ID), null)
+            }
 
         assertEquals(0, roles.organizations.size)
         assertEquals(0, roles.projects.size)
@@ -81,13 +89,16 @@ internal class SearchByRoleIdUseCaseTest {
         whenever(projectRoleRepository.getAllByIdIn(rolesForSearch)).thenReturn(listOf(INTERNAL_STUDENT))
         whenever(
             activityRepository.findByProjectRoleIds(
-                TimeInterval.ofYear(LocalDate.now().year).start,
-                TimeInterval.ofYear(LocalDate.now().year).end,
+                TimeInterval.ofYear(mockNow.year).start,
+                TimeInterval.ofYear(mockNow.year).end,
                 rolesForSearch,
                 authenticatedUser.id()
             )
         ).thenReturn(listOf(activity))
-        val roles = searchByRoleIdUseCase.get(rolesForSearch, null)
+        val roles =
+            ClockTestUtils.runWithFixed(mockNow) {
+                searchByRoleIdUseCase.get(rolesForSearch, null)
+            }
 
         assertEquals(1, roles.organizations.size)
         assertEquals(1, roles.projects.size)
@@ -119,7 +130,11 @@ internal class SearchByRoleIdUseCaseTest {
                 authenticatedUser.id()
             )
         ).thenReturn(listOf(activity))
-        val roles = searchByRoleIdUseCase.get(rolesForSearch, 2023)
+
+        val roles =
+            ClockTestUtils.runWithFixed(mockNow) {
+                searchByRoleIdUseCase.get(rolesForSearch, 2023)
+            }
 
         assertEquals(1, roles.organizations.size)
         assertEquals(1, roles.projects.size)
@@ -156,13 +171,16 @@ internal class SearchByRoleIdUseCaseTest {
         whenever(projectRoleRepository.getAllByIdIn(rolesForSearch)).thenReturn(rolesToReturn)
         whenever(
             activityRepository.findByProjectRoleIds(
-                TimeInterval.ofYear(LocalDate.now().year).start,
-                TimeInterval.ofYear(LocalDate.now().year).end,
+                TimeInterval.ofYear(mockNow.year).start,
+                TimeInterval.ofYear(mockNow.year).end,
                 rolesForSearch,
                 authenticatedUser.id()
             )
         ).thenReturn(listOf(internalStudentActivity, internalTeacherActivity))
-        val roles = searchByRoleIdUseCase.get(rolesForSearch, null)
+        val roles =
+            ClockTestUtils.runWithFixed(mockNow) {
+                searchByRoleIdUseCase.get(rolesForSearch, null)
+            }
 
         assertEquals(2, roles.organizations.size)
         assertEquals(2, roles.projects.size)
@@ -225,7 +243,7 @@ internal class SearchByRoleIdUseCaseTest {
             )
 
             val projectRoleList = listOf(projectRoleLimitedInDays)
-            val timeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
+            val timeInterval = TimeInterval.ofYear(mockNow.year)
             val roleIds = listOf(1L)
 
             whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
@@ -245,8 +263,14 @@ internal class SearchByRoleIdUseCaseTest {
                     createUser().id
                 )
 
-            val obtainedRoleWithoutYearParameter = searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
-            val obtainedRoleWithYearParameter = searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+            val obtainedRoleWithoutYearParameter =
+                ClockTestUtils.runWithFixed(mockNow) {
+                    searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
+                }
+            val obtainedRoleWithYearParameter =
+                ClockTestUtils.runWithFixed(mockNow) {
+                    searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+                }
 
             assertEquals(expectedRemainingDays, obtainedRoleWithoutYearParameter.timeInfo.userRemainingTime)
             assertEquals(expectedRemainingDays, obtainedRoleWithYearParameter.timeInfo.userRemainingTime)
@@ -269,7 +293,7 @@ internal class SearchByRoleIdUseCaseTest {
             )
 
             val projectRoleList = listOf(projectRoleLimited)
-            val timeInterval = TimeInterval.ofYear(LocalDateTime.now().year)
+            val timeInterval = TimeInterval.ofYear(mockNow.year)
             val roleIds = listOf(1L)
 
             whenever(securityService.authentication).thenReturn(Optional.of(authenticatedUser))
@@ -289,8 +313,15 @@ internal class SearchByRoleIdUseCaseTest {
                     createUser().id
                 )
 
-            val obtainedRoleWithoutYearParameter = searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
-            val obtainedRoleWithYearParameter = searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+            val obtainedRoleWithoutYearParameter =
+                ClockTestUtils.runWithFixed(mockNow) {
+                    searchByRoleIdUseCase.get(roleIds, null).projectRoles.get(0)
+                }
+
+            val obtainedRoleWithYearParameter =
+                ClockTestUtils.runWithFixed(mockNow) {
+                    searchByRoleIdUseCase.get(roleIds, 2023).projectRoles.get(0)
+                }
 
             assertEquals(expectedRemainingTime, obtainedRoleWithoutYearParameter.timeInfo.userRemainingTime)
             assertEquals(expectedRemainingTime, obtainedRoleWithYearParameter.timeInfo.userRemainingTime)
@@ -308,7 +339,7 @@ internal class SearchByRoleIdUseCaseTest {
                 "Internal training",
                 true,
                 true,
-                LocalDate.now(),
+                mockNow.toLocalDate(),
                 null,
                 null,
                 AUTENTIA,
@@ -346,7 +377,7 @@ internal class SearchByRoleIdUseCaseTest {
                 "External training",
                 true,
                 true,
-                LocalDate.now(),
+                mockNow.toLocalDate(),
                 null,
                 null,
                 OTHER_COMPANY,

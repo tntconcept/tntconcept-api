@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.core.domain
 
 import com.autentia.tnt.binnacle.exception.TimeIntervalException
+import io.archimedesfw.commons.time.ClockUtils
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -20,7 +21,7 @@ data class TimeInterval private constructor(val start: LocalDateTime, val end: L
         )
 
         fun getTimeIntervalFromOptionalYear(year: Int?): TimeInterval =
-            ofYear(year ?: LocalDate.now().year)
+            ofYear(year ?: ClockUtils.nowUtc().year)
     }
 
     fun getDateInterval() = DateInterval.of(start.toLocalDate(), end.toLocalDate())

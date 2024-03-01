@@ -14,6 +14,7 @@ import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.*
+import io.archimedesfw.commons.time.test.ClockTestUtils
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
@@ -27,8 +28,16 @@ import org.mockito.kotlin.whenever
 import java.time.*
 import java.util.*
 
+
+private val mockToday = LocalDate.of(2023, Month.MARCH, 1)
+private val mockNow = LocalDateTime.of(mockToday, LocalTime.NOON)
+
 @TestInstance(PER_CLASS)
 internal class ActivityValidatorTest {
+
+
+
+
     private val holidayRepository = mock<HolidayRepository>()
     private val activityRepository = mock<ActivityRepository>()
     private val projectRepository = mock<ProjectRepository>()
@@ -64,7 +73,11 @@ internal class ActivityValidatorTest {
                 .whenever(projectRepository)
                 .findById(projectRole.project.id)
 
-            activityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
+
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
+            }
+
         }
 
         @Test
@@ -72,8 +85,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(vacationProject))
                 .whenever(projectRepository)
                 .findById(projectRole.project.id)
-
-            activityValidator.checkActivityIsValidForCreation(newActivityLastYear, user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForCreation(newActivityLastYear, user)
+            }
         }
 
         @Test
@@ -81,8 +95,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(blockedProject))
                 .whenever(projectRepository)
                 .findById(blockedProjectRole.project.id)
-
-            activityValidator.checkActivityIsValidForCreation(newActivityAfterBlockedProject, user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForCreation(newActivityAfterBlockedProject, user)
+            }
         }
 
         @Test
@@ -126,8 +141,9 @@ internal class ActivityValidatorTest {
                     listOf(projectRole.id),
                     user.id
                 )
-
-            activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
+            }
         }
 
         @Test
@@ -146,11 +162,13 @@ internal class ActivityValidatorTest {
                 )
 
             assertThrows<OverlapsAnotherTimeException> {
-                activityValidator.checkActivityIsValidForUpdate(
-                    overlappedActivityToCreate,
-                    overlappedActivityToCreate,
-                    user
-                )
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(
+                        overlappedActivityToCreate,
+                        overlappedActivityToCreate,
+                        user
+                    )
+                }
             }
         }
 
@@ -161,7 +179,9 @@ internal class ActivityValidatorTest {
                 .findById(blockedProjectRole.project.id)
 
             val exception = assertThrows<ProjectBlockedException> {
-                activityValidator.checkActivityIsValidForCreation(newActivitySameDayBlockedProject, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForCreation(newActivitySameDayBlockedProject, user)
+                }
             }
 
             assertEquals(blockedProject.blockDate!!, exception.blockedDate)
@@ -184,7 +204,9 @@ internal class ActivityValidatorTest {
                 .findById(vacationProject.id)
 
             val exception = assertThrows<MaxTimePerActivityRoleException> {
-                activityValidator.checkActivityIsValidForCreation(activity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForCreation(activity, user)
+                }
             }
 
             assertEquals(projectRoleLimited.maxTimeAllowedByActivity, exception.maxAllowedTime)
@@ -234,7 +256,9 @@ internal class ActivityValidatorTest {
                 )
 
             val exception = assertThrows<MaxTimePerRoleException> {
-                activityValidator.checkActivityIsValidForCreation(activity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForCreation(activity, user)
+                }
             }
 
             assertEquals(1.0, exception.remainingTime)
@@ -301,7 +325,9 @@ internal class ActivityValidatorTest {
                 .findById(projectRole.project.id)
 
             val exception = assertThrows<BinnacleException> {
-                activityValidator.checkActivityIsValidForCreation(activityToValidate, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForCreation(activityToValidate, user)
+                }
             }
 
             assertEquals(expectedException.message, exception.message)
@@ -576,7 +602,9 @@ internal class ActivityValidatorTest {
                 )
 
             val exception = assertThrows<MaxTimePerRoleException> {
-                activityValidator.checkActivityIsValidForCreation(activity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForCreation(activity, user)
+                }
             }
 
             assertEquals(projectRoleLimited.toDomain().getMaxTimeAllowedByYearInTimeUnits(), exception.maxAllowedTime)
@@ -592,8 +620,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(nonBlockedProject))
                 .whenever(projectRepository)
                 .findById(1L)
-
-            activityValidator.checkActivityIsValidForUpdate(validActivityToUpdate, validActivityToUpdate, user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForUpdate(validActivityToUpdate, validActivityToUpdate, user)
+            }
         }
 
         @Test
@@ -603,11 +632,13 @@ internal class ActivityValidatorTest {
                 .findById(1L)
 
             assertThrows<ActivityPeriodNotValidException> {
-                activityValidator.checkActivityIsValidForUpdate(
-                    activityInvalidPeriodForMinutesProjectRole,
-                    activityInvalidPeriodForMinutesProjectRole,
-                    user
-                )
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(
+                        activityInvalidPeriodForMinutesProjectRole,
+                        activityInvalidPeriodForMinutesProjectRole,
+                        user
+                    )
+                }
             }
         }
 
@@ -628,14 +659,22 @@ internal class ActivityValidatorTest {
                 .findById(secondIncoherentActivity.projectRole.project.id)
 
             assertThrows<NoEvidenceInActivityException> {
-                activityValidator.checkActivityIsValidForUpdate(firstIncoherentActivity, firstIncoherentActivity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(
+                        firstIncoherentActivity,
+                        firstIncoherentActivity,
+                        user
+                    )
+                }
             }
             assertThrows<NoEvidenceInActivityException> {
-                activityValidator.checkActivityIsValidForUpdate(
-                    secondIncoherentActivity,
-                    secondIncoherentActivity,
-                    user
-                )
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(
+                        secondIncoherentActivity,
+                        secondIncoherentActivity,
+                        user
+                    )
+                }
             }
         }
 
@@ -668,7 +707,9 @@ internal class ActivityValidatorTest {
                 .findById(blockedProject.id)
 
             val exception = assertThrows<ProjectBlockedException> {
-                activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
+                }
             }
 
             assertEquals(blockedProject.blockDate!!, exception.blockedDate)
@@ -697,8 +738,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(blockedPastProject))
                 .whenever(projectRepository)
                 .findById(blockedPastProject.id)
-
-            activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
+            }
         }
 
         @Test
@@ -731,7 +773,9 @@ internal class ActivityValidatorTest {
                 .findById(nonBlockedProject.id)
 
             val exception = assertThrows<ProjectBlockedException> {
-                activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(newActivity, currentActivity.toDomain(), user)
+                }
             }
 
             assertEquals(blockedProject.blockDate!!, exception.blockedDate)
@@ -751,7 +795,9 @@ internal class ActivityValidatorTest {
                 .findById(closedProject.id)
 
             assertThrows<ProjectClosedException> {
-                activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
+                }
             }
         }
 
@@ -760,8 +806,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(nonBlockedProject))
                 .whenever(projectRepository)
                 .findById(1L)
-
-            activityValidator.checkActivityIsValidForUpdate(activityLastYear, activityLastYear, user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForUpdate(activityLastYear, activityLastYear, user)
+            }
         }
 
         @Test
@@ -771,11 +818,13 @@ internal class ActivityValidatorTest {
                 .findById(1L)
 
             assertThrows<ActivityPeriodClosedException> {
-                activityValidator.checkActivityIsValidForUpdate(
-                    activityUpdateTwoYearsAgo,
-                    activityUpdateTwoYearsAgo,
-                    user
-                )
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(
+                        activityUpdateTwoYearsAgo,
+                        activityUpdateTwoYearsAgo,
+                        user
+                    )
+                }
             }
         }
 
@@ -816,7 +865,9 @@ internal class ActivityValidatorTest {
                 .findById(1L)
 
             assertThrows<OverlapsAnotherTimeException> {
-                activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
+                }
             }
         }
 
@@ -825,18 +876,22 @@ internal class ActivityValidatorTest {
             val approvedActivity = validActivityToUpdate.copy(approvalState = ApprovalState.ACCEPTED)
 
             assertThrows<IllegalArgumentException> {
-                activityValidator.checkActivityIsValidForUpdate(approvedActivity, approvedActivity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(approvedActivity, approvedActivity, user)
+                }
             }
         }
 
         @Test
         fun `throw IllegalArgumentException when the activity to update has not an id`() {
             assertThrows<IllegalArgumentException> {
-                activityValidator.checkActivityIsValidForUpdate(
-                    activityUpdateNonexistentID,
-                    activityUpdateNonexistentID,
-                    user
-                )
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(
+                        activityUpdateNonexistentID,
+                        activityUpdateNonexistentID,
+                        user
+                    )
+                }
             }
         }
 
@@ -849,7 +904,9 @@ internal class ActivityValidatorTest {
                 .findById(approvedActivity.projectRole.project.id)
 
             assertThrows<IllegalArgumentException> {
-                activityValidator.checkActivityIsValidForDeletion(approvedActivity)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForDeletion(approvedActivity)
+                }
             }
         }
 
@@ -939,7 +996,9 @@ internal class ActivityValidatorTest {
                 .findById(1L)
 
             val exception = assertThrows<MaxTimePerRoleException> {
-                activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
+                }
             }
 
             if (isInMinutes) {
@@ -987,8 +1046,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(nonBlockedProject))
                 .whenever(projectRepository)
                 .findById(1L)
-
-            activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, user)
+            }
         }
 
         @Test
@@ -1018,7 +1078,9 @@ internal class ActivityValidatorTest {
                 .findById(1L)
 
             assertThrows<ActivityBeforeHiringDateException> {
-                activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, userHiredLastYear)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(newActivity, newActivity, userHiredLastYear)
+                }
             }
         }
 
@@ -1046,7 +1108,9 @@ internal class ActivityValidatorTest {
                 .findById(vacationProject.id)
 
             val exception = assertThrows<MaxTimePerActivityRoleException> {
-                activityValidator.checkActivityIsValidForUpdate(updatedActivity, currentActivity, user)
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForUpdate(updatedActivity, currentActivity, user)
+                }
             }
 
             assertEquals(projectRoleLimitedByActivity.maxTimeAllowedByActivity, exception.maxAllowedTime)
@@ -1075,7 +1139,9 @@ internal class ActivityValidatorTest {
                 .whenever(projectRepository)
                 .findById(vacationProject.id)
 
-            activityValidator.checkActivityIsValidForUpdate(updatedActivity, currentActivity, user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForUpdate(updatedActivity, currentActivity, user)
+            }
         }
 
         @Test
@@ -1127,8 +1193,9 @@ internal class ActivityValidatorTest {
                     listOf(projectRole.id),
                     user.id
                 )
-
-            activityValidator.checkActivityIsValidForUpdate(activity, currentActivity, user)
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForUpdate(activity, currentActivity, user)
+            }
         }
     }
 
@@ -1153,8 +1220,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(vacationProject))
                 .whenever(projectRepository)
                 .findById(vacationProject.id)
-
-            activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+            }
         }
 
         @Test
@@ -1175,8 +1243,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(vacationProject))
                 .whenever(projectRepository)
                 .findById(vacationProject.id)
-
-            activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+            }
         }
 
         @Test
@@ -1199,7 +1268,9 @@ internal class ActivityValidatorTest {
                 .findById(vacationProject.id)
 
             assertThrows<ActivityPeriodClosedException> {
-                activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+                }
             }
         }
 
@@ -1223,7 +1294,9 @@ internal class ActivityValidatorTest {
                 .findById(blockedProject.id)
 
             val exception = assertThrows<ProjectBlockedException> {
-                activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+                }
             }
 
             assertEquals(blockedProject.blockDate!!, exception.blockedDate)
@@ -1247,8 +1320,9 @@ internal class ActivityValidatorTest {
             doReturn(Optional.of(nonBlockedProject))
                 .whenever(projectRepository)
                 .findById(nonBlockedProject.id)
-
-            activityValidator.checkAllAccessActivityIsValidForDeletion(activity.toDomain())
+            ClockTestUtils.runWithFixed(mockNow) {
+                activityValidator.checkAllAccessActivityIsValidForDeletion(activity.toDomain())
+            }
         }
 
         @Test
@@ -1271,7 +1345,9 @@ internal class ActivityValidatorTest {
                 .findById(nonBlockedProject.id)
 
             assertThrows<IllegalArgumentException> {
-                activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+                ClockTestUtils.runWithFixed(mockNow) {
+                    activityValidator.checkActivityIsValidForDeletion(activity.toDomain())
+                }
             }
         }
     }
@@ -1279,7 +1355,7 @@ internal class ActivityValidatorTest {
     private companion object {
 
         private val user = createDomainUser()
-        private val today = LocalDate.now()
+        private val today = mockToday
         private val userHiredLastYear = createDomainUser(hiringDate = LocalDate.of(today.year - 1, Month.FEBRUARY, 22))
 
         private const val MINUTES_IN_HOUR = 60
@@ -1287,12 +1363,12 @@ internal class ActivityValidatorTest {
         private const val CLOSED_ID = 2L
         private const val WORKABLE_HOURS_BY_DAY = 8
 
-        private val yesterdayDateTime = LocalDateTime.of(LocalDate.now().minusDays(2), LocalTime.now())
+        private val yesterdayDateTime = LocalDateTime.of(today.minusDays(2), LocalTime.now())
         private val todayDateTime =
-            LocalDateTime.of(LocalDate.now().year, LocalDate.now().month, LocalDate.now().dayOfMonth, 0, 0)
+            LocalDateTime.of(today.year, today.month, today.dayOfMonth, 0, 0)
 
-        private val firstDayOfYear = LocalDateTime.of(LocalDate.now().year, Month.JANUARY, 1, 0, 0)
-        private val lastDayOfYear = LocalDateTime.of(LocalDate.now().year, Month.DECEMBER, 31, 23, 59)
+        private val firstDayOfYear = LocalDateTime.of(today.year, Month.JANUARY, 1, 0, 0)
+        private val lastDayOfYear = LocalDateTime.of(today.year, Month.DECEMBER, 31, 23, 59)
 
         private val nonBlockedProject = Project(
             1,
@@ -1324,7 +1400,7 @@ internal class ActivityValidatorTest {
                 "Vacaciones",
                 true,
                 true,
-                LocalDate.now().minusYears(5),
+                today.minusYears(5),
                 null,
                 null,
                 Organization(1, "Organization", 1, emptyList()),

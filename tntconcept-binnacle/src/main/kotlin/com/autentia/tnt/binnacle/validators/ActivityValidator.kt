@@ -11,6 +11,7 @@ import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import io.archimedesfw.commons.time.ClockUtils
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
@@ -121,7 +122,7 @@ internal class ActivityValidator(
         val activitiesCalendar = getActivitiesCalendar(currentActivity, activityToUpdate)
 
         var durationToReduce = 0
-        if(currentActivity.projectRole.id == activityToUpdate.projectRole.id) {
+        if (currentActivity.projectRole.id == activityToUpdate.projectRole.id) {
             durationToReduce = currentActivity.getDuration(activitiesCalendar)
         }
 
@@ -132,7 +133,7 @@ internal class ActivityValidator(
     private fun getActivitiesCalendar(currentActivity: Activity, activityToUpdate: Activity): Calendar {
         val isCurrentActivityNotDefined = currentActivity.getYearOfStart() < 0
         val activitiesTimeInterval =
-            if(isCurrentActivityNotDefined ) {
+            if (isCurrentActivityNotDefined) {
                 activityToUpdate.timeInterval
             } else {
                 val activities = listOf(currentActivity, activityToUpdate)
@@ -176,7 +177,7 @@ internal class ActivityValidator(
     }
 
     private fun isOpenPeriod(startDate: LocalDateTime): Boolean {
-        return startDate.year >= LocalDateTime.now().year - 1
+        return startDate.year >= ClockUtils.nowUtc().year - 1
     }
 
     @Transactional
