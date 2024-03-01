@@ -119,12 +119,10 @@
             <version>${mockito-kotlin.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>io.archimedesfw.commons</groupId>
             <artifactId>archimedes-commons-lang</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>
