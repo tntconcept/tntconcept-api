@@ -1400,7 +1400,7 @@ internal class ActivityValidatorTest {
                 "Vacaciones",
                 true,
                 true,
-                LocalDate.now().minusYears(5),
+                today.minusYears(5),
                 null,
                 null,
                 Organization(1, "Organization", 1, emptyList()),
