@@ -15,6 +15,8 @@ import com.autentia.tnt.binnacle.entities.dto.TimeInfoDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import io.archimedesfw.commons.time.ClockUtils
+import io.archimedesfw.commons.time.test.ClockTestUtils
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -81,7 +83,12 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             buildProjectRoleUserDTO(1L, 30, 120),
         )
 
-        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(null))
+        assertEquals(expectedProjectRoles,
+            ClockTestUtils.runWithFixed(
+                TODAY.atStartOfDay()
+            ) {
+                latestProjectRolesForAuthenticatedUserUseCase.get(null)
+            })
     }
 
     @Test
@@ -138,7 +145,13 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             buildProjectRoleUserDTO(1L, 90, 120),
         )
 
-        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(year))
+        assertEquals(expectedProjectRoles,
+            ClockTestUtils.runWithFixed(
+                TODAY.atStartOfDay()
+            ) {
+                latestProjectRolesForAuthenticatedUserUseCase.get(year)
+            }
+        )
     }
 
     @Test
@@ -186,7 +199,12 @@ internal class LatestProjectRolesForAuthenticatedUserUseCaseTest {
             buildProjectRoleUserDTO(3L, 0, 2, TimeUnit.NATURAL_DAYS),
         )
 
-        assertEquals(expectedProjectRoles, latestProjectRolesForAuthenticatedUserUseCase.get(year))
+        assertEquals(expectedProjectRoles,
+            ClockTestUtils.runWithFixed(
+                TODAY.atStartOfDay()
+            ) {
+                latestProjectRolesForAuthenticatedUserUseCase.get(year)
+            })
     }
 
     private companion object {
