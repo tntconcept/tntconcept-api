@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.security.ldap
 import io.micronaut.security.ldap.context.LdapSearchResult
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -17,10 +18,10 @@ class CustomLdapGroupProcessorIT {
 
     @Test
     fun `should get additional groups`() {
-        val ldapSearchResult = LdapSearchResult(BasicAttributes("uid", "11"), "dn");
+        val ldapSearchResult = LdapSearchResult(BasicAttributes("uid", "usuario.prueba2"), "dn");
 
         val groups = customLdapGroupProcessor.getAdditionalGroups(ldapSearchResult)
 
-        assertNotNull(groups)
+        assertThat(groups).contains("user")
     }
 }
