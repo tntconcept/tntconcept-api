@@ -14,6 +14,8 @@ internal class AppProperties {
     var files = FilesProperties()
     var mail = MailProperties()
     var binnacle = BinnacleProperties()
+    var security = SecurityProperties()
+
 
     @ConfigurationProperties("files")
     internal class FilesProperties {
@@ -103,5 +105,11 @@ internal class AppProperties {
             var enabled: Boolean = false
             var cronExpression: String? = null
         }
+    }
+
+    @ConfigurationProperties("security")
+    internal class SecurityProperties {
+        @NotBlank
+        var subjectNameSuffix: String = ""
     }
 }

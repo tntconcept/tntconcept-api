@@ -3,15 +3,32 @@ version: '3.8'
 services:
 
   mysql:
-   container_name: tntconcept-mysql
-   image: mysql:8.0.32
-   ports:
-    - "3306:3306"
-   command: [ "--log_bin_trust_function_creators=1","--sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION" ]
-   tmpfs:
-     - /var/lib/mysql
-   environment:
-     MYSQL_ROOT_PASSWORD: root
-     MYSQL_DATABASE: tntconcept
-     MYSQL_USER: tntconcept
-     MYSQL_PASSWORD: tntconcept
+    container_name: tntconcept-mysql
+    image: mysql:8.0.32
+    ports:
+      - "3306:3306"
+    command: [ "--log_bin_trust_function_creators=1","--sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION" ]
+    tmpfs:
+      - /var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tntconcept
+      MYSQL_USER: tntconcept
+      MYSQL_PASSWORD: tntconcept
+
+  openldap:
+    image: bitnami/openldap:2
+    ports:
+      - '1389:1389'
+      - '1636:1636'
+    environment:
+      - LDAP_ADMIN_USERNAME=admin
+      - LDAP_ADMIN_PASSWORD=theadminpassword
+      - LDAP_USERS=fjmpaez,user02
+      - LDAP_PASSWORDS=fjmpaez,password2
+
+    volumes:
+      - 'openldap_data:/bitnami/openldap'
+volumes:
+  openldap_data:
+    driver: local
