@@ -10,6 +10,7 @@ import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import io.archimedesfw.commons.time.test.ClockTestUtils
 
 
 import org.junit.jupiter.api.AfterEach
@@ -23,7 +24,10 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.Month
 import java.util.*
+
+private val mockNow = LocalDateTime.of(2023, Month.MARCH, 15, 0, 0, 0)
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ActivityMaxTimeByYearValidatorTest {
@@ -84,7 +88,8 @@ class ActivityMaxTimeByYearValidatorTest {
         arrayOf(2, 2, TimeUnit.NATURAL_DAYS),
         arrayOf(3, 1, TimeUnit.DAYS),
         arrayOf(3, 1, TimeUnit.NATURAL_DAYS),
-        )
+    )
+
     @ParameterizedTest
     @MethodSource("testInputsInDays")
     fun `do not throw exception when activity is valid for creation in days or natural_days`(
@@ -112,9 +117,15 @@ class ActivityMaxTimeByYearValidatorTest {
                 user.id
             )
 
-        activityValidator.checkActivityIsValidForCreation(newActivity, user)
+
+        ClockTestUtils.runWithFixed(
+            mockNow
+        ) {
+            activityValidator.checkActivityIsValidForCreation(newActivity, user)
+        }
 
     }
+
     private fun testInputsInDaysWithChangeOfYear() = arrayOf(
         arrayOf(0, 2, TimeUnit.DAYS),
         arrayOf(0, 2, TimeUnit.NATURAL_DAYS),
@@ -129,6 +140,7 @@ class ActivityMaxTimeByYearValidatorTest {
         arrayOf(2, 2, TimeUnit.DAYS),
         arrayOf(2, 2, TimeUnit.NATURAL_DAYS),
     )
+
     @ParameterizedTest
     @MethodSource("testInputsInDaysWithChangeOfYear")
     fun `do not throw exception when activity is valid for creation in days or natural days ending in different year`(
@@ -155,8 +167,12 @@ class ActivityMaxTimeByYearValidatorTest {
                 listOf(projectRoleLimitedByYear.id),
                 user.id
             )
+        ClockTestUtils.runWithFixed(
+            mockNow
+        ) {
+            activityValidator.checkActivityIsValidForCreation(newActivity, user)
+        }
 
-        activityValidator.checkActivityIsValidForCreation(newActivity, user)
     }
 
     private fun testInputsInMinutes() = arrayOf(
@@ -171,6 +187,7 @@ class ActivityMaxTimeByYearValidatorTest {
         arrayOf(2, 2),
         arrayOf(3, 1)
     )
+
     @ParameterizedTest
     @MethodSource("testInputsInMinutes")
     fun `do not throw exception when activity is valid for creation in minutes`(
@@ -195,8 +212,11 @@ class ActivityMaxTimeByYearValidatorTest {
                 listOf(projectRoleLimitedByYear.id),
                 user.id
             )
-
-        activityValidator.checkActivityIsValidForCreation(newActivity, user)
+        ClockTestUtils.runWithFixed(
+            mockNow
+        ) {
+            activityValidator.checkActivityIsValidForCreation(newActivity, user)
+        }
     }
 
     private fun createExistingActivity(
@@ -274,7 +294,7 @@ class ActivityMaxTimeByYearValidatorTest {
             "project",
             true,
             true,
-            LocalDate.now().minusYears(1),
+            mockNow.toLocalDate().minusYears(1),
             null,
             null,
             Organization(1, "Organization", 1, emptyList()),
