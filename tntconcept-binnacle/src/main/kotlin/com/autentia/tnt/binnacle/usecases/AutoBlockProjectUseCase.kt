@@ -24,7 +24,7 @@ class AutoBlockProjectUseCase internal constructor(
         return ClockUtils.nowUtc().toLocalDate().with(TemporalAdjusters.lastDayOfMonth());
     }
 
-    private fun isSecondWorkableDayOfMonth(): Boolean {
+    fun isSecondWorkableDayOfMonth(): Boolean {
         val today = ClockUtils.nowUtc().toLocalDate()
         val firstDayOfMonth = ClockUtils.nowUtc().toLocalDate().withDayOfMonth(1)
         val workableDays = calendarWorkableDaysUseCase.get(firstDayOfMonth, today)
