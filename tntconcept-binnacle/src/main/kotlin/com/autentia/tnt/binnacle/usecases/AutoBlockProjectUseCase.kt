@@ -1,8 +1,10 @@
 package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
+import io.archimedesfw.commons.time.ClockUtils
 import jakarta.inject.Singleton
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 
 @Singleton
 class AutoBlockProjectUseCase internal constructor(
@@ -11,24 +13,20 @@ class AutoBlockProjectUseCase internal constructor(
 ) {
 
 
-    fun dailyCheck(){
-        var projects = projectRepository.findAll()
-        for(p in projects){
-            println(p.id.toString() + "  " + p.blockDate +  "  " + p.open)
-        }
-        println("ey")
+    fun autoBlockProject(){
+
         val secondDay = isSecondWorkableDayOfMonth()
-        if(secondDay) projectRepository.blockOpenProjects(LocalDate.now().withDayOfMonth(1).minusDays(1))
-        projects = projectRepository.findAll()
-        for(p in projects){
-            println(p.id.toString() + "  " + p.blockDate +  "  " + p.open)
-        }
+        if(secondDay) projectRepository.blockOpenProjects(getLastDayOfPreviousMonth())
+
     }
 
-    fun isSecondWorkableDayOfMonth(): Boolean {
-        //val today = LocalDate.now()
-        val today = LocalDate.now().withDayOfMonth(4)
-        val firstDayOfMonth = LocalDate.now().withDayOfMonth(1)
+    private fun getLastDayOfPreviousMonth(): LocalDate {
+        return ClockUtils.nowUtc().toLocalDate().with(TemporalAdjusters.lastDayOfMonth());
+    }
+
+    private fun isSecondWorkableDayOfMonth(): Boolean {
+        val today = ClockUtils.nowUtc().toLocalDate()
+        val firstDayOfMonth = ClockUtils.nowUtc().toLocalDate().withDayOfMonth(1)
         val workableDays = calendarWorkableDaysUseCase.get(firstDayOfMonth, today)
 
         return workableDays == 2

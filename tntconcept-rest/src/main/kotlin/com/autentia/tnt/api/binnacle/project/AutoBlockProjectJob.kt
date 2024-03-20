@@ -9,6 +9,6 @@ import jakarta.inject.Singleton
 class AutoBlockProjectJob(val autoBlockProjectUseCase: AutoBlockProjectUseCase) {
     @Scheduled(cron = "\${app.binnacle.work-block.project.daily.check.cron-expression}")
     fun periodBlock(){
-        autoBlockProjectUseCase.dailyCheck()
+        autoBlockProjectUseCase.autoBlockProject()
     }
 }
