@@ -1,11 +1,15 @@
 package com.autentia.tnt.binnacle.usecases
 
-import com.autentia.tnt.binnacle.core.domain.CalendarFactory
-import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import io.archimedesfw.commons.time.test.ClockTestUtils
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 class AutoBlockProjectUseCaseTest() {
@@ -18,58 +22,69 @@ class AutoBlockProjectUseCaseTest() {
 
 
     internal val projectRepository = mock<ProjectRepository>()
-    internal val holidayRepository = mock<HolidayRepository>()
-    private val calendarFactory = CalendarFactory(holidayRepository)
+    private val calendarWorkableDaysUseCase = mock<CalendarWorkableDaysUseCase>()
+    private val autoBlockProjectUseCase = AutoBlockProjectUseCase(calendarWorkableDaysUseCase,projectRepository)
+    @Test
+    fun `should not call the project repository because mockNow1 is not the second workable day of the month`() {
 
-    private val calendarWorkableDaysUseCase = CalendarWorkableDaysUseCase(calendarFactory)
-    private val autoBlockProjectUseCase= AutoBlockProjectUseCase(calendarWorkableDaysUseCase,projectRepository)
-    @Test
-    fun `should return false because mockNow1 is not the second workable day of the month`() {
+        `when`(calendarWorkableDaysUseCase.get(mockNow1.withDayOfMonth(1).toLocalDate(),mockNow1.toLocalDate())).thenReturn(14)
+        ClockTestUtils.runWithFixed(mockNow1)
+        {
+            autoBlockProjectUseCase.blockOpenProjectsOnSecondDayOfMonth()
+        }
+        verifyNoInteractions(projectRepository)
 
-        var result:Boolean=ClockTestUtils.runWithFixed(mockNow1)
+    }
+
+    @Test
+    fun `should call projectRepository with date 2024-2-29 because mockNow2 is the second workable day of the month with a weekend between`() {
+        `when`(calendarWorkableDaysUseCase.get(mockNow2.withDayOfMonth(1).toLocalDate(),mockNow2.toLocalDate())).thenReturn(2)
+        ClockTestUtils.runWithFixed(mockNow2)
         {
-            autoBlockProjectUseCase.isSecondWorkableDayOfMonth()
+            autoBlockProjectUseCase.blockOpenProjectsOnSecondDayOfMonth()
         }
-        assert(result==false)
+
+        verify(projectRepository, times(1)).blockOpenProjects(anyOrNull())
+        verify(projectRepository).blockOpenProjects(LocalDate.of(2024,2,29))
     }
     @Test
-    fun `should return true because mockNow2 is the second workable day of the month but with a weekend between`() {
-        var result:Boolean=ClockTestUtils.runWithFixed(mockNow2)
+    fun `should call projectRepository with date 2024-4-30 because mockNow3 is the second workable day of the month with holidays between`() {
+        `when`(calendarWorkableDaysUseCase.get(mockNow3.withDayOfMonth(1).toLocalDate(),mockNow3.toLocalDate())).thenReturn(2)
+        ClockTestUtils.runWithFixed(mockNow3)
         {
-            autoBlockProjectUseCase.isSecondWorkableDayOfMonth()
+            autoBlockProjectUseCase.blockOpenProjectsOnSecondDayOfMonth()
         }
-        assert(result==true)
+        verify(projectRepository, times(1)).blockOpenProjects(anyOrNull())
+        verify(projectRepository).blockOpenProjects(LocalDate.of(2024,4,30))
+
     }
     @Test
-    fun `should return true because mockNow3 is the second workable day of the month but with holidays between`() {
-        var result:Boolean=ClockTestUtils.runWithFixed(mockNow3)
+    fun `should not call the project repository because mockNow4 is the second day of the month but not workable due to holidays`() {
+        `when`(calendarWorkableDaysUseCase.get(mockNow4.withDayOfMonth(1).toLocalDate(),mockNow4.toLocalDate())).thenReturn(0)
+        ClockTestUtils.runWithFixed(mockNow4)
         {
-            autoBlockProjectUseCase.isSecondWorkableDayOfMonth()
+            autoBlockProjectUseCase.blockOpenProjectsOnSecondDayOfMonth()
         }
-        assert(result==true)
+        verifyNoInteractions(projectRepository)
     }
     @Test
-    fun `should return false because mockNow4 is the second day of the month but not workable due to holidays`() {
-        var result:Boolean=ClockTestUtils.runWithFixed(mockNow4)
+    fun `should not call the project repository because mockNow5 is the first day of the month`() {
+        `when`(calendarWorkableDaysUseCase.get(mockNow5.withDayOfMonth(1).toLocalDate(), mockNow5.toLocalDate())).thenReturn(1)
+        ClockTestUtils.runWithFixed(mockNow5)
         {
-            autoBlockProjectUseCase.isSecondWorkableDayOfMonth()
+            autoBlockProjectUseCase.blockOpenProjectsOnSecondDayOfMonth()
         }
-        assert(result==false)
+        verifyNoInteractions(projectRepository)
+
     }
     @Test
-    fun `should return false because mockNow5 is the first day of the month`() {
-        var result:Boolean=ClockTestUtils.runWithFixed(mockNow5)
+    fun `should call projectRepository with date 2024-3-31 because mockNow6 is the second day of the month and also the second workable day`() {
+        `when`(calendarWorkableDaysUseCase.get(mockNow6.withDayOfMonth(1).toLocalDate(),mockNow6.toLocalDate())).thenReturn(2)
+        ClockTestUtils.runWithFixed(mockNow6)
         {
-            autoBlockProjectUseCase.isSecondWorkableDayOfMonth()
+            autoBlockProjectUseCase.blockOpenProjectsOnSecondDayOfMonth()
         }
-        assert(result==false)
-    }
-    @Test
-    fun `should return true because mockNow6 is the second day of the month and also the second workable day`() {
-        var result:Boolean=ClockTestUtils.runWithFixed(mockNow6)
-        {
-            autoBlockProjectUseCase.isSecondWorkableDayOfMonth()
-        }
-        assert(result==true)
+        verify(projectRepository, times(1)).blockOpenProjects(anyOrNull())
+        verify(projectRepository).blockOpenProjects(LocalDate.of(2024,3,31))
     }
 }
