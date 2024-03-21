@@ -13,7 +13,7 @@ class AutoBlockProjectUseCase internal constructor(
 ) {
 
 
-    fun autoBlockProject(){
+    fun blockOpenProjectsOnSecondDayOfMonth(){
 
         val secondDay = isSecondWorkableDayOfMonth()
         if(secondDay) projectRepository.blockOpenProjects(getLastDayOfPreviousMonth())

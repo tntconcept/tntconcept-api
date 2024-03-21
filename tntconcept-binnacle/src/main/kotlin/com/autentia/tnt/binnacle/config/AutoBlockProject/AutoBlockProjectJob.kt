@@ -1,4 +1,4 @@
-package com.autentia.tnt.binnacle.config
+package com.autentia.tnt.binnacle.config.AutoBlockProject
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.usecases.AutoBlockProjectUseCase
@@ -16,7 +16,7 @@ internal class AutoBlockProjectJob(
     init {
         if (appProperties.binnacle.autoBlockProject.cronExpression != null) {
             taskScheduler.schedule(appProperties.binnacle.autoBlockProject.cronExpression) {
-                autoBlockProjectUseCase.autoBlockProject()
+                autoBlockProjectUseCase.blockOpenProjectsOnSecondDayOfMonth()
             }
         }
     }
