@@ -75,21 +75,19 @@ internal class ProjectRepositoryIT {
         assert(result.isEmpty)
     }
     @Test
-    fun `should close the open projects`(){
+    fun `should block the open projects`(){
         val date = LocalDate.of(2024,3,20)
 
 
-        val resultClosePreOperation = projectRepository.findById(9)
+        val projectClosePreOperationDate = projectRepository.findById(9).get().blockDate
         projectRepository.blockOpenProjects(date)
-        val resultOpen = projectRepository.findById(8)
-        val resultClose = projectRepository.findById(9)
 
-        assert(resultOpen.isPresent)
-        assert(resultOpen.get().blockDate != null)
-        assert(resultOpen.get().blockDate == date)
+        val projectOpen = projectRepository.findById(8)
+        val projectClosed = projectRepository.findById(9)
 
-        assert(resultClose.isPresent)
-        assert(resultClose.get().blockDate == resultClosePreOperation.get().blockDate)
+        assert(projectOpen.get().blockDate == date)
+
+        assert(projectClosed.get().blockDate == projectClosePreOperationDate)
 
     }
     
