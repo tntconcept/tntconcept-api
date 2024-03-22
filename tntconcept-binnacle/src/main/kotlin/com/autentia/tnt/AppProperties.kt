@@ -53,7 +53,7 @@ internal class AppProperties {
         var autoBlockProject = AutoBlockProjectProperties()
         @ConfigurationProperties("auto-block-project")
         internal class AutoBlockProjectProperties {
-            var cronExpression: String? = "* * * * *"//"0 10 1-15 * 1-5"
+            var cronExpression: String? = ""
         }
 
         @ConfigurationProperties("work-summary")
