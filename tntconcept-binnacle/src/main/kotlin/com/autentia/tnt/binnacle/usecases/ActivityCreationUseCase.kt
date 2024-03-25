@@ -3,9 +3,13 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
+import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractingActivityRequestDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractingActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
@@ -45,6 +49,26 @@ class ActivityCreationUseCase internal constructor(
 
         val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole.toDomain(), user)
 
+        val savedActivityDomain = createActivitySub(locale, user, projectRole, activityToCreate)
+
+        return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
+    }
+
+    @Transactional
+    fun createActivity2(@Valid activityRequestBody: SubcontractingActivityRequestDTO, locale: Locale): SubcontractingActivityResponseDTO {
+        val user = userService.getAuthenticatedDomainUser()
+        val projectRole = this.getProjectRole(activityRequestBody.projectRoleId)
+
+        val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, null, projectRole.toDomain(), user)
+
+        val savedActivityDomain = createActivitySub(locale, user, projectRole, activityToCreate)
+
+        return activityResponseConverter.toSubcontractingActivityResponseDTO(savedActivityDomain)
+    }
+    private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)
+            ?: throw ProjectRoleNotFoundException(projectRoleId)
+
+    private fun createActivitySub(locale: Locale, user : User, projectRole : ProjectRole, activityToCreate : com.autentia.tnt.binnacle.core.domain.Activity) : com.autentia.tnt.binnacle.core.domain.Activity{
         activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
 
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
@@ -58,10 +82,7 @@ class ActivityCreationUseCase internal constructor(
         if (savedActivityDomain.canBeApproved()) {
             pendingApproveActivityMailUseCase.send(savedActivityDomain, user.username, locale)
         }
-
-        return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
+        return savedActivityDomain
     }
 
-    private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)
-            ?: throw ProjectRoleNotFoundException(projectRoleId)
 }

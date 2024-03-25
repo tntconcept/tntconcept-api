@@ -195,6 +195,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
+  /api/activity/subcontracting:
+    post:
+      tags:
+      - activity
+      summary: Creates a new subcontracting activity
+      operationId: postSubcontracting$tntconcept_rest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcontractingActivityRequest'
+        required: true
+      responses:
+        "200":
+          description: postSubcontracting$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractingActivityResponse'
   /api/activity/summary:
     get:
       tags:
@@ -1542,6 +1561,74 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectRoleUserResponse'
+    SubcontractingActivityRequest:
+      required:
+      - billable
+      - description
+      - duration
+      - hasEvidences
+      - interval
+      - projectRoleId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        interval:
+          $ref: '#/components/schemas/TimeIntervalRequest'
+        duration:
+          type: integer
+          format: int32
+        description:
+          maxLength: 2048
+          type: string
+        billable:
+          type: boolean
+        projectRoleId:
+          type: integer
+          format: int64
+        hasEvidences:
+          type: boolean
+        evidence:
+          pattern: "^data:[^,]+;base64,.+$"
+          type: string
+          nullable: true
+    SubcontractingActivityResponse:
+      required:
+      - approval
+      - billable
+      - description
+      - duration
+      - id
+      - interval
+      - projectRoleId
+      - userId
+      type: object
+      properties:
+        billable:
+          type: boolean
+        duration:
+          type: integer
+          format: int32
+        description:
+          type: string
+        hasEvidences:
+          type: boolean
+          nullable: true
+        id:
+          type: integer
+          format: int64
+        projectRoleId:
+          type: integer
+          format: int64
+        interval:
+          $ref: '#/components/schemas/IntervalResponse'
+        userId:
+          type: integer
+          format: int64
+        approval:
+          $ref: '#/components/schemas/Approval'
     TimeInfoResponse:
       required:
       - maxTimeAllowed

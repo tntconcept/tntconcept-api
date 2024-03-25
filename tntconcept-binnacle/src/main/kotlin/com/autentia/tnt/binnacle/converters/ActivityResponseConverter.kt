@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.core.domain.Approval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractingActivityResponseDTO
 import jakarta.inject.Singleton
 
 @Singleton
@@ -14,6 +15,23 @@ class ActivityResponseConverter(
 
     fun toActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = ActivityResponseDTO(
             billable = activity.billable,
+            description = activity.description,
+            hasEvidences = activity.hasEvidences,
+            id = activity.id!!,
+            projectRoleId = activity.projectRole.id,
+            interval = activityIntervalResponseConverter.toIntervalResponseDTO(activity),
+            userId = activity.userId,
+            approval = ApprovalDTO(
+                    state = activity.approvalState,
+                    canBeApproved = activity.canBeApproved(),
+                    approvedByUserId = activity.approvedByUserId,
+                    approvalDate = activity.approvalDate
+            )
+    )
+
+    fun toSubcontractingActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = SubcontractingActivityResponseDTO(
+            billable = activity.billable,
+            duration = activity.duration,
             description = activity.description,
             hasEvidences = activity.hasEvidences,
             id = activity.id!!,

@@ -52,6 +52,13 @@ internal class ActivityController(
         @Body @Valid activityRequest: ActivityRequest, @Parameter(hidden = true) locale: Locale,
     ): ActivityResponse = ActivityResponse.from(activityCreationUseCase.createActivity(activityRequest.toDto(), locale))
 
+    @Post("/subcontracting")
+    @Operation(summary = "Creates a new subcontracting activity")
+    internal fun postSubcontracting(
+            @Body @Valid subcontractingActivityRequest: SubcontractingActivityRequest, @Parameter(hidden = true) locale: Locale,
+    ): SubcontractingActivityResponse = SubcontractingActivityResponse.from(activityCreationUseCase.createActivity2(subcontractingActivityRequest.toDto(), locale))
+
+
     @Put
     @Operation(summary = "Updates an existing activity")
     internal fun put(

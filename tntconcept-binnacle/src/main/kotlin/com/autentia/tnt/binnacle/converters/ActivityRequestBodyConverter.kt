@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractingActivityRequestDTO
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
 import java.util.*
@@ -34,6 +35,27 @@ class ActivityRequestBodyConverter() {
             projectRole.getApprovalState(),
             activityRequestBody.evidence?.toDomain()
         )
+
+    fun toActivity(
+            subcontractingActivityRequestBody: SubcontractingActivityRequestDTO,
+            insertDate: LocalDateTime?,
+            projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole,
+            user: com.autentia.tnt.binnacle.core.domain.User,
+    ) =
+            com.autentia.tnt.binnacle.core.domain.Activity.of(
+                    subcontractingActivityRequestBody.id,
+                    subcontractingActivityRequestBody.interval.toDomain(),
+                    subcontractingActivityRequestBody.duration,
+                    subcontractingActivityRequestBody.description,
+                    projectRole,
+                    user.id,
+                    subcontractingActivityRequestBody.billable,
+                    user.departmentId,
+                    insertDate,
+                    subcontractingActivityRequestBody.hasEvidences,
+                    projectRole.getApprovalState(),
+                    subcontractingActivityRequestBody.evidence?.toDomain()
+            )
 
     fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =
         ActivityRequestBody(
@@ -68,6 +90,7 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.hasEvidences,
             getApprovalState(projectRole)
         )
+
 
     private fun getApprovalState(projectRole: ProjectRole) =
         if (projectRole.isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA
