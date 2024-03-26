@@ -4,7 +4,7 @@ package com.autentia.tnt.binnacle.entities.dto
 import io.micronaut.core.annotation.Introspected
 import java.time.LocalDateTime
 @Introspected
-data class SubcontractingActivityRequestDTO (
+data class SubcontractedActivityRequestDTO (
         val id: Long? = null,
         val interval: TimeIntervalRequestDTO,
         val duration: Int,

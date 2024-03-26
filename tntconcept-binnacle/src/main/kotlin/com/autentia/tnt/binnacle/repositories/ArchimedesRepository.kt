@@ -20,6 +20,7 @@ internal class DefaultArchimedesRepository(private val entityManager: EntityMana
         WHERE archss.id = assrr.subject_id AND assrr.role_name = ?
     """.trimIndent()
 
+
     override fun findAllPrincipalNameByRoleName(roleName: String): List<String> {
         val query = entityManager.createNativeQuery(FIND_ALL_PRINCIPAL_NAME_BY_ROLE_NAME_QUERY)
         query.setParameter(1, roleName)

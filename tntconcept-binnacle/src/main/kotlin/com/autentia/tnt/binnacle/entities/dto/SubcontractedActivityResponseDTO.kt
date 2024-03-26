@@ -1,6 +1,6 @@
 package com.autentia.tnt.binnacle.entities.dto
 
-data class SubcontractingActivityResponseDTO (
+data class SubcontractedActivityResponseDTO (
     val billable: Boolean,
     val duration: Int,
     val description: String,

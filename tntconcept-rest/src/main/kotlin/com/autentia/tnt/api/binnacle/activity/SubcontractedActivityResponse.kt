@@ -1,9 +1,8 @@
 package com.autentia.tnt.api.binnacle.activity
 
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.SubcontractingActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 
-data class SubcontractingActivityResponse (
+data class SubcontractedActivityResponse (
         val billable: Boolean,
         val duration: Int,
         val description: String,
@@ -15,8 +14,8 @@ data class SubcontractingActivityResponse (
         val approval: Approval
 ) {
     companion object {
-        fun from(subcontractingActivityResponseDTO: SubcontractingActivityResponseDTO) =
-                SubcontractingActivityResponse(
+        fun from(subcontractingActivityResponseDTO: SubcontractedActivityResponseDTO) =
+                SubcontractedActivityResponse(
                         subcontractingActivityResponseDTO.billable,
                         subcontractingActivityResponseDTO.duration,
                         subcontractingActivityResponseDTO.description,

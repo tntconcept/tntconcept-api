@@ -2,17 +2,16 @@ package com.autentia.tnt.binnacle.usecases
 
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.*
-import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
-import com.autentia.tnt.binnacle.validators.ActivityValidator
+import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import io.micronaut.validation.Validated
 import jakarta.inject.Singleton
 import java.util.*
@@ -21,30 +20,29 @@ import javax.validation.Valid
 
 @Singleton
 @Validated
-class ActivityCreationUseCase internal constructor(
+class SubcontractedActivityCreationUseCase internal constructor (
         private val projectRoleRepository: ProjectRoleRepository,
         private val activityRepository: ActivityRepository,
         private val activityEvidenceService: ActivityEvidenceService,
-        private val activityCalendarService: ActivityCalendarService,
         private val userService: UserService,
-        private val activityValidator: ActivityValidator,
+        private val subcontractedActivityValidator: SubcontractedActivityValidator,
         private val activityRequestBodyConverter: ActivityRequestBodyConverter,
         private val activityResponseConverter: ActivityResponseConverter,
         private val pendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase,
+        private val userRepository: UserRepository,
 ) {
-
     @Transactional
-    fun createActivity(@Valid activityRequestBody: ActivityRequestDTO, locale: Locale): ActivityResponseDTO {
+    fun createSubcontractedActivity(@Valid subcontractedActivityRequestBody: SubcontractedActivityRequestDTO, locale: Locale): SubcontractedActivityResponseDTO {
         val user = userService.getAuthenticatedDomainUser()
-        val projectRole = this.getProjectRole(activityRequestBody.projectRoleId)
+        val userSubcontracted = userRepository.find(5000)?.toDomain()
+        if (userSubcontracted == null){
+            throw IllegalStateException("User null")
+        }
+        val projectRole = this.getProjectRole(subcontractedActivityRequestBody.projectRoleId)
 
-        val duration = activityCalendarService.getDurationByCountingWorkingDays(
-                ActivityTimeInterval.of(activityRequestBody.interval.toDomain(), projectRole.timeUnit)
-        )
+        val activityToCreate = activityRequestBodyConverter.toActivity(subcontractedActivityRequestBody, null, projectRole.toDomain(), userSubcontracted)
 
-        val activityToCreate = activityRequestBodyConverter.toActivity(activityRequestBody, duration, null, projectRole.toDomain(), user)
-
-        activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
+        subcontractedActivityValidator.checkActivityIsValidForCreation(activityToCreate, user)
 
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
 
@@ -58,7 +56,7 @@ class ActivityCreationUseCase internal constructor(
             pendingApproveActivityMailUseCase.send(savedActivityDomain, user.username, locale)
         }
 
-        return activityResponseConverter.toActivityResponseDTO(savedActivityDomain)
+        return activityResponseConverter.toSubcontractingActivityResponseDTO(savedActivityDomain)
     }
 
     private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)

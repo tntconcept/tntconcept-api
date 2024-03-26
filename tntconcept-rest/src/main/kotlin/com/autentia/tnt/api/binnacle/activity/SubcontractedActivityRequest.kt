@@ -1,7 +1,7 @@
 package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
-import com.autentia.tnt.binnacle.entities.dto.SubcontractingActivityRequestDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.TimeIntervalRequestDTO
 import io.micronaut.core.annotation.Introspected
 import javax.annotation.Nullable
@@ -9,7 +9,7 @@ import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
 
 @Introspected
-data class SubcontractingActivityRequest (
+data class SubcontractedActivityRequest (
     val id: Long? = null,
     val interval: TimeIntervalRequest,
     val duration: Int,
@@ -24,7 +24,7 @@ data class SubcontractingActivityRequest (
     @field:Nullable
     val evidence: String? = null,
     ) {
-        fun toDto(): SubcontractingActivityRequestDTO = SubcontractingActivityRequestDTO(
+        fun toDto(): SubcontractedActivityRequestDTO = SubcontractedActivityRequestDTO(
                 id,
                 TimeIntervalRequestDTO(interval.start, interval.end),
                 duration,

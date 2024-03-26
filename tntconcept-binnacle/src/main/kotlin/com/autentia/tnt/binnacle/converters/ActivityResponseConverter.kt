@@ -5,7 +5,7 @@ import com.autentia.tnt.binnacle.core.domain.Approval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
-import com.autentia.tnt.binnacle.entities.dto.SubcontractingActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import jakarta.inject.Singleton
 
 @Singleton
@@ -29,7 +29,7 @@ class ActivityResponseConverter(
             )
     )
 
-    fun toSubcontractingActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = SubcontractingActivityResponseDTO(
+    fun toSubcontractingActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = SubcontractedActivityResponseDTO(
             billable = activity.billable,
             duration = activity.duration,
             description = activity.description,

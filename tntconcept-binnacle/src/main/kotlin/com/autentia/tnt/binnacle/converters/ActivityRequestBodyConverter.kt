@@ -7,7 +7,7 @@ import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
-import com.autentia.tnt.binnacle.entities.dto.SubcontractingActivityRequestDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
 import java.util.*
@@ -37,7 +37,7 @@ class ActivityRequestBodyConverter() {
         )
 
     fun toActivity(
-            subcontractingActivityRequestBody: SubcontractingActivityRequestDTO,
+            subcontractingActivityRequestBody: SubcontractedActivityRequestDTO,
             insertDate: LocalDateTime?,
             projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole,
             user: com.autentia.tnt.binnacle.core.domain.User,
