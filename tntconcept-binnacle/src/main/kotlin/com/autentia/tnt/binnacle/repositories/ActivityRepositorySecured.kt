@@ -151,6 +151,9 @@ internal class ActivityRepositorySecured(
 
         internalActivityRepository.deleteById(id)
     }
+    override fun deleteByIdWithoutSecurity(id: Long){
+        internalActivityRepository.deleteById(id)
+    }
 
     private fun addUserFilterIfNecessary(activitySpecification: Specification<Activity>): Specification<Activity> {
         val authentication = securityService.checkAuthentication()

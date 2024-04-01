@@ -195,25 +195,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActivityResponse'
-  /api/activity/subcontracting:
-    post:
-      tags:
-      - activity
-      summary: Creates a new subcontracting activity
-      operationId: postSubcontracting$tntconcept_rest
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SubcontractingActivityRequest'
-        required: true
-      responses:
-        "200":
-          description: postSubcontracting$tntconcept_rest 200 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SubcontractingActivityResponse'
   /api/activity/summary:
     get:
       tags:
@@ -716,6 +697,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponse'
+  /api/subcontracted_activity:
+    put:
+      tags:
+      - activity
+      summary: Updates an existing subcontracted activity
+      operationId: put$tntconcept_rest_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcontractedActivityRequest'
+        required: true
+      responses:
+        "200":
+          description: put$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractedActivityResponse'
+    post:
+      tags:
+      - activity
+      summary: Creates a new subcontracted activity
+      operationId: post$tntconcept_rest_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcontractedActivityRequest'
+        required: true
+      responses:
+        "200":
+          description: post$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractedActivityResponse'
+  /api/subcontracted_activity/{id}:
+    delete:
+      tags:
+      - activity
+      summary: Deletes a subcontracted activity by its id.
+      operationId: delete$tntconcept_rest_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: delete$tntconcept_rest 200 response
   /api/time-summary:
     get:
       summary: Retrieves working time from a given date
@@ -1561,7 +1595,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectRoleUserResponse'
-    SubcontractingActivityRequest:
+    SubcontractedActivityRequest:
       required:
       - billable
       - description
@@ -1594,7 +1628,7 @@ components:
           pattern: "^data:[^,]+;base64,.+$"
           type: string
           nullable: true
-    SubcontractingActivityResponse:
+    SubcontractedActivityResponse:
       required:
       - approval
       - billable

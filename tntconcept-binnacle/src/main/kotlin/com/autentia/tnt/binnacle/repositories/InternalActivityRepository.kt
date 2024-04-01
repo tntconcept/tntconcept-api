@@ -92,4 +92,8 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         activityDao.deleteById(id)
     }
 
+    override fun deleteByIdWithoutSecurity(id: Long) {
+        deleteById(id)
+    }
+
 }

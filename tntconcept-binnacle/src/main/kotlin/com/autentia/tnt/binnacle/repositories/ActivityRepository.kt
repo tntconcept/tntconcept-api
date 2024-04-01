@@ -38,4 +38,5 @@ internal interface ActivityRepository {
     fun update(activity: Activity): Activity
 
     fun deleteById(id: Long)
+    fun deleteByIdWithoutSecurity(id: Long)
 }

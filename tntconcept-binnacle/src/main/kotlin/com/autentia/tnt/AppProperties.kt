@@ -50,6 +50,12 @@ internal class AppProperties {
 
         var emptyActivitiesReminder = EmptyActivitiesReminderProperties()
 
+        var subcontractedUser = SubcontractedUser()
+        @ConfigurationProperties("subcontracted-user")
+        internal class SubcontractedUser {
+            var username: String? = null
+        }
+
         @ConfigurationProperties("work-summary")
         internal class WorkSummaryProperties {
             var persistenceEnabled: Boolean = false

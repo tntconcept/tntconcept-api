@@ -1,23 +1,18 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.domain.ActivityTimeInterval
-import com.autentia.tnt.binnacle.core.domain.ProjectRole
-import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
-import com.autentia.tnt.binnacle.services.UserService
-import com.autentia.tnt.binnacle.validators.ActivityValidator
 import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import io.micronaut.security.utils.SecurityService
@@ -28,21 +23,24 @@ import javax.transaction.Transactional
 
 @Singleton
 class SubcontractedActivityUpdateUseCase internal constructor(
-        private val activityRepository: ActivityRepository,
-        private val projectRoleRepository: ProjectRoleRepository,
-        private val userService: UserService,
-        private val subcontractedActivityValidator: SubcontractedActivityValidator,
-        private val activityRequestBodyConverter: ActivityRequestBodyConverter,
-        private val activityResponseConverter: ActivityResponseConverter,
-        private val activityEvidenceService: ActivityEvidenceService,
-        private val securityService: SecurityService,
-        private val sendPendingApproveActivityMailUseCase: SendPendingApproveActivityMailUseCase
+    private val activityRepository: ActivityRepository,
+    private val projectRoleRepository: ProjectRoleRepository,
+    private val userRepository: UserRepository,
+    private val subcontractedActivityValidator: SubcontractedActivityValidator,
+    private val activityRequestBodyConverter: ActivityRequestBodyConverter,
+    private val activityResponseConverter: ActivityResponseConverter,
+    private val activityEvidenceService: ActivityEvidenceService,
+    private val securityService: SecurityService,
+    private val appProperties: AppProperties
 ){
     @Transactional
     @ReadOnly
     fun updateSubcontractedActivity(subcontractedActivityRequest: SubcontractedActivityRequestDTO, locale: Locale): SubcontractedActivityResponseDTO {
         securityService.checkSubcontractedActivityManagerRole()
-        val user = userService.getAuthenticatedDomainUser()
+        require(appProperties.binnacle.subcontractedUser.username != null){"A subcontracted user must be defined"}
+        val userSubcontracted = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username.toString())?.toDomain()//desde un property
+
+        require(userSubcontracted != null){"Subcontracted user must exist"}
         val projectRoleEntity = this.getProjectRoleEntity(subcontractedActivityRequest.projectRoleId)
         val projectRole = projectRoleEntity.toDomain()
         val currentActivity = this.getActivity(subcontractedActivityRequest.id!!)
@@ -52,10 +50,10 @@ class SubcontractedActivityUpdateUseCase internal constructor(
                 subcontractedActivityRequest,
                 currentActivity.insertDate,
                 projectRole,
-                user
+                userSubcontracted
         )
 
-        subcontractedActivityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, user)
+        subcontractedActivityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity, userSubcontracted)
 
         val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
 
@@ -76,29 +74,9 @@ class SubcontractedActivityUpdateUseCase internal constructor(
             )
         }
 
-//        sendActivityPendingOfApprovalEmailIfNeeded(projectRole, currentActivity, updatedActivity, user, locale)
-
-        return activityResponseConverter.toSubcontractingActivityResponseDTO(updatedActivity)
+        return activityResponseConverter.toSubcontractedActivityResponseDTO(updatedActivity)
     }
 
-//    private fun sendActivityPendingOfApprovalEmailIfNeeded(
-//            projectRole: ProjectRole,
-//            originalActivity: com.autentia.tnt.binnacle.core.domain.Activity,
-//            updatedActivity: com.autentia.tnt.binnacle.core.domain.Activity,
-//            user: User,
-//            locale: Locale
-//    ) {
-//        val attachedEvidenceHasChanged = updatedActivity.evidence !== null && (originalActivity.evidence === null || originalActivity.evidence != updatedActivity.evidence)
-//        val projectRoleHasChanged = originalActivity.projectRole != updatedActivity.projectRole
-//
-//        val projectRequiresEvidenceAndActivityCanBeApproved =
-//                projectRole.requireEvidence() && updatedActivity.canBeApproved() && (attachedEvidenceHasChanged || projectRoleHasChanged)
-//        val projectDoesNotRequireEvidenceAndActivityCanBeApproved = !projectRole.requireEvidence() && updatedActivity.canBeApproved() && projectRoleHasChanged
-//
-//        if (projectRequiresEvidenceAndActivityCanBeApproved || projectDoesNotRequireEvidenceAndActivityCanBeApproved){
-//            sendPendingApproveActivityMailUseCase.send(updatedActivity, user.username, locale)
-//        }
-//    }
 
     private fun getProjectRoleEntity(projectRoleId: Long) =
             projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)

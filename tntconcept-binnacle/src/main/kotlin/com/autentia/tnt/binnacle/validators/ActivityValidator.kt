@@ -256,9 +256,11 @@ internal class ActivityValidator(
         val project = projectRepository.findById(activity.projectRole.project.id)
             .orElseThrow { ProjectNotFoundException(activity.projectRole.project.id) }
 
+
         ensureActivityCanBeDeleted(canAccessAllActivities, activity)
 
         when {
+            !isProjectOpen(project) -> throw ProjectClosedException()
             isProjectBlocked(project, activity) -> throw ProjectBlockedException(project.blockDate!!)
             !isOpenPeriod(activity.getStart()) -> throw ActivityPeriodClosedException()
         }
