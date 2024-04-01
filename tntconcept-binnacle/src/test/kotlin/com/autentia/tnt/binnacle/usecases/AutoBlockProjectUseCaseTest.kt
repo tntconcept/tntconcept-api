@@ -19,7 +19,7 @@ class AutoBlockProjectUseCaseTest() {
     private val autoBlockProjectUseCase = AutoBlockProjectUseCase(calendarWorkableDaysUseCase,projectRepository)
     @Test
     fun `should not block open projects because it is not the second workable day of the month`() {
-        val mockNow = LocalDateTime.of(2024,3,20,0,0)//normal day
+        val mockNow = LocalDateTime.of(2024,3,20,9,0)//normal day UTC
         `when`(calendarWorkableDaysUseCase.get(mockNow.withDayOfMonth(1).toLocalDate(),mockNow.toLocalDate())).thenReturn(14)
         ClockTestUtils.runWithFixed(mockNow)
         {
@@ -31,7 +31,7 @@ class AutoBlockProjectUseCaseTest() {
 
     @Test
     fun `should not block open projects because it is the first day of the month`() {
-        val mockNow = LocalDateTime.of(2024,4,1,0,0)//normal first day of month
+        val mockNow = LocalDateTime.of(2024,4,1,8,0)//normal first day of month UTC
         `when`(calendarWorkableDaysUseCase.get(mockNow.withDayOfMonth(1).toLocalDate(), mockNow.toLocalDate())).thenReturn(1)
         ClockTestUtils.runWithFixed(mockNow)
         {
@@ -41,8 +41,8 @@ class AutoBlockProjectUseCaseTest() {
 
     }
     @Test
-    fun `should block open projects with date 2024-3-31 because it is the second day of the month and also the second workable day`() {
-        val mockNow = LocalDateTime.of(2024,4,2,0,0)//normal second workable day of month
+    fun `should block open projects with date 2024-4-2 because it is the second day of the month and also the second workable day`() {
+        val mockNow = LocalDateTime.of(2024,4,2,8,0)//normal second workable day of month UTC
         `when`(calendarWorkableDaysUseCase.get(mockNow.withDayOfMonth(1).toLocalDate(),mockNow.toLocalDate())).thenReturn(2)
         ClockTestUtils.runWithFixed(mockNow)
         {
@@ -50,5 +50,16 @@ class AutoBlockProjectUseCaseTest() {
         }
         verify(projectRepository, times(1)).blockOpenProjects(anyOrNull())
         verify(projectRepository).blockOpenProjects(LocalDate.of(2024,3,31))
+    }
+
+    @Test
+    fun `should not block open projects with date 2024-4-2 because it is the second day of the month and also the second workable day but not 10 am CET`() {
+        val mockNow = LocalDateTime.of(2024,4,2,10,0)//normal second workable day of month UTC
+        `when`(calendarWorkableDaysUseCase.get(mockNow.withDayOfMonth(1).toLocalDate(),mockNow.toLocalDate())).thenReturn(2)
+        ClockTestUtils.runWithFixed(mockNow)
+        {
+            autoBlockProjectUseCase.blockOpenProjectsOnSecondDayOfMonth()
+        }
+        verifyNoInteractions(projectRepository)
     }
 }

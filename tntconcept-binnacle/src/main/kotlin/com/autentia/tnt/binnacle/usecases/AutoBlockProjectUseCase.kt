@@ -4,7 +4,11 @@ import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import io.archimedesfw.commons.time.ClockUtils
 import jakarta.inject.Singleton
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.TemporalAdjusters
+
 
 @Singleton
 class AutoBlockProjectUseCase internal constructor(
@@ -14,6 +18,10 @@ class AutoBlockProjectUseCase internal constructor(
 
 
     fun blockOpenProjectsOnSecondDayOfMonth(){
+        val utcTime = ZonedDateTime.of(ClockUtils.nowUtc(), ZoneId.of("UTC"))
+        val cetTime = ZonedDateTime.ofInstant(utcTime.toInstant(), ZoneId.of("CET")).hour
+
+        if(cetTime != 10) return
 
         val secondDay = isSecondWorkableDayOfMonth()
         if(secondDay) projectRepository.blockOpenProjects(getLastDayOfPreviousMonth())
