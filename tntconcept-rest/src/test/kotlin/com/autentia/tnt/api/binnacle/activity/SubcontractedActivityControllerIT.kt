@@ -10,7 +10,9 @@ import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
-import com.autentia.tnt.binnacle.usecases.*
+import com.autentia.tnt.binnacle.usecases.SubcontractedActivityCreationUseCase
+import com.autentia.tnt.binnacle.usecases.SubcontractedActivityDeletionUseCase
+import com.autentia.tnt.binnacle.usecases.SubcontractedActivityUpdateUseCase
 import io.micronaut.http.HttpHeaders
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -44,13 +46,13 @@ internal class SubcontractedActivityControllerIT {
 
     private lateinit var client: BlockingHttpClient
 
-    @get:MockBean(ActivityCreationUseCase::class)
+    @get:MockBean(SubcontractedActivityCreationUseCase::class)
     internal val subcontractedActivityCreationUseCase = mock<SubcontractedActivityCreationUseCase>()
 
-    @get:MockBean(ActivityUpdateUseCase::class)
+    @get:MockBean(SubcontractedActivityUpdateUseCase::class)
     internal val subcontractedActivityUpdateUseCase = mock<SubcontractedActivityUpdateUseCase>()
 
-    @get:MockBean(ActivityDeletionUseCase::class)
+    @get:MockBean(SubcontractedActivityDeletionUseCase::class)
     internal val subcontractedActivityDeletionUseCase = mock<SubcontractedActivityDeletionUseCase>()
 
     @BeforeAll
@@ -260,7 +262,7 @@ internal class SubcontractedActivityControllerIT {
                     "start": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
                     "end": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
                 },        
-                "duration": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration}"        
+                "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},        
                 "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable},
                 "projectRoleId": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
@@ -274,7 +276,7 @@ internal class SubcontractedActivityControllerIT {
                     "start": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
                     "end": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
                 },      
-                "duration": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration}"
+                "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},
                 "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable},
                 "projectRoleId": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
@@ -289,7 +291,7 @@ internal class SubcontractedActivityControllerIT {
                     "start": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
                     "end": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
                 },                
-                "duration": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration}"
+                "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},
                 "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable},
                 "projectRoleId": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
@@ -320,7 +322,7 @@ internal class SubcontractedActivityControllerIT {
                     "start": "${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.interval.start.toJson()}",
                     "end": "${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.interval.end.toJson()}"
                 },                                    
-                "duration": "${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.duration}"
+                "duration": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.duration},
                 "description": "Updated activity description",
                 "billable": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.billable},
                 "projectRoleId": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.projectRoleId},
