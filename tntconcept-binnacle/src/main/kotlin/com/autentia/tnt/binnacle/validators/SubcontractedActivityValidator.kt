@@ -42,50 +42,10 @@ internal class SubcontractedActivityValidator(
         }
     }
 
-
     private fun isEvidenceInputIncoherent(activity: Activity): Boolean {
         return activity.hasEvidences && activity.evidence == null
                 || !activity.hasEvidences && activity.evidence != null
     }
-
-
-
-
-    private fun getTotalRegisteredDurationForThisRoleAfterSave(
-            currentActivity: Activity,
-            activityToUpdate: Activity,
-            totalRegisteredDurationForThisRole: Int,
-    ): Int {
-        val activitiesCalendar = getActivitiesCalendar(currentActivity, activityToUpdate)
-
-        var durationToReduce = 0
-        if (currentActivity.projectRole.id == activityToUpdate.projectRole.id) {
-            durationToReduce = currentActivity.getDuration(activitiesCalendar)
-        }
-
-        val activityToUpdateDuration = activityToUpdate.getDuration(activitiesCalendar)
-        return totalRegisteredDurationForThisRole - durationToReduce + activityToUpdateDuration
-    }
-
-    private fun getActivitiesCalendar(currentActivity: Activity, activityToUpdate: Activity): Calendar {
-        val isCurrentActivityNotDefined = currentActivity.getYearOfStart() < 0
-        val activitiesTimeInterval =
-                if (isCurrentActivityNotDefined) {
-                    activityToUpdate.timeInterval
-                } else {
-                    val activities = listOf(currentActivity, activityToUpdate)
-                    TimeInterval.of(
-                            activities.minOf { it.getStart() },
-                            activities.maxOf { it.getEnd() }
-                    )
-                }
-
-        return activityCalendarService.createCalendar(activitiesTimeInterval.getDateInterval())
-    }
-
-
-
-
 
 
     private fun isOpenPeriod(startDate: LocalDateTime): Boolean {
@@ -127,8 +87,6 @@ internal class SubcontractedActivityValidator(
         }
     }
 
-
-
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForDeletion(activity: Activity) {
@@ -141,8 +99,6 @@ internal class SubcontractedActivityValidator(
             !isOpenPeriod(activity.getStart()) -> throw ActivityPeriodClosedException()
         }
     }
-
-
 
     private fun isProjectOpen(project: Project): Boolean {
         return project.open

@@ -59,7 +59,6 @@ internal class SubcontractedActivityControllerIT {
     }
 
 
-
     @Test
     fun `post a new activity without evidence`() {
         doReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO).whenever(subcontractedActivityCreationUseCase).createSubcontractedActivity(any(), eq(Locale.ENGLISH))
