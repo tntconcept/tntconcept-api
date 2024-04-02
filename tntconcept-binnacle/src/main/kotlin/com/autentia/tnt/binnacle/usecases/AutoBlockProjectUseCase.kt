@@ -16,7 +16,6 @@ class AutoBlockProjectUseCase internal constructor(
     internal val projectRepository: ProjectRepository
 ) {
 
-
     fun blockOpenProjectsOnSecondDayOfMonth(){
         val utcTime = ZonedDateTime.of(ClockUtils.nowUtc(), ZoneId.of("UTC"))
         val cetTime = ZonedDateTime.ofInstant(utcTime.toInstant(), ZoneId.of("CET")).hour
