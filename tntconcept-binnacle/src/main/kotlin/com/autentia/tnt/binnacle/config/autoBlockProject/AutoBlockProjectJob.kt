@@ -1,16 +1,11 @@
-package com.autentia.tnt.binnacle.config.AutoBlockProject
+package com.autentia.tnt.binnacle.config.autoBlockProject
 
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.usecases.AutoBlockProjectUseCase
-import io.archimedesfw.commons.time.EUROPE_MADRID
 import io.micronaut.context.annotation.Context
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.scheduling.TaskScheduler
 import jakarta.inject.Named
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.util.*
 
 @Context
 internal class AutoBlockProjectJob(
