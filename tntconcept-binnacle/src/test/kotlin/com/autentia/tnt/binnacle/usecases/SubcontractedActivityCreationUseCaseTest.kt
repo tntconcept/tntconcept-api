@@ -17,13 +17,11 @@ import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.ActivityService
-import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.assertj.core.api.Assertions
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -42,7 +40,6 @@ class SubcontractedActivityCreationUseCaseTest {
     private val activityRepository = mock<ActivityRepository>()
     private val activityEvidenceService = mock<ActivityEvidenceService>()
     private val activityCalendarService = mock<ActivityCalendarService>()
-    private val userService = mock<UserService>()
     private val userRepository = mock<UserRepository>()
     private val securityService: SecurityService = mock()
     private val appProperties = AppProperties()
@@ -69,27 +66,10 @@ class SubcontractedActivityCreationUseCaseTest {
             )
 
 
-    @AfterEach
-    fun resetMocks() {
-        reset(
-                activityService,
-                projectRoleRepository,
-                activityRepository,
-                activityEvidenceService,
-                activityCalendarService,
-                userService,
-                userRepository,
-                securityService,
-                //appProperties
-
-        )
-    }
-
     private fun authenticate(){
         whenever(securityService.authentication).thenReturn(Optional.of(AUTHENTICATION_WITH_SUBCONTRACTED_MANAGER_ROLE))
     }
     private fun generateSubcontractedUser():User{
-        whenever(projectRoleRepository.findById(any())).thenReturn(null)
         appProperties.binnacle.subcontractedUser.username="subcontracted"
         whenever(userRepository.findByUsername("subcontracted")).thenReturn(USER_ENTITIES_SUBCONTRACTED)
         return USER_ENTITIES_SUBCONTRACTED
