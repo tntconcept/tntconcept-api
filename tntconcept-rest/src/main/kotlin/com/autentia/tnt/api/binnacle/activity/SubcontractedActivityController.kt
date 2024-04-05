@@ -3,9 +3,7 @@ package com.autentia.tnt.api.binnacle.activity
 import com.autentia.tnt.api.OpenApiTag
 import com.autentia.tnt.api.binnacle.ErrorResponse
 import com.autentia.tnt.binnacle.exception.*
-import com.autentia.tnt.binnacle.usecases.SubcontractedActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.SubcontractedActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.SubcontractedActivityUpdateUseCase
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.*
@@ -20,11 +18,25 @@ import javax.validation.Valid
 @Validated
 @Tag(name = OpenApiTag.ACTIVITY)
 internal class SubcontractedActivityController (
+        private val subcontractedActivityRetrievalByIdUseCase: SubcontractedActivityRetrievalByIdUseCase,
+        private val subcontractedActivitiesByFilterUseCase: SubcontractedActivitiesByFilterUseCase,
         private val subcontractedActivityCreationUseCase: SubcontractedActivityCreationUseCase,
         private val subcontractedActivityUpdateUseCase: SubcontractedActivityUpdateUseCase,
         private val subcontractedActivityDeletionUseCase: SubcontractedActivityDeletionUseCase,
 
 ) {
+
+    @Get("{?activityFilterRequest*}")
+    @Operation(summary = "Gets activities with specified filters")
+    internal fun get(activityFilterRequest: SubcontractedActivityFilterRequest): List<SubcontractedActivityResponse> =
+        subcontractedActivitiesByFilterUseCase.getActivities(activityFilterRequest.toDto()).map { SubcontractedActivityResponse.from(it) }
+
+    @Get("/{id}")
+    @Operation(summary = "Gets an activity by its id.")
+    internal fun get(id: Long): SubcontractedActivityResponse? =
+        SubcontractedActivityResponse.from(subcontractedActivityRetrievalByIdUseCase.getActivityById(id))
+
+
     @Post
     @Operation(summary = "Creates a new subcontracted activity")
     internal fun post(

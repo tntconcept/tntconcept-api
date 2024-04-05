@@ -25,7 +25,7 @@ fun SecurityService.checkBlockProjectsRole(): Authentication {
     return checkRole(BLOCK_PROJECT_ROLE)
 }
 
-fun SecurityService.checkSubcontractedActivityManagerRole(): Authentication{
+fun SecurityService.checkSubcontractedActivityManagerRole(): Authentication {
     return checkRole(SUBCONTRACTED_ACTIVITY_MANAGER_ROLE)
 }
 

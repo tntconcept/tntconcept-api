@@ -1,18 +1,14 @@
 package com.autentia.tnt.api.binnacle.activity
 
-import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.api.binnacle.exchangeObject
-import com.autentia.tnt.api.binnacle.getBody
-import com.autentia.tnt.api.binnacle.toJson
+import com.autentia.tnt.api.binnacle.*
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
-import com.autentia.tnt.binnacle.usecases.SubcontractedActivityCreationUseCase
-import com.autentia.tnt.binnacle.usecases.SubcontractedActivityDeletionUseCase
-import com.autentia.tnt.binnacle.usecases.SubcontractedActivityUpdateUseCase
+import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpHeaders
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -55,20 +51,112 @@ internal class SubcontractedActivityControllerIT {
     @get:MockBean(SubcontractedActivityDeletionUseCase::class)
     internal val subcontractedActivityDeletionUseCase = mock<SubcontractedActivityDeletionUseCase>()
 
+    @get:MockBean(SubcontractedActivityRetrievalByIdUseCase::class)
+    internal val subcontractedActivityRetrievalByIdUseCase = mock<SubcontractedActivityRetrievalByIdUseCase>()
+
+    @get:MockBean(SubcontractedActivitiesByFilterUseCase::class)
+    internal val subcontractedActivitiesByFilterUseCase = mock<SubcontractedActivitiesByFilterUseCase>()
+
     @BeforeAll
     fun setup() {
         client = httpClient.toBlocking()
     }
 
+    @Test
+    fun `get all activities between the start and end date`() {
+        val startDate = LocalDate.of(2018, Month.JANUARY, 1)
+        val endDate = LocalDate.of(2018, Month.JANUARY, 31)
+        val activityResponseDTOs = listOf(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
+        val activities = listOf(SUBCONTRACTED_ACTIVITY_RESPONSE)
 
+        whenever(
+            subcontractedActivitiesByFilterUseCase.getActivities(
+                SubcontractedActivityFilterDTO(
+                    startDate = startDate, endDate = endDate
+                )
+            )
+        ).thenReturn(activityResponseDTOs)
+
+        val response = client.exchangeList<SubcontractedActivityResponse>(
+            HttpRequest.GET("/api/subcontracted_activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
+        )
+
+        org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
+        org.junit.jupiter.api.Assertions.assertEquals(activities, response.body.get())
+    }
+
+
+
+
+    @Test
+    fun `get activities by filter`() {
+        val startDate = LocalDate.of(2018, Month.JANUARY, 1)
+        val endDate = LocalDate.of(2018, Month.JANUARY, 31)
+        val organizationId = 1L
+        val projectId = 1L
+        val roleId = 1L
+        val subcontractedActivitiesFilter = SubcontractedActivityFilterDTO(
+            startDate,
+            endDate,
+            organizationId,
+            projectId,
+            roleId
+        )
+        val subcontractedActivityResponseDTOs = listOf(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
+        val subcontractedActivities = listOf(SUBCONTRACTED_ACTIVITY_RESPONSE)
+
+        whenever(subcontractedActivitiesByFilterUseCase.getActivities(subcontractedActivitiesFilter)).thenReturn(subcontractedActivityResponseDTOs)
+
+        val response = client.exchangeList<SubcontractedActivityResponse>(
+            HttpRequest.GET(
+                "/api/subcontracted_activity?" + "&startDate=${startDate.toJson()}" + "&endDate=${endDate.toJson()}" + "&organizationId=${organizationId}" + "&projectId=${projectId}" + "&roleId=${roleId}"
+            ),
+        )
+
+        org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
+        org.junit.jupiter.api.Assertions.assertEquals(subcontractedActivities, response.body.get())
+    }
+
+
+
+    @Test
+    fun `get activity by id`() {
+
+        whenever(subcontractedActivityRetrievalByIdUseCase.getActivityById(any())).thenReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
+        println(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
+        val response = client.exchangeObject<SubcontractedActivityResponse>(
+            HttpRequest.GET("/api/subcontracted_activity/${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.id}")
+        )
+
+        org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
+        org.junit.jupiter.api.Assertions.assertEquals(SUBCONTRACTED_ACTIVITY_RESPONSE, response.body.get())
+    }
+
+    @Test
+    fun `fail if try to get an activity with a non existing id`() {
+        val nonExistingId = 8L
+
+        doThrow(ActivityNotFoundException(1L)).whenever(subcontractedActivityRetrievalByIdUseCase).getActivityById(nonExistingId)
+
+        val ex = assertThrows<HttpClientResponseException> {
+            client.exchangeObject<Any>(
+                HttpRequest.GET("/api/subcontracted_activity/$nonExistingId"),
+            )
+        }
+
+        org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.NOT_FOUND, ex.status)
+        org.junit.jupiter.api.Assertions.assertEquals(
+            "RESOURCE_NOT_FOUND",
+            ex.response.getBody<ErrorResponse>().get().code
+        )
+    }
     @Test
     fun `post a new activity without evidence`() {
         doReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO).whenever(subcontractedActivityCreationUseCase).createSubcontractedActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponse>(
+        val response = client.exchangeObject<SubcontractedActivityResponse>(
             HttpRequest.POST("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
-
         org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
         org.junit.jupiter.api.Assertions.assertEquals(SUBCONTRACTED_ACTIVITY_RESPONSE, response.body.get())
     }
@@ -77,7 +165,7 @@ internal class SubcontractedActivityControllerIT {
     fun `post a new activity with evidence`() {
         doReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO).whenever(subcontractedActivityCreationUseCase).createSubcontractedActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponse>(
+        val response = client.exchangeObject<SubcontractedActivityResponse>(
             HttpRequest.POST("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
         )
 
@@ -118,7 +206,6 @@ internal class SubcontractedActivityControllerIT {
         arrayOf(ActivityPeriodClosedException(), HttpStatus.BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
         arrayOf(OverlapsAnotherTimeException(), HttpStatus.BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
         arrayOf(ProjectClosedException(), HttpStatus.BAD_REQUEST, "CLOSED_PROJECT"),
-        arrayOf(ActivityBeforeHiringDateException(), HttpStatus.BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
         arrayOf(ProjectBlockedException(LocalDate.now()), HttpStatus.BAD_REQUEST, "BLOCKED_PROJECT"),
     )
 
@@ -155,7 +242,7 @@ internal class SubcontractedActivityControllerIT {
         val updatedActivityResponse = SubcontractedActivityResponse.from(updatedActivity)
         doReturn(updatedActivity).whenever(subcontractedActivityUpdateUseCase).updateSubcontractedActivity(any(), eq(Locale.ENGLISH))
 
-        val response = client.exchangeObject<ActivityResponse>(
+        val response = client.exchangeObject<SubcontractedActivityResponse>(
             HttpRequest.PUT("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
         )
 
@@ -170,7 +257,6 @@ internal class SubcontractedActivityControllerIT {
         arrayOf(ActivityPeriodClosedException(), HttpStatus.BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
         arrayOf(OverlapsAnotherTimeException(), HttpStatus.BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
         arrayOf(ProjectClosedException(), HttpStatus.BAD_REQUEST, "CLOSED_PROJECT"),
-        arrayOf(ActivityBeforeHiringDateException(), HttpStatus.BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
         arrayOf(ProjectBlockedException(LocalDate.now()), HttpStatus.BAD_REQUEST, "BLOCKED_PROJECT"),
     )
 
@@ -244,6 +330,7 @@ internal class SubcontractedActivityControllerIT {
 
 
     private companion object {
+
         private val START_DATE = LocalDateTime.of(2014, Month.JANUARY, 1, 8, 0)
         private val END_DATE = LocalDateTime.of(2014, Month.JANUARY, 31, 12, 0)
         private val DURATION = 18000
@@ -255,6 +342,8 @@ internal class SubcontractedActivityControllerIT {
         private val SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO = SubcontractedActivityRequest(
             null, INTERVAL_REQUEST_DTO, DURATION, "Activity description", true, 3, false, null
         )
+
+
 
         private val SUBCONTRACTED_ACTIVITY_POST_JSON = """
             {
@@ -302,7 +391,7 @@ internal class SubcontractedActivityControllerIT {
 
         private val SUBCONTRACTED_ACTIVITY_RESPONSE_DTO = SubcontractedActivityResponseDTO(
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable,
-            DURATION,
+            SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
             2L,

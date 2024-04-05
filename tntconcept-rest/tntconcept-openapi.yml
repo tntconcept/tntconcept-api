@@ -698,6 +698,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/SearchResponse'
   /api/subcontracted_activity:
+    get:
+      tags:
+      - activity
+      summary: Gets activities with specified filters
+      operationId: get$tntconcept_rest_4
+      parameters:
+      - name: activityFilterRequest
+        in: query
+        required: true
+        explode: true
+        schema:
+          $ref: '#/components/schemas/SubcontractedActivityFilterRequest'
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubcontractedActivityResponse'
     put:
       tags:
       - activity
@@ -735,6 +756,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/SubcontractedActivityResponse'
   /api/subcontracted_activity/{id}:
+    get:
+      tags:
+      - activity
+      summary: Gets an activity by its id.
+      operationId: get$tntconcept_rest_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractedActivityResponse'
     delete:
       tags:
       - activity
@@ -771,7 +811,7 @@ paths:
   /api/user:
     get:
       summary: Retrieves the list of users with specified filters
-      operationId: get$tntconcept_rest_4
+      operationId: get$tntconcept_rest_6
       parameters:
       - name: userFilterRequest
         in: query
@@ -1595,6 +1635,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectRoleUserResponse'
+    SubcontractedActivityFilterRequest:
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+          nullable: true
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        organizationId:
+          type: integer
+          format: int64
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          nullable: true
+        roleId:
+          type: integer
+          format: int64
+          nullable: true
     SubcontractedActivityRequest:
       required:
       - billable
