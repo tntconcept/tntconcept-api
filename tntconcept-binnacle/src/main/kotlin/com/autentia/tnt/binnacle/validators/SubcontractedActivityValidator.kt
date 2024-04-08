@@ -57,7 +57,6 @@ internal class SubcontractedActivityValidator(
     fun checkActivityIsValidForUpdate(
             activityToUpdate: Activity,
             currentActivity: Activity,
-            user: User,
     ) {
         require(activityToUpdate.id != null) { "Cannot update an activity without id." }
         require(currentActivity.approvalState != ApprovalState.ACCEPTED) { "Cannot update an activity already approved." }
@@ -81,7 +80,6 @@ internal class SubcontractedActivityValidator(
 
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
-            isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
 
 
         }
