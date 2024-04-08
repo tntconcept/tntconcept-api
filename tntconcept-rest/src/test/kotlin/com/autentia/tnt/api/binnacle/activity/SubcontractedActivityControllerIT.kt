@@ -204,7 +204,6 @@ internal class SubcontractedActivityControllerIT {
         arrayOf(UserPermissionException(), HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND"),
         arrayOf(ProjectRoleNotFoundException(1), HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND"),
         arrayOf(ActivityPeriodClosedException(), HttpStatus.BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
-        arrayOf(OverlapsAnotherTimeException(), HttpStatus.BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
         arrayOf(ProjectClosedException(), HttpStatus.BAD_REQUEST, "CLOSED_PROJECT"),
         arrayOf(ProjectBlockedException(LocalDate.now()), HttpStatus.BAD_REQUEST, "BLOCKED_PROJECT"),
     )
@@ -255,7 +254,6 @@ internal class SubcontractedActivityControllerIT {
         arrayOf(ActivityNotFoundException(1), HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND"),
         arrayOf(ProjectRoleNotFoundException(1), HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND"),
         arrayOf(ActivityPeriodClosedException(), HttpStatus.BAD_REQUEST, "ACTIVITY_PERIOD_CLOSED"),
-        arrayOf(OverlapsAnotherTimeException(), HttpStatus.BAD_REQUEST, "ACTIVITY_TIME_OVERLAPS"),
         arrayOf(ProjectClosedException(), HttpStatus.BAD_REQUEST, "CLOSED_PROJECT"),
         arrayOf(ProjectBlockedException(LocalDate.now()), HttpStatus.BAD_REQUEST, "BLOCKED_PROJECT"),
     )

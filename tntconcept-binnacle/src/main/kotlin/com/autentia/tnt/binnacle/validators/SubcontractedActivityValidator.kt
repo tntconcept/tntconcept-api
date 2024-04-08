@@ -18,9 +18,7 @@ import javax.transaction.Transactional
 
 @Singleton
 internal class SubcontractedActivityValidator(
-        private val activityService: ActivityService,
-        private val activityCalendarService: ActivityCalendarService,
-        private val projectRepository: ProjectRepository,
+         private val projectRepository: ProjectRepository,
 
 ) {
     @Transactional
@@ -37,7 +35,6 @@ internal class SubcontractedActivityValidator(
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
             isBeforeProjectCreationDate(activityToCreate, project) -> throw ActivityBeforeProjectCreationDateException()
-            isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
 
         }
     }
@@ -109,17 +106,6 @@ internal class SubcontractedActivityValidator(
         return project.blockDate!!.isAfter(
                 activity.getStart().toLocalDate()
         ) || project.blockDate!!.isEqual(activity.getStart().toLocalDate())
-    }
-
-    private fun isOverlappingAnotherActivityTime(
-            activity: Activity,
-            userId: Long,
-    ): Boolean {
-        if (activity.duration == 0) {
-            return false
-        }
-        val activities = activityService.findOverlappedActivities(activity.getStart(), activity.getEnd(), userId)
-        return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
     }
 
 

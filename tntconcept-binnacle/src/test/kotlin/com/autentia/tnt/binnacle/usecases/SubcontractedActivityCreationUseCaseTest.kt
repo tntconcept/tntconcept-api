@@ -35,19 +35,15 @@ import java.util.*
 class SubcontractedActivityCreationUseCaseTest {
 
     private val projectRepository = mock<ProjectRepository>()
-    private val activityService = mock<ActivityService>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityRepository = mock<ActivityRepository>()
     private val activityEvidenceService = mock<ActivityEvidenceService>()
-    private val activityCalendarService = mock<ActivityCalendarService>()
     private val userRepository = mock<UserRepository>()
     private val securityService: SecurityService = mock()
     private val appProperties = AppProperties()
 
     private val subcontractedActivityValidator =
             SubcontractedActivityValidator(
-                    activityService,
-                    activityCalendarService,
                     projectRepository)
 
     //subject under test

@@ -79,8 +79,5 @@ internal class SubcontractedActivityController (
                 ErrorResponseBlockedProject.ErrorValues(e.blockedDate)
             )
         )
-    @Error
-    internal fun onOverlapAnotherActivityTimeException(request: HttpRequest<*>, e: OverlapsAnotherTimeException) =
-        HttpResponse.badRequest(ErrorResponse("ACTIVITY_TIME_OVERLAPS", e.message))
 
 }
