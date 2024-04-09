@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.ProjectRole
@@ -44,7 +45,8 @@ class ActivityRequestBodyConverter() {
     ) =
             com.autentia.tnt.binnacle.core.domain.Activity.of(
                     subcontractingActivityRequestBody.id,
-                    subcontractingActivityRequestBody.interval.toDomain(),
+                    TimeInterval.of(subcontractingActivityRequestBody.month.atDay(1).atTime(0,0),
+                        subcontractingActivityRequestBody.month.atEndOfMonth().atTime(23,59)),
                     subcontractingActivityRequestBody.duration,
                     subcontractingActivityRequestBody.description,
                     projectRole,
@@ -52,9 +54,9 @@ class ActivityRequestBodyConverter() {
                     subcontractingActivityRequestBody.billable,
                     user.departmentId,
                     insertDate,
-                    subcontractingActivityRequestBody.hasEvidences,
-                    projectRole.getApprovalState(),
-                    subcontractingActivityRequestBody.evidence?.toDomain()
+                    false,
+                    ApprovalState.NA,
+                    null
             )
 
     fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =

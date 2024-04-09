@@ -6,9 +6,10 @@ import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDateException
-import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
@@ -18,17 +19,19 @@ import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
+import io.archimedesfw.commons.time.ClockUtils
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.MethodSource
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.YearMonth
 import java.util.*
 
 
@@ -41,32 +44,38 @@ class SubcontractedActivityCreationUseCaseTest {
     private val userRepository = mock<UserRepository>()
     private val securityService: SecurityService = mock()
     private val appProperties = AppProperties()
+    private val activityService = mock<ActivityService>()
+    private val calendarService = mock<ActivityCalendarService>()
 
     private val subcontractedActivityValidator =
-            SubcontractedActivityValidator(
-                    projectRepository)
+        SubcontractedActivityValidator(
+            activityService,
+            calendarService,
+            projectRepository
+        )
 
     //subject under test
     private val sut = SubcontractedActivityCreationUseCase(
-            projectRoleRepository,
-            activityRepository,
-            activityEvidenceService,
-            subcontractedActivityValidator,
-            ActivityRequestBodyConverter(),
-            ActivityResponseConverter(
-                    ActivityIntervalResponseConverter()
-            ),
-            userRepository,
-            securityService,
-            appProperties
-            )
+        projectRoleRepository,
+        activityRepository,
+        activityEvidenceService,
+        subcontractedActivityValidator,
+        ActivityRequestBodyConverter(),
+        ActivityResponseConverter(
+            ActivityIntervalResponseConverter()
+        ),
+        userRepository,
+        securityService,
+        appProperties
+    )
 
 
-    private fun authenticate(){
+    private fun authenticate() {
         whenever(securityService.authentication).thenReturn(Optional.of(AUTHENTICATION_WITH_SUBCONTRACTED_MANAGER_ROLE))
     }
-    private fun generateSubcontractedUser():User{
-        appProperties.binnacle.subcontractedUser.username="subcontracted"
+
+    private fun generateSubcontractedUser(): User {
+        appProperties.binnacle.subcontractedUser.username = "subcontracted"
         whenever(userRepository.findByUsername("subcontracted")).thenReturn(USER_ENTITIES_SUBCONTRACTED)
         return USER_ENTITIES_SUBCONTRACTED
     }
@@ -76,29 +85,9 @@ class SubcontractedActivityCreationUseCaseTest {
         authenticate()
         generateSubcontractedUser()
 
-        //whenever(appProperties.binnacle.subcontractedUser.username).thenReturn("subcontracted")
         assertThrows<ProjectRoleNotFoundException> {
             sut.createSubcontractedActivity(SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
         }
-    }
-
-    @ParameterizedTest
-    @MethodSource("exceptionProvider")
-    fun `create activity with incomplete evidence information throws an exception`(
-            testDescription: String,
-            subcontractedActivityRequest: SubcontractedActivityRequestDTO,
-    ) {
-        authenticate()
-        val subcontractedUser = generateSubcontractedUser()
-        val activityEntity = createActivity(userId = subcontractedUser.id)
-
-        whenever(projectRoleRepository.findById(PROJECT_ROLE.id)).thenReturn(PROJECT_ROLE)
-        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-
-        assertThrows<NoEvidenceInActivityException> {
-            sut.createSubcontractedActivity(subcontractedActivityRequest, Locale.ENGLISH)
-        }
-
     }
 
     @Test
@@ -108,111 +97,56 @@ class SubcontractedActivityCreationUseCaseTest {
 
         val activityEntity = createActivity(userId = subcontractedUser.id)
         whenever(projectRoleRepository.findById(PROJECT_ROLE.id)).thenReturn(PROJECT_ROLE)
-        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(
+            Optional.of(
+                activityEntity.projectRole.project
+            )
+        )
 
         assertThrows<ActivityBeforeProjectCreationDateException> {
-            sut.createSubcontractedActivity(SUBCONTRACTED_ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE, Locale.ENGLISH)
+            sut.createSubcontractedActivity(
+                SUBCONTRACTED_ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE,
+                Locale.ENGLISH
+            )
         }
 
     }
 
 
     @Test
-    fun `created activity with no evidence`() {
+    fun `created activity`() {
 
         authenticate()
         val subcontractedUser = generateSubcontractedUser()
         val activityEntity = createActivity(userId = subcontractedUser.id)
 
         whenever(projectRoleRepository.findById(PROJECT_ROLE.id)).thenReturn(PROJECT_ROLE)
-        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
+        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(
+            Optional.of(
+                activityEntity.projectRole.project
+            )
+        )
         whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         val activityCreated = sut.createSubcontractedActivity(SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 
-        verify(activityEvidenceService, times(1)).storeActivityEvidence(
-                eq(activityEntity.id!!), any(), eq(activityEntity.insertDate!!)
-        )
-
 
         val expectedResponseDTO = createActivityResponseDTO(userId = subcontractedUser.id)
         Assertions.assertThat(activityCreated)
-                .usingRecursiveComparison()
-                .isEqualTo(expectedResponseDTO)
+            .usingRecursiveComparison()
+            .isEqualTo(expectedResponseDTO)
     }
 
 
     @Test
-    fun `created activity with evidence`() {
-
-        authenticate()
-        val subcontractedUser = generateSubcontractedUser()
-
-        val activityEntity = createActivity(userId = subcontractedUser.id)
-
-        whenever(projectRoleRepository.findById(PROJECT_ROLE.id)).thenReturn(PROJECT_ROLE)
-        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-        whenever(activityRepository.save(any())).thenReturn(activityEntity)
-
-        val activityCreated = sut.createSubcontractedActivity(SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
-
-        verify(activityEvidenceService, times(1)).storeActivityEvidence(
-                eq(activityEntity.id!!), any(), eq(activityEntity.insertDate!!)
-        )
-
-
-        val expectedResponseDTO = createActivityResponseDTO(userId = subcontractedUser.id)
-
-        Assertions.assertThat(activityCreated)
-                .usingRecursiveComparison()
-                .isEqualTo(expectedResponseDTO)
-    }
-
-    @Test
-    fun `created activity without evidence to role with evidence required, no mail is sent`() {
-        authenticate()
-        val subcontractedUser = generateSubcontractedUser()
-
-        // Given
-        val projectRole = `get role that requires evidence`()
-        val activityEntity = `get activity entity without evidence`(projectRole)
-        whenever(projectRoleRepository.findById(projectRole.id)).thenReturn(projectRole)
-        whenever(projectRepository.findById(activityEntity.projectRole.project.id)).thenReturn(Optional.of(activityEntity.projectRole.project))
-        whenever(activityRepository.save(any())).thenReturn(activityEntity)
-
-        // When
-        val activityCreateRequest = SUBCONTRACTED_ACTIVITY_WITH_NO_EVIDENCE_DTO.copy(projectRoleId = projectRole.id)
-
-        val activityCreated = sut.createSubcontractedActivity(activityCreateRequest, Locale.ENGLISH)
-
-        // Then
-        verifyNoInteractions(activityEvidenceService)
-        val expectedResponseDTO = createActivityResponseDTO(userId = subcontractedUser.id, hasEvidences = false, description = activityEntity.description)
-
-
-        Assertions.assertThat(activityCreated)
-                .usingRecursiveComparison()
-                .isEqualTo(expectedResponseDTO)
-    }
-
-    @Test
-    fun `try to create a subcontracted activity without permissions`(){
+    fun `try to create a subcontracted activity without permissions`() {
         val authenticationWithoutSubcontractedPermissions: Authentication =
             ClientAuthentication(USER_ID_1.toString(), mapOf("roles" to listOf("")))
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutSubcontractedPermissions))
         assertThrows<IllegalStateException> {
-            sut.createSubcontractedActivity(SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_DTO, Locale.ENGLISH)
+            sut.createSubcontractedActivity(SUBCONTRACTED_ACTIVITY_DTO, Locale.ENGLISH)
         }
     }
-
-
-    private fun `get activity entity without evidence`(projectRole: ProjectRole) =
-            createActivity(description = "This is an activity without evidence", userId = USER_ENTITIES_SUBCONTRACTED.id,
-                    projectRole = projectRole, hasEvidences = false,
-                    approvalState = ApprovalState.NA)
-
-    private fun `get role that requires evidence`() =
-            PROJECT_ROLE.copy(requireEvidence = RequireEvidence.ONCE)
 
 
     private companion object {
@@ -222,9 +156,9 @@ class SubcontractedActivityCreationUseCaseTest {
         private val AUTHENTICATION_WITH_SUBCONTRACTED_MANAGER_ROLE: Authentication =
             ClientAuthentication(USER_ID_1.toString(), mapOf("roles" to listOf("subcontracted-activity-manager")))
 
-        private val USER_ENTITIES_SUBCONTRACTED = createUser(LocalDate.now(),2,"subcontracted")
+        private val USER_ENTITIES_SUBCONTRACTED = createUser(LocalDate.now(), 2, "subcontracted")
 
-        private val TIME_NOW = LocalDateTime.now()
+        private val TIME_NOW = YearMonth.of(ClockUtils.nowUtc().year,ClockUtils.nowUtc().month)
 
         private val DURATION = 10000
 
@@ -233,94 +167,49 @@ class SubcontractedActivityCreationUseCaseTest {
         private val ORGANIZATION = Organization(1L, "Dummy Organization", 1, listOf())
 
         private val PROJECT = Project(
-                1L,
-                "Dummy Project",
-                open = true,
-                billable = false,
-                LocalDate.now(),
-                null,
-                null,
-                ORGANIZATION,
-                listOf()
+            1L,
+            "Dummy Project",
+            open = true,
+            billable = false,
+            ClockUtils.nowUtc().toLocalDate().minusMonths(1),
+            null,
+            null,
+            ORGANIZATION,
+            listOf()
         )
         private val PROJECT_ROLE =
-                ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
-
-
+            ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
 
 
         private val EVIDENCE = EvidenceDTO.from("data:application/pdf;base64,SGVsbG8gV29ybGQh")
 
         private val SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO = SubcontractedActivityRequestDTO(
-                null,
-                TIME_NOW,
-                TIME_NOW.plusMinutes(75L),
-                DURATION,
-                "New activity",
-                false,
-                PROJECT_ROLE.id,
-                true,
-                EVIDENCE,
-        )
-
-        private val SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_BUT_NOT_ATTACHED_DTO = SubcontractedActivityRequestDTO(
-                null,
-                TIME_NOW,
-                TIME_NOW.plusMinutes(75L),
-                DURATION,
-                "New activity evidence empty",
-                false,
-                PROJECT_ROLE.id,
-                true,
-                null,
-        )
-
-        private val SUBCONTRACTED_ACTIVITY_WITH_ATTACHED_EVIDENCE_BUT_NOT_AS_TRUE = SubcontractedActivityRequestDTO(
-                null,
-                TIME_NOW,
-                TIME_NOW.plusMinutes(75L),
-                DURATION,
-                "New activity evidence empty",
-                false,
-                PROJECT_ROLE.id,
-                false,
-                EVIDENCE,
+            null,
+            TIME_NOW,
+            DURATION,
+            "New activity",
+            false,
+            PROJECT_ROLE.id
         )
 
         private val SUBCONTRACTED_ACTIVITY_WITH_DATE_BEFORE_CREATION_PROJECT_DATE = SubcontractedActivityRequestDTO(
-                null,
-                TIME_NOW.minusDays(3),
-                TIME_NOW.plusMinutes(75L).minusDays(3),
-                DURATION,
-                "New activity wit",
-                false,
-                PROJECT_ROLE.id,
-                true,
-                EVIDENCE
+            null,
+            TIME_NOW.minusMonths(4),
+            DURATION,
+            "New activity wit",
+            false,
+            PROJECT_ROLE.id,
         )
 
-        private val SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_DTO = SubcontractedActivityRequestDTO(
-                null,
-                TIME_NOW,
-                TIME_NOW.plusMinutes(75L),
-                DURATION,
-                "New activity wit",
-                false,
-                PROJECT_ROLE.id,
-                true,
-                EVIDENCE
+        private val SUBCONTRACTED_ACTIVITY_DTO = SubcontractedActivityRequestDTO(
+            null,
+            TIME_NOW,
+            DURATION,
+            "New activity wit",
+            false,
+            PROJECT_ROLE.id,
         )
 
-        private val SUBCONTRACTED_ACTIVITY_WITH_NO_EVIDENCE_DTO = SubcontractedActivityRequestDTO(
-                null,
-                TIME_NOW,
-                TIME_NOW.plusMinutes(75L),
-                DURATION,
-                "New activity wit",
-                false,
-                PROJECT_ROLE.id,
-                false
-        )
 
         private fun generateLargeDescription(mainMessage: String): String {
             var description = mainMessage
@@ -331,68 +220,50 @@ class SubcontractedActivityCreationUseCaseTest {
         }
 
         private fun createActivity(
-                id: Long = 1L,
-                userId: Long = 2L,
-                description: String = generateLargeDescription("New activity").substring(0, 2048),
-                start: LocalDateTime = TIME_NOW,
-                end: LocalDateTime = TIME_NOW.plusMinutes(75L),
-                duration: Int = 18000,
-                billable: Boolean = false,
-                hasEvidences: Boolean = false,
-                projectRole: ProjectRole = PROJECT_ROLE,
-                approvalState: ApprovalState = ApprovalState.NA,
-                insertDate: Date = TODAY,
+            id: Long = 1L,
+            userId: Long = 2L,
+            description: String = generateLargeDescription("New activity").substring(0, 2048),
+            start: LocalDateTime = TIME_NOW.atDay(1).atTime(0,0),
+            end: LocalDateTime = TIME_NOW.atEndOfMonth().atTime(23,59),
+            duration: Int = 18000,
+            billable: Boolean = false,
+            hasEvidences: Boolean = false,
+            projectRole: ProjectRole = PROJECT_ROLE,
+            approvalState: ApprovalState = ApprovalState.NA,
+            insertDate: Date = TODAY,
         ): Activity =
-                Activity(
-                        id = id,
-                        userId = userId,
-                        description = description,
-                        start = start,
-                        end = end,
-                        duration = duration,
-                        billable = billable,
-                        hasEvidences = hasEvidences,
-                        projectRole = projectRole,
-                        approvalState = approvalState,
-                        insertDate = insertDate
-                )
+            Activity(
+                id = id,
+                userId = userId,
+                description = description,
+                start = start,
+                end = end,
+                duration = duration,
+                billable = billable,
+                hasEvidences = hasEvidences,
+                projectRole = projectRole,
+                approvalState = approvalState,
+                insertDate = insertDate
+            )
 
         private fun createActivityResponseDTO(
-                id: Long = 1L,
-                userId: Long = 0L,
-                description: String = generateLargeDescription("New activity").substring(0, 2048),
-                start: LocalDateTime = TIME_NOW,
-                end: LocalDateTime = TIME_NOW.plusMinutes(75L),
-                duration: Int = 18000,
-                billable: Boolean = false,
-                hasEvidences: Boolean = false,
-                projectRoleId: Long = 10L,
-                approvalState: ApprovalState = ApprovalState.NA,
-                timeUnit: TimeUnit = PROJECT_ROLE.timeUnit,
+            id: Long = 1L,
+            userId: Long = 0L,
+            description: String = generateLargeDescription("New activity").substring(0, 2048),
+            month: YearMonth = TIME_NOW,
+            duration: Int = 18000,
+            billable: Boolean = false,
+            projectRoleId: Long = 10L,
         ): SubcontractedActivityResponseDTO =
             SubcontractedActivityResponseDTO(
-                        billable,
-                        duration,
-                        description,
-                        hasEvidences,
-                        id,
-                        projectRoleId,
-                        IntervalResponseDTO(start, end, duration, timeUnit),
-                        userId,
-                        ApprovalDTO(state = approvalState)
-                )
-
-        @JvmStatic
-        fun exceptionProvider() = arrayOf(
-            arrayOf(
-                "ActivityWithEvidenceButNotAttachedException",
-                SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_BUT_NOT_ATTACHED_DTO
-            ),
-            arrayOf(
-                "ActivityWithAttachedEvidenceButNotTrueException",
-                SUBCONTRACTED_ACTIVITY_WITH_ATTACHED_EVIDENCE_BUT_NOT_AS_TRUE
+                billable,
+                duration,
+                description,
+                id,
+                projectRoleId,
+                month,
+                userId
             )
-        )
 
     }
 

@@ -1431,6 +1431,21 @@ components:
         byActivity:
           type: integer
           format: int32
+    Month:
+      type: string
+      enum:
+      - JANUARY
+      - FEBRUARY
+      - MARCH
+      - APRIL
+      - MAY
+      - JUNE
+      - JULY
+      - AUGUST
+      - SEPTEMBER
+      - OCTOBER
+      - NOVEMBER
+      - DECEMBER
     MonthlyBalanceResponse:
       required:
       - balance
@@ -1663,8 +1678,7 @@ components:
       - billable
       - description
       - duration
-      - hasEvidences
-      - interval
+      - month
       - projectRoleId
       type: object
       properties:
@@ -1672,8 +1686,8 @@ components:
           type: integer
           format: int64
           nullable: true
-        interval:
-          $ref: '#/components/schemas/TimeIntervalRequest'
+        month:
+          $ref: '#/components/schemas/YearMonth'
         duration:
           type: integer
           format: int32
@@ -1685,20 +1699,17 @@ components:
         projectRoleId:
           type: integer
           format: int64
-        hasEvidences:
-          type: boolean
         evidence:
           pattern: "^data:[^,]+;base64,.+$"
           type: string
           nullable: true
     SubcontractedActivityResponse:
       required:
-      - approval
       - billable
       - description
       - duration
       - id
-      - interval
+      - month
       - projectRoleId
       - userId
       type: object
@@ -1710,22 +1721,17 @@ components:
           format: int32
         description:
           type: string
-        hasEvidences:
-          type: boolean
-          nullable: true
         id:
           type: integer
           format: int64
         projectRoleId:
           type: integer
           format: int64
-        interval:
-          $ref: '#/components/schemas/IntervalResponse'
+        month:
+          $ref: '#/components/schemas/YearMonth'
         userId:
           type: integer
           format: int64
-        approval:
-          $ref: '#/components/schemas/Approval'
     TimeInfoResponse:
       required:
       - maxTimeAllowed
@@ -1947,3 +1953,16 @@ components:
           $ref: '#/components/schemas/PreviousAnnualBalanceResponse'
         current:
           $ref: '#/components/schemas/AnnualBalanceResponse'
+    YearMonth:
+      type: object
+      properties:
+        year:
+          type: integer
+          format: int32
+        monthValue:
+          type: integer
+          format: int32
+        month:
+          $ref: '#/components/schemas/Month'
+        leapYear:
+          type: boolean

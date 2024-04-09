@@ -1,13 +1,13 @@
 package com.autentia.tnt.binnacle.entities.dto
 
+import java.time.YearMonth
+
 data class SubcontractedActivityResponseDTO (
     val billable: Boolean,
     val duration: Int,
     val description: String,
-    val hasEvidences: Boolean?,
     val id: Long,
     val projectRoleId: Long,
-    val interval: IntervalResponseDTO,
-    val userId: Long,
-    val approval: ApprovalDTO
+    val month: YearMonth,
+    val userId: Long
 )

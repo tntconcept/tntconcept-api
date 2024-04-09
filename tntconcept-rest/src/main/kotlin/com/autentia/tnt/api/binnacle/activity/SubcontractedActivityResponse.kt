@@ -1,35 +1,27 @@
 package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
+import java.time.YearMonth
 
-data class SubcontractedActivityResponse (
-        val billable: Boolean,
-        val duration: Int,
-        val description: String,
-        val hasEvidences: Boolean?,
-        val id: Long,
-        val projectRoleId: Long,
-        val interval: IntervalResponse,
-        val userId: Long,
-        val approval: Approval
+data class SubcontractedActivityResponse(
+    val billable: Boolean,
+    val duration: Int,
+    val description: String,
+    val id: Long,
+    val projectRoleId: Long,
+    val month: YearMonth,
+    val userId: Long,
 ) {
     companion object {
         fun from(subcontractingActivityResponseDTO: SubcontractedActivityResponseDTO) =
-                SubcontractedActivityResponse(
-                        subcontractingActivityResponseDTO.billable,
-                        subcontractingActivityResponseDTO.duration,
-                        subcontractingActivityResponseDTO.description,
-                        subcontractingActivityResponseDTO.hasEvidences,
-                        subcontractingActivityResponseDTO.id,
-                        subcontractingActivityResponseDTO.projectRoleId,
-                        IntervalResponse.from(subcontractingActivityResponseDTO.interval),
-                        subcontractingActivityResponseDTO.userId,
-                        Approval(
-                                subcontractingActivityResponseDTO.approval.state,
-                                subcontractingActivityResponseDTO.approval.canBeApproved,
-                                subcontractingActivityResponseDTO.approval.approvedByUserId,
-                                subcontractingActivityResponseDTO.approval.approvalDate
-                        )
-                )
+            SubcontractedActivityResponse(
+                subcontractingActivityResponseDTO.billable,
+                subcontractingActivityResponseDTO.duration,
+                subcontractingActivityResponseDTO.description,
+                subcontractingActivityResponseDTO.id,
+                subcontractingActivityResponseDTO.projectRoleId,
+                subcontractingActivityResponseDTO.month,
+                subcontractingActivityResponseDTO.userId,
+            )
     }
 }

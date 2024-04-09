@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import jakarta.inject.Singleton
+import java.time.YearMonth
 
 @Singleton
 class ActivityResponseConverter(
@@ -33,17 +34,10 @@ class ActivityResponseConverter(
             billable = activity.billable,
             duration = activity.duration,
             description = activity.description,
-            hasEvidences = activity.hasEvidences,
             id = activity.id!!,
             projectRoleId = activity.projectRole.id,
-            interval = activityIntervalResponseConverter.toIntervalResponseDTO(activity),
-            userId = activity.userId,
-            approval = ApprovalDTO(
-                    state = activity.approvalState,
-                    canBeApproved = activity.canBeApproved(),
-                    approvedByUserId = activity.approvedByUserId,
-                    approvalDate = activity.approvalDate
-            )
+            month = YearMonth.of(activity.timeInterval.start.year,activity.timeInterval.start.month),
+            userId = activity.userId
     )
 
     fun mapActivityToActivityResponse(activity: Activity) = ActivityResponse(

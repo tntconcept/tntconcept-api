@@ -1,10 +1,6 @@
 package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.api.binnacle.*
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.TimeUnit
-import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
-import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.*
@@ -30,6 +26,7 @@ import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
+import java.time.YearMonth
 import java.util.*
 
 @MicronautTest
@@ -330,39 +327,29 @@ internal class SubcontractedActivityControllerIT {
     private companion object {
 
         private val START_DATE = LocalDateTime.of(2014, Month.JANUARY, 1, 8, 0)
-        private val END_DATE = LocalDateTime.of(2014, Month.JANUARY, 31, 12, 0)
         private val DURATION = 18000
 
-        private val INTERVAL_REQUEST_DTO = TimeIntervalRequest(
-            START_DATE, END_DATE
-        )
+        private val INTERVAL_REQUEST_DTO = YearMonth.of(START_DATE.year, START_DATE.month)
 
         private val SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO = SubcontractedActivityRequest(
-            null, INTERVAL_REQUEST_DTO, DURATION, "Activity description", true, 3, false, null
+            null, INTERVAL_REQUEST_DTO, DURATION, "Activity description", true, 3
         )
 
 
 
         private val SUBCONTRACTED_ACTIVITY_POST_JSON = """
             {
-                "interval": {
-                    "start": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
-                    "end": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
-                },        
+                "month": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month}",
                 "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},        
                 "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable},
-                "projectRoleId": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
-                "hasEvidences": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.hasEvidences}                
+                "projectRoleId": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId}             
             }
         """.trimIndent()
 
         private val SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_POST_JSON = """
             {
-                "interval": {
-                    "start": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
-                    "end": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
-                },      
+                "month": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month}",
                 "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},
                 "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable},
@@ -374,10 +361,7 @@ internal class SubcontractedActivityControllerIT {
 
         private val SUBCONTRACTED_ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON = """
             {
-                "interval": {
-                    "start": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.start.toJson()}",
-                    "end": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.end.toJson()}"
-                },                
+                "month": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month}",              
                 "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},
                 "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
                 "billable": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable},
@@ -391,34 +375,24 @@ internal class SubcontractedActivityControllerIT {
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description,
-            SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.hasEvidences,
             2L,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
-            IntervalResponseDTO(
-                SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.start, SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.interval.end, 240, TimeUnit.MINUTES
-            ),
-            42,
-            ApprovalDTO(ApprovalState.ACCEPTED)
+            SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month,
+            42
         )
         private val SUBCONTRACTED_ACTIVITY_RESPONSE = SubcontractedActivityResponse.from(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
 
         private val SUBCONTRACTED_ACTIVITY_PUT_JSON = """
             {
                 "id": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.id},
-                "interval": {
-                    "start": "${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.interval.start.toJson()}",
-                    "end": "${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.interval.end.toJson()}"
-                },                                    
+                "month": "${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.month}",                                   
                 "duration": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.duration},
                 "description": "Updated activity description",
                 "billable": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.billable},
-                "projectRoleId": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.projectRoleId},
-                "hasEvidences": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.hasEvidences}
+                "projectRoleId": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.projectRoleId}
             }
         """.trimIndent()
 
-        private const val ACTIVITY_IMAGE =
-            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVQYV2NgYAAAAAMAAWgmWQ0AAAAASUVORK5CYII="
     }
 
 }

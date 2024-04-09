@@ -4,7 +4,6 @@ import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
@@ -38,7 +37,6 @@ class SubcontractedActivityCreationUseCase internal constructor(
     fun createSubcontractedActivity(@Valid subcontractedActivityRequestBody: SubcontractedActivityRequestDTO, locale: Locale): SubcontractedActivityResponseDTO {
         securityService.checkSubcontractedActivityManagerRole()
 
-        require(appProperties.binnacle.subcontractedUser.username != null){"A subcontracted user must be defined"}
         val userSubcontracted = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username.toString())?.toDomain()//desde un property
 
         require(userSubcontracted != null){"Subcontracted user must exist"}
@@ -46,7 +44,7 @@ class SubcontractedActivityCreationUseCase internal constructor(
 
         val activityToCreate = activityRequestBodyConverter.toActivity(subcontractedActivityRequestBody, null, projectRole.toDomain(), userSubcontracted)
 
-        activityToCreate.approvalState = ApprovalState.NA
+
 
         subcontractedActivityValidator.checkActivityIsValidForCreation(activityToCreate, userSubcontracted)
 

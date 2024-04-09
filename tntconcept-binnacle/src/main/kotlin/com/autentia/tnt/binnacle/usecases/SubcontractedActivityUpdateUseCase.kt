@@ -5,7 +5,6 @@ import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
@@ -38,7 +37,6 @@ class SubcontractedActivityUpdateUseCase internal constructor(
     @ReadOnly
     fun updateSubcontractedActivity(subcontractedActivityRequest: SubcontractedActivityRequestDTO, locale: Locale): SubcontractedActivityResponseDTO {
         securityService.checkSubcontractedActivityManagerRole()
-        require(appProperties.binnacle.subcontractedUser.username != null){"A subcontracted user must be defined"}
         val userSubcontracted = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username.toString())?.toDomain()//desde un property
 
         require(userSubcontracted != null){"Subcontracted user must exist"}
@@ -54,7 +52,6 @@ class SubcontractedActivityUpdateUseCase internal constructor(
                 userSubcontracted
         )
 
-        activityToUpdate.approvalState = ApprovalState.NA
 
         subcontractedActivityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity)
 
