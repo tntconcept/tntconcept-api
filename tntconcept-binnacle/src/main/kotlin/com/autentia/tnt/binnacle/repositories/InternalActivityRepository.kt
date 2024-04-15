@@ -84,7 +84,15 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         return activityDao.save(activity)
     }
 
+    override fun saveSubcontracted(activity: Activity): Activity {
+        return activityDao.save(activity)
+    }
+
     override fun update(activity: Activity): Activity {
+        return activityDao.update(activity)
+    }
+
+    override fun updateSubcontracted(activity: Activity): Activity {
         return activityDao.update(activity)
     }
 

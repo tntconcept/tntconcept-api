@@ -35,7 +35,11 @@ internal interface ActivityRepository {
 
     fun save(activity: Activity): Activity
 
+    fun saveSubcontracted(activity: Activity): Activity
+
     fun update(activity: Activity): Activity
+
+    fun updateSubcontracted(activity: Activity): Activity
 
     fun deleteById(id: Long)
     fun deleteByIdWithoutSecurity(id: Long)

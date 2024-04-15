@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
+import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
@@ -18,6 +19,8 @@ import java.time.LocalDateTime
 internal class ActivityRepositorySecured(
         private val internalActivityRepository: InternalActivityRepository,
         private val securityService: SecurityService,
+        private val userRepository: UserRepository,
+        private val appProperties: AppProperties
 ) : ActivityRepository {
 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
@@ -125,6 +128,12 @@ internal class ActivityRepositorySecured(
         return internalActivityRepository.save(activity)
     }
 
+    override fun saveSubcontracted(activity: Activity): Activity {
+        val subcontractedUser = userRepository.find(activity.userId)
+        require(subcontractedUser?.username == appProperties.binnacle.subcontractedUser.username) { "Activity must be subcontracted" }
+        return internalActivityRepository.saveSubcontracted(activity)
+    }
+
     override fun update(activity: Activity): Activity {
         val authentication = securityService.checkAuthentication()
 
@@ -137,6 +146,12 @@ internal class ActivityRepositorySecured(
         require(activityToUpdate != null) { "Activity to update does not exist" }
 
         return internalActivityRepository.update(activity)
+    }
+
+    override fun updateSubcontracted(activity: Activity): Activity {
+        val subcontractedUser = userRepository.find(activity.userId)
+        require(subcontractedUser?.username == appProperties.binnacle.subcontractedUser.username) { "Activity must be subcontracted" }
+        return internalActivityRepository.updateSubcontracted(activity)
     }
 
     override fun deleteById(id: Long) {

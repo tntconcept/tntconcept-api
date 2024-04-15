@@ -48,7 +48,7 @@ class SubcontractedActivityCreationUseCase internal constructor(
 
         subcontractedActivityValidator.checkActivityIsValidForCreation(activityToCreate, userSubcontracted)
 
-        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
+        val savedActivity = activityRepository.saveSubcontracted(Activity.of(activityToCreate, projectRole))
 
         if (activityToCreate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(savedActivity.id!!, activityToCreate.evidence!!, savedActivity.insertDate!!)

@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.repositories
 
+import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
@@ -7,6 +8,7 @@ import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,9 +28,11 @@ internal class ActivityRepositorySecuredTest {
 
     private val securityService = mock<SecurityService>()
     private val internalActivityRepository = mock<InternalActivityRepository>()
+    private val userRepository = mock<UserRepository>()
+    private val appProperties = AppProperties()
 
     private var activityRepositorySecured =
-            ActivityRepositorySecured(internalActivityRepository, securityService)
+            ActivityRepositorySecured(internalActivityRepository, securityService, userRepository, appProperties)
 
     @Test
     fun `find all with user id filter`() {
@@ -446,6 +450,40 @@ internal class ActivityRepositorySecuredTest {
     }
 
     @Test
+    fun `save subcontracted activity should call internal to save subcontracted activity`() {
+        val activity = Activity(
+            start = today.withDayOfMonth(1).atTime(0,0),
+            end = today.withDayOfMonth(today.lengthOfMonth()).atTime(23,59),
+            duration = 20000,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
+        )
+        val expectedActivity = Activity(
+            id = 1L,
+            start = today.withDayOfMonth(1).atTime(0,0),
+            end = today.withDayOfMonth(today.lengthOfMonth()).atTime(23,59),
+            duration = 20000,
+            description = "Test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
+        )
+
+        whenever(securityService.authentication).thenReturn(Optional.of(subcontracted_manager_role))
+        whenever(internalActivityRepository.saveSubcontracted(activity)).thenReturn(expectedActivity)
+
+        val result = activityRepositorySecured.saveSubcontracted(activity)
+
+        assertEquals(expectedActivity, result)
+    }
+
+    @Test
     fun `update activity should throw IllegalStateException if user is not authenticated`() {
         whenever(securityService.authentication).thenReturn(Optional.empty())
 
@@ -516,6 +554,27 @@ internal class ActivityRepositorySecuredTest {
         whenever(internalActivityRepository.update(activity)).thenReturn(activity)
 
         val result = activityRepositorySecured.update(activity)
+
+        assertEquals(activity, result)
+    }
+    @Test
+    fun `update subcontracted activity should call internal`() {
+        val activity = Activity(
+            id = 1L,
+            start = today.withDayOfMonth(1).atTime(0,0),
+            end = today.withDayOfMonth(today.lengthOfMonth()).atTime(23,59),
+            duration = 120,
+            description = "Updated test activity",
+            projectRole = projectRole,
+            userId = userId,
+            billable = false,
+            hasEvidences = false,
+            approvalState = ApprovalState.NA,
+        )
+        whenever(securityService.authentication).thenReturn(Optional.of(subcontracted_manager_role))
+        whenever(internalActivityRepository.updateSubcontracted(activity)).thenReturn(activity)
+
+        val result = activityRepositorySecured.updateSubcontracted(activity)
 
         assertEquals(activity, result)
     }
@@ -737,6 +796,7 @@ internal class ActivityRepositorySecuredTest {
                 ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("activity-approval")))
         private val emptyRolesAuth =
                 ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
-
+        private val subcontracted_manager_role: Authentication =
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("subcontracted-activity-manager")))
     }
 }

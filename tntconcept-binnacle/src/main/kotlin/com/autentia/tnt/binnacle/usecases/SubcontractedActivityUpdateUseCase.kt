@@ -44,6 +44,7 @@ class SubcontractedActivityUpdateUseCase internal constructor(
         val projectRole = projectRoleEntity.toDomain()
         val currentActivity = this.getActivity(subcontractedActivityRequest.id!!)
 
+        require(currentActivity.userId == userSubcontracted.id) {"The activity must be subcontracted"}
 
         val activityToUpdate = activityRequestBodyConverter.toActivity(
                 subcontractedActivityRequest,
@@ -55,7 +56,7 @@ class SubcontractedActivityUpdateUseCase internal constructor(
 
         subcontractedActivityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity)
 
-        val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
+        val updatedActivityEntity = activityRepository.updateSubcontracted(Activity.of(activityToUpdate, projectRoleEntity))
 
         val updatedActivity = updatedActivityEntity.toDomain().copy(evidence = activityToUpdate.evidence);
 
