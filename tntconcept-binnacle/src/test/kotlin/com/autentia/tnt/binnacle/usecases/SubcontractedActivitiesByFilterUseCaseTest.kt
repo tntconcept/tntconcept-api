@@ -1,14 +1,17 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityFilterDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.repositories.predicates.*
-import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.userId
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
@@ -21,12 +24,16 @@ import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.util.*
 
+
 internal class SubcontractedActivitiesByFilterUseCaseTest {
     private val activityRepository = Mockito.mock<ActivityRepository>()
     private val securityService = Mockito.mock<SecurityService>()
     private val activityResponseConverter = ActivityResponseConverter(ActivityIntervalResponseConverter())
+    private val appProperties = AppProperties()
+    private val userRepository = Mockito.mock<UserRepository>()
+
     private val subcontractedActivitiesByFilterUseCase =
-            SubcontractedActivitiesByFilterUseCase(activityRepository, securityService, activityResponseConverter)
+            SubcontractedActivitiesByFilterUseCase(activityRepository, securityService, activityResponseConverter,appProperties,userRepository)
 
 
     @BeforeEach
@@ -34,21 +41,28 @@ internal class SubcontractedActivitiesByFilterUseCaseTest {
         whenever(securityService.authentication).thenReturn(Optional.of(AUTHENTICATION_WITH_SUBCONTRACTED_MANAGER_ROLE))
     }
 
+    @BeforeEach
+    fun generateSubcontractedUser(){
+        appProperties.binnacle.subcontractedUser.username = "subcontracted"
+        whenever(userRepository.findByUsername("subcontracted")).thenReturn(USER_SUBCONTRACTED)
+    }
+
     @Test
     fun `get subcontracted activities by role id`() {
         var predicate: Specification<Activity> = ActivityPredicates.ALL
-
+        predicate = PredicateBuilder.and(predicate, userId(USER_SUBCONTRACTED.id))
         val subcontractedActivityFilterDTO = SubcontractedActivityFilterDTO(
                 roleId = 1L
         )
-        val compositedSpecification = PredicateBuilder.and(
+
+        predicate = PredicateBuilder.and(
                 predicate,
                 ActivityRoleIdSpecification(subcontractedActivityFilterDTO.roleId!!)
         )
 
         subcontractedActivitiesByFilterUseCase.getActivities(subcontractedActivityFilterDTO)
 
-        Mockito.verify(activityRepository).findAll(compositedSpecification)
+        Mockito.verify(activityRepository).findAll(predicate)
     }
 
     @Test
@@ -57,18 +71,21 @@ internal class SubcontractedActivitiesByFilterUseCaseTest {
                 startDate = startDate,
                 endDate = endDate,
         )
-        val compositedSpecification = PredicateBuilder.and(
-                ActivityStartDateLessOrEqualSpecification(subcontractedActivityFilterDTO.endDate!!),
+        var predicate: Specification<Activity> = ActivityPredicates.ALL
+        predicate = PredicateBuilder.and(predicate, userId(USER_SUBCONTRACTED.id))
+        predicate = PredicateBuilder.and(predicate,ActivityStartDateLessOrEqualSpecification(subcontractedActivityFilterDTO.endDate!!))
+        predicate = PredicateBuilder.and(
+                predicate,
                 ActivityEndDateGreaterOrEqualSpecification(subcontractedActivityFilterDTO.startDate!!)
         )
 
-        whenever(activityRepository.findAll(compositedSpecification)).thenReturn(listOf(activity))
+        whenever(activityRepository.findAll(predicate)).thenReturn(listOf(activity))
 
         val activities = subcontractedActivitiesByFilterUseCase.getActivities(subcontractedActivityFilterDTO)
 
         val expectedActivity = activityResponseConverter.toSubcontractedActivityResponseDTO(activity.toDomain())
 
-        Mockito.verify(activityRepository).findAll(compositedSpecification)
+        Mockito.verify(activityRepository).findAll(predicate)
 
         Assertions.assertThat(activities[0])
                 .usingRecursiveComparison()
@@ -81,11 +98,16 @@ internal class SubcontractedActivitiesByFilterUseCaseTest {
                 projectId = 1L,
                 roleId = 1L
         )
-        val compositedSpecification = ActivityRoleIdSpecification(subcontractedActivityFilterDTO.roleId!!)
+        var predicate: Specification<Activity> = ActivityPredicates.ALL
+        predicate = PredicateBuilder.and(predicate, userId(USER_SUBCONTRACTED.id))
+        predicate = PredicateBuilder.and(
+            predicate,
+            ActivityRoleIdSpecification(subcontractedActivityFilterDTO.roleId!!)
+        )
 
         subcontractedActivitiesByFilterUseCase.getActivities(subcontractedActivityFilterDTO)
 
-        Mockito.verify(activityRepository).findAll(compositedSpecification)
+        Mockito.verify(activityRepository).findAll(predicate)
     }
 
     @Test
@@ -93,11 +115,17 @@ internal class SubcontractedActivitiesByFilterUseCaseTest {
         val subcontractedActivityFilterDTO = SubcontractedActivityFilterDTO(
                 organizationId = 1L,
         )
-        val compositedSpecification = ActivityOrganizationIdSpecification(subcontractedActivityFilterDTO.organizationId!!)
+        var predicate: Specification<Activity> = ActivityPredicates.ALL
+        predicate = PredicateBuilder.and(predicate, userId(USER_SUBCONTRACTED.id))
+
+        predicate = PredicateBuilder.and(
+            predicate,
+            ActivityOrganizationIdSpecification(subcontractedActivityFilterDTO.organizationId!!)
+        )
 
         subcontractedActivitiesByFilterUseCase.getActivities(subcontractedActivityFilterDTO)
 
-        Mockito.verify(activityRepository).findAll(compositedSpecification)
+        Mockito.verify(activityRepository).findAll(predicate)
     }
 
     @Test
@@ -109,11 +137,16 @@ internal class SubcontractedActivitiesByFilterUseCaseTest {
                 projectId = 1L,
                 roleId = null
         )
-        val compositedSpecification = ActivityProjectIdSpecification(subcontractedActivityFilterDTO.projectId!!)
+        var predicate: Specification<Activity> = ActivityPredicates.ALL
+        predicate = PredicateBuilder.and(predicate, userId(USER_SUBCONTRACTED.id))
+        predicate = PredicateBuilder.and(
+            predicate,
+            ActivityProjectIdSpecification(subcontractedActivityFilterDTO.projectId!!)
+        )
 
         subcontractedActivitiesByFilterUseCase.getActivities(subcontractedActivityFilterDTO)
 
-        Mockito.verify(activityRepository).findAll(compositedSpecification)
+        Mockito.verify(activityRepository).findAll(predicate)
     }
 
     @Test
@@ -125,17 +158,25 @@ internal class SubcontractedActivitiesByFilterUseCaseTest {
                 1L,
                 1L,
         )
-        val compositedSpecification =
-                        PredicateBuilder.and(
-                                PredicateBuilder.and(
-                                        ActivityStartDateLessOrEqualSpecification(subcontractedActivityFilterDTO.endDate!!),
-                                        ActivityEndDateGreaterOrEqualSpecification(subcontractedActivityFilterDTO.startDate!!)
-                                ), ActivityRoleIdSpecification(subcontractedActivityFilterDTO.roleId!!)
-                        )
+        var predicate: Specification<Activity> = ActivityPredicates.ALL
+        predicate = PredicateBuilder.and(predicate, userId(USER_SUBCONTRACTED.id))
+        predicate = PredicateBuilder.and(
+            predicate,
+            ActivityStartDateLessOrEqualSpecification(subcontractedActivityFilterDTO.endDate!!)
+        )
+        predicate = PredicateBuilder.and(
+            predicate,
+            ActivityEndDateGreaterOrEqualSpecification(subcontractedActivityFilterDTO.startDate!!)
+        )
+        predicate = PredicateBuilder.and(
+            predicate,
+            ActivityRoleIdSpecification(subcontractedActivityFilterDTO.roleId!!)
+            )
+
 
         subcontractedActivitiesByFilterUseCase.getActivities(subcontractedActivityFilterDTO)
 
-        Mockito.verify(activityRepository).findAll(compositedSpecification)
+        Mockito.verify(activityRepository).findAll(predicate)
     }
 
     private companion object {
@@ -144,6 +185,8 @@ internal class SubcontractedActivitiesByFilterUseCaseTest {
 
         private val AUTHENTICATION_WITH_SUBCONTRACTED_MANAGER_ROLE: Authentication =
                 ClientAuthentication(USER_ID_1.toString(), mapOf("roles" to listOf("subcontracted-activity-manager")))
+
+        private val USER_SUBCONTRACTED = createUser(LocalDate.now(), 2, "subcontracted")
 
         val startDate: LocalDate = LocalDate.of(2023, 4, 15)
         val endDate: LocalDate = LocalDate.of(2023, 4, 17)

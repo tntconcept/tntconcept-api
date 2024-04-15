@@ -37,7 +37,7 @@ class SubcontractedActivityUpdateUseCase internal constructor(
     @ReadOnly
     fun updateSubcontractedActivity(subcontractedActivityRequest: SubcontractedActivityRequestDTO, locale: Locale): SubcontractedActivityResponseDTO {
         securityService.checkSubcontractedActivityManagerRole()
-        val userSubcontracted = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username.toString())?.toDomain()//desde un property
+        val userSubcontracted = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)?.toDomain()
 
         require(userSubcontracted != null){"Subcontracted user must exist"}
         val projectRoleEntity = this.getProjectRoleEntity(subcontractedActivityRequest.projectRoleId)

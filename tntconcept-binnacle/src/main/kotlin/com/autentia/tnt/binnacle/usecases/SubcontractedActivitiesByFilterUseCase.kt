@@ -1,16 +1,19 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.endDateGreaterThanOrEqualTo
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.organizationId
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.projectId
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.roleId
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.startDateLessThanOrEqualTo
+import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.userId
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import io.micronaut.data.jpa.repository.criteria.Specification
@@ -25,6 +28,8 @@ class SubcontractedActivitiesByFilterUseCase internal constructor(
     private val activityRepository: ActivityRepository,
     private val securityService: SecurityService,
     private val activityResponseConverter: ActivityResponseConverter,
+    private val appProperties: AppProperties,
+    private val userRepository: UserRepository
 ) {
 
     @Transactional
@@ -39,6 +44,10 @@ class SubcontractedActivitiesByFilterUseCase internal constructor(
 
     private fun getPredicateFromActivityFilter(activityFilter: SubcontractedActivityFilterDTO): Specification<Activity> {
         var predicate: Specification<Activity> = ActivityPredicates.ALL
+
+        //filter only activities of the subcontracted user
+        val subcontractedUser = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)
+        predicate = PredicateBuilder.and(predicate, userId(subcontractedUser!!.id))
 
         if (activityFilter.endDate !== null) {
             predicate = PredicateBuilder.and(predicate, startDateLessThanOrEqualTo(activityFilter.endDate))
