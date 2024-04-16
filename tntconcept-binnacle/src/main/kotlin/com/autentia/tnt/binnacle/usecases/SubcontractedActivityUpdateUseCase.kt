@@ -60,21 +60,6 @@ class SubcontractedActivityUpdateUseCase internal constructor(
 
         val updatedActivity = updatedActivityEntity.toDomain().copy(evidence = activityToUpdate.evidence);
 
-        if (activityToUpdate.hasEvidences) {
-            activityEvidenceService.storeActivityEvidence(
-                    updatedActivityEntity.id!!,
-                    activityToUpdate.evidence!!,
-                    updatedActivityEntity.insertDate!!
-            )
-        }
-
-        if (!activityToUpdate.hasEvidences && currentActivity.hasEvidences) {
-            activityEvidenceService.deleteActivityEvidence(
-                    updatedActivityEntity.id!!,
-                    updatedActivityEntity.insertDate!!
-            )
-        }
-
         return activityResponseConverter.toSubcontractedActivityResponseDTO(updatedActivity)
     }
 

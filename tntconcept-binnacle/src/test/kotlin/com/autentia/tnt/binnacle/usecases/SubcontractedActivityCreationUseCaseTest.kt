@@ -81,7 +81,7 @@ class SubcontractedActivityCreationUseCaseTest {
     }
 
     @Test
-    fun `create activity with a nonexistent projectRol throws an exception`() {
+    fun `create subcontracted activity with a nonexistent projectRol throws an exception`() {
         authenticate()
         generateSubcontractedUser()
 
@@ -91,7 +91,7 @@ class SubcontractedActivityCreationUseCaseTest {
     }
 
     @Test
-    fun `create activity before project creation date throws an exception`() {
+    fun `create subcontracted activity before project creation date throws an exception`() {
         authenticate()
         val subcontractedUser = generateSubcontractedUser()
 
@@ -114,7 +114,7 @@ class SubcontractedActivityCreationUseCaseTest {
 
 
     @Test
-    fun `created activity`() {
+    fun `create subcontracted activity`() {
 
         authenticate()
         val subcontractedUser = generateSubcontractedUser()
@@ -139,7 +139,7 @@ class SubcontractedActivityCreationUseCaseTest {
 
 
     @Test
-    fun `try to create a subcontracted activity without permissions`() {
+    fun `try to create a subcontracted activity without subcontracted manager role permission`() {
         val authenticationWithoutSubcontractedPermissions: Authentication =
             ClientAuthentication(USER_ID_1.toString(), mapOf("roles" to listOf("")))
         whenever(securityService.authentication).thenReturn(Optional.of(authenticationWithoutSubcontractedPermissions))

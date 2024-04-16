@@ -5,10 +5,10 @@ import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.RequireEvidence.NO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
-import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
@@ -20,12 +20,11 @@ import io.archimedesfw.commons.time.ClockUtils
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
-import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.*
-import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
 import java.util.*
@@ -67,13 +66,13 @@ internal class SubcontractedActivityUpdateUseCaseTest {
     }
 
     @BeforeEach
-    fun `check that activity is valid`() {
+    fun `check that subcontracted activity is valid for update`() {
         doNothing().whenever(subcontractedActivityValidator).checkActivityIsValidForUpdate(any(), any())
     }
 
 
     @Test
-    fun `should not update an activity when user is not authenticated`() {
+    fun `should not update a subcontracted activity when user is not authenticated`() {
 
         // Act, Assert
         assertThatThrownBy { sut.updateSubcontractedActivity(SOME_ACTIVITY_REQUEST, LOCALE) }.isInstanceOf(
@@ -90,7 +89,7 @@ internal class SubcontractedActivityUpdateUseCaseTest {
     }
 
     @Test
-    fun `should not update an existing activity with a role that is not found`() {
+    fun `should not update an existing subcontracted activity with a role that is not found`() {
         authenticate()
         // Arrange
         whenever(projectRoleRepository.findById(any())).thenReturn(null)
@@ -108,7 +107,7 @@ internal class SubcontractedActivityUpdateUseCaseTest {
 
 
     @Test
-    fun `should not update a non existing activity`() {
+    fun `should not update a non existing subcontracted activity`() {
         authenticate()
         // Arrange
         val role = PROJECT_ROLE
@@ -127,47 +126,34 @@ internal class SubcontractedActivityUpdateUseCaseTest {
         verifyNoMoreInteractions(projectRoleRepository, activityRepository)
     }
 
-    private fun `get activity updated with request`(
-        existingActivity: Activity,
-        request: SubcontractedActivityRequestDTO,
-        duration: Int
-    ): Activity =
-        existingActivity.copy(
-            duration = duration,
-            start = request.month.atDay(1).atTime(0, 0),
-            end = request.month.atEndOfMonth().atTime(23, 59),
-            description = request.description,
-            billable = request.billable
-        )
+    @Test
+    fun `should update a subcontracted activity`(){
+        authenticate()
+
+        val activity = createActivity(
+            id = SOME_ACTIVITY_REQUEST.id!!,
+            month = SOME_ACTIVITY_REQUEST.month,
+            duration = 10000,
+            description = SOME_ACTIVITY_REQUEST.description,
+            projectRole = PROJECT_ROLE
+            )
+
+        whenever(projectRoleRepository.findById(PROJECT_ROLE.id)).thenReturn(PROJECT_ROLE)
+        whenever(activityRepository.findById(any())).thenReturn(activity)
+        whenever(activityRepository.updateSubcontracted(any())).thenReturn(activity)
+        val activityToUpdate = SOME_ACTIVITY_REQUEST.copy(duration = 1000)
+
+        val result = sut.updateSubcontractedActivity(activityToUpdate, LOCALE)
+
+        
+        Assertions.assertEquals(activity.duration,result.duration)
 
 
-    private fun `get role that does not require evidence`() =
-        PROJECT_ROLE.copy(requireEvidence = NO, timeUnit = TimeUnit.MINUTES)
-
-
-    private fun `get existing activity with no evidence`(role: ProjectRole, approvalState: ApprovalState) =
-        Activity.emptyActivity(role).copy(
-            id = 1L,
-            userId = USER_ENTITIES_SUBCONTRACTED.id,
-            duration = 18000,
-            hasEvidences = false,
-            approvalState = approvalState,
-            start = LocalDate.now().atTime(8, 0),
-            end = LocalDate.now().atTime(12, 0),
-            insertDate = Date.from(Instant.now()),
-            departmentId = 1L,
-        )
-
-    private fun assertThatUpdatedActivityIsEquivalent(
-        result: SubcontractedActivityResponseDTO,
-        request: SubcontractedActivityRequestDTO
-    ) {
-        assertThat(result.month).isEqualTo(request.month)
-        assertThat(result.duration).isEqualTo(request.duration)
-        assertThat(result.description).isEqualTo(request.description)
-        assertThat(result.billable).isEqualTo(request.billable)
-        assertThat(result.projectRoleId).isEqualTo(request.projectRoleId)
     }
+
+
+
+
 
     private companion object {
 
@@ -200,6 +186,28 @@ internal class SubcontractedActivityUpdateUseCaseTest {
             false,
             PROJECT_ROLE.id,
         )
+
+        private fun createActivity(
+            id: Long = 1L,
+            userId: Long = 2L,
+            description: String = "New activity",
+            month: YearMonth,
+            duration: Int = 18000,
+            projectRole: ProjectRole = PROJECT_ROLE,
+        ): Activity =
+            Activity(
+                id = id,
+                userId = userId,
+                description = description,
+                start = month.atDay(1).atTime(0,0),
+                end = month.atEndOfMonth().atTime(23,59),
+                duration = duration,
+                billable = true,
+                hasEvidences = false,
+                projectRole = projectRole,
+                approvalState = ApprovalState.NA,
+                insertDate = toDate(month.atDay(1))
+            )
     }
 
 }

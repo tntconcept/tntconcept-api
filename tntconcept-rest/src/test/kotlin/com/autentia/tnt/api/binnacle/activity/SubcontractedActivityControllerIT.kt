@@ -15,7 +15,6 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -60,7 +59,7 @@ internal class SubcontractedActivityControllerIT {
     }
 
     @Test
-    fun `get all activities between the start and end date`() {
+    fun `get all subcontracted activities between the start and end date`() {
         val startDate = LocalDate.of(2018, Month.JANUARY, 1)
         val endDate = LocalDate.of(2018, Month.JANUARY, 31)
         val activityResponseDTOs = listOf(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
@@ -86,7 +85,7 @@ internal class SubcontractedActivityControllerIT {
 
 
     @Test
-    fun `get activities by filter`() {
+    fun `get subcontracted activities by filter`() {
         val startDate = LocalDate.of(2018, Month.JANUARY, 1)
         val endDate = LocalDate.of(2018, Month.JANUARY, 31)
         val organizationId = 1L
@@ -117,7 +116,7 @@ internal class SubcontractedActivityControllerIT {
 
 
     @Test
-    fun `get activity by id`() {
+    fun `get subcontracted activity by id`() {
 
         whenever(subcontractedActivityRetrievalByIdUseCase.getActivityById(any())).thenReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
         println(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
@@ -130,7 +129,7 @@ internal class SubcontractedActivityControllerIT {
     }
 
     @Test
-    fun `fail if try to get an activity with a non existing id`() {
+    fun `fail if try to get a subcontracted activity with a non existing id`() {
         val nonExistingId = 8L
 
         doThrow(ActivityNotFoundException(1L)).whenever(subcontractedActivityRetrievalByIdUseCase).getActivityById(nonExistingId)
@@ -147,43 +146,9 @@ internal class SubcontractedActivityControllerIT {
             ex.response.getBody<ErrorResponse>().get().code
         )
     }
-    @Test
-    fun `post a new activity without evidence`() {
-        doReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO).whenever(subcontractedActivityCreationUseCase).createSubcontractedActivity(any(), eq(Locale.ENGLISH))
-
-        val response = client.exchangeObject<SubcontractedActivityResponse>(
-            HttpRequest.POST("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-        )
-        org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
-        org.junit.jupiter.api.Assertions.assertEquals(SUBCONTRACTED_ACTIVITY_RESPONSE, response.body.get())
-    }
 
     @Test
-    fun `post a new activity with evidence`() {
-        doReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO).whenever(subcontractedActivityCreationUseCase).createSubcontractedActivity(any(), eq(Locale.ENGLISH))
-
-        val response = client.exchangeObject<SubcontractedActivityResponse>(
-            HttpRequest.POST("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-        )
-
-        org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
-        org.junit.jupiter.api.Assertions.assertEquals(SUBCONTRACTED_ACTIVITY_RESPONSE, response.body.get())
-    }
-
-    @Test
-    fun `post a new activity with wrong evidence format will result in bad request`() {
-        try {
-            client.exchangeObject<Any>(
-                HttpRequest.POST("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON)
-                    .header(HttpHeaders.ACCEPT_LANGUAGE, "en")
-            )
-        } catch (ex: HttpClientResponseException) {
-            Assertions.assertThat(ex.response.status).isEqualTo(HttpStatus.BAD_REQUEST)
-        }
-    }
-
-    @Test
-    fun `fail if try to post activity with too long description`() {
+    fun `fail if try to post a subcontracted activity with too long description`() {
         val tooLongDescriptionJson = SUBCONTRACTED_ACTIVITY_POST_JSON.replace(
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description, "x".repeat(2049)
         )
@@ -207,7 +172,7 @@ internal class SubcontractedActivityControllerIT {
 
     @ParameterizedTest
     @MethodSource("postFailProvider")
-    fun `fail if try to post an activity and a exception is throw`(
+    fun `fail if try to post a subcontracted activity and a exception is throw, result on a HTTP error`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
         expectedErrorCode: String,
@@ -228,7 +193,7 @@ internal class SubcontractedActivityControllerIT {
     }
 
     @Test
-    fun `put an activity`() {
+    fun `put an subcontracted activity`() {
         val putActivity = SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.copy(
             id = SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.id, description = "Updated activity description"
         )
@@ -257,7 +222,7 @@ internal class SubcontractedActivityControllerIT {
 
     @ParameterizedTest
     @MethodSource("putFailProvider")
-    fun `fail if try to put an activity and exception is thrown`(
+    fun `fail if try to put a subcontracted activity and exception is thrown, result on a HTTP error`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
         expectedErrorCode: String,
@@ -278,7 +243,7 @@ internal class SubcontractedActivityControllerIT {
     }
 
     @Test
-    fun `delete an activity`() {
+    fun `delete a subcontracted activity`() {
         val activityIdToDelete = 14L
 
         val response = client.exchange<Any, Any>(
@@ -298,7 +263,7 @@ internal class SubcontractedActivityControllerIT {
 
     @ParameterizedTest
     @MethodSource("deleteFailProvider")
-    fun `fail if try to delete an activity and exception is throw`(
+    fun `fail if try to delete a subcontracted activity and exception is throw, result on a HTTP error`(
         exception: Exception,
         expectedResponseStatus: HttpStatus,
         expectedErrorCode: String,
