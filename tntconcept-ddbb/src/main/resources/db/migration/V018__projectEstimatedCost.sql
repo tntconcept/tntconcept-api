@@ -1,1 +1,1 @@
-ALTER TABLE Project ADD COLUMN estimated_cost FLOAT NULL;
+ALTER TABLE Project ADD COLUMN estimatedCost DECIMAL(10,2) NULL;
