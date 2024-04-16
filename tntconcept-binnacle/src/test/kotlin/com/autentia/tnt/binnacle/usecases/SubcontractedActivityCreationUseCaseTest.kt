@@ -188,7 +188,6 @@ class SubcontractedActivityCreationUseCaseTest {
             TIME_NOW,
             DURATION,
             "New activity",
-            false,
             PROJECT_ROLE.id
         )
 
@@ -197,7 +196,6 @@ class SubcontractedActivityCreationUseCaseTest {
             TIME_NOW.minusMonths(4),
             DURATION,
             "New activity wit",
-            false,
             PROJECT_ROLE.id,
         )
 
@@ -206,7 +204,6 @@ class SubcontractedActivityCreationUseCaseTest {
             TIME_NOW,
             DURATION,
             "New activity wit",
-            false,
             PROJECT_ROLE.id,
         )
 
@@ -256,7 +253,6 @@ class SubcontractedActivityCreationUseCaseTest {
             projectRoleId: Long = 10L,
         ): SubcontractedActivityResponseDTO =
             SubcontractedActivityResponseDTO(
-                billable,
                 duration,
                 description,
                 id,

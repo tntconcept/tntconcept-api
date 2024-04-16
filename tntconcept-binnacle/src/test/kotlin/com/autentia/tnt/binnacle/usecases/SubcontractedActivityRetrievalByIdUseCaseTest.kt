@@ -102,7 +102,6 @@ internal class SubcontractedActivityRetrievalByIdUseCaseTest {
         )
 
         private val subcontractedActivityResponseDTO = SubcontractedActivityResponseDTO(
-                false,
                 DURATION,
                 "Dummy description",
                 1L,

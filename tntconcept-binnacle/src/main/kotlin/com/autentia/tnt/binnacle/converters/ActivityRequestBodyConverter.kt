@@ -51,7 +51,7 @@ class ActivityRequestBodyConverter() {
                     subcontractingActivityRequestBody.description,
                     projectRole,
                     user.id,
-                    subcontractingActivityRequestBody.billable,
+                    true,
                     user.departmentId,
                     insertDate,
                     false,

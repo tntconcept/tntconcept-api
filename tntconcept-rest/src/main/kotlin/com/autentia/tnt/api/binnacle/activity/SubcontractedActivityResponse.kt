@@ -4,7 +4,6 @@ import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import java.time.YearMonth
 
 data class SubcontractedActivityResponse(
-    val billable: Boolean,
     val duration: Int,
     val description: String,
     val id: Long,
@@ -15,7 +14,6 @@ data class SubcontractedActivityResponse(
     companion object {
         fun from(subcontractingActivityResponseDTO: SubcontractedActivityResponseDTO) =
             SubcontractedActivityResponse(
-                subcontractingActivityResponseDTO.billable,
                 subcontractingActivityResponseDTO.duration,
                 subcontractingActivityResponseDTO.description,
                 subcontractingActivityResponseDTO.id,

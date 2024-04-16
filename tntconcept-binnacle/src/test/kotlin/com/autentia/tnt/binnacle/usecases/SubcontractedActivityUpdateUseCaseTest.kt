@@ -145,7 +145,7 @@ internal class SubcontractedActivityUpdateUseCaseTest {
 
         val result = sut.updateSubcontractedActivity(activityToUpdate, LOCALE)
 
-        
+
         Assertions.assertEquals(activity.duration,result.duration)
 
 
@@ -183,7 +183,6 @@ internal class SubcontractedActivityUpdateUseCaseTest {
             YearMonth.of(TODAY.year, TODAY.month),
             DURATION,
             "New activity",
-            false,
             PROJECT_ROLE.id,
         )
 

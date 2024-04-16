@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.entities.dto
 import java.time.YearMonth
 
 data class SubcontractedActivityResponseDTO (
-    val billable: Boolean,
     val duration: Int,
     val description: String,
     val id: Long,

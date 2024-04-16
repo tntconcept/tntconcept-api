@@ -1675,7 +1675,6 @@ components:
           nullable: true
     SubcontractedActivityRequest:
       required:
-      - billable
       - description
       - duration
       - month
@@ -1694,8 +1693,6 @@ components:
         description:
           maxLength: 2048
           type: string
-        billable:
-          type: boolean
         projectRoleId:
           type: integer
           format: int64
@@ -1705,7 +1702,6 @@ components:
           nullable: true
     SubcontractedActivityResponse:
       required:
-      - billable
       - description
       - duration
       - id
@@ -1714,8 +1710,6 @@ components:
       - userId
       type: object
       properties:
-        billable:
-          type: boolean
         duration:
           type: integer
           format: int32

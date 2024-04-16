@@ -31,7 +31,6 @@ class ActivityResponseConverter(
     )
 
     fun toSubcontractedActivityResponseDTO(activity: com.autentia.tnt.binnacle.core.domain.Activity) = SubcontractedActivityResponseDTO(
-            billable = activity.billable,
             duration = activity.duration,
             description = activity.description,
             id = activity.id!!,
