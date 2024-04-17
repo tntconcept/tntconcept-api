@@ -1,0 +1,1 @@
+ALTER TABLE Project ADD COLUMN orderNumber VARCHAR(64) NULL;
