@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.repositories
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
+import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -457,7 +459,7 @@ internal class ActivityRepositorySecuredTest {
             duration = 20000,
             description = "Test activity",
             projectRole = projectRole,
-            userId = userId,
+            userId = USER_SUBCONTRACTED.id,
             billable = false,
             hasEvidences = false,
             approvalState = ApprovalState.NA,
@@ -469,12 +471,13 @@ internal class ActivityRepositorySecuredTest {
             duration = 20000,
             description = "Test activity",
             projectRole = projectRole,
-            userId = userId,
+            userId = USER_SUBCONTRACTED.id,
             billable = false,
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
-
+        appProperties.binnacle.subcontractedUser.username="subcontracted"
+        whenever(userRepository.findByUsername(any())).thenReturn(USER_SUBCONTRACTED)
         whenever(securityService.authentication).thenReturn(Optional.of(subcontracted_manager_role))
         whenever(internalActivityRepository.saveSubcontracted(activity)).thenReturn(expectedActivity)
 
@@ -566,11 +569,13 @@ internal class ActivityRepositorySecuredTest {
             duration = 120,
             description = "Updated test activity",
             projectRole = projectRole,
-            userId = userId,
+            userId = USER_SUBCONTRACTED.id,
             billable = false,
             hasEvidences = false,
             approvalState = ApprovalState.NA,
         )
+        appProperties.binnacle.subcontractedUser.username="subcontracted"
+        whenever(userRepository.findByUsername(any())).thenReturn(USER_SUBCONTRACTED)
         whenever(securityService.authentication).thenReturn(Optional.of(subcontracted_manager_role))
         whenever(internalActivityRepository.updateSubcontracted(activity)).thenReturn(activity)
 
@@ -789,6 +794,7 @@ internal class ActivityRepositorySecuredTest {
 
     private companion object {
         private const val userId = 1L
+        private val USER_SUBCONTRACTED = createUser(LocalDate.now(), 2, "subcontracted")
         private const val adminUserId = 3L
         private val today = LocalDate.now()
         private val projectRole = createProjectRole()
