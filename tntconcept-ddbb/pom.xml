@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.autentia.tnt</groupId>
         <artifactId>tntconcept-api</artifactId>
-        <version>1.36.0-SNAPSHOT</version>
+        <version>1.36.0</version>
     </parent>
 
     <artifactId>tntconcept-ddbb</artifactId>
