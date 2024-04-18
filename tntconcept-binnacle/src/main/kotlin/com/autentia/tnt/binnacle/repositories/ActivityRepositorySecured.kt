@@ -129,8 +129,8 @@ internal class ActivityRepositorySecured(
     }
 
     override fun saveSubcontracted(activity: Activity): Activity {
-        val subcontractedUser = userRepository.find(activity.userId)
-        require(subcontractedUser?.username == appProperties.binnacle.subcontractedUser.username) { "Activity must be subcontracted" }
+        val subcontractedUser = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)
+        require(subcontractedUser?.id == activity.userId) { "Activity must be subcontracted"}
         return internalActivityRepository.saveSubcontracted(activity)
     }
 
@@ -149,8 +149,8 @@ internal class ActivityRepositorySecured(
     }
 
     override fun updateSubcontracted(activity: Activity): Activity {
-        val subcontractedUser = userRepository.find(activity.userId)
-        require(subcontractedUser?.username == appProperties.binnacle.subcontractedUser.username) { "Activity must be subcontracted" }
+        val subcontractedUser = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)
+        require(subcontractedUser?.id == activity.userId) { "Activity must be subcontracted"}
         return internalActivityRepository.updateSubcontracted(activity)
     }
 

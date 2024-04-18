@@ -44,8 +44,6 @@ class SubcontractedActivityCreationUseCase internal constructor(
 
         val activityToCreate = activityRequestBodyConverter.toActivity(subcontractedActivityRequestBody, null, projectRole.toDomain(), userSubcontracted)
 
-
-
         subcontractedActivityValidator.checkActivityIsValidForCreation(activityToCreate, userSubcontracted)
 
         val savedActivity = activityRepository.saveSubcontracted(Activity.of(activityToCreate, projectRole))
