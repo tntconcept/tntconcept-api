@@ -20,7 +20,7 @@ class CustomLdapContextAuthenticationMapperIT {
     private lateinit var customLdapContextAuthenticationMapper: CustomLdapContextAuthenticationMapper
 
     @ParameterizedTest
-    @CsvSource(value = ["usuario.prueba1, 11", "usuario.prueba2, 12"])
+    @CsvSource(value = ["usuario.prueba1, 11", "usuario.prueba2, 12", "usuario.prueba3, 133"])
     fun `should map username to id on authenticated response`(username: String, id: Long) {
         val roles = mutableSetOf("user")
         val authenticationResponse = customLdapContextAuthenticationMapper.map(null, username, roles)
