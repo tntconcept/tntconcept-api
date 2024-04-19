@@ -119,7 +119,7 @@ internal class SubcontractedActivityControllerIT {
     fun `get subcontracted activity by id`() {
 
         whenever(subcontractedActivityRetrievalByIdUseCase.getActivityById(any())).thenReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
-        println(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
+        
         val response = client.exchangeObject<SubcontractedActivityResponse>(
             HttpRequest.GET("/api/subcontracted_activity/${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.id}")
         )

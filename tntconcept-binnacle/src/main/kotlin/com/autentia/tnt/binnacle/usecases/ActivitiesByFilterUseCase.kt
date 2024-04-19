@@ -70,6 +70,7 @@ class ActivitiesByFilterUseCase internal constructor(
         if (activityFilter.userId !== null) {
             predicate = PredicateBuilder.and(predicate, userId(activityFilter.userId))
         }
+
         return predicate
     }
 }

@@ -25,6 +25,8 @@ internal class ActivityRepositorySecured(
 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
             internalActivityRepository.findAll(addUserFilterIfNecessary(activitySpecification))
+    override fun findAllWithoutSecure(activitySpecification: Specification<Activity>): List<Activity> =
+        internalActivityRepository.findAll(activitySpecification)
 
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()

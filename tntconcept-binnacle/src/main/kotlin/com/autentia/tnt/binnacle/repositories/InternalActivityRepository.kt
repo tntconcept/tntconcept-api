@@ -15,6 +15,8 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
         activityDao.findAll(activitySpecification, Sort.of(Sort.Order("start")))
+    override fun findAllWithoutSecure(activitySpecification: Specification<Activity>): List<Activity> =
+        activityDao.findAll(activitySpecification, Sort.of(Sort.Order("start")))
 
     override fun findById(id: Long): Activity? {
         val activity: Optional<Activity> = activityDao.findById(id)
