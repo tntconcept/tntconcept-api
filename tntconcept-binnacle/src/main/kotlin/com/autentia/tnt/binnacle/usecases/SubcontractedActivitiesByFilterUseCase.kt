@@ -38,7 +38,7 @@ class SubcontractedActivitiesByFilterUseCase internal constructor(
 
         securityService.checkSubcontractedActivityManagerRole()
         val predicate: Specification<Activity> = getPredicateFromActivityFilter(activityFilter)
-        val activities = activityRepository.findAllWithoutSecure(predicate).map { it.toDomain() }
+        val activities = activityRepository.findAll(predicate).map { it.toDomain() }
 
         return activities.map { activityResponseConverter.toSubcontractedActivityResponseDTO(it) }
     }

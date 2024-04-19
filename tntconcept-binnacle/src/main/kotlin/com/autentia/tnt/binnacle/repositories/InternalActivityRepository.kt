@@ -15,8 +15,7 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
         activityDao.findAll(activitySpecification, Sort.of(Sort.Order("start")))
-    override fun findAllWithoutSecure(activitySpecification: Specification<Activity>): List<Activity> =
-        activityDao.findAll(activitySpecification, Sort.of(Sort.Order("start")))
+
 
     override fun findById(id: Long): Activity? {
         val activity: Optional<Activity> = activityDao.findById(id)
@@ -26,6 +25,7 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
             null
         }
     }
+
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
         return activityDao.find(startDate, endDate, userIds)
@@ -94,16 +94,12 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         return activityDao.update(activity)
     }
 
-    override fun updateSubcontracted(activity: Activity): Activity {
-        return activityDao.update(activity)
-    }
+
 
     override fun deleteById(id: Long) {
         activityDao.deleteById(id)
     }
 
-    override fun deleteByIdWithoutSecurity(id: Long) {
-        deleteById(id)
-    }
+
 
 }

@@ -7,6 +7,7 @@ import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.security.application.canAccessAllActivities
 import com.autentia.tnt.security.application.checkAuthentication
+import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import com.autentia.tnt.security.application.id
 import io.micronaut.context.annotation.Primary
 import io.micronaut.data.jpa.repository.criteria.Specification
@@ -25,8 +26,6 @@ internal class ActivityRepositorySecured(
 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
             internalActivityRepository.findAll(addUserFilterIfNecessary(activitySpecification))
-    override fun findAllWithoutSecure(activitySpecification: Specification<Activity>): List<Activity> =
-        internalActivityRepository.findAll(activitySpecification)
 
     override fun findById(id: Long): Activity? {
         val authentication = securityService.checkAuthentication()
@@ -37,6 +36,7 @@ internal class ActivityRepositorySecured(
             internalActivityRepository.findByIdAndUserId(id, authentication.id())
         }
     }
+
 
     override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
@@ -150,11 +150,6 @@ internal class ActivityRepositorySecured(
         return internalActivityRepository.update(activity)
     }
 
-    override fun updateSubcontracted(activity: Activity): Activity {
-        val subcontractedUser = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)
-        require(subcontractedUser?.id == activity.userId) { "Activity must be subcontracted"}
-        return internalActivityRepository.updateSubcontracted(activity)
-    }
 
     override fun deleteById(id: Long) {
         val authentication = securityService.checkAuthentication()
@@ -166,9 +161,6 @@ internal class ActivityRepositorySecured(
             require(activityToDelete.userId == authentication.id()) { "User cannot delete activity" }
         }
 
-        internalActivityRepository.deleteById(id)
-    }
-    override fun deleteByIdWithoutSecurity(id: Long){
         internalActivityRepository.deleteById(id)
     }
 

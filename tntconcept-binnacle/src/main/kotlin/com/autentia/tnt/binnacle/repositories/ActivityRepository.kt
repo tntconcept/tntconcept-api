@@ -9,8 +9,9 @@ internal interface ActivityRepository {
 
     fun findAll(activitySpecification: Specification<Activity>): List<Activity>
 
-    fun findAllWithoutSecure(activitySpecification: Specification<Activity>): List<Activity>
+
     fun findById(id: Long): Activity?
+
 
     fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
@@ -40,8 +41,8 @@ internal interface ActivityRepository {
 
     fun update(activity: Activity): Activity
 
-    fun updateSubcontracted(activity: Activity): Activity
+
 
     fun deleteById(id: Long)
-    fun deleteByIdWithoutSecurity(id: Long)
+
 }

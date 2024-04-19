@@ -56,7 +56,7 @@ class SubcontractedActivityUpdateUseCase internal constructor(
 
         subcontractedActivityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity)
 
-        val updatedActivityEntity = activityRepository.updateSubcontracted(Activity.of(activityToUpdate, projectRoleEntity))
+        val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
 
         val updatedActivity = updatedActivityEntity.toDomain().copy(evidence = activityToUpdate.evidence);
 

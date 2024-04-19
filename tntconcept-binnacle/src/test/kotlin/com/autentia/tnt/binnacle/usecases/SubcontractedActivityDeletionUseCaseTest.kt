@@ -12,7 +12,10 @@ import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -51,7 +54,7 @@ class SubcontractedActivityDeletionUseCaseTest {
 
         useCase.deleteSubcontractedActivityById(1L)
 
-        verify(activityRepository).deleteByIdWithoutSecurity(1L)
+        verify(activityRepository).deleteById(1L)
     }
 
     @Test

@@ -560,29 +560,7 @@ internal class ActivityRepositorySecuredTest {
 
         assertEquals(activity, result)
     }
-    @Test
-    fun `update subcontracted activity should call internal`() {
-        val activity = Activity(
-            id = 1L,
-            start = today.withDayOfMonth(1).atTime(0,0),
-            end = today.withDayOfMonth(today.lengthOfMonth()).atTime(23,59),
-            duration = 120,
-            description = "Updated test activity",
-            projectRole = projectRole,
-            userId = USER_SUBCONTRACTED.id,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
-        )
-        appProperties.binnacle.subcontractedUser.username="subcontracted"
-        whenever(userRepository.findByUsername(any())).thenReturn(USER_SUBCONTRACTED)
-        whenever(securityService.authentication).thenReturn(Optional.of(subcontracted_manager_role))
-        whenever(internalActivityRepository.updateSubcontracted(activity)).thenReturn(activity)
-
-        val result = activityRepositorySecured.updateSubcontracted(activity)
-
-        assertEquals(activity, result)
-    }
+    
 
     @Test
     fun `update activity should throw IllegalArgumentException when id doesn't exist`() {

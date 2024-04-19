@@ -140,7 +140,7 @@ internal class SubcontractedActivityUpdateUseCaseTest {
 
         whenever(projectRoleRepository.findById(PROJECT_ROLE.id)).thenReturn(PROJECT_ROLE)
         whenever(activityRepository.findById(any())).thenReturn(activity)
-        whenever(activityRepository.updateSubcontracted(any())).thenReturn(activity)
+        whenever(activityRepository.update(any())).thenReturn(activity)
         val activityToUpdate = SOME_ACTIVITY_REQUEST.copy(duration = 1000)
 
         val result = sut.updateSubcontractedActivity(activityToUpdate, LOCALE)

@@ -34,6 +34,6 @@ class SubcontractedActivityDeletionUseCase internal constructor(
             activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
         }
 
-        activityRepository.deleteByIdWithoutSecurity(id)
+        activityRepository.deleteById(id)
     }
 }
