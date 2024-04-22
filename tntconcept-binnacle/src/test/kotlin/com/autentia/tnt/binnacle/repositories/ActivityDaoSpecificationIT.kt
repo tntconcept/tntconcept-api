@@ -5,7 +5,9 @@ import com.autentia.tnt.binnacle.config.createOrganization
 import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.core.domain.DateInterval
-import com.autentia.tnt.binnacle.entities.*
+import com.autentia.tnt.binnacle.entities.Activity
+import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import io.micronaut.data.model.Sort
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
@@ -152,7 +154,8 @@ class ActivityDaoSpecificationIT {
                 null,
                 null,
                 organization.get(),
-                project.projectRoles
+                project.projectRoles,
+                project.projectBillingType
             ))
         )
 
@@ -261,7 +264,8 @@ class ActivityDaoSpecificationIT {
                 null,
                 null,
                 organization.get(),
-                project.projectRoles
+                project.projectRoles,
+                project.projectBillingType
             ))
         )
 

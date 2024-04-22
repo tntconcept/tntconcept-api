@@ -3,17 +3,17 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.config.createProject
-import com.autentia.tnt.binnacle.core.domain.*
+import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
+import com.autentia.tnt.binnacle.core.domain.Evidence
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
-import com.autentia.tnt.binnacle.services.*
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.services.ActivityService
 import io.archimedesfw.commons.time.test.ClockTestUtils
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -1379,7 +1379,8 @@ internal class ActivityValidatorTest {
             null,
             null,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "CLOSED_PRICE"
         )
 
         private val blockedPastProject = Project(
@@ -1391,7 +1392,8 @@ internal class ActivityValidatorTest {
             LocalDate.parse("2000-01-01"),
             user.id,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "CLOSED_PRICE"
         )
 
         private val vacationProject =
@@ -1404,7 +1406,8 @@ internal class ActivityValidatorTest {
                 null,
                 null,
                 Organization(1, "Organization", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "CLOSED_PRICE"
             )
 
         private val projectRoleWithPastBlockedProject = ProjectRole(
@@ -1453,7 +1456,8 @@ internal class ActivityValidatorTest {
                 null,
                 null,
                 Organization(1, "Autentia", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "NO_BILLABLE"
             )
         private val blockedProject =
             Project(
@@ -1465,7 +1469,8 @@ internal class ActivityValidatorTest {
                 LocalDate.of(Year.now().value, 1, 1),
                 null,
                 Organization(1, "Organization", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "CLOSED_PRICE"
             )
         private val blockedProjectRole =
             ProjectRole(
@@ -1921,7 +1926,7 @@ internal class ActivityValidatorTest {
             name: String = "Role with limit",
             requireEvidence: RequireEvidence = RequireEvidence.NO,
             project: Project = Project(
-                1, "Project", true, false, LocalDate.now(), null, null, organization, listOf()
+                1, "Project", true, false, LocalDate.now(), null, null, organization, listOf(), "NO_BILLABLE"
             ),
             maxTimeAllowedByYear: Int,
             maxTimeAllowedByActivity: Int,

@@ -67,6 +67,7 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 null,
                 Organization(1L, "Dummy Organization", 1, listOf()),
                 listOf(),
+                "NO_BILLABLE"
             ),
             0,
             0,

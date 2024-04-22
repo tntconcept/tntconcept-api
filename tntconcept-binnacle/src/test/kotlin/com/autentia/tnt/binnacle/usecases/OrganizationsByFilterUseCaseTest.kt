@@ -7,7 +7,6 @@ import com.autentia.tnt.binnacle.entities.dto.OrganizationFilterDTO
 import com.autentia.tnt.binnacle.entities.dto.OrganizationResponseDTO
 import com.autentia.tnt.binnacle.repositories.OrganizationRepository
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
@@ -162,7 +161,8 @@ internal class OrganizationsByFilterUseCaseTest {
                 null,
                 null,
                 mock(Organization::class.java),
-                roles
+                roles,
+                "NO_BILLABLE"
             )
         }
 

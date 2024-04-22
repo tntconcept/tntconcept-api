@@ -19,7 +19,6 @@ import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.*
 
 @TestInstance(Lifecycle.PER_CLASS)
 internal class ActivityEvidenceRetrievalUseCaseTest {
@@ -70,7 +69,7 @@ internal class ActivityEvidenceRetrievalUseCaseTest {
         private val IMAGE = EvidenceDTO("Image in base 64", "")
         private val organization = Organization(1L, "Autentia", 1, emptyList())
         private val project =
-            Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
+            Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList(),"NO_BILLABLE")
         private val projectRole =
             ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, 0, true, false, TimeUnit.MINUTES)
 

@@ -1,5 +1,6 @@
 package com.autentia.tnt.binnacle.entities.dto
 
+import com.autentia.tnt.binnacle.entities.ProjectBillingType
 import java.time.LocalDate
 
 data class ProjectResponseDTO(
@@ -7,6 +8,7 @@ data class ProjectResponseDTO(
     val name: String,
     val open: Boolean,
     val billable: Boolean,
+    val projectBillingType: ProjectBillingType,
     val organizationId: Long,
     val startDate: LocalDate,
     val blockDate: LocalDate? = null,

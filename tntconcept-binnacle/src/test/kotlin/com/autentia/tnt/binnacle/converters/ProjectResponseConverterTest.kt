@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.converters
 import com.autentia.tnt.binnacle.config.createOrganization
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectBillingTypes
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -29,7 +30,8 @@ internal class ProjectResponseConverterTest {
             null,
             null,
             projectRoles = listOf(),
-            organization = Mockito.mock(Organization::class.java)
+            organization = Mockito.mock(Organization::class.java),
+            projectBillingType = "NO_BILLABLE"
         )
 
         val projectResponseDTO = sut.toProjectResponseDTO(project)
@@ -55,7 +57,8 @@ internal class ProjectResponseConverterTest {
                 null,
                 null,
                 projectRoles = listOf(),
-                organization = organization
+                organization = organization,
+                projectBillingType = "NO_BILLABLE"
             ),
             Project(
                 id = 2,
@@ -66,7 +69,8 @@ internal class ProjectResponseConverterTest {
                 null,
                 null,
                 projectRoles = listOf(),
-                organization = organization
+                organization = organization,
+                projectBillingType = "CLOSED_PRICE"
             ),
         )
 
@@ -80,14 +84,17 @@ internal class ProjectResponseConverterTest {
                 name = "First Project",
                 open = false,
                 billable = false,
+                ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"),
                 1L,
                 startDate,
+
             ),
             ProjectResponseDTO(
                 id = 2,
                 name = "Second Project",
                 open = false,
                 billable = true,
+                ProjectBillingTypes().getProjectBillingType("CLOSED_PRICE"),
                 1L,
                 startDate,
             ),

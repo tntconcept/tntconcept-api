@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
 import java.util.*
@@ -343,7 +342,8 @@ internal class SearchByRoleIdUseCaseTest {
                 null,
                 null,
                 AUTENTIA,
-                listOf()
+                listOf(),
+                "CLOSED_PRICE"
             )
         private val INTERNAL_STUDENT =
             ProjectRole(
@@ -381,7 +381,8 @@ internal class SearchByRoleIdUseCaseTest {
                 null,
                 null,
                 OTHER_COMPANY,
-                listOf()
+                listOf(),
+                "CLOSED_PRICE"
             )
         private val EXTERNAL_STUDENT =
             ProjectRole(

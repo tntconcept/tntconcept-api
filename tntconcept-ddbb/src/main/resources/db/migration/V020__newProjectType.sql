@@ -1,0 +1,2 @@
+ALTER TABLE Project ADD projectBillingType VARCHAR(64) DEFAULT 'TIME_AND_MATERIALS';
+

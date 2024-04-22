@@ -6,18 +6,17 @@ import com.autentia.tnt.binnacle.converters.ActivityIntervalResponseConverter
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ApprovalDTO
-import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
-import com.autentia.tnt.binnacle.entities.dto.IntervalResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDateException
 import com.autentia.tnt.binnacle.exception.NoEvidenceInActivityException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.*
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.services.ActivityEvidenceService
+import com.autentia.tnt.binnacle.services.ActivityService
+import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterEach
@@ -389,7 +388,8 @@ internal class ActivityCreationUseCaseTest {
             null,
             null,
             ORGANIZATION,
-            listOf()
+            listOf(),
+            "NO_BILLABLE"
         )
         private val PROJECT_ROLE_NO_APPROVAL =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)

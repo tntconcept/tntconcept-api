@@ -2,6 +2,7 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.Organization
 import com.autentia.tnt.binnacle.core.domain.Project
+import com.autentia.tnt.binnacle.entities.ProjectBillingTypes
 import com.autentia.tnt.binnacle.exception.InvalidBlockDateException
 import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import org.junit.Test
@@ -58,10 +59,12 @@ class ProjectValidatorTest {
                 "TNT",
                 false,
                 false,
+                ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"),
                 LocalDate.now(),
                 null,
                 null,
                 Organization(1, "Autentia"),
+
             )
 
         private val unblockedProject =
@@ -70,6 +73,7 @@ class ProjectValidatorTest {
                 "Vacaciones",
                 true,
                 true,
+                ProjectBillingTypes().getProjectBillingType("CLOSED_PRICE"),
                 LocalDate.now(),
                 null,
                 null,

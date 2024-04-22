@@ -17,7 +17,10 @@ import com.autentia.tnt.binnacle.entities.VacationState.PENDING
 import com.autentia.tnt.binnacle.entities.dto.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
-import com.autentia.tnt.binnacle.services.*
+import com.autentia.tnt.binnacle.services.AnnualWorkSummaryService
+import com.autentia.tnt.binnacle.services.MyVacationsDetailService
+import com.autentia.tnt.binnacle.services.UserService
+import com.autentia.tnt.binnacle.services.VacationService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -159,7 +162,8 @@ internal class UserTimeSummaryUseCaseTest {
             null,
             null,
             ORGANIZATION,
-            listOf()
+            listOf(),
+            "NO_BILLABLE"
         )
 
         private val PROJECT_ROLE = ProjectRole(

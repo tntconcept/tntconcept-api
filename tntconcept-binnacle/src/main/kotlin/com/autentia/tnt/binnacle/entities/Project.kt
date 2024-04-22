@@ -25,13 +25,19 @@ data class Project(
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     @JsonIgnore
-    val projectRoles: List<ProjectRole>
+    val projectRoles: List<ProjectRole>,
+
+
+    val projectBillingType: String = ""
+
+
 ) {
     fun toDomain() = com.autentia.tnt.binnacle.core.domain.Project(
         id,
         name,
         open,
         billable,
+        ProjectBillingTypes().getProjectBillingType(projectBillingType),
         startDate,
         blockDate,
         blockedByUser,

@@ -37,7 +37,7 @@ internal class ImputableOrganizationsUseCaseTest {
         }
 
         private fun buildProject(id: Long, open: Boolean, roles: List<ProjectRole>): Project {
-            return Project(id, "Project ID $id", open, false, LocalDate.now(), null, null, mock(Organization::class.java), roles)
+            return Project(id, "Project ID $id", open, false, LocalDate.now(), null, null, mock(Organization::class.java), roles, "NO_BILLABLE")
         }
 
         private val OPEN_PROJECT = buildProject(1, true, listOf(buildProjectRole(id = 1)))

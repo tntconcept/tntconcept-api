@@ -42,7 +42,8 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
                 null,
                 null,
                 ORGANIZATION,
-                emptyList()
+                emptyList(),
+                "NO_BILLABLE"
             ),
             0,
             0,
@@ -63,7 +64,8 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
                 null,
                 null,
                 ORGANIZATION,
-                emptyList()
+                emptyList(),
+                "NO_BILLABLE"
             ),
             0,
             0,
@@ -73,15 +75,15 @@ internal class ImputableProjectsByOrganizationIdUseCaseTest {
         )
 
         private val projectOpen = Project(1L, "Project is Open", true,  false,  LocalDate.now(), null, null, ORGANIZATION,
-            listOf(PROJECT_ROLE_PROJECT_OPEN))
+            listOf(PROJECT_ROLE_PROJECT_OPEN),"NO_BILLABLE")
 
         private val projectClosed = Project(2L, " Project is Closed", false,  false,  LocalDate.now(), null, null, ORGANIZATION,
-            listOf(PROJECT_ROLE_PROJECT_CLOSED)
-        )
+            listOf(PROJECT_ROLE_PROJECT_CLOSED), "NO_BILLABLE")
+
 
         private val PROJECTS = listOf(projectClosed, projectOpen)
 
-        private val PROJECT_DTO = ProjectResponseDTO(1, "Project is Open", true, false, 1L, startDate = LocalDate.now())
+        private val PROJECT_DTO = ProjectResponseDTO(1, "Project is Open", true, false,ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"), 1L, startDate = LocalDate.now())
     }
 }
 

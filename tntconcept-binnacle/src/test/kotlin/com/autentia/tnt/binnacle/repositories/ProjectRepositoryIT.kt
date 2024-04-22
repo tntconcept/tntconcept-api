@@ -108,7 +108,8 @@ internal class ProjectRepositoryIT {
             null,
             null,
             Organization(3, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "NO_BILLABLE"
         )
     }
 

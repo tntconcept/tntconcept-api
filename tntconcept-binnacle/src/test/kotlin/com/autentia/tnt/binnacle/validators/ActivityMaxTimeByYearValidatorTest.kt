@@ -298,7 +298,8 @@ class ActivityMaxTimeByYearValidatorTest {
             null,
             null,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "CLOSED_PRICE"
         )
 
         private val projectRoleLimitedByYear = ProjectRole(

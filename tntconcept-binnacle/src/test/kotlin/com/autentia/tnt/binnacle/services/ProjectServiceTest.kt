@@ -47,7 +47,8 @@ internal class ProjectServiceTest {
             LocalDate.now(),
             user.id,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "CLOSED_PRICE"
         )
         private val project = projectBlocked.toDomain()
     }

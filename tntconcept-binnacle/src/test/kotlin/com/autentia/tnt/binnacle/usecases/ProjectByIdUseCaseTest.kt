@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.binnacle.converters.ProjectResponseConverter
 import com.autentia.tnt.binnacle.entities.Organization
 import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectBillingTypes
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import com.autentia.tnt.binnacle.exception.ProjectNotFoundException
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
@@ -13,7 +14,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDate
-import java.util.Optional
+import java.util.*
 
 internal class ProjectByIdUseCaseTest {
 
@@ -53,13 +54,15 @@ internal class ProjectByIdUseCaseTest {
             null,
             null,
             ORGANIZATION,
-            listOf()
+            listOf(),
+            "NO_BILLABLE"
         )
         private val PROJECT_DTO = ProjectResponseDTO(
             PROJECT.id,
             PROJECT.name,
             PROJECT.open,
             PROJECT.billable,
+            ProjectBillingTypes().getProjectBillingType(PROJECT.projectBillingType),
             1L,
             PROJECT.startDate,
         )
