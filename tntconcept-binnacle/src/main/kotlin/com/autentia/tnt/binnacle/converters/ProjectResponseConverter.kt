@@ -13,7 +13,7 @@ class ProjectResponseConverter {
         project.name,
         project.open,
         project.billable,
-        ProjectBillingTypes().getProjectBillingType(project.projectBillingType),
+        ProjectBillingTypes().getProjectBillingType(project.billingType),
         project.organization.id,
         project.startDate,
         project.blockDate,

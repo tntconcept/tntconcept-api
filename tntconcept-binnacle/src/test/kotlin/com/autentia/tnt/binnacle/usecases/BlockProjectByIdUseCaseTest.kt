@@ -136,7 +136,7 @@ class BlockProjectByIdUseCaseTest {
             projectRoles = emptyList(),
             blockDate = LocalDate.now(),
             blockedByUser = userId,
-            projectBillingType = "CLOSED_PRICE"
+            billingType = "CLOSED_PRICE"
         )
         val unblockedProjectEntity: com.autentia.tnt.binnacle.entities.Project = com.autentia.tnt.binnacle.entities.Project(
             id = 1L,
@@ -146,7 +146,7 @@ class BlockProjectByIdUseCaseTest {
             organization = organizationEntity,
             startDate = LocalDate.of(2023, 5, 1),
             projectRoles = emptyList(),
-            projectBillingType = "CLOSED_PRICE"
+            billingType = "CLOSED_PRICE"
         )
     }
 }

@@ -694,7 +694,7 @@ internal class ActivityUpdateUseCaseTest {
         private val ORGANIZATION = Organization(1L, "Organization", 1, listOf())
         private val PROJECT = Project(1L, "Project", open = true, billable = false,
                 LocalDate.now(), null, null, projectRoles = listOf(),
-                organization = ORGANIZATION, projectBillingType =  "NO_BILLABLE"
+                organization = ORGANIZATION, billingType =  "NO_BILLABLE"
         )
         private val EVIDENCE = EvidenceDTO("mediaType", "fileContent")
         private val PROJECT_ROLE = ProjectRole(10L, "Project role", NO, PROJECT, 5000,

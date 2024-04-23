@@ -77,7 +77,7 @@ class UnblockProjectByIdUseCaseTest {
             organization = organizationEntity,
             startDate = LocalDate.of(2023, 5, 1),
             projectRoles = emptyList(),
-            projectBillingType = "CLOSED_PRICE"
+            billingType = "CLOSED_PRICE"
         )
     }
 }

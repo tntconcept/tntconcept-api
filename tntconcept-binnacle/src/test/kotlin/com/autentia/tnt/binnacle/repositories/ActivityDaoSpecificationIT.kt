@@ -155,7 +155,7 @@ class ActivityDaoSpecificationIT {
                 null,
                 organization.get(),
                 project.projectRoles,
-                project.projectBillingType
+                project.billingType
             ))
         )
 
@@ -265,7 +265,7 @@ class ActivityDaoSpecificationIT {
                 null,
                 organization.get(),
                 project.projectRoles,
-                project.projectBillingType
+                project.billingType
             ))
         )
 

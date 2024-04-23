@@ -31,7 +31,7 @@ internal class ProjectResponseConverterTest {
             null,
             projectRoles = listOf(),
             organization = Mockito.mock(Organization::class.java),
-            projectBillingType = "NO_BILLABLE"
+            billingType = "NO_BILLABLE"
         )
 
         val projectResponseDTO = sut.toProjectResponseDTO(project)
@@ -58,7 +58,7 @@ internal class ProjectResponseConverterTest {
                 null,
                 projectRoles = listOf(),
                 organization = organization,
-                projectBillingType = "NO_BILLABLE"
+                billingType = "NO_BILLABLE"
             ),
             Project(
                 id = 2,
@@ -70,7 +70,7 @@ internal class ProjectResponseConverterTest {
                 null,
                 projectRoles = listOf(),
                 organization = organization,
-                projectBillingType = "CLOSED_PRICE"
+                billingType = "CLOSED_PRICE"
             ),
         )
 

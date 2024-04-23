@@ -66,7 +66,7 @@ internal class ActivityDeletionUseCaseTest {
             null,
             projectRoles = listOf(),
             organization = ORGANIZATION,
-            projectBillingType = "NO_BILLABLE"
+            billingType = "NO_BILLABLE"
         )
         val PROJECT_ROLE =
             ProjectRole(

@@ -28,7 +28,7 @@ data class Project(
     val projectRoles: List<ProjectRole>,
 
 
-    val projectBillingType: String = ""
+    val billingType: String = ""
 
 
 ) {
@@ -37,7 +37,7 @@ data class Project(
         name,
         open,
         billable,
-        ProjectBillingTypes().getProjectBillingType(projectBillingType),
+        ProjectBillingTypes().getProjectBillingType(billingType),
         startDate,
         blockDate,
         blockedByUser,

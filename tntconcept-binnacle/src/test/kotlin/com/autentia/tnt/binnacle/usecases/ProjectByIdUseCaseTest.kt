@@ -62,7 +62,7 @@ internal class ProjectByIdUseCaseTest {
             PROJECT.name,
             PROJECT.open,
             PROJECT.billable,
-            ProjectBillingTypes().getProjectBillingType(PROJECT.projectBillingType),
+            ProjectBillingTypes().getProjectBillingType(PROJECT.billingType),
             1L,
             PROJECT.startDate,
         )

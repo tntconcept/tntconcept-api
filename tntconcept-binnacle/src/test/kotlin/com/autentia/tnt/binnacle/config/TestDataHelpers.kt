@@ -155,7 +155,7 @@ internal fun createProject(id: Long = 1L) = Project(
     null,
     projectRoles = listOf(),
     organization = createOrganization(),
-    projectBillingType = "NO_BILLABLE"
+    billingType = "NO_BILLABLE"
 )
 
 internal fun createBlockedProject(id: Long = 1L) = Project(
@@ -168,7 +168,7 @@ internal fun createBlockedProject(id: Long = 1L) = Project(
     null,
     projectRoles = listOf(),
     organization = createOrganization(),
-    projectBillingType = "NO_BILLABLE"
+    billingType = "NO_BILLABLE"
 )
 
 internal fun createProjectRoleTimeInfo(
