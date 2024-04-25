@@ -27,7 +27,6 @@ internal class SubcontractedActivityValidator(
             .orElseThrow { ProjectNotFoundException(activityToCreate.projectRole.project.id) }
 
         when {
-            isEvidenceInputIncoherent(activityToCreate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
             !isProjectOpen(project) -> throw ProjectClosedException()
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
@@ -51,8 +50,6 @@ internal class SubcontractedActivityValidator(
             .orElseThrow { ProjectNotFoundException(currentActivity.projectRole.project.id) }
 
         when {
-            isEvidenceInputIncoherent(activityToUpdate) -> throw NoEvidenceInActivityException("Activity sets hasEvidence to true but no evidence was found")
-
             isProjectBlocked(
                 projectToUpdate,
                 activityToUpdate

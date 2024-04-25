@@ -2,7 +2,10 @@ package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.api.OpenApiTag
 import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDateException
+import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
+import com.autentia.tnt.binnacle.exception.ProjectBlockedException
+import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -54,10 +57,7 @@ internal class SubcontractedActivityController (
     @Operation(summary = "Deletes a subcontracted activity by its id.")
     internal fun delete(id: Long) = subcontractedActivityDeletionUseCase.deleteSubcontractedActivityById(id)
 
-    @Error
-    internal fun onNoEvidenceInActivityException(request: HttpRequest<*>, e: NoEvidenceInActivityException) =
-        HttpResponse.badRequest(ErrorResponse("No evidence", e.message))
-
+    
     @Error
     internal fun onProjectClosedException(request: HttpRequest<*>, e: ProjectClosedException) =
         HttpResponse.badRequest(ErrorResponse("CLOSED_PROJECT", e.message))
