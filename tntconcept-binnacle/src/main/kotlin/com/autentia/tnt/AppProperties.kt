@@ -51,6 +51,14 @@ internal class AppProperties {
         var emptyActivitiesReminder = EmptyActivitiesReminderProperties()
 
         var subcontractedUser = SubcontractedUser()
+        
+        var autoBlockProject = AutoBlockProjectProperties()
+        
+        @ConfigurationProperties("auto-block-project")
+        internal class AutoBlockProjectProperties {
+            var cronExpression: String? = ""
+        }
+
         @ConfigurationProperties("subcontracted-user")
         internal class SubcontractedUser {
             var username: String? = null
