@@ -1,13 +1,14 @@
 package com.autentia.tnt.binnacle.security.ldap
 
 import com.autentia.tnt.AppProperties
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.core.convert.value.ConvertibleValues
 import io.micronaut.data.jdbc.runtime.JdbcOperations
-import io.micronaut.security.authentication.AuthenticationException
 import io.micronaut.security.authentication.AuthenticationFailed
 import io.micronaut.security.authentication.AuthenticationFailureReason
 import io.micronaut.security.authentication.AuthenticationResponse
+import io.micronaut.security.ldap.ContextAuthenticationMapper
 import io.micronaut.security.ldap.DefaultContextAuthenticationMapper
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -18,7 +19,9 @@ import javax.transaction.Transactional
 @Singleton
 internal class CustomLdapContextAuthenticationMapper : DefaultContextAuthenticationMapper() {
 
-    private val findIdByPrincipalName = "select id from archimedes_security_subject where principal_name = ?"
+    private val findIdByPrincipalName = "select id, attributes from archimedes_security_subject where principal_name = ?"
+
+    private val objectMapper: ObjectMapper = ObjectMapper()
 
     @Inject
     private lateinit var jdbcOperations: JdbcOperations
@@ -32,17 +35,27 @@ internal class CustomLdapContextAuthenticationMapper : DefaultContextAuthenticat
         username: String?,
         groups: MutableSet<String>?
     ): AuthenticationResponse {
-        val id =
+        val subjectData:Map<String, Any> =
             jdbcOperations.prepareStatement(findIdByPrincipalName) {
                 it.setString(1, "$username@${appProperties.security.subjectNameSuffix}")
                 val rs = it.executeQuery()
                 if (rs.next()) {
-                    rs.getInt("id")
+                    val jsonAttributes = rs.getString("attributes")
+                    val attributesMap:Map<String, Any> = if (jsonAttributes.isBlank()) emptyMap() else objectMapper.readValue(jsonAttributes, Map::class.java) as Map<String, Any>
+                    mapOf(
+                        "id" to rs.getLong("id").toString(),
+                        "attributes" to HashMap(attributesMap)
+                    )
                 } else {
-                    -1
+                    mapOf()
                 }
             }
-
-        if (id < 0) return AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND) else return super.map(attributes, "$id", groups)
+        if(subjectData.isEmpty()) {
+            return AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND)
+        } else {
+            val attributesMap = subjectData["attributes"] as Map<String, Any>
+            val userId = attributesMap["sub"] as String
+            return AuthenticationResponse.success(userId, groups, attributesMap)
+        }
     }
 }
