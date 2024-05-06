@@ -1,2 +1,3 @@
 ALTER TABLE Project ADD billingType VARCHAR(64) DEFAULT 'TIME_AND_MATERIALS';
+UPDATE Project SET billingType = 'NO_BILLABLE' WHERE billable = FALSE;
 
