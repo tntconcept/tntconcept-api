@@ -3,6 +3,7 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
@@ -42,7 +43,11 @@ class SubcontractedActivityCreationUseCase internal constructor(
         require(userSubcontracted != null){"Subcontracted user must exist"}
         val projectRole = this.getProjectRole(subcontractedActivityRequestBody.projectRoleId)
 
-        val activityToCreate = activityRequestBodyConverter.toActivity(subcontractedActivityRequestBody, null, projectRole.toDomain(), userSubcontracted)
+        var activityToCreate = activityRequestBodyConverter.toActivity(subcontractedActivityRequestBody, null, projectRole.toDomain(), userSubcontracted)
+        if(activityToCreate.projectRole.project.startDate. month == activityToCreate.timeInterval.start.month){
+            activityToCreate = activityToCreate.copy(timeInterval = TimeInterval.of(activityToCreate.projectRole.project.startDate.atTime(0,0),
+                activityToCreate.timeInterval.end))
+        }
 
         subcontractedActivityValidator.checkActivityIsValidForCreation(activityToCreate, userSubcontracted)
 

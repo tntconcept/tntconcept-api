@@ -31,11 +31,15 @@ internal class SubcontractedActivityValidator(
             !isOpenPeriod(activityToCreate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
             isBeforeProjectCreationDate(activityToCreate, project) -> throw ActivityBeforeProjectCreationDateException()
-
+            !isPositiveDuration(activityToCreate) -> throw InvalidDurationFormatException()
         }
     }
-
-
+    @Transactional
+    @ReadOnly
+    protected fun isPositiveDuration(activity: Activity): Boolean {
+        println("duration")
+        return activity.duration > 5000
+    }
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForUpdate(
@@ -62,7 +66,7 @@ internal class SubcontractedActivityValidator(
 
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
-
+            !isPositiveDuration(activityToUpdate) -> throw InvalidDurationFormatException()
 
         }
     }

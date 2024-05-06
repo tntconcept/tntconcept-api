@@ -110,6 +110,7 @@ internal class UserDaoIT {
 
         val result = userDao.findAll(predicate)
 
+
         assertEquals(4, result.size)
 
     }
