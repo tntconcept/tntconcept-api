@@ -1,14 +1,14 @@
 package com.autentia.tnt.binnacle.entities
 
 class ProjectBillingTypes{
-    private val noBillable = ProjectBillingType("NO_BILLABLE", BillingType.NEVER, BillingPreference.NO_BILLABLE)
-    private val closedPrice = ProjectBillingType("CLOSED_PRICE", BillingType.ALWAYS, BillingPreference.BILLABLE)
-    private val timeMaterials = ProjectBillingType("TIME_AND_MATERIALS", BillingType.DEPENDS, BillingPreference.BILLABLE)
-    private val timeMaterialsLimited = ProjectBillingType("TIME_AND_MATERIALS_LIMITED", BillingType.DEPENDS, BillingPreference.BILLABLE)
-    private val bagHours = ProjectBillingType("BAG_OF_HOURS", BillingType.DEPENDS, BillingPreference.BILLABLE)
+    private val noBillingDefault = ProjectBillingType("NO_BILLABLE", Billable.NEVER, BillingDefault.NO_BILLABLE)
+    private val closedPrice = ProjectBillingType("CLOSED_PRICE", Billable.ALWAYS, BillingDefault.BILLABLE)
+    private val timeMaterials = ProjectBillingType("TIME_AND_MATERIALS", Billable.OPTIONAL, BillingDefault.BILLABLE)
+    private val timeMaterialsLimited = ProjectBillingType("TIME_AND_MATERIALS_LIMITED", Billable.OPTIONAL, BillingDefault.BILLABLE)
+    private val bagHours = ProjectBillingType("BAG_OF_HOURS", Billable.OPTIONAL, BillingDefault.BILLABLE)
     fun getProjectBillingType(type: String):ProjectBillingType{
         when (type){
-            "NO_BILLABLE" -> return noBillable
+            "NO_BILLABLE" -> return noBillingDefault
             "CLOSED_PRICE" ->return closedPrice
             "TIME_AND_MATERIALS" -> return timeMaterials
             "TIME_AND_MATERIALS_LIMITED" ->return timeMaterialsLimited
@@ -18,17 +18,14 @@ class ProjectBillingTypes{
     }
 }
 
-
-//projectBillingType = "NO_BILLABLE"
-//ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"),
 data class ProjectBillingType(
     val name: String,
-    val type: BillingType,
-    val preferences: BillingPreference
+    val type: Billable,
+    val preferences: BillingDefault
 )
-enum class BillingType{
-    ALWAYS, NEVER, DEPENDS
+enum class Billable{
+    ALWAYS, NEVER, OPTIONAL
 }
-enum class BillingPreference{
+enum class BillingDefault{
     BILLABLE, NO_BILLABLE
 }
