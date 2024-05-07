@@ -24,8 +24,8 @@ services:
     environment:
       - LDAP_ADMIN_USERNAME=admin
       - LDAP_ADMIN_PASSWORD=theadminpassword
-      - LDAP_USERS=ruben.gonzalez,user01,user02
-      - LDAP_PASSWORDS=password,password01,password2
+      - LDAP_USERS=user01,user02
+      - LDAP_PASSWORDS=password01,password2
 
     volumes:
       - 'openldap_data:/bitnami/openldap'
