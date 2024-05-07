@@ -2,7 +2,10 @@ package com.autentia.tnt.api.binnacle.activity
 
 import com.autentia.tnt.api.OpenApiTag
 import com.autentia.tnt.api.binnacle.ErrorResponse
-import com.autentia.tnt.binnacle.exception.*
+import com.autentia.tnt.binnacle.exception.ActivityBeforeProjectCreationDateException
+import com.autentia.tnt.binnacle.exception.ActivityPeriodClosedException
+import com.autentia.tnt.binnacle.exception.ProjectBlockedException
+import com.autentia.tnt.binnacle.exception.ProjectClosedException
 import com.autentia.tnt.binnacle.usecases.*
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
@@ -14,9 +17,9 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import java.util.*
 import javax.validation.Valid
 
-@Controller("/api/subcontracted-activity")
+@Controller("/api/subcontracted_activity")
 @Validated
-@Tag(name = OpenApiTag.SUBCONTRACTED_ACTIVITY)
+@Tag(name = OpenApiTag.ACTIVITY)
 internal class SubcontractedActivityController (
         private val subcontractedActivityRetrievalByIdUseCase: SubcontractedActivityRetrievalByIdUseCase,
         private val subcontractedActivitiesByFilterUseCase: SubcontractedActivitiesByFilterUseCase,
@@ -76,8 +79,5 @@ internal class SubcontractedActivityController (
                 ErrorResponseBlockedProject.ErrorValues(e.blockedDate)
             )
         )
-    @Error
-    internal fun onInvalidDurationFormat(request: HttpRequest<*>, e: InvalidDurationFormatException) =
-        HttpResponse.badRequest(ErrorResponse("INVALID_DURATION_FORMAT", e.message))
 
 }

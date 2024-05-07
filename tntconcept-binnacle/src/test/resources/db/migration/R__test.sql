@@ -19,6 +19,16 @@ VALUES (12, 'Usuario de prueba 2', 'usuario.prueba2', 'BMS0Tp2pdyCiYnI8amMaU1QX'
         'usuario.prueba2@example.com', 'photo', 0, 0, 480, 1, '12345677X', 'OK', '666222333', '666555777', '', '', '',
         '', '', '', '', '', '', '', 'MAN', 0.0, 0.0, '', '', '', '');
 
+INSERT INTO User(id, name, login, password, passwordExpireDate, roleId, active, categoryId, startDate, workingInClient, email,
+                 photo, married, childrenNumber, dayDuration, agreementId, nif, academicQualification, phone, mobile,
+                 street, city,
+                 postalCode, drivenLicenseType, vehicleType, licensePlate, socialSecurityNumber, bank, account,
+                 travelAvailability,
+                 genre, salary, salaryExtras, securityCard, healthInsurance, notes, contractObservations)
+VALUES (13, 'Usuario de prueba 3 con diferente sub', 'usuario.prueba3', 'BMS0Tp2pdyCiYnI8amMaU1QX', NULL, 1, true, 1, '2022-04-04', 0,
+        'usuario.prueba3@example.com', 'photo', 0, 0, 480, 1, '12345677X', 'OK', '666222333', '666555777', '', '', '',
+        '', '', '', '', '', '', '', 'MAN', 0.0, 0.0, '', '', '', '');
+
 
 insert into archimedes_security_subject (id, principal_name, attributes, audit_created_at, audit_updated_at)
 values (11, 'usuario.prueba1@example.com', '{"sub": "11"}', '2023-04-24 06:33:21', '2023-04-24 06:33:21');
@@ -31,6 +41,13 @@ values (12, 'usuario.prueba2@example.com', '{"sub": "12"}', '2023-04-24 06:33:21
 
 insert into archimedes_security_subject_role_relation (subject_id, role_name, audit_created_at, audit_updated_at)
 values (12, "user", '2023-04-24 06:33:21', '2023-04-24 06:33:21');
+
+insert into archimedes_security_subject (id, principal_name, attributes, audit_created_at, audit_updated_at)
+values (13, 'usuario.prueba3@example.com', '{"sub": "133"}', '2023-04-24 06:33:21', '2023-04-24 06:33:21');
+
+insert into archimedes_security_subject_role_relation (subject_id, role_name, audit_created_at, audit_updated_at)
+values (13, "user", '2023-04-24 06:33:21', '2023-04-24 06:33:21');
+
 
 -- Organization id = 3
 INSERT INTO Organization (id, organizationTypeId, organizationISOCategoryId, name, documentNumber, phone,
