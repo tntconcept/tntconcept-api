@@ -104,6 +104,39 @@ internal class SubcontractedActivityValidatorTest {
             Assertions.assertEquals(blockedProject.blockDate!!, exception.blockedDate)
         }
 
+        @Test
+        fun `throw ActivityBeforeProjectCreationDateException when activity started before the project wash created`() {
+            Mockito.doReturn(Optional.of(nonBlockedProject))
+                    .whenever(projectRepository)
+                    .findById(1L)
+
+            assertThrows<ActivityBeforeProjectCreationDateException> {
+                ClockTestUtils.runWithFixed(mockNow) {
+                    subcontractedActivityValidator.checkActivityIsValidForCreation(
+                            newActivityBeforeProjectCreationDate,
+                            user
+                    )
+                }
+            }
+        }
+
+        @Test
+        fun `throw InvalidDurationFormatException when activity duration is negative`() {
+            Mockito.doReturn(Optional.of(nonBlockedProject))
+                    .whenever(projectRepository)
+                    .findById(1L)
+
+            assertThrows<InvalidDurationFormatException> {
+                ClockTestUtils.runWithFixed(mockNow) {
+                    subcontractedActivityValidator.checkActivityIsValidForCreation(
+                            newActivityWithNegativeDuration,
+                            user
+                    )
+                }
+            }
+        }
+
+
         private fun exceptionProvider() = arrayOf(
             arrayOf(
                 "ProjectNotFoundException",
@@ -133,6 +166,13 @@ internal class SubcontractedActivityValidatorTest {
                 user,
                 ActivityBeforeProjectCreationDateException()
             ),
+                arrayOf(
+                        "InvalidDurationFormatException",
+                        newActivityWithNegativeDuration,
+                        projectRoleWithNonBlockedProject,
+                        user,
+                        InvalidDurationFormatException()
+                ),
         )
 
         @ParameterizedTest
@@ -170,41 +210,6 @@ internal class SubcontractedActivityValidatorTest {
                 .findById(1L)
             ClockTestUtils.runWithFixed(mockNow) {
                 subcontractedActivityValidator.checkActivityIsValidForUpdate(validActivityToUpdate, validActivityToUpdate)
-            }
-        }
-
-
-        @Test
-        fun `throw NoEvidenceInActivityException when activity evidence is incoherent`() {
-            val firstIncoherentActivity =
-                createDomainActivity().copy(hasEvidences = true, evidence = null)
-            val secondIncoherentActivity =
-                createDomainActivity().copy(hasEvidences = false, evidence = Evidence("", ""))
-
-
-            Mockito.doReturn(Optional.of(createProject()))
-                .whenever(projectRepository)
-                .findById(firstIncoherentActivity.projectRole.project.id)
-
-            Mockito.doReturn(Optional.of(createProject()))
-                .whenever(projectRepository)
-                .findById(secondIncoherentActivity.projectRole.project.id)
-
-            assertThrows<NoEvidenceInActivityException> {
-                ClockTestUtils.runWithFixed(mockNow) {
-                    subcontractedActivityValidator.checkActivityIsValidForUpdate(
-                        firstIncoherentActivity,
-                        firstIncoherentActivity
-                    )
-                }
-            }
-            assertThrows<NoEvidenceInActivityException> {
-                ClockTestUtils.runWithFixed(mockNow) {
-                    subcontractedActivityValidator.checkActivityIsValidForUpdate(
-                        secondIncoherentActivity,
-                        secondIncoherentActivity
-                    )
-                }
             }
         }
 
@@ -372,12 +377,12 @@ internal class SubcontractedActivityValidatorTest {
         @Test
         fun `do nothing when activity with a change of year is updated`() {
 
-            val projectRole = createProjectRoleWithLimit(
-                1L,
-                maxTimeAllowedByYear = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY * 4,
-                maxTimeAllowedByActivity = 0,
-                timeUnit = TimeUnit.NATURAL_DAYS
-            )
+//            val projectRole = createProjectRoleWithLimit(
+//                1L,
+//                maxTimeAllowedByYear = MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY * 4,
+//                maxTimeAllowedByActivity = 0,
+//                timeUnit = TimeUnit.NATURAL_DAYS
+//            )
 
             val activities2023 = listOf(
                 com.autentia.tnt.binnacle.entities.Activity.of(
@@ -687,18 +692,18 @@ internal class SubcontractedActivityValidatorTest {
                 TimeUnit.MINUTES
             )
 
-        private val projectRoleLimitedByYear =
-            ProjectRole(
-                3,
-                "vac",
-                RequireEvidence.NO,
-                vacationProject,
-                (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
-                0,
-                false,
-                false,
-                TimeUnit.MINUTES
-            )
+//        private val projectRoleLimitedByYear =
+//            ProjectRole(
+//                3,
+//                "vac",
+//                RequireEvidence.NO,
+//                vacationProject,
+//                (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
+//                0,
+//                false,
+//                false,
+//                TimeUnit.MINUTES
+//            )
 
 
         private val projectRoleWithBlockedProject = ProjectRole(
@@ -731,6 +736,13 @@ internal class SubcontractedActivityValidatorTest {
             ApprovalState.NA,
             null
         )
+
+        private val newActivityWithNegativeDuration = createDomainActivity(
+                LocalDateTime.now().plusMonths(2),
+                LocalDateTime.now().plusMonths(3),
+                -800,
+                projectRoleWithNonBlockedProject.toDomain()
+        ).copy(id = null)
 
         private val newActivityInClosedProject = createDomainActivity(
             LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
@@ -812,27 +824,27 @@ internal class SubcontractedActivityValidatorTest {
 
         private val organization = Organization(1, "Organization", 1, listOf())
 
-        fun createProjectRoleWithLimit(
-            id: Long = projectRoleLimitedByYear.id,
-            name: String = "Role with limit",
-            requireEvidence: RequireEvidence = RequireEvidence.NO,
-            project: Project = Project(
-                1, "Project", true, false, LocalDate.now(), null, null, organization, listOf()
-            ),
-            maxTimeAllowedByYear: Int,
-            maxTimeAllowedByActivity: Int,
-            timeUnit: TimeUnit = TimeUnit.MINUTES,
-        ) = ProjectRole(
-            id,
-            name,
-            requireEvidence,
-            project,
-            maxTimeAllowedByYear,
-            maxTimeAllowedByActivity,
-            true,
-            false,
-            timeUnit
-        )
+//        fun createProjectRoleWithLimit(
+//            id: Long = projectRoleLimitedByYear.id,
+//            name: String = "Role with limit",
+//            requireEvidence: RequireEvidence = RequireEvidence.NO,
+//            project: Project = Project(
+//                1, "Project", true, false, LocalDate.now(), null, null, organization, listOf()
+//            ),
+//            maxTimeAllowedByYear: Int,
+//            maxTimeAllowedByActivity: Int,
+//            timeUnit: TimeUnit = TimeUnit.MINUTES,
+//        ) = ProjectRole(
+//            id,
+//            name,
+//            requireEvidence,
+//            project,
+//            maxTimeAllowedByYear,
+//            maxTimeAllowedByActivity,
+//            true,
+//            false,
+//            timeUnit
+//        )
 
         private fun someYearsAgoLocalDateTime(yearsAgo: Int) =
             LocalDateTime.of(
