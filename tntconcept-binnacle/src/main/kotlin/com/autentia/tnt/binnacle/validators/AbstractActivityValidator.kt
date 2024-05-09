@@ -17,6 +17,7 @@ internal abstract class AbstractActivityValidator(
 ) {
     protected fun isOpenPeriod(startDate: LocalDateTime): Boolean {
         return startDate.year >= ClockUtils.nowUtc().year - 1
+
     }
 
     protected fun isProjectOpen(project: Project): Boolean {

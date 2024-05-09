@@ -2,9 +2,7 @@ package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
-import com.autentia.tnt.binnacle.config.createProject
 import com.autentia.tnt.binnacle.core.domain.Activity
-import com.autentia.tnt.binnacle.core.domain.Evidence
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.entities.*
@@ -14,6 +12,7 @@ import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
+import io.archimedesfw.commons.time.ClockUtils
 import io.archimedesfw.commons.time.test.ClockTestUtils
 import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
@@ -25,7 +24,7 @@ import org.mockito.kotlin.whenever
 import java.time.*
 import java.util.*
 
-private val mockToday = LocalDate.of(2023, Month.MARCH, 1)
+private val mockToday = ClockUtils.nowUtc().toLocalDate()
 private val mockNow = LocalDateTime.of(mockToday, LocalTime.NOON)
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -60,11 +59,11 @@ internal class SubcontractedActivityValidatorTest {
         fun `do nothing when activity is valid`() {
             Mockito.doReturn(Optional.of(vacationProject))
                 .whenever(projectRepository)
-                .findById(projectRole.project.id)
+                .findById(projectRoleWithNonBlockedProject.project.id)
 
 
             ClockTestUtils.runWithFixed(mockNow) {
-                subcontractedActivityValidator.checkActivityIsValidForCreation(newActivityInMarch, user)
+                subcontractedActivityValidator.checkActivityIsValidForCreation(newActivity, user)
             }
 
         }
@@ -73,7 +72,7 @@ internal class SubcontractedActivityValidatorTest {
         fun `do nothing when activity started last year`() {
             Mockito.doReturn(Optional.of(vacationProject))
                 .whenever(projectRepository)
-                .findById(projectRole.project.id)
+                .findById(projectRoleWithNonBlockedProject.project.id)
             ClockTestUtils.runWithFixed(mockNow) {
                 subcontractedActivityValidator.checkActivityIsValidForCreation(newActivityLastYear, user)
             }
@@ -86,6 +85,37 @@ internal class SubcontractedActivityValidatorTest {
                 .findById(blockedProjectRole.project.id)
             ClockTestUtils.runWithFixed(mockNow) {
                 subcontractedActivityValidator.checkActivityIsValidForCreation(newActivityAfterBlockedProject, user)
+            }
+        }
+
+        @Test
+        fun `throw ProjectClosedException when try to create an activity with a closed project`() {
+            Mockito.doReturn(Optional.of(closedProject))
+                    .whenever(projectRepository)
+                    .findById(2L)
+
+            assertThrows<ProjectClosedException> {
+                ClockTestUtils.runWithFixed(mockNow) {
+                    subcontractedActivityValidator.checkActivityIsValidForCreation(
+                            newActivityInClosedProject,
+                            user
+                    )
+                }
+            }
+        }
+        @Test
+        fun `throw ActivityPeriodClosedException when try to create an activity that starts two years ago`() {
+            Mockito.doReturn(Optional.of(nonBlockedProjectTwoYearsAgo))
+                    .whenever(projectRepository)
+                    .findById(3L)
+
+            assertThrows<ActivityPeriodClosedException> {
+                ClockTestUtils.runWithFixed(mockNow) {
+                    subcontractedActivityValidator.checkActivityIsValidForCreation(
+                            newActivityTwoYearsAgo,
+                            user
+                    )
+                }
             }
         }
 
@@ -139,7 +169,7 @@ internal class SubcontractedActivityValidatorTest {
 
         private fun exceptionProvider() = arrayOf(
             arrayOf(
-                "ProjectNotFoundException",
+                "ProjectClosedException",
                 newActivityInClosedProject,
                 closedProjectRole,
                 user,
@@ -147,8 +177,8 @@ internal class SubcontractedActivityValidatorTest {
             ),
             arrayOf(
                 "ActivityPeriodClosedException",
-                newActivityTwoYearsAgo,
-                projectRole,
+                    newActivityTwoYearsAgo,
+                    projectRoleWithNonBlockedProjectTwoYearsAgo,
                 user,
                 ActivityPeriodClosedException()
             ),
@@ -253,16 +283,16 @@ internal class SubcontractedActivityValidatorTest {
         @Test
         fun `do nothing when blocked date does not block current change`() {
             val newActivity = createDomainActivity(
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(60L),
-                60,
+                    mockNow,
+                    mockNow.plusMonths(1),
+                    3360,
                 projectRoleWithPastBlockedProject.toDomain()
             )
             val currentActivity = com.autentia.tnt.binnacle.entities.Activity(
                 1L,
-                LocalDateTime.of(2020, Month.JANUARY, 3, 2, 1),
-                LocalDateTime.of(2020, Month.JANUARY, 3, 2, 24),
-                23,
+                    mockNow.minusMonths(1),
+                    mockNow,
+                    3360,
                 "Old description",
                 projectRoleWithPastBlockedProject,
                 user.id,
@@ -348,9 +378,9 @@ internal class SubcontractedActivityValidatorTest {
 
         @Test
         fun `throw ActivityPeriodClosedException when updated activity started more than one year ago`() {
-            Mockito.doReturn(Optional.of(nonBlockedProject))
+            Mockito.doReturn(Optional.of(nonBlockedProjectTwoYearsAgo))
                 .whenever(projectRepository)
-                .findById(1L)
+                .findById(3L)
 
             assertThrows<ActivityPeriodClosedException> {
                 ClockTestUtils.runWithFixed(mockNow) {
@@ -391,7 +421,7 @@ internal class SubcontractedActivityValidatorTest {
                         end = LocalDate.of(2023, 5, 15).atTime(LocalTime.MAX),
                         duration = 480,
                     ),
-                    projectRole
+                        projectRoleWithNonBlockedProject
                 )
             )
 
@@ -399,28 +429,28 @@ internal class SubcontractedActivityValidatorTest {
                 start = LocalDate.of(2023, 12, 31).atTime(LocalTime.MIN),
                 end = LocalDate.of(2024, 1, 1).atTime(LocalTime.MAX),
                 duration = 960,
-                projectRole.toDomain()
+                    projectRoleWithNonBlockedProject.toDomain()
             )
 
             val activity = createDomainActivity(
                 start = LocalDate.of(2023, 12, 31).atTime(LocalTime.MIN),
                 end = LocalDate.of(2024, 1, 2).atTime(LocalTime.MAX),
                 duration = 1440,
-                projectRole.toDomain()
+                    projectRoleWithNonBlockedProject.toDomain()
             )
 
             val timeInterval2023 = TimeInterval.ofYear(2023)
 
             Mockito.doReturn(Optional.of(vacationProject))
                 .whenever(projectRepository)
-                .findById(Companion.projectRole.project.id)
+                .findById(Companion.projectRoleWithNonBlockedProject.project.id)
 
             Mockito.doReturn(activities2023)
                 .whenever(activityRepository)
                 .findByProjectRoleIds(
                     timeInterval2023.start,
                     timeInterval2023.end,
-                    listOf(projectRole.id),
+                    listOf(projectRoleWithNonBlockedProject.id),
                     user.id
                 )
             ClockTestUtils.runWithFixed(mockNow) {
@@ -437,11 +467,11 @@ internal class SubcontractedActivityValidatorTest {
             val id = 1L
             val activity = com.autentia.tnt.binnacle.entities.Activity(
                 id,
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-                LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong()),
+                mockNow,
+                mockNow.plusDays(30),
                 MINUTES_IN_HOUR,
                 "description",
-                projectRole,
+                    projectRoleWithNonBlockedProject,
                 user.id,
                 false,
                 approvalState = ApprovalState.NA
@@ -460,11 +490,11 @@ internal class SubcontractedActivityValidatorTest {
             val id = 1L
             val activity = com.autentia.tnt.binnacle.entities.Activity(
                 id,
-                someYearsAgoLocalDateTime(1),
-                someYearsAgoLocalDateTime(1).plusMinutes(MINUTES_IN_HOUR.toLong()),
+                mockNow.minusYears(1),
+                mockNow.minusYears(1).plusDays(30),
                 MINUTES_IN_HOUR,
                 "description",
-                projectRole,
+                    projectRoleWithNonBlockedProject,
                 user.id,
                 false,
                 approvalState = ApprovalState.NA
@@ -483,11 +513,11 @@ internal class SubcontractedActivityValidatorTest {
             val id = 1L
             val activity = com.autentia.tnt.binnacle.entities.Activity(
                 id,
-                someYearsAgoLocalDateTime(2),
-                someYearsAgoLocalDateTime(2).plusMinutes(MINUTES_IN_HOUR.toLong()),
+                mockNow.minusYears(2),
+                mockNow.minusYears(2).plusMonths(1),
                 MINUTES_IN_HOUR,
                 "description",
-                projectRole,
+                projectRoleWithNonBlockedProject,
                 user.id,
                 false,
                 approvalState = ApprovalState.NA
@@ -509,8 +539,8 @@ internal class SubcontractedActivityValidatorTest {
             val id = 1L
             val activity = com.autentia.tnt.binnacle.entities.Activity(
                 id,
-                someYearsAgoLocalDateTime(2),
-                someYearsAgoLocalDateTime(2).plusMinutes(MINUTES_IN_HOUR.toLong()),
+                mockNow.minusYears(2),
+                mockNow.minusYears(2).plusMonths(1),
                 MINUTES_IN_HOUR,
                 "description",
                 projectRoleWithBlockedProject,
@@ -567,7 +597,6 @@ internal class SubcontractedActivityValidatorTest {
 
         private const val MINUTES_IN_HOUR = 18000
         private const val CLOSED_ID = 2L
-        private const val WORKABLE_HOURS_BY_DAY = 8
 
 
         private val nonBlockedProject = Project(
@@ -575,11 +604,23 @@ internal class SubcontractedActivityValidatorTest {
             "NonBlockedProject",
             true,
             true,
-            LocalDate.now(),
+            mockNow.toLocalDate(),
             null,
             null,
             Organization(1, "Organization", 1, emptyList()),
             emptyList()
+        )
+
+        private val nonBlockedProjectTwoYearsAgo = Project(
+                3,
+                "nonBlockedProjectTwoYearsAgo",
+                true,
+                true,
+                mockNow.toLocalDate().minusYears(2),
+                null,
+                null,
+                Organization(1, "Organization", 1, emptyList()),
+                emptyList()
         )
 
         private val blockedPastProject = Project(
@@ -587,8 +628,8 @@ internal class SubcontractedActivityValidatorTest {
             "NonBlockedProject",
             true,
             true,
-            LocalDate.now(),
-            LocalDate.parse("2000-01-01"),
+            mockNow.toLocalDate().minusYears(1),
+            mockNow.toLocalDate().minusMonths(2),
             user.id,
             Organization(1, "Organization", 1, emptyList()),
             emptyList()
@@ -600,7 +641,7 @@ internal class SubcontractedActivityValidatorTest {
                 "Vacaciones",
                 true,
                 true,
-                today.minusYears(5),
+                mockNow.toLocalDate().minusYears(1),
                 null,
                 null,
                 Organization(1, "Organization", 1, emptyList()),
@@ -631,18 +672,19 @@ internal class SubcontractedActivityValidatorTest {
             TimeUnit.MINUTES
         )
 
-        private val projectRole =
-            ProjectRole(
+        private val projectRoleWithNonBlockedProjectTwoYearsAgo = ProjectRole(
                 1,
-                "vac",
+                "blocked",
                 RequireEvidence.NO,
-                vacationProject,
+                nonBlockedProjectTwoYearsAgo,
                 0,
                 0,
                 true,
                 false,
                 TimeUnit.MINUTES
-            )
+        )
+
+
         private val closedProject =
             Project(
                 CLOSED_ID,
@@ -661,8 +703,8 @@ internal class SubcontractedActivityValidatorTest {
                 "Blocked Project",
                 true,
                 true,
-                LocalDate.now(),
-                LocalDate.of(Year.now().value, 1, 1),
+                mockNow.toLocalDate(),
+                mockNow.toLocalDate().minusDays(1),
                 null,
                 Organization(1, "Organization", 1, emptyList()),
                 emptyList()
@@ -692,19 +734,6 @@ internal class SubcontractedActivityValidatorTest {
                 TimeUnit.MINUTES
             )
 
-//        private val projectRoleLimitedByYear =
-//            ProjectRole(
-//                3,
-//                "vac",
-//                RequireEvidence.NO,
-//                vacationProject,
-//                (MINUTES_IN_HOUR * WORKABLE_HOURS_BY_DAY),
-//                0,
-//                false,
-//                false,
-//                TimeUnit.MINUTES
-//            )
-
 
         private val projectRoleWithBlockedProject = ProjectRole(
             1,
@@ -719,15 +748,15 @@ internal class SubcontractedActivityValidatorTest {
         )
 
 
-        private val newActivityInMarch = Activity.of(
+        private val newActivity = Activity.of(
             null,
             TimeInterval.of(
-                LocalDateTime.of(2022, Month.MARCH, 1, 10, 0, 0),
-                LocalDateTime.of(2022, Month.MARCH, 30, 10, 0, 0)
+                    mockNow,
+                    mockNow.plusDays(30),
             ),
             MINUTES_IN_HOUR,
             "description",
-            projectRole.toDomain(),
+            projectRoleWithNonBlockedProject.toDomain(),
             1L,
             false,
             null,
@@ -738,57 +767,57 @@ internal class SubcontractedActivityValidatorTest {
         )
 
         private val newActivityWithNegativeDuration = createDomainActivity(
-                LocalDateTime.now().plusMonths(2),
-                LocalDateTime.now().plusMonths(3),
+                mockNow.plusMonths(2),
+                mockNow.plusMonths(3),
                 -800,
                 projectRoleWithNonBlockedProject.toDomain()
         ).copy(id = null)
 
         private val newActivityInClosedProject = createDomainActivity(
-            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0),
-            LocalDateTime.of(2022, Month.MARCH, 25, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow.plusMonths(2),
+            mockNow.plusMonths(3),
             MINUTES_IN_HOUR,
             closedProjectRole.toDomain()
         ).copy(id = null)
 
         private val newActivityLastYear = createDomainActivity(
-            someYearsAgoLocalDateTime(1),
-            someYearsAgoLocalDateTime(1).plusMinutes(MINUTES_IN_HOUR.toLong()).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow.minusYears(1),
+            mockNow.minusYears(1).plusDays(30),
             MINUTES_IN_HOUR,
-            projectRole.toDomain()
+            projectRoleWithNonBlockedProject.toDomain()
         ).copy(id = null)
 
         private val activityUpdateNonexistentID = createDomainActivity(
-            someYearsAgoLocalDateTime(2),
-            someYearsAgoLocalDateTime(2).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow.minusYears(2),
+            mockNow.minusYears(2).plusDays(30),
             MINUTES_IN_HOUR,
-            projectRole.toDomain()
+                projectRoleWithNonBlockedProject.toDomain()
         ).copy(id = null)
 
         private val newActivityTwoYearsAgo = createDomainActivity(
-            someYearsAgoLocalDateTime(2),
-            someYearsAgoLocalDateTime(2).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow.minusYears(2),
+            mockNow.minusYears(2).plusDays(30),
             MINUTES_IN_HOUR,
-            projectRole.toDomain()
+            projectRoleWithNonBlockedProjectTwoYearsAgo.toDomain()
         ).copy(id = null)
 
         private val activityLastYear = createDomainActivity(
-            someYearsAgoLocalDateTime(1),
-            someYearsAgoLocalDateTime(1).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow.minusYears(1),
+            mockNow.minusYears(1).plusDays(30),
             MINUTES_IN_HOUR,
-            projectRole.toDomain()
+                projectRoleWithNonBlockedProject.toDomain()
         )
 
         private val newActivityBeforeBlockedProject = createDomainActivity(
-            someYearsAgoLocalDateTime(1),
-            someYearsAgoLocalDateTime(1).plusMinutes(MINUTES_IN_HOUR.toLong()).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow.minusYears(1),
+            mockNow.minusYears(1).plusDays(30),
             MINUTES_IN_HOUR,
             blockedProjectRole.toDomain()
         ).copy(id = null)
 
         private val newActivityAfterBlockedProject = createDomainActivity(
-            someYearsLaterLocalDateTime(1),
-            someYearsLaterLocalDateTime(1).plusMinutes(MINUTES_IN_HOUR.toLong()).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow,
+            mockNow.plusDays(30),
             MINUTES_IN_HOUR,
             blockedProjectRole.toDomain()
         ).copy(id = null)
@@ -801,69 +830,25 @@ internal class SubcontractedActivityValidatorTest {
         ).copy(id = null)
 
         val activityUpdateTwoYearsAgo = createDomainActivity(
-            someYearsAgoLocalDateTime(2),
-            someYearsAgoLocalDateTime(2).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow.minusYears(2),
+            mockNow.minusYears(2).plusDays(30),
             MINUTES_IN_HOUR,
-            projectRole.toDomain()
+            projectRoleWithNonBlockedProjectTwoYearsAgo.toDomain()
         )
 
         private val validActivityToUpdate = createDomainActivity(
-            LocalDateTime.of(2022, Month.MARCH, 1, 10, 0, 0),
-            LocalDateTime.of(2022, Month.MARCH, 30, 10, 0, 0),
+            mockNow,
+            mockNow.plusDays(30),
             MINUTES_IN_HOUR,
-            projectRole.toDomain()
+            projectRoleWithNonBlockedProject.toDomain()
         )
 
         private val newActivityBeforeProjectCreationDate = createDomainActivity(
-            LocalDateTime.of(2023, Month.MARCH, 25, 10, 0, 0),
-            LocalDateTime.of(2023, Month.MARCH, 25, 10, 0, 0).plusMinutes(MINUTES_IN_HOUR.toLong()),
+            mockNow.minusMonths(1),
+            mockNow.minusMonths(1).plusDays(15),
             MINUTES_IN_HOUR,
-            projectRole.toDomain()
+            projectRoleWithNonBlockedProject.toDomain()
         ).copy(id = null)
 
-
-        private val organization = Organization(1, "Organization", 1, listOf())
-
-//        fun createProjectRoleWithLimit(
-//            id: Long = projectRoleLimitedByYear.id,
-//            name: String = "Role with limit",
-//            requireEvidence: RequireEvidence = RequireEvidence.NO,
-//            project: Project = Project(
-//                1, "Project", true, false, LocalDate.now(), null, null, organization, listOf()
-//            ),
-//            maxTimeAllowedByYear: Int,
-//            maxTimeAllowedByActivity: Int,
-//            timeUnit: TimeUnit = TimeUnit.MINUTES,
-//        ) = ProjectRole(
-//            id,
-//            name,
-//            requireEvidence,
-//            project,
-//            maxTimeAllowedByYear,
-//            maxTimeAllowedByActivity,
-//            true,
-//            false,
-//            timeUnit
-//        )
-
-        private fun someYearsAgoLocalDateTime(yearsAgo: Int) =
-            LocalDateTime.of(
-                today.year - yearsAgo,
-                Month.DECEMBER,
-                31,
-                23,
-                59,
-                59
-            )
-
-        private fun someYearsLaterLocalDateTime(yearsLater: Int) =
-            LocalDateTime.of(
-                today.year + yearsLater,
-                Month.DECEMBER,
-                31,
-                23,
-                59,
-                59
-            )
     }
 }
