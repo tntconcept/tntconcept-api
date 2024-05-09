@@ -74,7 +74,7 @@ internal class SubcontractedActivityControllerIT {
         ).thenReturn(activityResponseDTOs)
 
         val response = client.exchangeList<SubcontractedActivityResponse>(
-            HttpRequest.GET("/api/subcontracted_activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
+            HttpRequest.GET("/api/subcontracted-activity?startDate=${startDate.toJson()}&endDate=${endDate.toJson()}"),
         )
 
         org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
@@ -105,7 +105,7 @@ internal class SubcontractedActivityControllerIT {
 
         val response = client.exchangeList<SubcontractedActivityResponse>(
             HttpRequest.GET(
-                "/api/subcontracted_activity?" + "&startDate=${startDate.toJson()}" + "&endDate=${endDate.toJson()}" + "&organizationId=${organizationId}" + "&projectId=${projectId}" + "&roleId=${roleId}"
+                "/api/subcontracted-activity?" + "&startDate=${startDate.toJson()}" + "&endDate=${endDate.toJson()}" + "&organizationId=${organizationId}" + "&projectId=${projectId}" + "&roleId=${roleId}"
             ),
         )
 
@@ -121,7 +121,7 @@ internal class SubcontractedActivityControllerIT {
         whenever(subcontractedActivityRetrievalByIdUseCase.getActivityById(any())).thenReturn(SUBCONTRACTED_ACTIVITY_RESPONSE_DTO)
 
         val response = client.exchangeObject<SubcontractedActivityResponse>(
-            HttpRequest.GET("/api/subcontracted_activity/${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.id}")
+            HttpRequest.GET("/api/subcontracted-activity/${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.id}")
         )
 
         org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
@@ -136,7 +136,7 @@ internal class SubcontractedActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                HttpRequest.GET("/api/subcontracted_activity/$nonExistingId"),
+                HttpRequest.GET("/api/subcontracted-activity/$nonExistingId"),
             )
         }
 
@@ -155,7 +155,7 @@ internal class SubcontractedActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                HttpRequest.POST("/api/subcontracted_activity", tooLongDescriptionJson).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+                HttpRequest.POST("/api/subcontracted-activity", tooLongDescriptionJson).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -181,7 +181,7 @@ internal class SubcontractedActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                HttpRequest.POST("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+                HttpRequest.POST("/api/subcontracted-activity", SUBCONTRACTED_ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -204,7 +204,7 @@ internal class SubcontractedActivityControllerIT {
         doReturn(updatedActivity).whenever(subcontractedActivityUpdateUseCase).updateSubcontractedActivity(any(), eq(Locale.ENGLISH))
 
         val response = client.exchangeObject<SubcontractedActivityResponse>(
-            HttpRequest.PUT("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+            HttpRequest.PUT("/api/subcontracted-activity", SUBCONTRACTED_ACTIVITY_PUT_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
         )
 
         org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
@@ -231,7 +231,7 @@ internal class SubcontractedActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Any>(
-                HttpRequest.PUT("/api/subcontracted_activity", SUBCONTRACTED_ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
+                HttpRequest.PUT("/api/subcontracted-activity", SUBCONTRACTED_ACTIVITY_POST_JSON).header(HttpHeaders.ACCEPT_LANGUAGE, "en"),
             )
         }
 
@@ -247,7 +247,7 @@ internal class SubcontractedActivityControllerIT {
         val activityIdToDelete = 14L
 
         val response = client.exchange<Any, Any>(
-            HttpRequest.DELETE("/api/subcontracted_activity/$activityIdToDelete")
+            HttpRequest.DELETE("/api/subcontracted-activity/$activityIdToDelete")
         )
 
         org.junit.jupiter.api.Assertions.assertEquals(HttpStatus.OK, response.status)
@@ -272,7 +272,7 @@ internal class SubcontractedActivityControllerIT {
 
         val ex = assertThrows<HttpClientResponseException> {
             client.exchangeObject<Unit>(
-                HttpRequest.DELETE("/api/subcontracted_activity/${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.id}"),
+                HttpRequest.DELETE("/api/subcontracted-activity/${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.id}"),
             )
         }
 
