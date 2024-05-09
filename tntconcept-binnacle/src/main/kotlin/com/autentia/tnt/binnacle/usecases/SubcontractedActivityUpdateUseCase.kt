@@ -70,11 +70,7 @@ class SubcontractedActivityUpdateUseCase internal constructor(
     private fun getActivity(activityId: Long): com.autentia.tnt.binnacle.core.domain.Activity {
         val activity = Optional.ofNullable(activityRepository.findById(activityId))
                 .orElseThrow { ActivityNotFoundException(activityId) }.toDomain()
-        if (activity.hasEvidences) {
-            val evidence =
-                    activityEvidenceService.getActivityEvidence(activityId, toDate(activity.insertDate)!!).toDomain()
-            return activity.copy(evidence = evidence)
-        }
+
         return activity
     }
 

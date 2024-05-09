@@ -101,5 +101,4 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
 
-
 }
