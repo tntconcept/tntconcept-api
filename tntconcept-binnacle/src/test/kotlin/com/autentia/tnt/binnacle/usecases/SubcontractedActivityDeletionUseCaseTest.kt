@@ -30,7 +30,7 @@ class SubcontractedActivityDeletionUseCaseTest {
     private val appProperties = AppProperties()
 
     private val useCase = SubcontractedActivityDeletionUseCase(activityRepository, subcontractedActivityValidator,
-            activityEvidenceService, securityService, userRepository)
+            activityEvidenceService, securityService, userRepository, appProperties)
 
     @AfterEach
     fun resetMocks() {
