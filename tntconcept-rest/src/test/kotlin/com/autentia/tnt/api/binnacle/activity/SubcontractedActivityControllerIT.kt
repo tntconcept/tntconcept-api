@@ -311,28 +311,6 @@ internal class SubcontractedActivityControllerIT {
             }
         """.trimIndent()
 
-        private val SUBCONTRACTED_ACTIVITY_WITH_EVIDENCE_POST_JSON = """
-            {
-                "month": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month}",
-                "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},
-                "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
-                "projectRoleId": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
-                "hasEvidences": true,
-                "evidence": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
-            }
-        """.trimIndent()
-
-        private val SUBCONTRACTED_ACTIVITY_WITH_WRONG_EVIDENCE_POST_JSON = """
-            {
-                "month": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month}",              
-                "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},
-                "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
-                "projectRoleId": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId},
-                "hasEvidences": true,
-                "evidence": "VBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
-            }
-        """.trimIndent()
-
         private val SUBCONTRACTED_ACTIVITY_RESPONSE_DTO = SubcontractedActivityResponseDTO(
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description,

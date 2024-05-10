@@ -16,7 +16,6 @@ import javax.transaction.Transactional
 class SubcontractedActivityDeletionUseCase internal constructor(
         private val activityRepository: ActivityRepository,
         private val subcontractedActivityValidator: SubcontractedActivityValidator,
-        private val activityEvidenceService: ActivityEvidenceService,
         private val securityService: SecurityService,
         private val userRepository: UserRepository,
         private val appProperties: AppProperties
@@ -31,10 +30,6 @@ class SubcontractedActivityDeletionUseCase internal constructor(
         require(activityToDelete.userId == userSubcontracted.id) { "User cannot delete activity others than subcontracted user ones" }
 
         subcontractedActivityValidator.checkActivityIsValidForDeletion(activityToDelete.toDomain())
-
-        if (activityToDelete.hasEvidences) {
-            activityEvidenceService.deleteActivityEvidence(id, activityToDelete.insertDate!!)
-        }
 
         activityRepository.deleteById(id)
     }

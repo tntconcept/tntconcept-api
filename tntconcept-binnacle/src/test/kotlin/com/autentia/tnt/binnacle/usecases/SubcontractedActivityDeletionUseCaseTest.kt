@@ -24,17 +24,16 @@ import java.util.*
 class SubcontractedActivityDeletionUseCaseTest {
     private val activityRepository = mock<ActivityRepository>()
     private val subcontractedActivityValidator = mock<SubcontractedActivityValidator>()
-    private val activityEvidenceService = mock<ActivityEvidenceService>()
     private val securityService = mock<SecurityService>()
     private val userRepository = mock<UserRepository>()
     private val appProperties = AppProperties()
 
     private val useCase = SubcontractedActivityDeletionUseCase(activityRepository, subcontractedActivityValidator,
-            activityEvidenceService, securityService, userRepository, appProperties)
+            securityService, userRepository, appProperties)
 
     @AfterEach
     fun resetMocks() {
-        reset(activityRepository, subcontractedActivityValidator, activityEvidenceService, userRepository)
+        reset(activityRepository, subcontractedActivityValidator, userRepository)
     }
 
     @BeforeEach

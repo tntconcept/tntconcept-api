@@ -40,7 +40,6 @@ class SubcontractedActivityCreationUseCaseTest {
     private val projectRepository = mock<ProjectRepository>()
     private val projectRoleRepository = mock<ProjectRoleRepository>()
     private val activityRepository = mock<ActivityRepository>()
-    private val activityEvidenceService = mock<ActivityEvidenceService>()
     private val userRepository = mock<UserRepository>()
     private val securityService: SecurityService = mock()
     private val appProperties = AppProperties()
@@ -58,7 +57,6 @@ class SubcontractedActivityCreationUseCaseTest {
     private val sut = SubcontractedActivityCreationUseCase(
         projectRoleRepository,
         activityRepository,
-        activityEvidenceService,
         subcontractedActivityValidator,
         ActivityRequestBodyConverter(),
         ActivityResponseConverter(

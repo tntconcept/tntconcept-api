@@ -27,7 +27,6 @@ import javax.validation.Valid
 class SubcontractedActivityCreationUseCase internal constructor(
     private val projectRoleRepository: ProjectRoleRepository,
     @param:Named("Internal") private val activityRepository: ActivityRepository,
-    private val activityEvidenceService: ActivityEvidenceService,
     private val subcontractedActivityValidator: SubcontractedActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
@@ -52,10 +51,6 @@ class SubcontractedActivityCreationUseCase internal constructor(
         subcontractedActivityValidator.checkActivityIsValidForCreation(activityToCreate, userSubcontracted)
 
         val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
-
-        if (activityToCreate.hasEvidences) {
-            activityEvidenceService.storeActivityEvidence(savedActivity.id!!, activityToCreate.evidence!!, savedActivity.insertDate!!)
-        }
 
         val savedActivityDomain = savedActivity.toDomain()
 
