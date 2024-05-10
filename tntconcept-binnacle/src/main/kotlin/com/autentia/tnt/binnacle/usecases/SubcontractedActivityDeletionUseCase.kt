@@ -4,7 +4,6 @@ import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import io.micronaut.security.utils.SecurityService
