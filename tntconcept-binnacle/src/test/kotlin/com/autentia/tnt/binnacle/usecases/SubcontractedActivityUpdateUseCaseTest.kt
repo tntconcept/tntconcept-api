@@ -49,10 +49,8 @@ internal class SubcontractedActivityUpdateUseCaseTest {
         ActivityResponseConverter(
             ActivityIntervalResponseConverter()
         ),
-        activityEvidenceService,
         securityService,
         appProperties
-
     )
 
     fun authenticate() {

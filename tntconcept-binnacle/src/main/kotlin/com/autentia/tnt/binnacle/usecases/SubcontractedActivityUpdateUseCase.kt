@@ -49,7 +49,7 @@ class SubcontractedActivityUpdateUseCase internal constructor(
                 projectRole,
                 userSubcontracted
         )
-        
+
         subcontractedActivityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity)
 
         val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
