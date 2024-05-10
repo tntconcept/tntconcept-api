@@ -7,7 +7,6 @@ data class Project(
     val id: Long,
     val name: String,
     val open: Boolean,
-    val billable: Boolean,
     val projectBillingType: ProjectBillingType,
     val startDate: LocalDate,
     val blockDate: LocalDate? = null,

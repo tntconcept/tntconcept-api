@@ -1374,7 +1374,6 @@ internal class ActivityValidatorTest {
             1,
             "NonBlockedProject",
             true,
-            true,
             LocalDate.now(),
             null,
             null,
@@ -1386,7 +1385,6 @@ internal class ActivityValidatorTest {
         private val blockedPastProject = Project(
             3,
             "NonBlockedProject",
-            true,
             true,
             LocalDate.now(),
             LocalDate.parse("2000-01-01"),
@@ -1400,7 +1398,6 @@ internal class ActivityValidatorTest {
             Project(
                 1,
                 "Vacaciones",
-                true,
                 true,
                 today.minusYears(5),
                 null,
@@ -1451,7 +1448,6 @@ internal class ActivityValidatorTest {
                 CLOSED_ID,
                 "TNT",
                 false,
-                false,
                 LocalDate.now(),
                 null,
                 null,
@@ -1463,7 +1459,6 @@ internal class ActivityValidatorTest {
             Project(
                 3,
                 "Blocked Project",
-                true,
                 true,
                 LocalDate.now(),
                 LocalDate.of(Year.now().value, 1, 1),
@@ -1926,7 +1921,7 @@ internal class ActivityValidatorTest {
             name: String = "Role with limit",
             requireEvidence: RequireEvidence = RequireEvidence.NO,
             project: Project = Project(
-                1, "Project", true, false, LocalDate.now(), null, null, organization, listOf(), "NO_BILLABLE"
+                1, "Project", true, LocalDate.now(), null, null, organization, listOf(), "NO_BILLABLE"
             ),
             maxTimeAllowedByYear: Int,
             maxTimeAllowedByActivity: Int,

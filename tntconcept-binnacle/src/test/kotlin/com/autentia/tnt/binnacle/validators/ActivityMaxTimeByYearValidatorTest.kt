@@ -293,7 +293,6 @@ class ActivityMaxTimeByYearValidatorTest {
             1,
             "project",
             true,
-            true,
             mockNow.toLocalDate().minusYears(1),
             null,
             null,

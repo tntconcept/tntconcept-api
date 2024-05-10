@@ -25,7 +25,6 @@ internal class ProjectResponseConverterTest {
             id = 1,
             name = "Dummy Project",
             open = false,
-            billable = false,
             LocalDate.now(),
             null,
             null,
@@ -39,7 +38,6 @@ internal class ProjectResponseConverterTest {
         assertEquals(project.id, projectResponseDTO.id)
         assertEquals(project.name, projectResponseDTO.name)
         assertEquals(project.open, projectResponseDTO.open)
-        assertEquals(project.billable, projectResponseDTO.billable)
     }
 
     @Test
@@ -52,7 +50,6 @@ internal class ProjectResponseConverterTest {
                 id = 1,
                 name = "First Project",
                 open = false,
-                billable = false,
                 startDate,
                 null,
                 null,
@@ -64,7 +61,6 @@ internal class ProjectResponseConverterTest {
                 id = 2,
                 name = "Second Project",
                 open = false,
-                billable = true,
                 startDate,
                 null,
                 null,
@@ -83,7 +79,6 @@ internal class ProjectResponseConverterTest {
                 id = 1,
                 name = "First Project",
                 open = false,
-                billable = false,
                 ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"),
                 1L,
                 startDate,
@@ -93,7 +88,6 @@ internal class ProjectResponseConverterTest {
                 id = 2,
                 name = "Second Project",
                 open = false,
-                billable = true,
                 ProjectBillingTypes().getProjectBillingType("CLOSED_PRICE"),
                 1L,
                 startDate,

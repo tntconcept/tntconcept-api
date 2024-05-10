@@ -61,7 +61,6 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 1L,
                 "Dummy Project",
                 true,
-                false,
                 LocalDate.now(),
                 null,
                 null,

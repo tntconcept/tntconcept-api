@@ -103,7 +103,6 @@ internal class ProjectRepositoryIT {
             9,
             "Closed project for testing",
             false,
-            false,
             LocalDate.now(),
             null,
             null,

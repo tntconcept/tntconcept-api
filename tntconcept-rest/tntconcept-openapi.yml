@@ -1423,7 +1423,6 @@ components:
           nullable: true
     ProjectResponse:
       required:
-      - billable
       - id
       - name
       - open
@@ -1437,8 +1436,6 @@ components:
         name:
           type: string
         open:
-          type: boolean
-        billable:
           type: boolean
         organizationId:
           type: integer

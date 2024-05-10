@@ -156,7 +156,6 @@ internal class OrganizationsByFilterUseCaseTest {
                 id,
                 "Project ID $id",
                 open,
-                false,
                 LocalDate.now(),
                 null,
                 null,

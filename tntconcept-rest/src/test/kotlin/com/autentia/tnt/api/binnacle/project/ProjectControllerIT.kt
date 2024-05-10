@@ -265,7 +265,6 @@ internal class ProjectControllerIT {
             1L,
             "Dummy Project",
             false,
-            false,
             1L,
             startDate = LocalDate.now(),
         )
@@ -303,7 +302,6 @@ internal class ProjectControllerIT {
         private val PROJECT_RESPONSE_DTO = ProjectResponseDTO(
             1L,
             "Dummy Project",
-            false,
             false,
             ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"),
             1L,

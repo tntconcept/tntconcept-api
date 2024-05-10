@@ -42,7 +42,6 @@ internal class ProjectServiceTest {
             1,
             "BlockedProject",
             true,
-            true,
             LocalDate.now(),
             LocalDate.now(),
             user.id,

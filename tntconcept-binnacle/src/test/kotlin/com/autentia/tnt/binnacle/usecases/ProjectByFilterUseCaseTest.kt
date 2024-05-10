@@ -61,7 +61,6 @@ class ProjectByFilterUseCaseTest {
             1,
             "BlockedProject",
             true,
-            true,
             LocalDate.now(),
             null,
             null,

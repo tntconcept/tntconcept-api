@@ -13,7 +13,6 @@ data class Project(
 
     val name: String,
     val open: Boolean,
-    val billable: Boolean,
     val startDate: LocalDate,
     var blockDate: LocalDate? = null,
     var blockedByUser: Long? = null,
@@ -36,7 +35,6 @@ data class Project(
         id,
         name,
         open,
-        billable,
         ProjectBillingTypes().getProjectBillingType(billingType),
         startDate,
         blockDate,

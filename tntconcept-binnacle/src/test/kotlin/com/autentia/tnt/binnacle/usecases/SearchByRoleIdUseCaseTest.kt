@@ -337,7 +337,6 @@ internal class SearchByRoleIdUseCaseTest {
                 1,
                 "Internal training",
                 true,
-                true,
                 mockNow.toLocalDate(),
                 null,
                 null,
@@ -375,7 +374,6 @@ internal class SearchByRoleIdUseCaseTest {
             com.autentia.tnt.binnacle.entities.Project(
                 2,
                 "External training",
-                true,
                 true,
                 mockNow.toLocalDate(),
                 null,

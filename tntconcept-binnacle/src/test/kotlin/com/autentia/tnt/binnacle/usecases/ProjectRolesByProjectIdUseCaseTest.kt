@@ -46,7 +46,7 @@ internal class ProjectRolesByProjectIdUseCaseTest {
         private const val PROJECT_ID = 1L
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", 1, listOf())
-        private val PROJECT = Project(1L, "Dummy project", true,  false, LocalDate.now(), null, null, ORGANIZATION, listOf(),"NO_BILLABLE")
+        private val PROJECT = Project(1L, "Dummy project", true, LocalDate.now(), null, null, ORGANIZATION, listOf(),"NO_BILLABLE")
 
         private val PROJECT_ROLE = ProjectRole(PROJECT_ID, "Dummy Role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)
 

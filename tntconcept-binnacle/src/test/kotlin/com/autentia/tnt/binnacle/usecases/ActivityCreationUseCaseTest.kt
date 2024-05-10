@@ -383,7 +383,6 @@ internal class ActivityCreationUseCaseTest {
             1L,
             "Dummy Project",
             open = true,
-            billable = false,
             LocalDate.now(),
             null,
             null,

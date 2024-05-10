@@ -58,7 +58,6 @@ class ProjectValidatorTest {
                 1,
                 "TNT",
                 false,
-                false,
                 ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"),
                 LocalDate.now(),
                 null,
@@ -71,7 +70,6 @@ class ProjectValidatorTest {
             Project(
                 2,
                 "Vacaciones",
-                true,
                 true,
                 ProjectBillingTypes().getProjectBillingType("CLOSED_PRICE"),
                 LocalDate.now(),
