@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.usecases
 import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.ActivityRequestBodyConverter
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
-import com.autentia.tnt.binnacle.core.utils.toDate
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
 import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
@@ -12,7 +11,6 @@ import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import io.micronaut.security.utils.SecurityService
@@ -29,7 +27,6 @@ class SubcontractedActivityUpdateUseCase internal constructor(
     private val subcontractedActivityValidator: SubcontractedActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
     private val activityResponseConverter: ActivityResponseConverter,
-    private val activityEvidenceService: ActivityEvidenceService,
     private val securityService: SecurityService,
     private val appProperties: AppProperties
 ){
@@ -52,8 +49,7 @@ class SubcontractedActivityUpdateUseCase internal constructor(
                 projectRole,
                 userSubcontracted
         )
-
-
+        
         subcontractedActivityValidator.checkActivityIsValidForUpdate(activityToUpdate, currentActivity)
 
         val updatedActivityEntity = activityRepository.update(Activity.of(activityToUpdate, projectRoleEntity))
@@ -62,7 +58,6 @@ class SubcontractedActivityUpdateUseCase internal constructor(
 
         return activityResponseConverter.toSubcontractedActivityResponseDTO(updatedActivity)
     }
-
 
     private fun getProjectRoleEntity(projectRoleId: Long) =
             projectRoleRepository.findById(projectRoleId) ?: throw ProjectRoleNotFoundException(projectRoleId)

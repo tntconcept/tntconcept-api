@@ -1,6 +1,5 @@
 package com.autentia.tnt.binnacle.repositories
 
-import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
 import com.autentia.tnt.binnacle.config.createUser
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.mockito.Mockito.mock
-import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
@@ -30,11 +28,9 @@ internal class ActivityRepositorySecuredTest {
 
     private val securityService = mock<SecurityService>()
     private val internalActivityRepository = mock<InternalActivityRepository>()
-    private val userRepository = mock<UserRepository>()
-    private val appProperties = AppProperties()
 
     private var activityRepositorySecured =
-            ActivityRepositorySecured(internalActivityRepository, securityService, userRepository, appProperties)
+            ActivityRepositorySecured(internalActivityRepository, securityService)
 
     @Test
     fun `find all with user id filter`() {
@@ -447,41 +443,6 @@ internal class ActivityRepositorySecuredTest {
         whenever(internalActivityRepository.save(activity)).thenReturn(expectedActivity)
 
         val result = activityRepositorySecured.save(activity)
-
-        assertEquals(expectedActivity, result)
-    }
-
-    @Test
-    fun `save subcontracted activity should call internal to save subcontracted activity`() {
-        val activity = Activity(
-            start = today.withDayOfMonth(1).atTime(0,0),
-            end = today.withDayOfMonth(today.lengthOfMonth()).atTime(23,59),
-            duration = 20000,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = USER_SUBCONTRACTED.id,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
-        )
-        val expectedActivity = Activity(
-            id = 1L,
-            start = today.withDayOfMonth(1).atTime(0,0),
-            end = today.withDayOfMonth(today.lengthOfMonth()).atTime(23,59),
-            duration = 20000,
-            description = "Test activity",
-            projectRole = projectRole,
-            userId = USER_SUBCONTRACTED.id,
-            billable = false,
-            hasEvidences = false,
-            approvalState = ApprovalState.NA,
-        )
-        appProperties.binnacle.subcontractedUser.username="subcontracted"
-        whenever(userRepository.findByUsername(any())).thenReturn(USER_SUBCONTRACTED)
-        whenever(securityService.authentication).thenReturn(Optional.of(subcontracted_manager_role))
-        whenever(internalActivityRepository.saveSubcontracted(activity)).thenReturn(expectedActivity)
-
-        val result = activityRepositorySecured.saveSubcontracted(activity)
 
         assertEquals(expectedActivity, result)
     }

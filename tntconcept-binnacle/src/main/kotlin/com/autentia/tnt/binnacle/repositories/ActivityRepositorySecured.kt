@@ -7,7 +7,6 @@ import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
 import com.autentia.tnt.security.application.canAccessAllActivities
 import com.autentia.tnt.security.application.checkAuthentication
-import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import com.autentia.tnt.security.application.id
 import io.micronaut.context.annotation.Primary
 import io.micronaut.data.jpa.repository.criteria.Specification
@@ -20,8 +19,6 @@ import java.time.LocalDateTime
 internal class ActivityRepositorySecured(
         private val internalActivityRepository: InternalActivityRepository,
         private val securityService: SecurityService,
-        private val userRepository: UserRepository,
-        private val appProperties: AppProperties
 ) : ActivityRepository {
 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
@@ -128,12 +125,6 @@ internal class ActivityRepositorySecured(
         require(activity.userId == authentication.id()) { "User cannot save activity" }
 
         return internalActivityRepository.save(activity)
-    }
-
-    override fun saveSubcontracted(activity: Activity): Activity {
-        val subcontractedUser = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)
-        require(subcontractedUser?.id == activity.userId) { "Activity must be subcontracted"}
-        return internalActivityRepository.saveSubcontracted(activity)
     }
 
     override fun update(activity: Activity): Activity {

@@ -16,6 +16,7 @@ import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import io.micronaut.security.utils.SecurityService
 import io.micronaut.validation.Validated
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.*
 import javax.transaction.Transactional
@@ -25,7 +26,7 @@ import javax.validation.Valid
 @Validated
 class SubcontractedActivityCreationUseCase internal constructor(
     private val projectRoleRepository: ProjectRoleRepository,
-    private val activityRepository: ActivityRepository,
+    @param:Named("Internal") private val activityRepository: ActivityRepository,
     private val activityEvidenceService: ActivityEvidenceService,
     private val subcontractedActivityValidator: SubcontractedActivityValidator,
     private val activityRequestBodyConverter: ActivityRequestBodyConverter,
@@ -50,7 +51,7 @@ class SubcontractedActivityCreationUseCase internal constructor(
         }
         subcontractedActivityValidator.checkActivityIsValidForCreation(activityToCreate, userSubcontracted)
 
-        val savedActivity = activityRepository.saveSubcontracted(Activity.of(activityToCreate, projectRole))
+        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
 
         if (activityToCreate.hasEvidences) {
             activityEvidenceService.storeActivityEvidence(savedActivity.id!!, activityToCreate.evidence!!, savedActivity.insertDate!!)

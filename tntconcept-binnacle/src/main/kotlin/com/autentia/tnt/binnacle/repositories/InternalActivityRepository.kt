@@ -16,7 +16,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     override fun findAll(activitySpecification: Specification<Activity>): List<Activity> =
         activityDao.findAll(activitySpecification, Sort.of(Sort.Order("start")))
 
-
     override fun findById(id: Long): Activity? {
         val activity: Optional<Activity> = activityDao.findById(id)
         return if (activity.isPresent) {
@@ -25,7 +24,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
             null
         }
     }
-
 
     override fun find(startDate: LocalDateTime, endDate: LocalDateTime, userIds: List<Long>): List<Activity> {
         return activityDao.find(startDate, endDate, userIds)
@@ -83,10 +81,6 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
     }
 
     override fun save(activity: Activity): Activity {
-        return activityDao.save(activity)
-    }
-
-    override fun saveSubcontracted(activity: Activity): Activity {
         return activityDao.save(activity)
     }
 

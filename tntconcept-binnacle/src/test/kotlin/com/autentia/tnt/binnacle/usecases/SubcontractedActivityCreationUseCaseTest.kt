@@ -126,7 +126,7 @@ class SubcontractedActivityCreationUseCaseTest {
                 activityEntity.projectRole.project
             )
         )
-        whenever(activityRepository.saveSubcontracted(any())).thenReturn(activityEntity)
+        whenever(activityRepository.save(any())).thenReturn(activityEntity)
 
         val activityCreated = sut.createSubcontractedActivity(SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO, Locale.ENGLISH)
 

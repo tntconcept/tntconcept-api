@@ -9,9 +9,7 @@ internal interface ActivityRepository {
 
     fun findAll(activitySpecification: Specification<Activity>): List<Activity>
 
-
     fun findById(id: Long): Activity?
-
 
     fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity>
 
@@ -37,11 +35,7 @@ internal interface ActivityRepository {
 
     fun save(activity: Activity): Activity
 
-    fun saveSubcontracted(activity: Activity): Activity
-
     fun update(activity: Activity): Activity
-
-
 
     fun deleteById(id: Long)
 
