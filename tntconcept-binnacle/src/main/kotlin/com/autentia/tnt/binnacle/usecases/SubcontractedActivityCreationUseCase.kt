@@ -11,7 +11,6 @@ import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import io.micronaut.security.utils.SecurityService
@@ -38,24 +37,31 @@ class SubcontractedActivityCreationUseCase internal constructor(
     fun createSubcontractedActivity(@Valid subcontractedActivityRequestBody: SubcontractedActivityRequestDTO, locale: Locale): SubcontractedActivityResponseDTO {
         securityService.checkSubcontractedActivityManagerRole()
 
-        val userSubcontracted = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)?.toDomain()
+        val userSubcontracted =
+            userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)?.toDomain()
 
-        require(userSubcontracted != null){"Subcontracted user must exist"}
+        require(userSubcontracted != null) { "Subcontracted user must exist" }
         val projectRole = this.getProjectRole(subcontractedActivityRequestBody.projectRoleId)
 
-        var activityToCreate = activityRequestBodyConverter.toActivity(subcontractedActivityRequestBody, null, projectRole.toDomain(), userSubcontracted)
-        if(activityToCreate.timeInterval.start.month == activityToCreate.projectRole.project.startDate.month){
-            activityToCreate = activityToCreate.copy(timeInterval = TimeInterval.of(activityToCreate.projectRole.project.startDate.atTime(0,0),
-                activityToCreate.timeInterval.end))
+        var activityToCreate = activityRequestBodyConverter.toActivity(
+            subcontractedActivityRequestBody,
+            null,
+            projectRole.toDomain(),
+            userSubcontracted
+        )
+        if (activityToCreate.timeInterval.start.month == activityToCreate.projectRole.project.startDate.month) {
+            activityToCreate = activityToCreate.copy(
+                timeInterval = TimeInterval.of(
+                    activityToCreate.projectRole.project.startDate.atTime(0, 0),
+                    activityToCreate.timeInterval.end
+                )
+            )
         }
         subcontractedActivityValidator.checkActivityIsValidForCreation(activityToCreate, userSubcontracted)
 
-        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole))
+        val savedActivity = activityRepository.save(Activity.of(activityToCreate, projectRole)).toDomain()
 
-        val savedActivityDomain = savedActivity.toDomain()
-
-
-        return activityResponseConverter.toSubcontractedActivityResponseDTO(savedActivityDomain)
+        return activityResponseConverter.toSubcontractedActivityResponseDTO(savedActivity)
     }
 
     private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)
