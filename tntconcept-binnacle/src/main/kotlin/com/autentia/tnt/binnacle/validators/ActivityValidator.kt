@@ -5,6 +5,7 @@ import com.autentia.tnt.binnacle.core.domain.Calendar
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Billable
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
@@ -41,6 +42,7 @@ internal class ActivityValidator(
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
             isBeforeProjectCreationDate(activityToCreate, project) -> throw ActivityBeforeProjectCreationDateException()
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
+            !isActivityBillableCoherenceWithProjectBillingType(activityToCreate) -> throw ActivityBillableIncoherenceException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
 
@@ -68,6 +70,13 @@ internal class ActivityValidator(
         }
     }
 
+    private fun isActivityBillableCoherenceWithProjectBillingType(activity: Activity):Boolean{
+        when(activity.projectRole.project.projectBillingType.type){
+            Billable.NEVER -> return if(!activity.billable) true else false
+            Billable.ALWAYS -> return if(activity.billable) true else false
+            Billable.OPTIONAL -> return true
+        }
+    }
     private fun isExceedingMaxTimeByActivity(activityToCreate: Activity): Boolean {
         if (activityToCreate.projectRole.timeInfo.maxTimeAllowed.byActivity == 0)
             return false
@@ -212,6 +221,7 @@ internal class ActivityValidator(
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
+            !isActivityBillableCoherenceWithProjectBillingType(activityToUpdate) -> throw ActivityBillableIncoherenceException()
             user.isBeforeHiringDate(activityToUpdate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
 

@@ -134,4 +134,7 @@ internal class ActivityController(
     internal fun onActivityBeforeProjectCreationDate(request: HttpRequest<*>, e: ActivityBeforeProjectCreationDateException) =
             HttpResponse.badRequest(ErrorResponse("ACTIVITY_BEFORE_PROJECT_CREATION_DATE", e.message))
 
+    @Error
+    internal fun onActivityBillableIncoherenceException(request: HttpRequest<*>, e:ActivityBillableIncoherenceException) =
+        HttpResponse.badRequest(ErrorResponse("ACTIVITY_BILLABLE_INCOHERENCE_WITH_PROJECT_BILLING_TYPE",e.message))
 }

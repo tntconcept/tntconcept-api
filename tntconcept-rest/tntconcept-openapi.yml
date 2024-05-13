@@ -1185,6 +1185,12 @@ components:
       properties:
         id:
           type: string
+    Billable:
+      type: string
+      enum:
+      - ALWAYS
+      - NEVER
+      - OPTIONAL
     BlockProjectRequest:
       required:
       - blockDate
@@ -1408,6 +1414,19 @@ components:
           type: number
         balance:
           type: number
+    ProjectBillingType:
+      required:
+      - billableByDefault
+      - name
+      - type
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/Billable'
+        billableByDefault:
+          type: boolean
     ProjectFilterRequest:
       type: object
       properties:
@@ -1427,6 +1446,7 @@ components:
       - name
       - open
       - organizationId
+      - projectBillingType
       - startDate
       type: object
       properties:
@@ -1437,6 +1457,8 @@ components:
           type: string
         open:
           type: boolean
+        projectBillingType:
+          $ref: '#/components/schemas/ProjectBillingType'
         organizationId:
           type: integer
           format: int64

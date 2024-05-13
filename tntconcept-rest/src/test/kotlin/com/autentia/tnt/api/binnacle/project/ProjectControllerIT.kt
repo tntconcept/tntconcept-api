@@ -60,7 +60,6 @@ internal class ProjectControllerIT {
     @get:MockBean(ProjectByFilterUseCase::class)
     internal val projectByFilterUseCase = mock<ProjectByFilterUseCase>()
 
-
     @AfterEach
     fun resetMocks() {
         reset(
@@ -265,6 +264,7 @@ internal class ProjectControllerIT {
             1L,
             "Dummy Project",
             false,
+            ProjectBillingTypes().getProjectBillingType("TIME_AND_MATERIALS"),
             1L,
             startDate = LocalDate.now(),
         )
@@ -303,7 +303,7 @@ internal class ProjectControllerIT {
             1L,
             "Dummy Project",
             false,
-            ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"),
+            ProjectBillingTypes().getProjectBillingType("TIME_AND_MATERIALS"),
             1L,
             LocalDate.now(),
         )
