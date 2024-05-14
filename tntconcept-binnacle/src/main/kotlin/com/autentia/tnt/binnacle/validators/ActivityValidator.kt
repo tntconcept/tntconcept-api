@@ -72,8 +72,8 @@ internal class ActivityValidator(
 
     private fun isActivityBillableCoherenceWithProjectBillingType(activity: Activity):Boolean{
         when(activity.projectRole.project.projectBillingType.type){
-            Billable.NEVER -> return if(!activity.billable) true else false
-            Billable.ALWAYS -> return if(activity.billable) true else false
+            Billable.NEVER -> return !activity.billable
+            Billable.ALWAYS -> return activity.billable
             Billable.OPTIONAL -> return true
         }
     }
