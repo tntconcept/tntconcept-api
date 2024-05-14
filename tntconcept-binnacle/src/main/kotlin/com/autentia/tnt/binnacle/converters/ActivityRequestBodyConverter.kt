@@ -1,12 +1,14 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.core.domain.ActivityRequestBody
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.entities.User
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestBodyHookDTO
 import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityRequestDTO
 import jakarta.inject.Singleton
 import java.time.LocalDateTime
 import java.util.*
@@ -34,6 +36,28 @@ class ActivityRequestBodyConverter() {
             projectRole.getApprovalState(),
             activityRequestBody.evidence?.toDomain()
         )
+
+    fun toActivity(
+            subcontractingActivityRequestBody: SubcontractedActivityRequestDTO,
+            insertDate: LocalDateTime?,
+            projectRole: com.autentia.tnt.binnacle.core.domain.ProjectRole,
+            user: com.autentia.tnt.binnacle.core.domain.User,
+    ) =
+            com.autentia.tnt.binnacle.core.domain.Activity.of(
+                    subcontractingActivityRequestBody.id,
+                    TimeInterval.of(subcontractingActivityRequestBody.month.atDay(1).atTime(0,0),
+                        subcontractingActivityRequestBody.month.atEndOfMonth().atTime(23,59)),
+                    subcontractingActivityRequestBody.duration,
+                    subcontractingActivityRequestBody.description,
+                    projectRole,
+                    user.id,
+                    true,
+                    user.departmentId,
+                    insertDate,
+                    false,
+                    ApprovalState.NA,
+                    null
+            )
 
     fun mapActivityRequestBodyDTOToActivityRequestBody(activityRequestBodyDTO: ActivityRequestBodyHookDTO) =
         ActivityRequestBody(
@@ -68,6 +92,7 @@ class ActivityRequestBodyConverter() {
             activityRequestBody.hasEvidences,
             getApprovalState(projectRole)
         )
+
 
     private fun getApprovalState(projectRole: ProjectRole) =
         if (projectRole.isApprovalRequired) ApprovalState.PENDING else ApprovalState.NA

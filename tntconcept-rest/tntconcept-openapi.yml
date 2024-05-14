@@ -697,6 +697,99 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponse'
+  /api/subcontracted-activity:
+    get:
+      tags:
+      - subcontracted-activity
+      summary: Gets activities with specified filters
+      operationId: get$tntconcept_rest_4
+      parameters:
+      - name: activityFilterRequest
+        in: query
+        required: true
+        explode: true
+        schema:
+          $ref: '#/components/schemas/SubcontractedActivityFilterRequest'
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubcontractedActivityResponse'
+    put:
+      tags:
+      - subcontracted-activity
+      summary: Updates an existing subcontracted activity
+      operationId: put$tntconcept_rest_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcontractedActivityRequest'
+        required: true
+      responses:
+        "200":
+          description: put$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractedActivityResponse'
+    post:
+      tags:
+      - subcontracted-activity
+      summary: Creates a new subcontracted activity
+      operationId: post$tntconcept_rest_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubcontractedActivityRequest'
+        required: true
+      responses:
+        "200":
+          description: post$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractedActivityResponse'
+  /api/subcontracted-activity/{id}:
+    get:
+      tags:
+      - subcontracted-activity
+      summary: Gets an activity by its id.
+      operationId: get$tntconcept_rest_5
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: get$tntconcept_rest 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcontractedActivityResponse'
+    delete:
+      tags:
+      - subcontracted-activity
+      summary: Deletes a subcontracted activity by its id.
+      operationId: delete$tntconcept_rest_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: delete$tntconcept_rest 200 response
   /api/time-summary:
     get:
       summary: Retrieves working time from a given date
@@ -718,7 +811,7 @@ paths:
   /api/user:
     get:
       summary: Retrieves the list of users with specified filters
-      operationId: get$tntconcept_rest_4
+      operationId: get$tntconcept_rest_6
       parameters:
       - name: userFilterRequest
         in: query
@@ -1344,6 +1437,21 @@ components:
         byActivity:
           type: integer
           format: int32
+    Month:
+      type: string
+      enum:
+      - JANUARY
+      - FEBRUARY
+      - MARCH
+      - APRIL
+      - MAY
+      - JUNE
+      - JULY
+      - AUGUST
+      - SEPTEMBER
+      - OCTOBER
+      - NOVEMBER
+      - DECEMBER
     MonthlyBalanceResponse:
       required:
       - balance
@@ -1561,6 +1669,82 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectRoleUserResponse'
+    SubcontractedActivityFilterRequest:
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+          nullable: true
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        organizationId:
+          type: integer
+          format: int64
+          nullable: true
+        projectId:
+          type: integer
+          format: int64
+          nullable: true
+        roleId:
+          type: integer
+          format: int64
+          nullable: true
+    SubcontractedActivityRequest:
+      required:
+      - description
+      - duration
+      - month
+      - projectRoleId
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          nullable: true
+        month:
+          $ref: '#/components/schemas/YearMonth'
+        duration:
+          type: integer
+          format: int32
+        description:
+          maxLength: 2048
+          type: string
+        projectRoleId:
+          type: integer
+          format: int64
+        evidence:
+          pattern: "^data:[^,]+;base64,.+$"
+          type: string
+          nullable: true
+    SubcontractedActivityResponse:
+      required:
+      - description
+      - duration
+      - id
+      - month
+      - projectRoleId
+      - userId
+      type: object
+      properties:
+        duration:
+          type: integer
+          format: int32
+        description:
+          type: string
+        id:
+          type: integer
+          format: int64
+        projectRoleId:
+          type: integer
+          format: int64
+        month:
+          $ref: '#/components/schemas/YearMonth'
+        userId:
+          type: integer
+          format: int64
     TimeInfoResponse:
       required:
       - maxTimeAllowed
@@ -1782,3 +1966,16 @@ components:
           $ref: '#/components/schemas/PreviousAnnualBalanceResponse'
         current:
           $ref: '#/components/schemas/AnnualBalanceResponse'
+    YearMonth:
+      type: object
+      properties:
+        year:
+          type: integer
+          format: int32
+        monthValue:
+          type: integer
+          format: int32
+        month:
+          $ref: '#/components/schemas/Month'
+        leapYear:
+          type: boolean

@@ -1,8 +1,6 @@
 package com.autentia.tnt.binnacle.validators
 
 import com.autentia.tnt.binnacle.core.domain.Activity
-import com.autentia.tnt.binnacle.core.domain.Calendar
-import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Billable
@@ -12,10 +10,8 @@ import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityService
-import io.archimedesfw.commons.time.ClockUtils
 import io.micronaut.transaction.annotation.ReadOnly
 import jakarta.inject.Singleton
-import java.time.LocalDateTime
 import javax.transaction.Transactional
 
 @Singleton
@@ -23,7 +19,7 @@ internal class ActivityValidator(
     private val activityService: ActivityService,
     private val activityCalendarService: ActivityCalendarService,
     private val projectRepository: ProjectRepository,
-) {
+):AbstractActivityValidator(activityService,activityCalendarService) {
     @Transactional
     @ReadOnly
     fun checkActivityIsValidForCreation(activityToCreate: Activity, user: User) {
@@ -266,46 +262,18 @@ internal class ActivityValidator(
         val project = projectRepository.findById(activity.projectRole.project.id)
             .orElseThrow { ProjectNotFoundException(activity.projectRole.project.id) }
 
+
         ensureActivityCanBeDeleted(canAccessAllActivities, activity)
 
         when {
+            !isProjectOpen(project) -> throw ProjectClosedException()
             isProjectBlocked(project, activity) -> throw ProjectBlockedException(project.blockDate!!)
             !isOpenPeriod(activity.getStart()) -> throw ActivityPeriodClosedException()
         }
     }
 
-    private fun ensureActivityCanBeDeleted(canAccessAllActivities: Boolean, activity: Activity) {
-        if (!canAccessAllActivities) {
-            require(activity.approvalState != ApprovalState.ACCEPTED) { "Cannot delete an activity already approved." }
-        }
-    }
-
-    private fun isProjectOpen(project: Project): Boolean {
-        return project.open
-    }
-
-    private fun isProjectBlocked(project: Project, activity: Activity): Boolean {
-        if (project.blockDate == null) {
-            return false
-        }
-        return project.blockDate!!.isAfter(
-            activity.getStart().toLocalDate()
-        ) || project.blockDate!!.isEqual(activity.getStart().toLocalDate())
-    }
-
-    private fun isOverlappingAnotherActivityTime(
-        activity: Activity,
-        userId: Long,
-    ): Boolean {
-        if (activity.duration == 0) {
-            return false
-        }
-        val activities = activityService.findOverlappedActivities(activity.getStart(), activity.getEnd(), userId)
-        return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
-    }
 
 
-    fun isBeforeProjectCreationDate(activity: Activity, project: Project): Boolean {
-        return activity.timeInterval.start.toLocalDate() < project.startDate
-    }
+
+
 }
