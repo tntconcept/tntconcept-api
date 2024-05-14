@@ -12,7 +12,6 @@ import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
-import com.autentia.tnt.binnacle.services.PendingApproveActivityMailService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import io.micronaut.validation.Validated
 import jakarta.inject.Singleton
@@ -64,4 +63,6 @@ class ActivityCreationUseCase internal constructor(
 
     private fun getProjectRole(projectRoleId: Long) = projectRoleRepository.findById(projectRoleId)
             ?: throw ProjectRoleNotFoundException(projectRoleId)
+
+
 }

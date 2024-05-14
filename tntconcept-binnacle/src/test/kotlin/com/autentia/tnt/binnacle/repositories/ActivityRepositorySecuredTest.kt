@@ -2,11 +2,13 @@ package com.autentia.tnt.binnacle.repositories
 
 import com.autentia.tnt.binnacle.config.createActivity
 import com.autentia.tnt.binnacle.config.createProjectRole
+import com.autentia.tnt.binnacle.config.createUser
 import com.autentia.tnt.binnacle.core.domain.ActivityTimeOnly
 import com.autentia.tnt.binnacle.entities.Activity
 import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
+import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
 import io.micronaut.security.utils.SecurityService
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -519,6 +521,7 @@ internal class ActivityRepositorySecuredTest {
 
         assertEquals(activity, result)
     }
+    
 
     @Test
     fun `update activity should throw IllegalArgumentException when id doesn't exist`() {
@@ -730,6 +733,7 @@ internal class ActivityRepositorySecuredTest {
 
     private companion object {
         private const val userId = 1L
+        private val USER_SUBCONTRACTED = createUser(LocalDate.now(), 2, "subcontracted")
         private const val adminUserId = 3L
         private val today = LocalDate.now()
         private val projectRole = createProjectRole()
@@ -737,6 +741,7 @@ internal class ActivityRepositorySecuredTest {
                 ClientAuthentication(adminUserId.toString(), mapOf("roles" to listOf("activity-approval")))
         private val emptyRolesAuth =
                 ClientAuthentication(userId.toString(), mapOf("roles" to listOf("user")))
-
+        private val subcontracted_manager_role: Authentication =
+            ClientAuthentication(userId.toString(), mapOf("roles" to listOf("subcontracted-activity-manager")))
     }
 }

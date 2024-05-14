@@ -1,14 +1,13 @@
 package com.autentia.tnt.binnacle.usecases
 
+import com.autentia.tnt.AppProperties
 import com.autentia.tnt.binnacle.converters.ActivityResponseConverter
 import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.dto.ActivityFilterDTO
-import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
-import com.autentia.tnt.binnacle.entities.dto.ApprovalStateActivityFilter
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityFilterDTO
+import com.autentia.tnt.binnacle.entities.dto.SubcontractedActivityResponseDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
+import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates
-import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.approvalState
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.endDateGreaterThanOrEqualTo
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.organizationId
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.projectId
@@ -16,7 +15,7 @@ import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.role
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.startDateLessThanOrEqualTo
 import com.autentia.tnt.binnacle.repositories.predicates.ActivityPredicates.userId
 import com.autentia.tnt.binnacle.repositories.predicates.PredicateBuilder
-import com.autentia.tnt.security.application.checkAuthentication
+import com.autentia.tnt.security.application.checkSubcontractedActivityManagerRole
 import io.micronaut.data.jpa.repository.criteria.Specification
 import io.micronaut.security.utils.SecurityService
 import io.micronaut.transaction.annotation.ReadOnly
@@ -25,32 +24,31 @@ import javax.transaction.Transactional
 
 
 @Singleton
-class ActivitiesByFilterUseCase internal constructor(
+class SubcontractedActivitiesByFilterUseCase internal constructor(
     private val activityRepository: ActivityRepository,
     private val securityService: SecurityService,
     private val activityResponseConverter: ActivityResponseConverter,
+    private val appProperties: AppProperties,
+    private val userRepository: UserRepository
 ) {
 
     @Transactional
     @ReadOnly
-    fun getActivities(activityFilter: ActivityFilterDTO): List<ActivityResponseDTO> {
-        securityService.checkAuthentication()
+    fun getActivities(activityFilter: SubcontractedActivityFilterDTO): List<SubcontractedActivityResponseDTO> {
 
+        securityService.checkSubcontractedActivityManagerRole()
         val predicate: Specification<Activity> = getPredicateFromActivityFilter(activityFilter)
         val activities = activityRepository.findAll(predicate).map { it.toDomain() }
-        return activities.map { activityResponseConverter.toActivityResponseDTO(it) }
+
+        return activities.map { activityResponseConverter.toSubcontractedActivityResponseDTO(it) }
     }
 
-    private fun getPredicateFromActivityFilter(activityFilter: ActivityFilterDTO): Specification<Activity> {
+    private fun getPredicateFromActivityFilter(activityFilter: SubcontractedActivityFilterDTO): Specification<Activity> {
         var predicate: Specification<Activity> = ActivityPredicates.ALL
 
-        if (activityFilter.approvalState !== null) {
-            predicate = if (activityFilter.approvalState != ApprovalStateActivityFilter.ALL){
-                PredicateBuilder.and(predicate, approvalState(ApprovalState.valueOf(activityFilter.approvalState.name)))
-            } else {
-                PredicateBuilder.and(predicate, PredicateBuilder.or(approvalState((ApprovalState.PENDING)), (approvalState((ApprovalState.ACCEPTED)))))
-            }
-        }
+        //filter only activities of the subcontracted user
+        val subcontractedUser = userRepository.findByUsername(appProperties.binnacle.subcontractedUser.username!!)
+        predicate = PredicateBuilder.and(predicate, userId(subcontractedUser!!.id))
 
         if (activityFilter.endDate !== null) {
             predicate = PredicateBuilder.and(predicate, startDateLessThanOrEqualTo(activityFilter.endDate))
@@ -65,10 +63,6 @@ class ActivitiesByFilterUseCase internal constructor(
             predicate = PredicateBuilder.and(predicate, projectId(activityFilter.projectId))
         } else if (activityFilter.organizationId !== null) {
             predicate = PredicateBuilder.and(predicate, organizationId(activityFilter.organizationId))
-        }
-
-        if (activityFilter.userId !== null) {
-            predicate = PredicateBuilder.and(predicate, userId(activityFilter.userId))
         }
 
         return predicate
