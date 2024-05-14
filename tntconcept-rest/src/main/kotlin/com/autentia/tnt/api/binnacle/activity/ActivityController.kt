@@ -52,6 +52,7 @@ internal class ActivityController(
         @Body @Valid activityRequest: ActivityRequest, @Parameter(hidden = true) locale: Locale,
     ): ActivityResponse = ActivityResponse.from(activityCreationUseCase.createActivity(activityRequest.toDto(), locale))
 
+
     @Put
     @Operation(summary = "Updates an existing activity")
     internal fun put(

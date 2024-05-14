@@ -88,8 +88,11 @@ internal class InternalActivityRepository(private val activityDao: ActivityDao) 
         return activityDao.update(activity)
     }
 
+
+
     override fun deleteById(id: Long) {
         activityDao.deleteById(id)
     }
+
 
 }

@@ -33,6 +33,7 @@ internal class ActivityRepositorySecured(
         }
     }
 
+
     override fun findByUserId(startDate: LocalDateTime, endDate: LocalDateTime, userId: Long): List<Activity> {
         val authentication = securityService.checkAuthentication()
         if (!authentication.canAccessAllActivities()) {
@@ -138,6 +139,7 @@ internal class ActivityRepositorySecured(
 
         return internalActivityRepository.update(activity)
     }
+
 
     override fun deleteById(id: Long) {
         val authentication = securityService.checkAuthentication()
