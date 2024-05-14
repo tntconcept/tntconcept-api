@@ -21,7 +21,10 @@ import org.mockito.Mockito
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.whenever
-import java.time.*
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.Month
 import java.util.*
 
 private val mockToday = ClockUtils.nowUtc().toLocalDate()
@@ -603,36 +606,36 @@ internal class SubcontractedActivityValidatorTest {
             1,
             "NonBlockedProject",
             true,
-            true,
             mockNow.toLocalDate(),
             null,
             null,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "TIME_AND_MATERIALS"
         )
 
         private val nonBlockedProjectTwoYearsAgo = Project(
                 3,
                 "nonBlockedProjectTwoYearsAgo",
                 true,
-                true,
                 mockNow.toLocalDate().minusYears(2),
                 null,
                 null,
                 Organization(1, "Organization", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "TIME_AND_MATERIALS"
         )
 
         private val blockedPastProject = Project(
             3,
             "NonBlockedProject",
             true,
-            true,
             mockNow.toLocalDate().minusYears(1),
             mockNow.toLocalDate().minusMonths(2),
             user.id,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "TIME_AND_MATERIALS"
         )
 
         private val vacationProject =
@@ -640,12 +643,12 @@ internal class SubcontractedActivityValidatorTest {
                 1,
                 "Vacaciones",
                 true,
-                true,
                 mockNow.toLocalDate().minusYears(1),
                 null,
                 null,
                 Organization(1, "Organization", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "TIME_AND_MATERIALS"
             )
 
         private val projectRoleWithPastBlockedProject = ProjectRole(
@@ -690,24 +693,24 @@ internal class SubcontractedActivityValidatorTest {
                 CLOSED_ID,
                 "TNT",
                 false,
-                false,
                 LocalDate.now(),
                 null,
                 null,
                 Organization(1, "Autentia", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "TIME_AND_MATERIALS"
             )
         private val blockedProject =
             Project(
                 3,
                 "Blocked Project",
                 true,
-                true,
                 mockNow.toLocalDate(),
                 mockNow.toLocalDate().minusDays(1),
                 null,
                 Organization(1, "Organization", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "TIME_AND_MATERIALS"
             )
         private val blockedProjectRole =
             ProjectRole(

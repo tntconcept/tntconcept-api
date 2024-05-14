@@ -16,7 +16,6 @@ import com.autentia.tnt.binnacle.repositories.ProjectRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.services.ActivityService
 import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import io.archimedesfw.commons.time.ClockUtils
@@ -168,12 +167,12 @@ class SubcontractedActivityCreationUseCaseTest {
             1L,
             "Dummy Project",
             open = true,
-            billable = false,
             ClockUtils.nowUtc().toLocalDate().minusMonths(1),
             null,
             null,
             ORGANIZATION,
-            listOf()
+            listOf(),
+            "TIME_AND_MATERIALS"
         )
         private val PROJECT_ROLE =
             ProjectRole(10L, "Dummy Project role", RequireEvidence.NO, PROJECT, 0, 0, true, false, TimeUnit.MINUTES)

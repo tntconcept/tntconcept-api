@@ -60,12 +60,12 @@ internal class SubcontractedActivityRetrievalByIdUseCaseTest {
                         1L,
                         "Dummy Project",
                         true,
-                        false,
                         LocalDate.now(),
                         null,
                         null,
                         Organization(1L, "Dummy Organization", 1, listOf()),
                         listOf(),
+                        "TIME_AND_MATERIALS"
                 ),
                 0,
                 0,
