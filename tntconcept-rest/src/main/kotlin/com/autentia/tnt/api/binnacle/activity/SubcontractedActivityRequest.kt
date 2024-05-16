@@ -14,6 +14,7 @@ data class SubcontractedActivityRequest (
     val duration: Int,
     @field:Size(max = 2048, message = "Description must not exceed 2048 characters")
     val description: String,
+    val billable: Boolean,
     val projectRoleId: Long,
     @field:Pattern(
             regexp = "^data:[^,]+;base64,.+$", message = "String format should be data:<mediatype>;base64,<data>"
@@ -26,6 +27,7 @@ data class SubcontractedActivityRequest (
                 month,
                 duration,
                 description,
+                billable,
                 projectRoleId
         )
     }

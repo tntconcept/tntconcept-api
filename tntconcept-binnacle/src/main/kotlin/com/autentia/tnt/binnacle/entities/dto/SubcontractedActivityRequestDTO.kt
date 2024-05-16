@@ -10,5 +10,6 @@ data class SubcontractedActivityRequestDTO (
         val month: YearMonth,
         val duration: Int,
         val description: String,
+        val billable: Boolean,
         val projectRoleId: Long,
 )

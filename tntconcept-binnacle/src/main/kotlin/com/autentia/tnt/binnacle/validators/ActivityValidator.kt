@@ -3,7 +3,6 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.User
 import com.autentia.tnt.binnacle.entities.ApprovalState
-import com.autentia.tnt.binnacle.entities.Billable
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
@@ -62,14 +61,6 @@ internal class ActivityValidator(
                 activityToCreate.timeUnit,
                 activityToCreateStartYear
             )
-        }
-    }
-
-    private fun isActivityBillableCoherenceWithProjectBillingType(activity: Activity):Boolean{
-        when(activity.projectRole.project.projectBillingType.type){
-            Billable.NEVER -> return !activity.billable
-            Billable.ALWAYS -> return activity.billable
-            Billable.OPTIONAL -> return true
         }
     }
 

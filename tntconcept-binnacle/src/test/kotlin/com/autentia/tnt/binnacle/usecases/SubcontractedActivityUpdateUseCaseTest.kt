@@ -181,6 +181,7 @@ internal class SubcontractedActivityUpdateUseCaseTest {
             YearMonth.of(TODAY.year, TODAY.month),
             DURATION,
             "New activity",
+            true,
             PROJECT_ROLE.id,
         )
 

@@ -4,6 +4,7 @@ import com.autentia.tnt.binnacle.core.domain.Activity
 import com.autentia.tnt.binnacle.core.domain.Calendar
 import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.ApprovalState
+import com.autentia.tnt.binnacle.entities.Billable
 import com.autentia.tnt.binnacle.entities.Project
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
@@ -158,5 +159,13 @@ internal abstract class AbstractActivityValidator(
         }
         val activities = activityService.findOverlappedActivities(activity.getStart(), activity.getEnd(), userId)
         return activities.size > 1 || activities.size == 1 && activities[0].id != activity.id
+    }
+
+    protected fun isActivityBillableCoherenceWithProjectBillingType(activity: Activity):Boolean{
+        when(activity.projectRole.project.projectBillingType.type){
+            Billable.NEVER -> return !activity.billable
+            Billable.ALWAYS -> return activity.billable
+            Billable.OPTIONAL -> return true
+        }
     }
 }

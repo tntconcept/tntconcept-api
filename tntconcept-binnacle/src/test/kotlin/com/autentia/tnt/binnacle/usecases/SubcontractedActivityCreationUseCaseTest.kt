@@ -185,6 +185,7 @@ class SubcontractedActivityCreationUseCaseTest {
             TIME_NOW,
             DURATION,
             "New activity",
+            true,
             PROJECT_ROLE.id
         )
 
@@ -193,6 +194,7 @@ class SubcontractedActivityCreationUseCaseTest {
             TIME_NOW.minusMonths(4),
             DURATION,
             "New activity wit",
+            true,
             PROJECT_ROLE.id,
         )
 
@@ -201,6 +203,7 @@ class SubcontractedActivityCreationUseCaseTest {
             TIME_NOW,
             DURATION,
             "New activity wit",
+            true,
             PROJECT_ROLE.id,
         )
 
