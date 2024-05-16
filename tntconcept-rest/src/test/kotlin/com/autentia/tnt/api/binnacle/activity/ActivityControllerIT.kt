@@ -263,7 +263,7 @@ internal class ActivityControllerIT {
         arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
         arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
         arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
-        arrayOf(ActivityBillableIncoherenceException(), BAD_REQUEST, "ACTIVITY_BILLABLE_INCOHERENCE_WITH_PROJECT_BILLING_TYPE"),
+        arrayOf(ActivityBillableIncoherenceException(), BAD_REQUEST, "ACTIVITY_BILLABLE_INCOHERENT_WITH_PROJECT_BILLING_TYPE"),
     )
 
     @ParameterizedTest
@@ -313,7 +313,7 @@ internal class ActivityControllerIT {
         arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
         arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
         arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
-        arrayOf(ActivityBillableIncoherenceException(), BAD_REQUEST, "ACTIVITY_BILLABLE_INCOHERENCE_WITH_PROJECT_BILLING_TYPE"),
+        arrayOf(ActivityBillableIncoherenceException(), BAD_REQUEST, "ACTIVITY_BILLABLE_INCOHERENT_WITH_PROJECT_BILLING_TYPE"),
     )
 
     @ParameterizedTest
