@@ -737,7 +737,7 @@ CREATE TABLE `Project`
   COLLATE = utf8mb4_spanish_ci;
 
 -- Insert generic projects
-INSERT INTO Project(id, organizationId, startDate, name, billable)
+INSERT INTO Project(id, organizationId, startDate, name)
 VALUES (1, 1, CURDATE(), 'Vacaciones'),
        (2, 1, CURDATE(), 'Permiso retribuido'),
        (3, 1, CURDATE(), 'Baja por enfermedad'),
