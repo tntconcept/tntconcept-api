@@ -738,11 +738,11 @@ CREATE TABLE `Project`
 
 -- Insert generic projects
 INSERT INTO Project(id, organizationId, startDate, name, billable)
-VALUES (1, 1, CURDATE(), 'Vacaciones', TRUE),
-       (2, 1, CURDATE(), 'Permiso retribuido', FALSE),
-       (3, 1, CURDATE(), 'Baja por enfermedad', TRUE),
-       (4, 1, CURDATE(), 'Auto-formación', FALSE),
-       (5, 1, CURDATE(), 'Histórico', TRUE);
+VALUES (1, 1, CURDATE(), 'Vacaciones'),
+       (2, 1, CURDATE(), 'Permiso retribuido'),
+       (3, 1, CURDATE(), 'Baja por enfermedad'),
+       (4, 1, CURDATE(), 'Auto-formación'),
+       (5, 1, CURDATE(), 'Histórico');
 
 
 CREATE TABLE `ProjectRole`
