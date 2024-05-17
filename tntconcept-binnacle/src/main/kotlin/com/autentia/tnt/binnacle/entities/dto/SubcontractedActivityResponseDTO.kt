@@ -5,6 +5,7 @@ import java.time.YearMonth
 data class SubcontractedActivityResponseDTO (
     val duration: Int,
     val description: String,
+    val billable: Boolean,
     val id: Long,
     val projectRoleId: Long,
     val month: YearMonth,

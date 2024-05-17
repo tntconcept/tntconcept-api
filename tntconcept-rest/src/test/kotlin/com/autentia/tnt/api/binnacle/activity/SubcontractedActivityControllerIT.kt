@@ -315,6 +315,7 @@ internal class SubcontractedActivityControllerIT {
         private val SUBCONTRACTED_ACTIVITY_RESPONSE_DTO = SubcontractedActivityResponseDTO(
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description,
+            SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable,
             2L,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month,

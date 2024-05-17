@@ -1724,6 +1724,7 @@ components:
           nullable: true
     SubcontractedActivityResponse:
       required:
+      - billable
       - description
       - duration
       - id
@@ -1737,6 +1738,8 @@ components:
           format: int32
         description:
           type: string
+        billable:
+          type: boolean
         id:
           type: integer
           format: int64

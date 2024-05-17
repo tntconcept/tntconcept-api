@@ -255,6 +255,7 @@ class SubcontractedActivityCreationUseCaseTest {
             SubcontractedActivityResponseDTO(
                 duration,
                 description,
+                billable,
                 id,
                 projectRoleId,
                 month,
