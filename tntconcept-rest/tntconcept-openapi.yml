@@ -1278,6 +1278,12 @@ components:
       properties:
         id:
           type: string
+    Billable:
+      type: string
+      enum:
+      - ALWAYS
+      - NEVER
+      - OPTIONAL
     BlockProjectRequest:
       required:
       - blockDate
@@ -1516,6 +1522,19 @@ components:
           type: number
         balance:
           type: number
+    ProjectBillingType:
+      required:
+      - billableByDefault
+      - name
+      - type
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/Billable'
+        billableByDefault:
+          type: boolean
     ProjectFilterRequest:
       type: object
       properties:
@@ -1531,11 +1550,11 @@ components:
           nullable: true
     ProjectResponse:
       required:
-      - billable
       - id
       - name
       - open
       - organizationId
+      - projectBillingType
       - startDate
       type: object
       properties:
@@ -1546,8 +1565,8 @@ components:
           type: string
         open:
           type: boolean
-        billable:
-          type: boolean
+        projectBillingType:
+          $ref: '#/components/schemas/ProjectBillingType'
         organizationId:
           type: integer
           format: int64
@@ -1675,6 +1694,7 @@ components:
           nullable: true
     SubcontractedActivityRequest:
       required:
+      - billable
       - description
       - duration
       - month
@@ -1693,6 +1713,8 @@ components:
         description:
           maxLength: 2048
           type: string
+        billable:
+          type: boolean
         projectRoleId:
           type: integer
           format: int64
@@ -1702,6 +1724,7 @@ components:
           nullable: true
     SubcontractedActivityResponse:
       required:
+      - billable
       - description
       - duration
       - id
@@ -1715,6 +1738,8 @@ components:
           format: int32
         description:
           type: string
+        billable:
+          type: boolean
         id:
           type: integer
           format: int64

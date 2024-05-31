@@ -61,12 +61,12 @@ internal class ActivityRetrievalByIdUseCaseTest {
                 1L,
                 "Dummy Project",
                 true,
-                false,
                 LocalDate.now(),
                 null,
                 null,
                 Organization(1L, "Dummy Organization", 1, listOf()),
                 listOf(),
+                "NO_BILLABLE"
             ),
             0,
             0,

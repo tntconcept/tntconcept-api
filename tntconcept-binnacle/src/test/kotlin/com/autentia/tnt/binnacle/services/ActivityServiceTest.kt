@@ -6,10 +6,16 @@ import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.InternalActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle
-import org.mockito.kotlin.*
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.reset
+import org.mockito.kotlin.whenever
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -91,7 +97,7 @@ internal class ActivityServiceTest {
 
         private val organization = Organization(1L, "Autentia", 1, emptyList())
         private val project =
-            Project(1L, "Back-end developers", true, false, LocalDate.now(), null, null, organization, emptyList())
+            Project(1L, "Back-end developers", true, LocalDate.now(), null, null, organization, emptyList(),"NO_BILLABLE")
         private val projectRole =
             ProjectRole(10, "Kotlin developer", RequireEvidence.NO, project, 0, 0, true, false, TimeUnit.MINUTES)
 

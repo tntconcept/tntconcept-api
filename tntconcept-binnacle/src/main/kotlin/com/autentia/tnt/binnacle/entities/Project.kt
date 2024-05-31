@@ -13,7 +13,6 @@ data class Project(
 
     val name: String,
     val open: Boolean,
-    val billable: Boolean,
     val startDate: LocalDate,
     var blockDate: LocalDate? = null,
     var blockedByUser: Long? = null,
@@ -25,13 +24,18 @@ data class Project(
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     @JsonIgnore
-    val projectRoles: List<ProjectRole>
+    val projectRoles: List<ProjectRole>,
+
+
+    val billingType: String = ""
+
+
 ) {
     fun toDomain() = com.autentia.tnt.binnacle.core.domain.Project(
         id,
         name,
         open,
-        billable,
+        ProjectBillingTypes().getProjectBillingType(billingType),
         startDate,
         blockDate,
         blockedByUser,

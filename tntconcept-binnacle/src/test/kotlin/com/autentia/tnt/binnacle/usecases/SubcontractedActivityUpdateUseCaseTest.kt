@@ -167,9 +167,9 @@ internal class SubcontractedActivityUpdateUseCaseTest {
 
         private val ORGANIZATION = Organization(1L, "Organization", 1, listOf())
         private val PROJECT = Project(
-            1L, "Project", open = true, billable = false,
+            1L, "Project", open = true,
             LocalDate.now(), null, null, projectRoles = listOf(),
-            organization = ORGANIZATION
+            organization = ORGANIZATION, billingType = "TIME_AND_MATERIALS"
         )
         private val PROJECT_ROLE = ProjectRole(
             10L, "Project role", NO, PROJECT, 5000,
@@ -181,6 +181,7 @@ internal class SubcontractedActivityUpdateUseCaseTest {
             YearMonth.of(TODAY.year, TODAY.month),
             DURATION,
             "New activity",
+            true,
             PROJECT_ROLE.id,
         )
 

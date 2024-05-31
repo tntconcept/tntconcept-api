@@ -36,6 +36,7 @@ internal class ActivityValidator(
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
             isBeforeProjectCreationDate(activityToCreate, project) -> throw ActivityBeforeProjectCreationDateException()
             isOverlappingAnotherActivityTime(activityToCreate, user.id) -> throw OverlapsAnotherTimeException()
+            !isActivityBillableCoherenceWithProjectBillingType(activityToCreate) -> throw ActivityBillableIncoherenceException()
             user.isBeforeHiringDate(activityToCreate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
 
@@ -95,6 +96,7 @@ internal class ActivityValidator(
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
             isOverlappingAnotherActivityTime(activityToUpdate, user.id) -> throw OverlapsAnotherTimeException()
+            !isActivityBillableCoherenceWithProjectBillingType(activityToUpdate) -> throw ActivityBillableIncoherenceException()
             user.isBeforeHiringDate(activityToUpdate.timeInterval.start.toLocalDate()) ->
                 throw ActivityBeforeHiringDateException()
 

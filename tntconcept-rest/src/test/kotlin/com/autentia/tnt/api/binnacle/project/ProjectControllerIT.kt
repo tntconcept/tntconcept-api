@@ -1,9 +1,13 @@
 package com.autentia.tnt.api.binnacle.project
 
-import com.autentia.tnt.api.binnacle.*
+import com.autentia.tnt.api.binnacle.ErrorResponse
+import com.autentia.tnt.api.binnacle.exchangeList
+import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.api.binnacle.getBody
 import com.autentia.tnt.api.binnacle.projectrole.MaxTimeAllowedResponse
 import com.autentia.tnt.api.binnacle.projectrole.ProjectRoleUserResponse
 import com.autentia.tnt.api.binnacle.projectrole.TimeInfoResponse
+import com.autentia.tnt.binnacle.entities.ProjectBillingTypes
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
@@ -24,7 +28,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -55,7 +59,6 @@ internal class ProjectControllerIT {
 
     @get:MockBean(ProjectByFilterUseCase::class)
     internal val projectByFilterUseCase = mock<ProjectByFilterUseCase>()
-
 
     @AfterEach
     fun resetMocks() {
@@ -261,7 +264,7 @@ internal class ProjectControllerIT {
             1L,
             "Dummy Project",
             false,
-            false,
+            ProjectBillingTypes().getProjectBillingType("TIME_AND_MATERIALS"),
             1L,
             startDate = LocalDate.now(),
         )
@@ -300,7 +303,7 @@ internal class ProjectControllerIT {
             1L,
             "Dummy Project",
             false,
-            false,
+            ProjectBillingTypes().getProjectBillingType("TIME_AND_MATERIALS"),
             1L,
             LocalDate.now(),
         )

@@ -1,6 +1,7 @@
 package com.autentia.tnt.binnacle.converters
 
 import com.autentia.tnt.binnacle.entities.Project
+import com.autentia.tnt.binnacle.entities.ProjectBillingTypes
 import com.autentia.tnt.binnacle.entities.dto.ProjectResponseDTO
 import jakarta.inject.Singleton
 
@@ -11,7 +12,7 @@ class ProjectResponseConverter {
         project.id,
         project.name,
         project.open,
-        project.billable,
+        ProjectBillingTypes().getProjectBillingType(project.billingType),
         project.organization.id,
         project.startDate,
         project.blockDate,
@@ -23,7 +24,7 @@ class ProjectResponseConverter {
             project.id,
             project.name,
             project.open,
-            project.billable,
+            project.projectBillingType,
             project.organization.id,
             project.startDate,
             project.blockDate,

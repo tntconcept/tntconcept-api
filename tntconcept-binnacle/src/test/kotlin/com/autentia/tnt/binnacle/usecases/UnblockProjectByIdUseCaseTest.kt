@@ -72,11 +72,11 @@ class UnblockProjectByIdUseCaseTest {
         private val unblockedProjectEntity: com.autentia.tnt.binnacle.entities.Project = com.autentia.tnt.binnacle.entities.Project(
             id = 1L,
             name = "Test project",
-            billable = true,
             open = false,
             organization = organizationEntity,
             startDate = LocalDate.of(2023, 5, 1),
             projectRoles = emptyList(),
+            billingType = "CLOSED_PRICE"
         )
     }
 }

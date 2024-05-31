@@ -7,7 +7,6 @@ import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.UserRepository
-import com.autentia.tnt.binnacle.services.ActivityEvidenceService
 import com.autentia.tnt.binnacle.validators.SubcontractedActivityValidator
 import io.micronaut.security.authentication.Authentication
 import io.micronaut.security.authentication.ClientAuthentication
@@ -78,12 +77,12 @@ class SubcontractedActivityDeletionUseCaseTest {
                 1L,
                 "Dummy Project",
                 open = true,
-                billable = false,
                 LocalDate.now(),
                 null,
                 null,
                 projectRoles = listOf(),
-                organization = ORGANIZATION
+                organization = ORGANIZATION,
+                billingType = "TIME_AND_MATERIALS"
         )
         val PROJECT_ROLE =
                 ProjectRole(

@@ -36,7 +36,8 @@ class ActivityResponseConverter(
             id = activity.id!!,
             projectRoleId = activity.projectRole.id,
             month = YearMonth.of(activity.timeInterval.start.year,activity.timeInterval.start.month),
-            userId = activity.userId
+            userId = activity.userId,
+            billable = activity.billable
     )
 
     fun mapActivityToActivityResponse(activity: Activity) = ActivityResponse(

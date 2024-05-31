@@ -8,21 +8,25 @@ import com.autentia.tnt.binnacle.entities.*
 import com.autentia.tnt.binnacle.entities.ApprovalState.NA
 import com.autentia.tnt.binnacle.entities.ApprovalState.PENDING
 import com.autentia.tnt.binnacle.entities.RequireEvidence.*
-import com.autentia.tnt.binnacle.entities.dto.*
+import com.autentia.tnt.binnacle.entities.dto.ActivityRequestDTO
+import com.autentia.tnt.binnacle.entities.dto.ActivityResponseDTO
+import com.autentia.tnt.binnacle.entities.dto.EvidenceDTO
 import com.autentia.tnt.binnacle.exception.ActivityNotFoundException
 import com.autentia.tnt.binnacle.exception.ProjectRoleNotFoundException
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRoleRepository
-import com.autentia.tnt.binnacle.services.*
 import com.autentia.tnt.binnacle.services.ActivityCalendarService
 import com.autentia.tnt.binnacle.services.ActivityEvidenceService
+import com.autentia.tnt.binnacle.services.UserService
 import com.autentia.tnt.binnacle.validators.ActivityValidator
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
 import org.mockito.kotlin.*
-import java.lang.IllegalArgumentException
 import java.time.Instant
 import java.time.LocalDate
 import java.util.*
@@ -688,9 +692,9 @@ internal class ActivityUpdateUseCaseTest {
         private val USER = createDomainUser()
         private val TODAY = LocalDate.now().atTime(8, 0)
         private val ORGANIZATION = Organization(1L, "Organization", 1, listOf())
-        private val PROJECT = Project(1L, "Project", open = true, billable = false,
+        private val PROJECT = Project(1L, "Project", open = true,
                 LocalDate.now(), null, null, projectRoles = listOf(),
-                organization = ORGANIZATION
+                organization = ORGANIZATION, billingType =  "NO_BILLABLE"
         )
         private val EVIDENCE = EvidenceDTO("mediaType", "fileContent")
         private val PROJECT_ROLE = ProjectRole(10L, "Project role", NO, PROJECT, 5000,

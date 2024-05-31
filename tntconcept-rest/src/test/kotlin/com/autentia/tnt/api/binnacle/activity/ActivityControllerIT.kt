@@ -18,9 +18,12 @@ import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.mockito.kotlin.*
@@ -260,6 +263,7 @@ internal class ActivityControllerIT {
         arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
         arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
         arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
+        arrayOf(ActivityBillableIncoherenceException(), BAD_REQUEST, "ACTIVITY_BILLABLE_INCOHERENT_WITH_PROJECT_BILLING_TYPE"),
     )
 
     @ParameterizedTest
@@ -309,6 +313,7 @@ internal class ActivityControllerIT {
         arrayOf(ProjectClosedException(), BAD_REQUEST, "CLOSED_PROJECT"),
         arrayOf(ActivityBeforeHiringDateException(), BAD_REQUEST, "ACTIVITY_BEFORE_HIRING_DATE"),
         arrayOf(ProjectBlockedException(LocalDate.now()), BAD_REQUEST, "BLOCKED_PROJECT"),
+        arrayOf(ActivityBillableIncoherenceException(), BAD_REQUEST, "ACTIVITY_BILLABLE_INCOHERENT_WITH_PROJECT_BILLING_TYPE"),
     )
 
     @ParameterizedTest

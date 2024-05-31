@@ -1,0 +1,6 @@
+ALTER TABLE Project ADD billingType VARCHAR(64) NOT NULL DEFAULT 'TIME_AND_MATERIALS' AFTER billable;
+UPDATE Project SET billingType = 'NO_BILLABLE' WHERE billable = FALSE;
+ALTER TABLE Project DROP COLUMN billable;
+ALTER TABLE Project ALTER COLUMN billingType DROP DEFAULT;
+
+

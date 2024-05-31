@@ -223,7 +223,7 @@ internal class ProjectRoleByProjectIdUseCaseTest {
 
         private val ORGANIZATION = Organization(1L, "Nuestra empresa", 1, listOf())
         private val PROJECT =
-            Project(1L, "Dummy project", true, false, LocalDate.now(), null, null, ORGANIZATION, listOf())
+            Project(1L, "Dummy project", true, LocalDate.now(), null, null, ORGANIZATION, listOf(),"NO_BILLABLE")
 
         private val authentication =
             ClientAuthentication(USER_LOGGED_ID.toString(), mapOf("roles" to listOf("admin")))

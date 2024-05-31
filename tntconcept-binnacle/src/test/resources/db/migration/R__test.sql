@@ -61,9 +61,9 @@ VALUES (3, 1, 1, 'Hermiston, Zieme and Monahan', '', '', '', '', '', '', '', 53,
         1, 0, '2023-04-24 06:33:16', DEFAULT);
 
 -- Project id = 6
-INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, ownerId, departmentId,
-                     billable, offerId, insertDate, updateDate)
-VALUES (6, 3, '2023-04-24', null, 1, 'Seize distributed niches', '', null, null, DEFAULT, null, '2023-04-24 06:33:16',
+INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, billingType, ownerId, departmentId,
+                    offerId, insertDate, updateDate)
+VALUES (6, 3, '2023-04-24', null, 1, 'Seize distributed niches', '', 'TIME_AND_MATERIALS', null, null, null, '2023-04-24 06:33:16',
         '2023-04-24 06:33:21');
 
 -- Project role with weekly evidence
@@ -81,9 +81,9 @@ VALUES (7, 6, 'Project 6 once', 0.00, 0, 'ONCE', null, null, '2023-04-24 06:33:1
         'DAYS', 1, 0);
 
 -- Project id = 7
-INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, ownerId, departmentId, billable,
+INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, billingType, ownerId, departmentId,
                      offerId, insertDate, updateDate)
-VALUES (7, 3, '2023-04-24', null, 1, 'Envisioneer one-to-one e-services', '', null, null, DEFAULT, null,
+VALUES (7, 3, '2023-04-24', null, 1, 'Envisioneer one-to-one e-services', '', 'TIME_AND_MATERIALS', null, null, null,
         '2023-04-24 06:33:16', '2023-04-24 06:33:21');
 
 -- Project weekly
@@ -107,9 +107,9 @@ VALUES (10, 7, 'Project 7 none', 0.00, 0, 'NO', null, null, '2023-04-24 06:33:16
 
 -- PROJECT-ROLE for ProjectRoleDaoIT
 -- Project id 8
-INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, ownerId, departmentId, billable,
+INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description,billingType, ownerId, departmentId,
                      offerId, insertDate, updateDate)
-VALUES (8, 3, '2023-04-24', null, 1, 'Project with roles for testing', '', null, null, DEFAULT, null,
+VALUES (8, 3, '2023-04-24', null, 1, 'Project with roles for testing', '', 'TIME_AND_MATERIALS', null, null, null,
         '2023-04-24 06:33:16', '2023-04-24 06:33:21');
 
 INSERT INTO ProjectRole (id, projectId, name, costPerHour, expectedHours, requireEvidence, ownerId, departmentId,
@@ -124,9 +124,9 @@ VALUES (12, 8, 'Project no working time 2', 0.00, 0, 'WEEKLY', null, null, '2023
 
 
 -- Closed Project for testing purposes
-INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, ownerId, departmentId, billable,
+INSERT INTO Project (id, organizationId, startDate, endDate, open, name, description, billingType, ownerId, departmentId,
                      offerId, insertDate, updateDate)
-VALUES (9, 3, '2023-04-24', null, 0, 'Closed project for testing', '', null, null, DEFAULT, null,
+VALUES (9, 3, '2023-04-24', null, 0, 'Closed project for testing', '', 'TIME_AND_MATERIALS', null, null, null,
         '2023-04-24 06:33:16', '2023-04-24 06:33:21');
 
 

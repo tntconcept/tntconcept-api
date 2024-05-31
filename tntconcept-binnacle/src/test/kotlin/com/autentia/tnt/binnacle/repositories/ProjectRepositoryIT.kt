@@ -103,12 +103,12 @@ internal class ProjectRepositoryIT {
             9,
             "Closed project for testing",
             false,
-            false,
             LocalDate.now(),
             null,
             null,
             Organization(3, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "NO_BILLABLE"
         )
     }
 

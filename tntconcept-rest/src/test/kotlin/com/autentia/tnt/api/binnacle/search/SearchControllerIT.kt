@@ -1,6 +1,7 @@
 package com.autentia.tnt.api.binnacle.search
 
 import com.autentia.tnt.api.binnacle.exchangeObject
+import com.autentia.tnt.binnacle.entities.ProjectBillingTypes
 import com.autentia.tnt.binnacle.entities.RequireEvidence
 import com.autentia.tnt.binnacle.entities.TimeUnit
 import com.autentia.tnt.binnacle.entities.dto.*
@@ -84,7 +85,7 @@ internal class SearchControllerIT {
         private const val YEAR = 2023
 
         private val AUTENTIA = OrganizationResponseDTO(1, "Autentia")
-        private val TRAINING = ProjectResponseDTO(1, "Formación Autentia", true, false, AUTENTIA.id, LocalDate.now())
+        private val TRAINING = ProjectResponseDTO(1, "Formación Autentia", true, ProjectBillingTypes().getProjectBillingType("NO_BILLABLE"),AUTENTIA.id, LocalDate.now())
         private val STUDENT = ProjectRoleUserDTO(
                 1,
                 "Alumno en formación",

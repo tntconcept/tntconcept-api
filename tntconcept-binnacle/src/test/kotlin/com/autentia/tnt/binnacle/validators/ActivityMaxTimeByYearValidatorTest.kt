@@ -293,12 +293,12 @@ class ActivityMaxTimeByYearValidatorTest {
             1,
             "project",
             true,
-            true,
             mockNow.toLocalDate().minusYears(1),
             null,
             null,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "CLOSED_PRICE"
         )
 
         private val projectRoleLimitedByYear = ProjectRole(

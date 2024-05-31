@@ -61,12 +61,12 @@ class ProjectByFilterUseCaseTest {
             1,
             "BlockedProject",
             true,
-            true,
             LocalDate.now(),
             null,
             null,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "CLOSED_PRICE"
         )
         private val organizationIdProjectFilter = ProjectFilterDTO(
             organizationId,

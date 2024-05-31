@@ -297,7 +297,7 @@ internal class SubcontractedActivityControllerIT {
         private val INTERVAL_REQUEST_DTO = YearMonth.of(START_DATE.year, START_DATE.month)
 
         private val SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO = SubcontractedActivityRequest(
-            null, INTERVAL_REQUEST_DTO, DURATION, "Activity description", 3
+            null, INTERVAL_REQUEST_DTO, DURATION, "Activity description",true, 3
         )
 
 
@@ -307,6 +307,7 @@ internal class SubcontractedActivityControllerIT {
                 "month": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month}",
                 "duration": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration},        
                 "description": "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description}",
+                "billable" : "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable}",
                 "projectRoleId": ${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId}             
             }
         """.trimIndent()
@@ -314,6 +315,7 @@ internal class SubcontractedActivityControllerIT {
         private val SUBCONTRACTED_ACTIVITY_RESPONSE_DTO = SubcontractedActivityResponseDTO(
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.duration,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.description,
+            SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable,
             2L,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.projectRoleId,
             SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.month,
@@ -327,6 +329,7 @@ internal class SubcontractedActivityControllerIT {
                 "month": "${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.month}",                                   
                 "duration": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.duration},
                 "description": "Updated activity description",
+                "billable" : "${SUBCONTRACTED_ACTIVITY_REQUEST_BODY_DTO.billable}",
                 "projectRoleId": ${SUBCONTRACTED_ACTIVITY_RESPONSE_DTO.projectRoleId}
             }
         """.trimIndent()

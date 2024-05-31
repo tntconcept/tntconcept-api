@@ -149,24 +149,24 @@ internal fun createProject(id: Long = 1L) = Project(
     id = id,
     name = "Dummy Project",
     open = true,
-    billable = false,
     LocalDate.now(),
     null,
     null,
     projectRoles = listOf(),
-    organization = createOrganization()
+    organization = createOrganization(),
+    billingType = "TIME_AND_MATERIALS"
 )
 
 internal fun createBlockedProject(id: Long = 1L) = Project(
     id = id,
     name = "Dummy Project",
     open = true,
-    billable = false,
     LocalDate.now(),
     blockDate = LocalDate.of(2000, 1, 1),
     null,
     projectRoles = listOf(),
-    organization = createOrganization()
+    organization = createOrganization(),
+    billingType = "NO_BILLABLE"
 )
 
 internal fun createProjectRoleTimeInfo(

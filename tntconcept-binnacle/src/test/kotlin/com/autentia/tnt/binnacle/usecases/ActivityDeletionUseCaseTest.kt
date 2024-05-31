@@ -60,12 +60,12 @@ internal class ActivityDeletionUseCaseTest {
             1L,
             "Dummy Project",
             open = true,
-            billable = false,
             LocalDate.now(),
             null,
             null,
             projectRoles = listOf(),
-            organization = ORGANIZATION
+            organization = ORGANIZATION,
+            billingType = "NO_BILLABLE"
         )
         val PROJECT_ROLE =
             ProjectRole(

@@ -6,10 +6,10 @@ import com.autentia.tnt.binnacle.entities.ApprovalState
 import com.autentia.tnt.binnacle.entities.Project
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import jakarta.inject.Inject
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.lang.IllegalStateException
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -172,7 +172,7 @@ internal class ActivityDaoIT {
 
         projectRepository.update(
             Project(
-                project.id, project.name, false, project.billable, LocalDate.now(), null, null, project.organization, project.projectRoles
+                project.id, project.name, false, LocalDate.now(), null, null, project.organization, project.projectRoles, project.billingType
             )
         )
         projectRepository.update(
@@ -180,12 +180,12 @@ internal class ActivityDaoIT {
                 openedProject.id,
                 openedProject.name,
                 true,
-                openedProject.billable,
                 openedProject.startDate,
                 openedProject.blockDate,
                 openedProject.blockedByUser,
                 openedProject.organization,
-                openedProject.projectRoles
+                openedProject.projectRoles,
+                openedProject.billingType
             )
         )
 

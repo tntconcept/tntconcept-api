@@ -32,7 +32,7 @@ internal class SubcontractedActivityValidator(
             isProjectBlocked(project, activityToCreate) -> throw ProjectBlockedException(project.blockDate!!)
             isBeforeProjectCreationDate(activityToCreate, project) -> throw ActivityBeforeProjectCreationDateException()
             !isPositiveDuration(activityToCreate) -> throw InvalidDurationFormatException()
-
+            !isActivityBillableCoherenceWithProjectBillingType(activityToCreate) -> throw ActivityBillableIncoherenceException()
         }
     }
 
@@ -64,8 +64,7 @@ internal class SubcontractedActivityValidator(
             !activityToUpdate.projectRole.project.open -> throw ProjectClosedException()
             !isOpenPeriod(activityToUpdate.timeInterval.start) -> throw ActivityPeriodClosedException()
             !isPositiveDuration(activityToUpdate) -> throw InvalidDurationFormatException()
-
-
+            !isActivityBillableCoherenceWithProjectBillingType(activityToUpdate) -> throw ActivityBillableIncoherenceException()
         }
     }
 

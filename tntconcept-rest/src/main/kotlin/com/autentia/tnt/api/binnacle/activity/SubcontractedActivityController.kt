@@ -80,5 +80,8 @@ internal class SubcontractedActivityController (
                 ErrorResponseBlockedProject.ErrorValues(e.blockedDate)
             )
         )
+    @Error
+    internal fun onActivityBillableIncoherenceException(request: HttpRequest<*>, e:ActivityBillableIncoherenceException) =
+        HttpResponse.badRequest(ErrorResponse("ACTIVITY_BILLABLE_INCOHERENT_WITH_PROJECT_BILLING_TYPE",e.message))
 
 }

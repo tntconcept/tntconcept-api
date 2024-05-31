@@ -3,17 +3,17 @@ package com.autentia.tnt.binnacle.validators
 import com.autentia.tnt.binnacle.config.createDomainActivity
 import com.autentia.tnt.binnacle.config.createDomainUser
 import com.autentia.tnt.binnacle.config.createProject
-import com.autentia.tnt.binnacle.core.domain.*
+import com.autentia.tnt.binnacle.core.domain.ActivitiesCalendarFactory
+import com.autentia.tnt.binnacle.core.domain.CalendarFactory
+import com.autentia.tnt.binnacle.core.domain.Evidence
+import com.autentia.tnt.binnacle.core.domain.TimeInterval
 import com.autentia.tnt.binnacle.entities.*
-import com.autentia.tnt.binnacle.entities.Activity
-import com.autentia.tnt.binnacle.entities.Organization
-import com.autentia.tnt.binnacle.entities.Project
-import com.autentia.tnt.binnacle.entities.ProjectRole
 import com.autentia.tnt.binnacle.exception.*
 import com.autentia.tnt.binnacle.repositories.ActivityRepository
 import com.autentia.tnt.binnacle.repositories.HolidayRepository
 import com.autentia.tnt.binnacle.repositories.ProjectRepository
-import com.autentia.tnt.binnacle.services.*
+import com.autentia.tnt.binnacle.services.ActivityCalendarService
+import com.autentia.tnt.binnacle.services.ActivityService
 import io.archimedesfw.commons.time.test.ClockTestUtils
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -141,6 +141,7 @@ internal class ActivityValidatorTest {
                     listOf(projectRole.id),
                     user.id
                 )
+
             ClockTestUtils.runWithFixed(mockNow) {
                 activityValidator.checkActivityIsValidForCreation(activityToCreate, user)
             }
@@ -1303,6 +1304,52 @@ internal class ActivityValidatorTest {
         }
 
         @Test
+        fun `throw ActivityBillableIncoherenceException when the activity billable field(no billable) is not coherence with the project billing type(Closed price)`(){
+            val id = null
+            val activity = Activity(
+                id,
+                mockNow,
+                mockNow.plusMinutes(MINUTES_IN_HOUR.toLong()),
+                MINUTES_IN_HOUR,
+                "description",
+                closedPriceProjectRole,
+                user.id,
+                false,
+                approvalState = ApprovalState.NA
+            )
+            doReturn(Optional.of(closedPriceProject))
+                .whenever(projectRepository)
+                .findById(closedPriceProject.id)
+            assertThrows<ActivityBillableIncoherenceException>{
+                ClockTestUtils.runWithFixed(mockNow){
+                    activityValidator.checkActivityIsValidForCreation(activity.toDomain(), user)
+                }
+            }
+        }
+        @Test
+        fun `throw ActivityBillableIncoherenceException when the activity billable field(billable) is not coherence with the project billing type(no billable)`(){
+            val id = null
+            val activity = Activity(
+                id,
+                mockNow,
+                mockNow.plusMinutes(MINUTES_IN_HOUR.toLong()),
+                MINUTES_IN_HOUR,
+                "description",
+                noBillableProjectRole,
+                user.id,
+                true,
+                approvalState = ApprovalState.NA
+            )
+            doReturn(Optional.of(noBillableProject))
+                .whenever(projectRepository)
+                .findById(noBillableProject.id)
+            assertThrows<ActivityBillableIncoherenceException>{
+                ClockTestUtils.runWithFixed(mockNow){
+                    activityValidator.checkActivityIsValidForCreation(activity.toDomain(), user)
+                }
+            }
+        }
+        @Test
         fun `allow deletion of an accepted or approved activity when can access to all activities`() {
             val id = 1L
             val activity = Activity(
@@ -1374,24 +1421,24 @@ internal class ActivityValidatorTest {
             1,
             "NonBlockedProject",
             true,
-            true,
             LocalDate.now(),
             null,
             null,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "TIME_AND_MATERIALS"
         )
 
         private val blockedPastProject = Project(
             3,
             "NonBlockedProject",
             true,
-            true,
             LocalDate.now(),
             LocalDate.parse("2000-01-01"),
             user.id,
             Organization(1, "Organization", 1, emptyList()),
-            emptyList()
+            emptyList(),
+            "TIME_AND_MATERIALS"
         )
 
         private val vacationProject =
@@ -1399,14 +1446,59 @@ internal class ActivityValidatorTest {
                 1,
                 "Vacaciones",
                 true,
-                true,
                 today.minusYears(5),
                 null,
                 null,
                 Organization(1, "Organization", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "TIME_AND_MATERIALS"
             )
-
+        private val closedPriceProject =
+            Project(
+                5,
+                "Closed price",
+                true,
+                mockNow.minusYears(1).toLocalDate(),
+                null,
+                null,
+                Organization(1, "Organization", 1, emptyList()),
+                emptyList(),
+                "CLOSED_PRICE"
+            )
+        private val noBillableProject =
+            Project(
+                6,
+                "Closed price",
+                true,
+                mockNow.minusYears(1).toLocalDate(),
+                null,
+                null,
+                Organization(1, "Organization", 1, emptyList()),
+                emptyList(),
+                "NO_BILLABLE"
+            )
+        private val closedPriceProjectRole = ProjectRole(
+            1,
+            "blocked",
+            RequireEvidence.NO,
+            closedPriceProject,
+            0,
+            0,
+            true,
+            false,
+            TimeUnit.MINUTES
+        )
+        private val noBillableProjectRole = ProjectRole(
+            1,
+            "blocked",
+            RequireEvidence.NO,
+            noBillableProject,
+            0,
+            0,
+            true,
+            false,
+            TimeUnit.MINUTES
+        )
         private val projectRoleWithPastBlockedProject = ProjectRole(
             1,
             "blocked",
@@ -1448,24 +1540,24 @@ internal class ActivityValidatorTest {
                 CLOSED_ID,
                 "TNT",
                 false,
-                false,
                 LocalDate.now(),
                 null,
                 null,
                 Organization(1, "Autentia", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "NO_BILLABLE"
             )
         private val blockedProject =
             Project(
                 3,
                 "Blocked Project",
                 true,
-                true,
                 LocalDate.now(),
                 LocalDate.of(Year.now().value, 1, 1),
                 null,
                 Organization(1, "Organization", 1, emptyList()),
-                emptyList()
+                emptyList(),
+                "CLOSED_PRICE"
             )
         private val blockedProjectRole =
             ProjectRole(
@@ -1921,7 +2013,7 @@ internal class ActivityValidatorTest {
             name: String = "Role with limit",
             requireEvidence: RequireEvidence = RequireEvidence.NO,
             project: Project = Project(
-                1, "Project", true, false, LocalDate.now(), null, null, organization, listOf()
+                1, "Project", true, LocalDate.now(), null, null, organization, listOf(), "TIME_AND_MATERIALS"
             ),
             maxTimeAllowedByYear: Int,
             maxTimeAllowedByActivity: Int,
