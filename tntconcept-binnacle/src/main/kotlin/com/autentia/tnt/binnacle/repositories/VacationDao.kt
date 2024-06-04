@@ -11,7 +11,7 @@ import java.time.LocalDate
 internal interface VacationDao : CrudRepository<Vacation, Long> {
     fun findByIdAndUserId(vacationId: Long, userId: Long): Vacation?
 
-    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND (h.startDate >= :startDate AND h.endDate <= :endDate OR h.endDate >= :startDate AND h.startDate <= :endDate)  ORDER BY h.startDate")
+    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND (h.startDate >= :startDate AND h.endDate <= :endDate OR h.endDate >= :startDate AND h.startDate <= :endDate)")
     fun find(
         startDate: LocalDate,
         endDate: LocalDate,
@@ -25,13 +25,13 @@ internal interface VacationDao : CrudRepository<Vacation, Long> {
         userId: Long
     ): List<Vacation>
 
-    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND h.chargeYear = :chargeYear ORDER BY h.startDate")
+    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND h.chargeYear = :chargeYear")
     fun findByChargeYear(
         chargeYear: LocalDate,
         userId: Long
     ): List<Vacation>
 
-    @Query("SELECT h FROM Vacation h WHERE h.state IN (:states) AND (h.startDate >= :startDate AND h.endDate <= :endDate OR h.endDate >= :startDate AND h.startDate <= :endDate)  ORDER BY h.startDate")
+    @Query("SELECT h FROM Vacation h WHERE h.state IN (:states) AND (h.startDate >= :startDate AND h.endDate <= :endDate OR h.endDate >= :startDate AND h.startDate <= :endDate)")
     fun findByDatesAndStates(
         startDate: LocalDate,
         endDate: LocalDate,
