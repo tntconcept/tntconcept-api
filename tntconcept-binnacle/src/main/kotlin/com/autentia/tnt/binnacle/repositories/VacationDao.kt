@@ -6,7 +6,6 @@ import io.micronaut.data.annotation.Query
 import io.micronaut.data.annotation.Repository
 import io.micronaut.data.repository.CrudRepository
 import java.time.LocalDate
-import java.util.*
 
 @Repository
 internal interface VacationDao : CrudRepository<Vacation, Long> {
@@ -19,7 +18,7 @@ internal interface VacationDao : CrudRepository<Vacation, Long> {
         userId: Long
     ): List<Vacation>
 
-    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND h.chargeYear BETWEEN :startYear AND :endYear")
+    @Query("SELECT h FROM Vacation h WHERE h.userId= :userId AND h.chargeYear BETWEEN :startYear AND :endYear ORDER BY h.startDate")
     fun findBetweenChargeYears(
         startYear: LocalDate,
         endYear: LocalDate,
