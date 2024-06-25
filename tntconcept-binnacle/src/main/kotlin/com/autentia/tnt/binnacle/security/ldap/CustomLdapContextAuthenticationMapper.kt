@@ -8,7 +8,6 @@ import io.micronaut.data.jdbc.runtime.JdbcOperations
 import io.micronaut.security.authentication.AuthenticationFailed
 import io.micronaut.security.authentication.AuthenticationFailureReason
 import io.micronaut.security.authentication.AuthenticationResponse
-import io.micronaut.security.ldap.ContextAuthenticationMapper
 import io.micronaut.security.ldap.DefaultContextAuthenticationMapper
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -20,6 +19,7 @@ import javax.transaction.Transactional
 internal class CustomLdapContextAuthenticationMapper : DefaultContextAuthenticationMapper() {
 
     private val findIdByPrincipalName = "select id, attributes from archimedes_security_subject where principal_name = ?"
+    private val findIsUserActive = "select active from User where id = ?"
 
     private val objectMapper: ObjectMapper = ObjectMapper()
 
@@ -55,6 +55,21 @@ internal class CustomLdapContextAuthenticationMapper : DefaultContextAuthenticat
         } else {
             val attributesMap = subjectData["attributes"] as Map<String, Any>
             val userId = attributesMap["sub"] as String
+
+            val active:Boolean? = jdbcOperations.prepareStatement(findIsUserActive) {
+                it.setInt(1, userId.toInt())
+                val rs = it.executeQuery()
+                if (rs.next()) {
+                    rs.getBoolean("active")
+                } else {
+                    null
+                }
+            }
+            if(active==null) {
+                return AuthenticationFailed(AuthenticationFailureReason.USER_NOT_FOUND)
+            } else if (!active) {
+                return AuthenticationFailed(AuthenticationFailureReason.USER_DISABLED)
+            }
             return AuthenticationResponse.success(userId, groups, attributesMap)
         }
     }

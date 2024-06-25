@@ -142,14 +142,14 @@ internal class UserDaoIT {
 
     @Test
     fun `should find requested users`() {
-        val predicate = PredicateBuilder.and(UserPredicates.ALL, UserPredicates.fromUserIds(listOf(11, 12)))
+        val predicate = PredicateBuilder.and(UserPredicates.ALL, UserPredicates.fromUserIds(listOf(11, 120)))
 
         val result = userDao.findAll(predicate)
         val userIds = result.map { it.id }
 
         assertEquals(2, result.size)
         assertTrue(userIds.contains(11))
-        assertTrue(userIds.contains(12))
+        assertTrue(userIds.contains(120))
 
     }
 }
