@@ -209,7 +209,7 @@ class ActivityDaoSpecificationIT {
                 duration = 240,
                 description = "Activity 3",
                 projectRole = otherProjectRole,
-                userId = 12,
+                userId = 120,
                 billable = false,
                 hasEvidences = false,
                 approvalState = ApprovalState.PENDING
@@ -296,7 +296,7 @@ class ActivityDaoSpecificationIT {
                 duration = 240,
                 description = "Activity 3",
                 projectRole = otherProjectRole,
-                userId = 12,
+                userId = 120,
                 billable = false,
                 hasEvidences = false,
                 approvalState = ApprovalState.PENDING

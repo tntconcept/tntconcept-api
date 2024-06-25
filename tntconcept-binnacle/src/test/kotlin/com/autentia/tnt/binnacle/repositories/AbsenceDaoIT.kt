@@ -115,7 +115,7 @@ class AbsenceDaoIT {
                 duration = 480,
                 description = "Absence 7",
                 projectRole = projectRolePaidLeave2,
-                userId = 12,
+                userId = 120,
                 billable = false,
                 hasEvidences = false,
                 approvalState = ApprovalState.PENDING
@@ -136,7 +136,7 @@ class AbsenceDaoIT {
                 startDate = LocalDate.of(2023, 2, 2),
                 endDate = LocalDate.of(2023, 2, 5),
                 chargeYear = LocalDate.of(2023, 1, 31),
-                userId = 12,
+                userId = 120,
                 description = "Vacations 2",
                 state = VacationState.ACCEPT
             ),
@@ -148,7 +148,7 @@ class AbsenceDaoIT {
         val expectedAbsences = listOf(
             Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
             Absence(AbsenceId(savedActivities.elementAt(0).id!!, "PAID_LEAVE"), 11, LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
-            Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
+            Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 120, LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
             Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
         )
 
@@ -234,7 +234,7 @@ class AbsenceDaoIT {
                 duration = 480,
                 description = "Absence 7",
                 projectRole = projectRolePaidLeave2,
-                userId = 12,
+                userId = 120,
                 billable = false,
                 hasEvidences = false,
                 approvalState = ApprovalState.PENDING
@@ -266,7 +266,7 @@ class AbsenceDaoIT {
                 startDate = LocalDate.of(2023, 2, 2),
                 endDate = LocalDate.of(2023, 2, 5),
                 chargeYear = LocalDate.of(2023, 1, 31),
-                userId = 12,
+                userId = 120,
                 description = "Vacations 2",
                 state = VacationState.ACCEPT
             ),
@@ -286,11 +286,11 @@ class AbsenceDaoIT {
         val expectedAbsences = listOf(
             Absence(AbsenceId(savedVacations.elementAt(0).id!!, "VACATION"), 11, LocalDate.of(2023, 8, 30), LocalDate.of(2023, 8, 31)),
             Absence(AbsenceId(savedActivities.elementAt(0).id!!, "PAID_LEAVE"), 11, LocalDate.of(2023, 9, 1), LocalDate.of(2023, 9, 1)),
-            Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 12, LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
+            Absence(AbsenceId(savedActivities.elementAt(6).id!!, "PAID_LEAVE"), 120, LocalDate.of(2023, 9, 4), LocalDate.of(2023, 9, 4)),
             Absence(AbsenceId(savedActivities.elementAt(4).id!!, "PAID_LEAVE"), 11, LocalDate.of(2023, 9, 6), LocalDate.of(2023, 9, 7)),
         )
 
-        val result = absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, listOf(11, 12))
+        val result = absenceDao.findAllByDateBetweenAndUsers(startDate, endDate, listOf(11, 120))
 
         assertEquals(expectedAbsences, result)
     }
@@ -372,7 +372,7 @@ class AbsenceDaoIT {
                 duration = 480,
                 description = "Absence 7",
                 projectRole = projectRolePaidLeave2,
-                userId = 12,
+                userId = 120,
                 billable = false,
                 hasEvidences = false,
                 approvalState = ApprovalState.PENDING
@@ -404,7 +404,7 @@ class AbsenceDaoIT {
                 startDate = LocalDate.of(2023, 2, 2),
                 endDate = LocalDate.of(2023, 2, 5),
                 chargeYear = LocalDate.of(2023, 1, 31),
-                userId = 12,
+                userId = 120,
                 description = "Vacations 2",
                 state = VacationState.ACCEPT
             ),

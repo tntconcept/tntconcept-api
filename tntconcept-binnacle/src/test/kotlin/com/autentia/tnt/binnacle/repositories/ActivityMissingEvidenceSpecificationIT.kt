@@ -31,7 +31,7 @@ class ActivityMissingEvidenceSpecificationIT {
 
         // Users
         private const val test_user_1 = 11L
-        private const val test_user_2 = 12L
+        private const val test_user_2 = 120L
         private val activeUsers = listOf(test_user_1, test_user_2)
 
         // Fixed data
