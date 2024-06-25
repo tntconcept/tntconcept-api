@@ -1,7 +1,4 @@
-version: '3.8'
-
 services:
-
   mysql:
     container_name: tntconcept-mysql
     image: mysql:8.0.32
