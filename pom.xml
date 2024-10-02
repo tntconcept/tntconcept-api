@@ -34,7 +34,7 @@
 
         <jib-maven-plugin.version>3.3.1</jib-maven-plugin.version>
         <docker.image.from>gcr.io/distroless/java17-debian11</docker.image.from>
-        <docker.image.to>ghcr.io/autentia/tntconcept-api</docker.image.to>
+        <docker.image.to>ghcr.io/tntconcept/tntconcept-api</docker.image.to>
         <docker.tag>${project.version}</docker.tag>
         <maven-release-plugin.version>3.0.0-M7</maven-release-plugin.version>
     </properties>
@@ -180,7 +180,7 @@
 
     <name>${project.artifactId}</name>
     <description>REST Api to access TNT Concept.</description>
-    <url>https://github.com/autentia/tntconcept-api</url>
+    <url>https://github.com/tntconcept/tntconcept-api</url>
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -189,16 +189,16 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:https://github.com/autentia/tntconcept-api.git</connection>
-        <developerConnection>scm:git:https://github.com/autentia/tntconcept-api.git</developerConnection>
+        <connection>scm:git:https://github.com/tntconcept/tntconcept-api.git</connection>
+        <developerConnection>scm:git:https://github.com/tntconcept/tntconcept-api.git</developerConnection>
         <tag>main</tag>
-        <url>https://github.com/autentia/tntconcept-api</url>
+        <url>https://github.com/tntconcept/tntconcept-api</url>
     </scm>
     <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub Maven repository</name>
-            <url>https://maven.pkg.github.com/autentia/tntconcept-api</url>
+            <url>https://maven.pkg.github.com/tntconcept/tntconcept-api</url>
         </repository>
     </distributionManagement>
 

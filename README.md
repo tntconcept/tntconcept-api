@@ -17,5 +17,5 @@ specification [documentation](https://semver.org/).
 
 ## CI
 
-[Github Actions](https://github.com/autentia/tntconcept-api/actions) are used to build the project.
+[Github Actions](https://github.com/tntconcept/tntconcept-api/actions) are used to build the project.
 
