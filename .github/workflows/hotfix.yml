@@ -11,6 +11,8 @@ on:
 jobs:
   prepare-hotfix:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       HOTFIX_VERSION: ${{ env.HOTFIX_VERSION }}
 
@@ -24,7 +26,6 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
           ref: ${{ inputs.from_branch }}
 
       - uses: actions/setup-java@v4
